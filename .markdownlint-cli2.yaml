@@ -1,0 +1,40 @@
+{
+  "config": {
+    "default": true,
+    "MD013": {
+      "line_length": 200,
+      "code_blocks": false,
+      "tables": false
+    },
+    "MD024": {
+      "siblings_only": true
+    },
+    "MD033": {
+      "allowed_elements": ["br", "details", "summary"]
+    },
+    # 项目约定：`**常见问题**`、`**相关工具**` 等作为小节标签使用，
+    # 而不是真实的标题层级（70 个工具条目下再开一级标题会让目录失真）。
+    "MD036": false,
+    "MD041": true,
+    "MD046": {
+      "style": "fenced"
+    },
+    "MD048": {
+      "style": "backtick"
+    },
+    "MD049": {
+      "style": "asterisk"
+    },
+    "MD050": {
+      "style": "asterisk"
+    }
+  },
+  "globs": ["**/*.md"],
+  "ignores": [
+    "node_modules/**",
+    "web/node_modules/**",
+    "web/dist/**",
+    "vendor/**",
+    "docs/_templates/**"
+  ]
+}
