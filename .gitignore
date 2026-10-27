@@ -1,0 +1,50 @@
+# ---- Go ----
+/toolbit
+/toolbit-server
+*.exe
+*.test
+*.out
+/coverage.txt
+/profile.out
+
+# ---- Node / 前端 ----
+node_modules/
+web/dist/
+web/.vite/
+web/coverage/
+*.tsbuildinfo
+.pnpm-store/
+
+# ---- 构建产物 ----
+/dist/
+/build/
+/out/
+
+# ---- 数据与运行时 ----
+*.db
+*.db-shm
+*.db-wal
+/data/
+/tmp/
+
+# ---- 编辑器 ----
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+.DS_Store
+
+# ---- 本地环境 ----
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+!deploy/**/*.pem.example
+!deploy/**/*.key.example
+
+# ---- 文档校验缓存 ----
+.lychee_cache/
+.markdownlint-cache/
+node_modules/.cache/
