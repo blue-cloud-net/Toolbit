@@ -1,0 +1,1209 @@
+# Toolbit 工具目录（唯一事实来源 / Single Source of Truth）
+#
+# 该文件同时驱动：
+#   - 后端：工具启用状态、限流档位、Body 上限、超时
+#   - 前端：菜单、分类卡、搜索、工具页参数区
+#   - 文档：docs/tools.md 与 docs/api/tools/*.md 的覆盖率校验
+#   - 统计：分类维度
+#
+# 字段说明
+#   slug            唯一标识，小写 kebab-case，路由与 API 路径使用
+#   category        所属分类，取值见下方各分类块
+#   order           分类内排序（从 1 开始，升序）
+#   name            中文名称
+#   nameEn          英文名称
+#   enabled         是否启用；false 时端点返回 TOOL_DISABLED，前端隐藏入口
+#   transport       json | multipart | websocket | client（client = 无后端端点）
+#   rateClass       light | standard | heavy | file | network（限流档位）
+#   maxBodyBytes    请求体上限（字节）
+#   timeoutMs       服务端处理超时（毫秒）
+#   sensitive       是否涉及密钥/证书等敏感材料（前端展示安全提示）
+#   requiresNetwork 是否需要出网
+#   autoRun         是否在参数变更后自动触发（默认 false）
+#   wide            是否在 ≥1280px 宽度下使用左右分栏布局
+#   i18nKey         前端词条命名空间（web/src/locales/<lang>/tools/<slug>.json）
+
+version: 1
+
+categories:
+  - slug: crypto
+    name: 加密
+    nameEn: Cryptography
+    order: 1
+    icon: lock
+  - slug: keys
+    name: 密钥
+    nameEn: Keys
+    order: 2
+    icon: key
+  - slug: certificates
+    name: 证书
+    nameEn: Certificates
+    order: 3
+    icon: certificate
+  - slug: encoding
+    name: 编码
+    nameEn: Encoding
+    order: 4
+    icon: code
+  - slug: formatting
+    name: 格式化
+    nameEn: Formatting
+    order: 5
+    icon: indent
+  - slug: text
+    name: 文本
+    nameEn: Text
+    order: 6
+    icon: text
+  - slug: data
+    name: 数据
+    nameEn: Data
+    order: 7
+    icon: data
+  - slug: system
+    name: 系统
+    nameEn: System
+    order: 8
+    icon: monitor
+  - slug: network
+    name: 网络
+    nameEn: Network
+    order: 9
+    icon: connection
+  - slug: documents
+    name: 文档
+    nameEn: Documents
+    order: 10
+    icon: document
+
+tools:
+  # ── 加密 / Cryptography ─────────────────────────────────────────────
+  - slug: signature
+    category: crypto
+    order: 1
+    name: 数字签名
+    nameEn: Digital Signature
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 4194304
+    timeoutMs: 15000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.signature
+
+  - slug: asymmetric-crypt
+    category: crypto
+    order: 2
+    name: 非对称加解密
+    nameEn: Asymmetric Encryption
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 4194304
+    timeoutMs: 15000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.asymmetric-crypt
+
+  - slug: symmetric-crypt
+    category: crypto
+    order: 3
+    name: 对称加解密
+    nameEn: Symmetric Encryption
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 4194304
+    timeoutMs: 15000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.symmetric-crypt
+
+  - slug: ecdh
+    category: crypto
+    order: 4
+    name: ECDH 密钥协商
+    nameEn: ECDH Key Agreement
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 1048576
+    timeoutMs: 15000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.ecdh
+
+  - slug: sm4-file-crypt
+    category: crypto
+    order: 5
+    name: SM4 文件加解密
+    nameEn: SM4 File Encryption
+    enabled: true
+    transport: multipart
+    rateClass: file
+    maxBodyBytes: 104857600
+    timeoutMs: 120000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.sm4-file-crypt
+
+  - slug: hmac-gen
+    category: crypto
+    order: 6
+    name: HMAC 计算
+    nameEn: HMAC Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 10000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.hmac-gen
+
+  - slug: password-gen
+    category: crypto
+    order: 7
+    name: 密码生成
+    nameEn: Password Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 65536
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.password-gen
+
+  - slug: hash-calc
+    category: crypto
+    order: 8
+    name: 摘要计算
+    nameEn: Hash Calculator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 8388608
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.hash-calc
+
+  # ── 密钥 / Keys ─────────────────────────────────────────────────────
+  - slug: keygen
+    category: keys
+    order: 1
+    name: 密钥生成
+    nameEn: Key Generator
+    enabled: true
+    transport: json
+    rateClass: heavy
+    maxBodyBytes: 1048576
+    timeoutMs: 60000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.keygen
+
+  - slug: key-convert
+    category: keys
+    order: 2
+    name: 密钥格式转换
+    nameEn: Key Format Converter
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 4194304
+    timeoutMs: 15000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.key-convert
+
+  - slug: key-parse
+    category: keys
+    order: 3
+    name: 密钥解析
+    nameEn: Key Parser
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 4194304
+    timeoutMs: 15000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.key-parse
+
+  - slug: key-ops
+    category: keys
+    order: 4
+    name: 密钥运算
+    nameEn: Key Operations
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 4194304
+    timeoutMs: 15000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.key-ops
+
+  - slug: key-match
+    category: keys
+    order: 5
+    name: 密钥配对检测
+    nameEn: Key Pair Matcher
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 4194304
+    timeoutMs: 15000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.key-match
+
+  - slug: jwk-xml-convert
+    category: keys
+    order: 6
+    name: JWK/XML 转换
+    nameEn: JWK & XML Converter
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 4194304
+    timeoutMs: 15000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.jwk-xml-convert
+
+  # ── 证书 / Certificates ─────────────────────────────────────────────
+  - slug: cert-parse
+    category: certificates
+    order: 1
+    name: 证书解析
+    nameEn: Certificate Parser
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 4194304
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.cert-parse
+
+  - slug: csr-gen
+    category: certificates
+    order: 2
+    name: CSR 生成
+    nameEn: CSR Generator
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 1048576
+    timeoutMs: 20000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.csr-gen
+
+  - slug: csr-parse
+    category: certificates
+    order: 3
+    name: CSR 解析
+    nameEn: CSR Parser
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 4194304
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.csr-parse
+
+  - slug: pem-der
+    category: certificates
+    order: 4
+    name: PEM/DER 转换
+    nameEn: PEM & DER Converter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 8388608
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.pem-der
+
+  - slug: asn1-view
+    category: certificates
+    order: 5
+    name: ASN.1 视图
+    nameEn: ASN.1 Viewer
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 8388608
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.asn1-view
+
+  - slug: cert-chain-parse
+    category: certificates
+    order: 6
+    name: 证书链解析
+    nameEn: Certificate Chain Parser
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 8388608
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.cert-chain-parse
+
+  - slug: cert-chain-verify
+    category: certificates
+    order: 7
+    name: 证书链验证
+    nameEn: Certificate Chain Verifier
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 8388608
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.cert-chain-verify
+
+  - slug: cert-chain-repair
+    category: certificates
+    order: 8
+    name: 证书链修复
+    nameEn: Certificate Chain Repairer
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 8388608
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.cert-chain-repair
+
+  - slug: revocation-check
+    category: certificates
+    order: 9
+    name: 吊销状态检查
+    nameEn: Revocation Checker
+    enabled: true
+    transport: json
+    rateClass: network
+    maxBodyBytes: 4194304
+    timeoutMs: 30000
+    sensitive: false
+    requiresNetwork: true
+    autoRun: false
+    wide: false
+    i18nKey: tools.revocation-check
+
+  - slug: crl-parse
+    category: certificates
+    order: 10
+    name: CRL 解析
+    nameEn: CRL Parser
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 8388608
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.crl-parse
+
+  - slug: crl-gen
+    category: certificates
+    order: 11
+    name: CRL 生成
+    nameEn: CRL Generator
+    enabled: true
+    transport: json
+    rateClass: heavy
+    maxBodyBytes: 8388608
+    timeoutMs: 30000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.crl-gen
+
+  - slug: ocsp-request
+    category: certificates
+    order: 12
+    name: OCSP 请求生成
+    nameEn: OCSP Request Builder
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 1048576
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.ocsp-request
+
+  - slug: ocsp-response
+    category: certificates
+    order: 13
+    name: OCSP 响应解析
+    nameEn: OCSP Response Parser
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 1048576
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.ocsp-response
+
+  - slug: cert-gen
+    category: certificates
+    order: 14
+    name: 证书生成
+    nameEn: Certificate Generator
+    enabled: true
+    transport: json
+    rateClass: heavy
+    maxBodyBytes: 1048576
+    timeoutMs: 30000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.cert-gen
+
+  - slug: pfx-pack
+    category: certificates
+    order: 15
+    name: PKCS#12 打包
+    nameEn: PKCS#12 Packer
+    enabled: true
+    transport: json
+    rateClass: heavy
+    maxBodyBytes: 8388608
+    timeoutMs: 45000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.pfx-pack
+
+  - slug: pfx-parse
+    category: certificates
+    order: 16
+    name: PKCS#12 解析
+    nameEn: PKCS#12 Parser
+    enabled: true
+    transport: json
+    rateClass: heavy
+    maxBodyBytes: 8388608
+    timeoutMs: 45000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.pfx-parse
+
+  - slug: pfx-change-password
+    category: certificates
+    order: 17
+    name: PKCS#12 改密
+    nameEn: PKCS#12 Password Changer
+    enabled: true
+    transport: json
+    rateClass: heavy
+    maxBodyBytes: 8388608
+    timeoutMs: 45000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.pfx-change-password
+
+  - slug: p7b-pack
+    category: certificates
+    order: 18
+    name: PKCS#7 打包
+    nameEn: PKCS#7 Packer
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 8388608
+    timeoutMs: 20000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.p7b-pack
+
+  - slug: p7b-extract
+    category: certificates
+    order: 19
+    name: PKCS#7 提取
+    nameEn: PKCS#7 Extractor
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 8388608
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.p7b-extract
+
+  - slug: caa-gen
+    category: certificates
+    order: 20
+    name: CAA 生成
+    nameEn: CAA Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 65536
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.caa-gen
+
+  - slug: cert-chain-fetch
+    category: certificates
+    order: 21
+    name: 证书链获取
+    nameEn: Certificate Chain Fetcher
+    enabled: true
+    transport: multipart
+    rateClass: network
+    maxBodyBytes: 8388608
+    timeoutMs: 60000
+    sensitive: false
+    requiresNetwork: true
+    autoRun: false
+    wide: false
+    i18nKey: tools.cert-chain-fetch
+
+  - slug: ct-search
+    category: certificates
+    order: 22
+    name: 证书透明度查询
+    nameEn: Certificate Transparency Search
+    enabled: true
+    transport: json
+    rateClass: network
+    maxBodyBytes: 1048576
+    timeoutMs: 30000
+    sensitive: false
+    requiresNetwork: true
+    autoRun: false
+    wide: true
+    i18nKey: tools.ct-search
+
+  - slug: domain-verify
+    category: certificates
+    order: 23
+    name: 域名验证
+    nameEn: Domain Verifier
+    enabled: true
+    transport: json
+    rateClass: network
+    maxBodyBytes: 1048576
+    timeoutMs: 60000
+    sensitive: false
+    requiresNetwork: true
+    autoRun: false
+    wide: false
+    i18nKey: tools.domain-verify
+
+  # ── 编码 / Encoding ─────────────────────────────────────────────────
+  - slug: base64
+    category: encoding
+    order: 1
+    name: Base64 编解码
+    nameEn: Base64 Codec
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 16777216
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.base64
+
+  - slug: url-codec
+    category: encoding
+    order: 2
+    name: URL 编解码
+    nameEn: URL Codec
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 16777216
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.url-codec
+
+  - slug: jwt-codec
+    category: encoding
+    order: 3
+    name: JWT 编解码
+    nameEn: JWT Codec
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.jwt-codec
+
+  - slug: number-base
+    category: encoding
+    order: 4
+    name: 进制转换
+    nameEn: Number Base Converter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.number-base
+
+  - slug: encoding-convert
+    category: encoding
+    order: 5
+    name: 编码转换
+    nameEn: Encoding Converter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 16777216
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.encoding-convert
+
+  - slug: gzip-deflate
+    category: encoding
+    order: 6
+    name: GZip/Deflate
+    nameEn: GZip & Deflate
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 16777216
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.gzip-deflate
+
+  # ── 格式化 / Formatting ─────────────────────────────────────────────
+  - slug: json-format
+    category: formatting
+    order: 1
+    name: JSON 格式化
+    nameEn: JSON Formatter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 16777216
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.json-format
+
+  - slug: js-format
+    category: formatting
+    order: 2
+    name: JavaScript 格式化
+    nameEn: JavaScript Formatter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 8388608
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.js-format
+
+  - slug: sql-format
+    category: formatting
+    order: 3
+    name: SQL 格式化
+    nameEn: SQL Formatter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 8388608
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.sql-format
+
+  - slug: html-format
+    category: formatting
+    order: 4
+    name: HTML 格式化
+    nameEn: HTML Formatter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 8388608
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.html-format
+
+  - slug: xml-format
+    category: formatting
+    order: 5
+    name: XML 格式化
+    nameEn: XML Formatter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 8388608
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.xml-format
+
+  - slug: toml-format
+    category: formatting
+    order: 6
+    name: TOML 格式化
+    nameEn: TOML Formatter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 8388608
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.toml-format
+
+  - slug: yaml-format
+    category: formatting
+    order: 7
+    name: YAML 格式化
+    nameEn: YAML Formatter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 8388608
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.yaml-format
+
+  - slug: format-convert
+    category: formatting
+    order: 8
+    name: 格式转换
+    nameEn: Format Converter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 16777216
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.format-convert
+
+  # ── 文本 / Text ─────────────────────────────────────────────────────
+  - slug: regex-tester
+    category: text
+    order: 1
+    name: 正则测试
+    nameEn: Regex Tester
+    enabled: true
+    transport: json
+    rateClass: standard
+    maxBodyBytes: 1048576
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.regex-tester
+
+  - slug: text-convert
+    category: text
+    order: 2
+    name: 文本转换
+    nameEn: Text Converter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 8388608
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.text-convert
+
+  # ── 数据 / Data ─────────────────────────────────────────────────────
+  - slug: timestamp
+    category: data
+    order: 1
+    name: 时间戳转换
+    nameEn: Timestamp Converter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.timestamp
+
+  - slug: uuid-gen
+    category: data
+    order: 2
+    name: UUID 生成
+    nameEn: UUID Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 65536
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.uuid-gen
+
+  - slug: date-calc
+    category: data
+    order: 3
+    name: 日期计算
+    nameEn: Date Calculator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.date-calc
+
+  - slug: country-code
+    category: data
+    order: 4
+    name: 国家代码
+    nameEn: Country Codes
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.country-code
+
+  - slug: cn-regions
+    category: data
+    order: 5
+    name: 中国行政区划
+    nameEn: China Administrative Regions
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 4194304
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.cn-regions
+
+  - slug: qr-code
+    category: data
+    order: 6
+    name: 二维码生成
+    nameEn: QR Code Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 4194304
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.qr-code
+
+  # ── 系统 / System ───────────────────────────────────────────────────
+  - slug: curl-generator
+    category: system
+    order: 1
+    name: cURL 命令生成
+    nameEn: cURL Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.curl-generator
+
+  - slug: crontab-generator
+    category: system
+    order: 2
+    name: Crontab 表达式生成
+    nameEn: Crontab Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.crontab-generator
+
+  - slug: chmod-calc
+    category: system
+    order: 3
+    name: 权限计算
+    nameEn: Permission Calculator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.chmod-calc
+
+  # ── 网络 / Network ──────────────────────────────────────────────────
+  - slug: cidr-calc
+    category: network
+    order: 1
+    name: CIDR 计算
+    nameEn: CIDR Calculator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.cidr-calc
+
+  - slug: ssl-check
+    category: network
+    order: 2
+    name: SSL 证书检测
+    nameEn: SSL Checker
+    enabled: true
+    transport: json
+    rateClass: network
+    maxBodyBytes: 1048576
+    timeoutMs: 30000
+    sensitive: false
+    requiresNetwork: true
+    autoRun: false
+    wide: false
+    i18nKey: tools.ssl-check
+
+  - slug: dns-lookup
+    category: network
+    order: 3
+    name: DNS 查询
+    nameEn: DNS Lookup
+    enabled: true
+    transport: json
+    rateClass: network
+    maxBodyBytes: 1048576
+    timeoutMs: 20000
+    sensitive: false
+    requiresNetwork: true
+    autoRun: false
+    wide: false
+    i18nKey: tools.dns-lookup
+
+  - slug: dns-tester
+    category: network
+    order: 4
+    name: DNS 多记录测试
+    nameEn: DNS Record Tester
+    enabled: true
+    transport: json
+    rateClass: network
+    maxBodyBytes: 1048576
+    timeoutMs: 60000
+    sensitive: false
+    requiresNetwork: true
+    autoRun: false
+    wide: true
+    i18nKey: tools.dns-tester
+
+  - slug: websocket-test
+    category: network
+    order: 5
+    name: WebSocket 测试
+    nameEn: WebSocket Tester
+    enabled: true
+    transport: websocket
+    rateClass: network
+    maxBodyBytes: 65536
+    timeoutMs: 120000
+    sensitive: false
+    requiresNetwork: true
+    autoRun: false
+    wide: true
+    i18nKey: tools.websocket-test
+
+  # ── 文档 / Documents ────────────────────────────────────────────────
+  - slug: pdf-sign-verify
+    category: documents
+    order: 1
+    name: PDF 签名校验
+    nameEn: PDF Signature Verifier
+    enabled: true
+    transport: multipart
+    rateClass: file
+    maxBodyBytes: 52428800
+    timeoutMs: 60000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.pdf-sign-verify
+
+  - slug: markdown-preview
+    category: documents
+    order: 2
+    name: Markdown 预览
+    nameEn: Markdown Preview
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 4194304
+    timeoutMs: 10000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.markdown-preview
+
+  - slug: eml-parser
+    category: documents
+    order: 3
+    name: EML 邮件解析
+    nameEn: EML Parser
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 16777216
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: false
+    i18nKey: tools.eml-parser
