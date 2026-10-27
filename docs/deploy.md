@@ -1,0 +1,281 @@
+# 部署指南
+
+> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+
+本文面向**运维 / 使用者**，说明如何把 Toolbit 跑起来。
+
+架构与规范见 [architecture.md](architecture.md) 与 [standards/08-deploy.md](standards/08-deploy.md)。
+
+---
+
+## 1. 方式一：Docker（推荐）
+
+### 1.1 快速开始
+
+```bash
+git clone git@github.com:blue-cloud-net/Toolbit.git
+cd Toolbit
+docker compose up -d
+```
+
+访问 <http://localhost:8080>。
+
+### 1.2 使用预构建镜像
+
+```bash
+docker run -d --name toolbit \
+  -p 8080:8080 \
+  -v toolbit-data:/app/data \
+  --restart unless-stopped \
+  bluecloud/toolbit:0.1.0
+```
+
+### 1.3 验证
+
+```bash
+curl -fsS http://localhost:8080/readyz
+curl -fsS http://localhost:8080/api/v1/tools | head -c 200
+```
+
+---
+
+## 2. 方式二：源码构建
+
+### 2.1 前置条件
+
+| 依赖 | 版本 | 说明 |
+| --- | --- | --- |
+| Go | 1.25+ | 需要 `CGO_ENABLED=1` |
+| Node.js | 22 LTS | 构建前端 |
+| pnpm | 10+ | 包管理 |
+| Tongsuo | 8.4.0 | 提供头文件与运行库 |
+
+### 2.2 安装 Tongsuo
+
+```bash
+# 编译 Tongsuo（启用 shared）
+cd tongsuo
+./config --prefix=/opt/tongsuo --openssl-shared
+make -j"$(nproc)"
+sudo make install_sw
+```
+
+### 2.3 构建
+
+```bash
+# 前端
+pnpm install
+pnpm build          # 产出 web/dist
+
+# 后端
+export CGO_ENABLED=1
+export CGO_CFLAGS="-I/opt/tongsuo/include"
+export CGO_LDFLAGS="-L/opt/tongsuo/lib64 -Wl,-rpath,/opt/tongsuo/lib64"
+go build -o bin/toolbit ./cmd/toolbit
+```
+
+### 2.4 运行
+
+```bash
+TOOLBIT_ADDR=:8080 \
+TOOLBIT_WEB_ROOT=./web/dist \
+TOOLBIT_DB_PATH=./data/stats.db \
+./bin/toolbit
+```
+
+> `-Wl,-rpath` 让二进制自带库路径，**无需**设置 `LD_LIBRARY_PATH`。
+
+---
+
+## 3. 配置项
+
+全部通过环境变量，前缀 `TOOLBIT_`。
+
+| 变量 | 类型 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| `TOOLBIT_ADDR` | string | `:8080` | 监听地址 |
+| `TOOLBIT_WEB_ROOT` | string | `./web/dist` | 前端静态资源目录 |
+| `TOOLBIT_DB_PATH` | string | `./data/stats.db` | SQLite 统计库路径 |
+| `TOOLBIT_LOG_LEVEL` | string | `info` | `debug` / `info` / `warn` / `error` |
+| `TOOLBIT_LOG_FORMAT` | string | `json` | `json` / `text` |
+| `TOOLBIT_TRUST_PROXY` | bool | `false` | 是否信任 `X-Forwarded-For` |
+| `TOOLBIT_ALLOWED_ORIGINS` | string | 空 | 逗号分隔的 Origin 白名单（默认不启用 CORS） |
+| `TOOLBIT_ENABLE_INTERNAL_ENDPOINTS` | bool | `false` | 是否开放 `/internal/*` |
+| `TOOLBIT_RATE_LIMIT_ENABLED` | bool | `true` | 限流开关 |
+| `TOOLBIT_STATS_ENABLED` | bool | `true` | 匿名统计开关 |
+| `TOOLBIT_NETWORK_ENABLED` | bool | `true` | 出网工具总开关 |
+| `TOOLBIT_NETWORK_ALLOWLIST` | string | 空 | 额外允许出网的主机（逗号分隔） |
+| `TOOLBIT_REQUEST_TIMEOUT` | duration | `30s` | 全局兜底超时 |
+| `TOOLBIT_MAX_BODY_BYTES` | int | `104857600` | 全局兜底请求体上限（100 MB） |
+| `TOOLBIT_SHUTDOWN_TIMEOUT` | duration | `15s` | 优雅退出等待时长 |
+| `TOOLBIT_STATS_TOKEN` | string | 空 | 统计详情端点的 Token（未配置则端点 404） |
+
+**必须**
+
+- 配置在启动时**一次性校验**；非法值导致启动失败，**不**静默回退；
+- 未知的环境变量会在启动日志中列出（便于排错），但**不**视为错误；
+- 配置**不**支持运行时热更新。
+
+---
+
+## 4. 反向代理与 TLS
+
+> **本服务不内置 TLS。** 容器内监听**明文 HTTP** :8080。
+> 公网暴露**必须**由反向代理终止 TLS，否则密钥与明文会经明文网络传输。
+
+### 4.1 Nginx
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name toolbit.example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/toolbit.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/toolbit.example.com/privkey.pem;
+
+    client_max_body_size 100m;
+
+    location / {
+        proxy_pass         http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Request-Id      $request_id;
+    }
+}
+```
+
+### 4.2 代理侧注意
+
+| 项 | 要求 |
+| --- | --- |
+| `X-Forwarded-For` | **必须覆写**，**禁止**直接透传客户端值 |
+| `Origin` / `Sec-Fetch-Site` | 代理**禁止**注入这两个头（会绕过跨站校验） |
+| `X-Request-Id` | 可透传，服务端会校验格式后复用 |
+| 上传体积 | 与 `TOOLBIT_MAX_BODY_BYTES` 协调 |
+| WebSocket | 需支持 Upgrade（`ssl-check` 使用） |
+
+### 4.3 启用代理信任
+
+只有当反代**确实覆写**上述头时，才设置：
+
+```bash
+TOOLBIT_TRUST_PROXY=true
+```
+
+**未正确配置反代就开启此项，会导致限流可被轻易绕过。**
+
+---
+
+## 5. 资源与限制
+
+| 资源 | 建议 |
+| --- | --- |
+| CPU | ≤ 2 核（重操作并发已限为 2） |
+| 内存 | ≤ 1 GB（文件加密峰值约 2×分块大小） |
+| 磁盘 | 数据卷 ≥ 1 GB |
+| `ulimit -n` | ≥ 4096 |
+
+**必须**在容器上设置内存上限，避免单次大文件请求触发 OOM。
+
+---
+
+## 6. 数据与持久化
+
+| 内容 | 位置 | 是否必须持久化 |
+| --- | --- | --- |
+| 匿名统计库 | `/app/data/stats.db` | 可选（统计数据） |
+| 前端静态资源 | `/app/web`（镜像内） | 否 |
+| 配置文件 | 外部管理 | 是 |
+
+**必须**使用**命名卷**：
+
+```yaml
+volumes:
+  toolbit-data:
+```
+
+> ⚠️ **不要**用 bind mount 指向宿主机目录 —— 目录属主通常不是 UID 10001，容器内将无法写库，报 `unable to open database file`。
+
+---
+
+## 7. 运维端点
+
+| 端点 | 用途 |
+| --- | --- |
+| `GET /healthz` | 存活探针（无 I/O） |
+| `GET /readyz` | 就绪探针（静态资源 / catalog / 数据库） |
+| `GET /api/health` | 详细健康信息 |
+| `GET /api/v1/meta` | 版本与特性 |
+| `GET /internal/metrics` | Prometheus 指标（需 `TOOLBIT_ENABLE_INTERNAL_ENDPOINTS=true`） |
+
+**内部端点禁止绑定到公网地址。**
+
+---
+
+## 8. 升级
+
+```bash
+docker compose pull
+docker compose up -d
+curl -fsS http://localhost:8080/readyz
+```
+
+**必须**：升级**不得**删除数据卷；数据库迁移**必须**向前兼容（只增列 / 加表）。
+
+**禁止**跨大版本直接升级 —— 按 [CHANGELOG.md](../CHANGELOG.md) 逐版本执行。
+
+---
+
+## 9. 备份与恢复
+
+需要备份的内容极少：统计数据可丢，配置由外部管理。
+
+**必须**用 SQLite 的 `.backup` 或 `VACUUM INTO` 做备份，**禁止**在写入期间直接拷贝文件。
+
+```bash
+docker exec toolbit sqlite3 /app/data/stats.db ".backup /app/data/backup.db"
+docker cp toolbit:/app/data/backup.db ./stats-backup.db
+```
+
+**恢复注意**：`docker cp` 放入的属主是执行 cp 的宿主机用户，需修正：
+
+```bash
+docker exec -u 0 toolbit chown 10001:10001 /app/data/stats.db
+```
+
+---
+
+## 10. 故障排查
+
+| 现象 | 原因 | 处理 |
+| --- | --- | --- |
+| `unable to open database file` | 数据卷属主 / 权限 | 改用命名卷；或 `chown 10001:10001` |
+| `Permission denied`（启动即失败） | `jwt.key` 等文件属主不对 | 同上 |
+| `/readyz` 返回 503 | 静态资源未挂载 | 检查 `TOOLBIT_WEB_ROOT` |
+| 429 频繁 | 限流触发 | 检查是否有压测或反代未覆写 `X-Forwarded-For` |
+| 出网工具报 `SSRF_BLOCKED` | 目标是内网地址 | 预期行为；如需放行请显式配置白名单 |
+| 出网工具报 `NETWORK_DISABLED` | 总开关关闭 | 设置 `TOOLBIT_NETWORK_ENABLED=true` |
+| WebSocket 连不上 | 代理未允许 Upgrade | 检查反代配置 |
+
+---
+
+## 11. 安全建议
+
+1. **必须**在反代后启用 TLS；
+2. **必须**保持 `TOOLBIT_TRUST_PROXY=false`（除非反代已正确覆写头）；
+3. **必须**保持 `TOOLBIT_ENABLE_INTERNAL_ENDPOINTS=false`（除非内网可达）；
+4. **应当**定期更新基础镜像（CI 已用 Trivy 扫描）；
+5. **不应当**把服务直接暴露在公网 8080 端口；
+6. **应当**在反代层再加一层速率限制。
+
+---
+
+## 12. 相关文档
+
+- [architecture.md](architecture.md) —— 架构与关键决策
+- [standards/08-deploy.md](standards/08-deploy.md) —— 部署规范
+- [api/admin.md](api/admin.md) —— 管理与运维接口
+- [privacy.md](privacy.md) —— 隐私说明
+- [../CHANGELOG.md](../CHANGELOG.md) —— 变更记录
