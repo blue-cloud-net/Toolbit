@@ -8,7 +8,10 @@
 | --- | --- | --- | --- |
 | [pdf-sign-verify](#pdf-sign-verify) | PDF 签名校验 | multipart | file |
 | [markdown-preview](#markdown-preview) | Markdown 预览 | JSON | light |
-| [eml-parser](#eml-parser) | EML 邮件解析 | JSON / multipart | light |
+| [eml-parser](#eml-parser) | EML 邮件解析 | JSON | light |
+
+> `pdf-sign-verify` 本版**未实现**，端点返回 `NOT_IMPLEMENTED`（501）。
+> `eml-parser` 本版**只**支持 JSON 输入（`input.text`），**不**支持 multipart 上传。
 
 ---
 
@@ -86,18 +89,17 @@ Markdown 渲染为 HTML，并生成目录。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 二选一 | `{ text, encoding }` |
-| `file` | file | 二选一 | `.eml` 文件 |
+| `input` | object | 是 | `{ text, encoding }` |
 | `maxAttachmentBytes` | int | 否 | 单附件最大字节数，默认 10 MB |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `headers` | array | 原始头字段 `[{ name, value }]` |
+| `headers` | array | 原始头字段 `[{ name, value }]`（按出现顺序） |
 | `headerMap` | object | 头字段映射（小写键） |
 | `bodies` | array | `[{ contentType, charset, text, html? }]` |
-| `attachments` | array | `[{ filename, mime, size, rawBase64 }]` |
+| `attachments` | array | `[{ filename, mime, size, rawBase64, truncated }]` |
 
 ### 错误
 

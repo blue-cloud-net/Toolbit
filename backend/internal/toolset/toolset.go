@@ -12,6 +12,7 @@ import (
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/crypto"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/data"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/documents"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/encoding"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/formatting"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/system"
@@ -30,5 +31,6 @@ func Definitions() []tools.Definition {
 	defs = append(defs, text.Definitions()...)
 	defs = append(defs, system.Definitions()...)
 	defs = append(defs, data.Definitions()...)
+	defs = append(defs, documents.Definitions()...)
 	return defs
 }

@@ -55,12 +55,19 @@ type uuidState struct {
 	lastTimestamp uint64
 	// lastMillis 是 v7 上一次发出的毫秒时间戳。
 	lastMillis int64
-	// sequence 是当前毫秒内的序号。
-	sequence uint16
+	// counterHi 是 v7 计数器的高 12 位（rand_a）。
+	counterHi uint16
+	// counterLo 是 v7 计数器的低 62 位（rand_b）。
+	counterLo uint64
+	// seeded 报告计数器是否已播种随机初值。
+	seeded bool
 }
 
 // uuidStateGlobal 是全局的单调性状态。
 var uuidStateGlobal uuidState
+
+// uuidCounterMask 是 v7 计数器的低位掩码（62 位）。
+const uuidCounterMask = 0x3FFFFFFFFFFFFFFF
 
 // NewUUID 生成一个指定版本的 UUID。
 //
@@ -92,47 +99,53 @@ func newUUIDv4() (string, error) {
 
 // newUUIDv7 生成时间有序的 UUID。
 //
-// 时间戳取毫秒；同一毫秒内用 12 位序号递增，
-// 保证严格递增（见 RFC 9562 §6.2 的「固定长度专用计数器」）。
+// 时间戳取毫秒；74 位计数器（rand_a + rand_b）保证**全局严格递增**：
+// 计数器只增不减，跨毫秒时时间戳也只增。
 func newUUIDv7() (string, error) {
 	var raw [16]byte
-	if err := fillRandom(raw[:]); err != nil {
-		return "", err
-	}
 
-	millis, seq := uuidStateGlobal.nextV7()
+	millis, hi, lo := uuidStateGlobal.nextV7()
 	binary.BigEndian.PutUint32(raw[0:4], uint32(millis>>16))
 	binary.BigEndian.PutUint16(raw[4:6], uint16(millis))
 
-	raw[6] = 0x70 | byte((seq>>8)&0x0f)
-	raw[7] = byte(seq)
-	raw[8] = (raw[8] & 0x3f) | 0x80
+	raw[6] = 0x70 | byte((hi>>8)&0x0f)
+	raw[7] = byte(hi)
+	raw[8] = 0x80 | byte((lo>>56)&0x3f)
+	// rand_b 的低 56 位占 raw[9:16]，共 7 个字节。
+	for i := 9; i < 16; i++ {
+		raw[i] = byte(lo >> (8 * (15 - i)))
+	}
 
 	return formatUUID(raw), nil
 }
 
-// nextV7 返回毫秒时间戳与毫秒内序号。
+// nextV7 返回毫秒时间戳与 74 位计数器。
 //
-// 跨毫秒时序号用随机值重新播种：时间戳已经保证全局有序，
-// 序号只需在**同一毫秒内**唯一。
-func (s *uuidState) nextV7() (int64, uint16) {
+// 时钟回拨时沿用上一次的时间戳：时间戳**不得**倒退。
+func (s *uuidState) nextV7() (int64, uint16, uint64) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	millis := time.Now().UnixMilli()
-	if millis != s.lastMillis {
-		s.lastMillis = millis
-		raw, err := RandomBytes(2)
-		if err != nil {
-			s.sequence = 0
-		} else {
-			s.sequence = binary.BigEndian.Uint16(raw) & 0x0fff
+	if !s.seeded {
+		s.seeded = true
+		if raw, err := RandomBytes(10); err == nil {
+			s.counterHi = binary.BigEndian.Uint16(raw[0:2]) & 0x0fff
+			s.counterLo = binary.BigEndian.Uint64(raw[2:10]) & uuidCounterMask
 		}
-		return millis, s.sequence
 	}
 
-	s.sequence = (s.sequence + 1) & 0x0fff
-	return millis, s.sequence
+	millis := time.Now().UnixMilli()
+	if millis < s.lastMillis {
+		millis = s.lastMillis
+	}
+	s.lastMillis = millis
+
+	s.counterLo = (s.counterLo + 1) & uuidCounterMask
+	if s.counterLo == 0 {
+		s.counterHi = (s.counterHi + 1) & 0x0fff
+	}
+
+	return millis, s.counterHi, s.counterLo
 }
 
 // newUUIDv1 生成基于时间的 UUID。

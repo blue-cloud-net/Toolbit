@@ -1,0 +1,102 @@
+{
+  "slug": "markdown-preview",
+  "description": "Markdown 预览的契约测试数据。",
+  "cases": [
+    {
+      "name": "渲染标题与正文",
+      "request": {
+        "markdown": "# 标题\n\n正文 **加粗**。"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "html": "<h1 id=\"标题\">标题</h1>\n<p>正文 <strong>加粗</strong>。</p>\n",
+          "toc": [{ "level": 1, "text": "标题", "id": "标题" }]
+        }
+      }
+    },
+    {
+      "name": "生成多级目录",
+      "request": {
+        "markdown": "# 一级\n\n## 二级\n\n### 三级"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "toc": [
+            { "level": 1, "text": "一级", "id": "一级" },
+            { "level": 2, "text": "二级", "id": "二级" },
+            { "level": 3, "text": "三级", "id": "三级" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "重复标题锚点去重",
+      "request": {
+        "markdown": "# 重复\n\n# 重复"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "toc": [
+            { "level": 1, "text": "重复", "id": "重复" },
+            { "level": 1, "text": "重复", "id": "重复-1" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "剥离脚本",
+      "request": {
+        "markdown": "<script>alert(1)</script>\n\n正常内容"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "html": "\n<p>正常内容</p>\n" }
+      }
+    },
+    {
+      "name": "GFM 表格",
+      "request": {
+        "markdown": "| a | b |\n| --- | --- |\n| 1 | 2 |"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1</td>\n<td>2</td>\n</tr>\n</tbody>\n</table>\n"
+        }
+      }
+    },
+    {
+      "name": "CommonMark 不渲染表格",
+      "request": {
+        "markdown": "| a | b |\n| --- | --- |\n| 1 | 2 |",
+        "flavor": "commonmark"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "html": "<p>| a | b |\n| --- | --- |\n| 1 | 2 |</p>\n" }
+      }
+    },
+    {
+      "name": "缺少源文",
+      "request": {},
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "未知方言",
+      "request": {
+        "markdown": "# x",
+        "flavor": "markdown"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}
