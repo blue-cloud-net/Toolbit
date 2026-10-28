@@ -9,6 +9,69 @@
 
 尚无变更。
 
+## [0.4.0] - 2026-10-29
+
+密钥管理：交付密钥全生命周期（生成 → 转换 → 解析 → 运算 → 配对）。
+**新增 6 个工具**（累计 16 个已实现）。
+
+本版同时建立 v0.4.0 – v0.6.0 共用的底座：新增 `pkisvc` 密码学层与
+`toolset` 工具装配层，把「密码学原语」与「密钥 / PKI 结构」分开。
+
+### Added
+
+- PKI 服务层 `backend/internal/pkisvc/`：密钥与 **PKI 领域**
+  - `Generate`：RSA / SM2 / EC / Ed25519 / Ed448 / X25519 / X448；
+    公钥是**独立持有**的句柄，可与私钥分别释放
+  - `Convert`：PKCS#1 / PKCS#8 / SPKI / DER / PEM 互转；
+    DER 源靠**试加载**识别编码，加密私钥转换后**保持加密**
+  - `Inspect`：算法、类型、位数、曲线、公钥指纹（SPKI DER 的 SHA-256）与 RSA 私钥参数
+  - `EncryptPrivateKey` / `DecryptPrivateKey` / `ChangePassphrase` / `ExtractPublicKey`
+  - `Match`：私钥 ↔ 公钥 / 证书，依据公钥指纹判定
+  - `JWKFromPEM` / `PEMFromJWK` / `XMLFromPEM` / `PEMFromXML`：RFC 7517 与 .NET `RSAKeyValue`
+- 工具 `keygen`：7 种算法；`privateFormat` 支持 `pkcs8` / `pkcs1`；
+  可选用口令加密私钥（AES-256-CBC / DES-EDE3-CBC）；生成走重操作信号量
+- 工具 `key-convert`：格式互转 + 源密钥识别（算法 / 编码 / 是否加密 / 位数 / 曲线）
+- 工具 `key-parse`：密钥元信息、RSA 私钥参数与规范化 PEM
+- 工具 `key-ops`：加密、解密、提取公钥、修改口令
+- 工具 `key-match`：私钥 ↔ 公钥 / 证书配对检测，给出双方公钥指纹
+- 工具 `jwk-xml-convert`：JWK / PEM / XML 三向互转
+- 工具装配层 `backend/internal/toolset/`：汇总各分类 `Definitions()`，
+  进程入口与 API 测试共用；测试守住 slug 唯一与 catalog 登记
+- 共享输入类型 `backend/internal/tools/bytes.go` `keyinput.go`：
+  `tools.Bytes` 与 `tools.KeyInput`，各工具包用类型别名复用
+- 前端 6 个工具页与 12 份双语词条；共享夹具 `frontend/src/tools/keys/fixtures.ts`
+  （一次性生成的**测试密钥**，非真实密钥）
+- 契约测试数据 6 份；服务层与工具层单元测试各 1 个文件
+
+### Changed
+
+- **架构**：新增 `backend/internal/pkisvc` 作为**第二个**允许 `import tongsuo-go` 的层；
+  `AGENTS.md` §4.1 与 `docs/architecture.md` 的依赖图同步更新
+- **依赖守卫**：`.golangci.yml` 的 `depguard` 规则由「仅 cryptosvc」改为
+  「cryptosvc + pkisvc」双白名单；`no-stdlib-crypto` 新增 `crypto/x509` 禁令
+- **catalog**：`revocation-check` 由 `rateClass: network` + `requiresNetwork: true`
+  改为 `standard` + `false`——其契约自 v0.1.0 起就是**离线**的「证书 + CRL」判定
+- **路线图**：`docs/roadmap.md` 新增 §6.8「v0.4.0 起的跨版本公共基座」，
+  并把 §7 / §8 / §9 细化为与 v0.3.0 同构的可执行计划（交付物 / 技术决策 /
+  分阶段任务表 / 完成标准 / 不在本版范围 / 风险）
+
+### Fixed
+
+- `backend/internal/api` 的两处「未实现工具返回 501」用例改用仍未实现的工具
+  （`cert-parse` / `cert-chain-fetch`），避免 `keygen` 落地后用例失效
+
+### Known limitations
+
+- `keygen` 的 `count` 字段**当前只支持 1**：响应结构只能表达一把密钥，
+  批量生成需要新增响应字段（属破坏性契约变更），已在
+  `docs/api/tools/keys.md` 与 `docs/roadmap.md` §7.7 双处登记
+- `keygen` 的 `publicFormat: pkcs1` 与 `key-convert` 的公钥 → `pkcs1`
+  **暂不支持**：上游 `tongsuo-go` 缺 PKCS#1 公钥的导出 / 加载入口
+  （见 `docs/upstream/tongsuo-go-issues.md` I-14）
+- `jwk-xml-convert` 的 JWK 侧**只支持 RSA 与 EC**（上游无 OKP，见 I-12），
+  XML 侧**只支持 RSA**（见 I-13）
+- `p7b-pack` / `p7b-extract`（v0.6.0）**只做证书袋**：上游 PKCS#7 尚无签名 / 加密（见 I-11）
+
 ## [0.3.1] - 2026-10-28
 
 密码学文件工具：交付 `sm4-file-crypt`，让大文件加解密可用。
