@@ -1,0 +1,75 @@
+{
+  "slug": "timestamp",
+  "description": "时间戳转换的契约测试数据。",
+  "cases": [
+    {
+      "name": "秒时间戳转日期",
+      "request": { "value": "1700000000" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "timestamp": { "s": 1700000000, "ms": 1700000000000 } },
+        "warnings": ["TIMEZONE_ASSUMED"]
+      }
+    },
+    {
+      "name": "毫秒时间戳自动识别",
+      "request": { "value": 1700000000123 },
+      "expect": {
+        "code": 0,
+        "dataContains": { "timestamp": { "s": 1700000000, "ms": 1700000000123 } }
+      }
+    },
+    {
+      "name": "指定时区",
+      "request": {
+        "value": "1700000000",
+        "timezone": "Asia/Shanghai"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "local": "2023-11-15 06:13:20" }
+      }
+    },
+    {
+      "name": "日期转时间戳",
+      "request": {
+        "value": "2023-11-14",
+        "operation": "toTimestamp"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "timestamp": { "s": 1699920000 } }
+      }
+    },
+    {
+      "name": "非法值",
+      "request": { "value": "not-a-number" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_TIME"
+      }
+    },
+    {
+      "name": "非法时区",
+      "request": {
+        "value": "1700000000",
+        "timezone": "Not/AZone"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_TIME"
+      }
+    },
+    {
+      "name": "未知单位",
+      "request": {
+        "value": "1700000000",
+        "unit": "minutes"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

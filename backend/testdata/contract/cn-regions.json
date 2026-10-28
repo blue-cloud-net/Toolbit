@@ -1,0 +1,46 @@
+{
+  "slug": "cn-regions",
+  "description": "中国行政区划查询的契约测试数据。",
+  "cases": [
+    {
+      "name": "按名称查询城市",
+      "request": { "query": "杭州" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "cities": [{ "code": "330100", "name": "杭州市" }] }
+      }
+    },
+    {
+      "name": "按省份限定范围",
+      "request": { "province": "浙江省" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "provinces": [{ "code": "330000", "name": "浙江省" }] }
+      }
+    },
+    {
+      "name": "按省份代码限定范围",
+      "request": { "province": "110000" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "provinces": [{ "code": "110000", "name": "北京市" }] }
+      }
+    },
+    {
+      "name": "缺省返回全部省份",
+      "request": {},
+      "expect": {
+        "code": 0,
+        "dataContains": { "total": 31 }
+      }
+    },
+    {
+      "name": "无匹配",
+      "request": { "query": "zzzz-not-a-region" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "provinces": [], "cities": [] }
+      }
+    }
+  ]
+}

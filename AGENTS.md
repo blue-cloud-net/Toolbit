@@ -26,6 +26,7 @@
 | `backend/internal/api/` | HTTP 分发器：查目录、协商 Content-Type、限流、超时、Body 限制、Origin 校验 | `httpx` `catalog` `tools` `toolerr` `stats` |
 | `backend/internal/catalog/` | 工具目录：内嵌并解析 `backend/catalog/tools.yaml` | 标准库 + `yaml.v3` |
 | `backend/internal/tools/` | 各领域工具实现（按领域分子包） | `cryptosvc` `codecsvc` `toolerr` `netguard` |
+| `backend/internal/toolset/` | 工具装配层：汇总各分类的 `Definitions()` | `tools` `tools/*` |
 | `backend/internal/cryptosvc/` | **唯一**允许 `import tongsuo-go` 的层；所有密码学运算在此**转调 Tongsuo** | `tongsuo-go` |
 | `backend/internal/codecsvc/` | 编码归一化（utf8/hex/base64/base64url）与 PEM/DER 识别 | 标准库 |
 | `backend/internal/toolerr/` | 错误码注册表（唯一来源） | 标准库 |
