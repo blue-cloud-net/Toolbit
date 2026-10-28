@@ -15,6 +15,7 @@ import (
 	"github.com/blue-cloud-net/Toolbit/backend/internal/catalog"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/config"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/crypto"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/encoding"
 )
 
@@ -52,7 +53,7 @@ func newTestServerWithLimit(t *testing.T, maxBodyBytes int64) http.Handler {
 		Config:  cfg,
 		Logger:  logger,
 		Catalog: cat,
-		Tools:   tools.NewRegistry(encoding.Definitions()),
+		Tools:   tools.NewRegistry(append(encoding.Definitions(), crypto.Definitions()...)),
 	})
 	return srv.Handler()
 }
@@ -82,7 +83,20 @@ type envelope struct {
 	Message   string          `json:"message"`
 	Data      json.RawMessage `json:"data"`
 	Error     *errorPayload   `json:"error"`
+	Meta      metaPayload     `json:"meta"`
 	RequestID string          `json:"requestId"`
+}
+
+// metaPayload 是信封中的元信息。
+type metaPayload struct {
+	DurationMs int64            `json:"durationMs"`
+	Warnings   []warningPayload `json:"warnings"`
+}
+
+// warningPayload 是单条警告。
+type warningPayload struct {
+	Code   string         `json:"code"`
+	Params map[string]any `json:"params"`
 }
 
 // errorPayload 是信封中的错误部分。
@@ -208,8 +222,8 @@ func TestUnknownToolReturns404(t *testing.T) {
 
 func TestUnimplementedToolReturns501(t *testing.T) {
 	h := newTestServer(t)
-	// hash-calc 在 catalog 中已启用，但本版尚未实现。
-	rec := postJSON(t, h, "/api/v1/tools/hash-calc", `{}`)
+	// keygen 在 catalog 中已启用，但尚未实现（v0.4.0 交付）。
+	rec := postJSON(t, h, "/api/v1/tools/keygen", `{}`)
 
 	if rec.Code != http.StatusNotImplemented {
 		t.Fatalf("状态码 = %d，期望 501；body=%s", rec.Code, rec.Body.String())
@@ -381,7 +395,12 @@ func TestInternalEndpointsDisabledByDefault(t *testing.T) {
 
 func TestContractDataFilesExist(t *testing.T) {
 	// 契约测试数据必须落档。
-	for _, slug := range []string{"base64", "number-base"} {
+	slugs := []string{
+		"base64", "number-base",
+		"hash-calc", "hmac-gen", "password-gen",
+		"symmetric-crypt", "signature", "asymmetric-crypt", "ecdh",
+	}
+	for _, slug := range slugs {
 		path := filepath.Join("..", "..", "testdata", "contract", slug+".json")
 		if _, err := os.Stat(path); err != nil {
 			t.Errorf("契约数据缺失：%s", path)

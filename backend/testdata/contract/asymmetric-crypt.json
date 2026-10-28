@@ -1,0 +1,83 @@
+{
+  "slug": "asymmetric-crypt",
+  "description": "非对称加解密的契约测试数据。",
+  "cases": [
+    {
+      "name": "SM2 加密",
+      "request": {
+        "algorithm": "SM2",
+        "operation": "encrypt",
+        "key": {
+          "data": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoEcz1UBgi0DQgAEBapIYzTEw+5aYi2MYuYoQqqwU/Wa\nAL7XYVmDpvmWopacpeRa1KEB7NXnsqbGAeL5eSgiIk3mjhgW0QOwQtFbcg==\n-----END PUBLIC KEY-----\n",
+          "format": "pem"
+        },
+        "input": {
+          "data": "待加密内容",
+          "encoding": "utf8"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "algorithm": "SM2",
+          "order": "c1c3c2",
+          "format": "raw"
+        }
+      }
+    },
+    {
+      "name": "未知算法",
+      "request": {
+        "algorithm": "ECIES",
+        "operation": "encrypt",
+        "key": {
+          "data": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoEcz1UBgi0DQgAEBapIYzTEw+5aYi2MYuYoQqqwU/Wa\nAL7XYVmDpvmWopacpeRa1KEB7NXnsqbGAeL5eSgiIk3mjhgW0QOwQtFbcg==\n-----END PUBLIC KEY-----\n",
+          "format": "pem"
+        },
+        "input": {
+          "data": "abc",
+          "encoding": "utf8"
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_ALGORITHM"
+      }
+    },
+    {
+      "name": "非法 RSA 填充",
+      "request": {
+        "algorithm": "RSA",
+        "operation": "encrypt",
+        "rsaPadding": "pkcs7",
+        "key": {
+          "data": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoEcz1UBgi0DQgAEBapIYzTEw+5aYi2MYuYoQqqwU/Wa\nAL7XYVmDpvmWopacpeRa1KEB7NXnsqbGAeL5eSgiIk3mjhgW0QOwQtFbcg==\n-----END PUBLIC KEY-----\n",
+          "format": "pem"
+        },
+        "input": {
+          "data": "abc",
+          "encoding": "utf8"
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_PADDING"
+      }
+    },
+    {
+      "name": "缺少密钥",
+      "request": {
+        "algorithm": "SM2",
+        "operation": "encrypt",
+        "input": {
+          "data": "abc",
+          "encoding": "utf8"
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

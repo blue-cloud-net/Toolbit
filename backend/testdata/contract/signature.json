@@ -1,0 +1,68 @@
+{
+  "slug": "signature",
+  "description": "数字签名的契约测试数据。",
+  "cases": [
+    {
+      "name": "未知算法",
+      "request": {
+        "algorithm": "DSA",
+        "operation": "sign",
+        "message": { "data": "616263", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_ALGORITHM"
+      }
+    },
+    {
+      "name": "SM2 不接受 hash 参数",
+      "request": {
+        "algorithm": "SM2",
+        "operation": "sign",
+        "hash": "SHA256",
+        "message": { "data": "616263", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_ALGORITHM"
+      }
+    },
+    {
+      "name": "RSA 不支持 SM3 摘要",
+      "request": {
+        "algorithm": "RSA",
+        "operation": "sign",
+        "hash": "SM3",
+        "message": { "data": "616263", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_ALGORITHM"
+      }
+    },
+    {
+      "name": "未知操作",
+      "request": {
+        "algorithm": "SM2",
+        "operation": "resign",
+        "message": { "data": "616263", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "缺少私钥",
+      "request": {
+        "algorithm": "SM2",
+        "operation": "sign",
+        "message": { "data": "616263", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}
