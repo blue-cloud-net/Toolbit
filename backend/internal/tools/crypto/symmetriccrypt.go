@@ -181,7 +181,7 @@ func SymmetricCrypt(_ context.Context, req *SymmetricCryptRequest) (tools.Result
 	}
 
 	result := SymmetricCryptResult{
-		Output:   outText,
+		Output:    outText,
 		Algorithm: req.Algorithm,
 		Mode:      req.Mode,
 		Padding:   padding,

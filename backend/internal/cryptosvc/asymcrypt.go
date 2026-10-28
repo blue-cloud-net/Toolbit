@@ -195,9 +195,10 @@ func checkRSAPlaintextLength(pub asym.PublicKey, digest string, plainLen int) er
 	}
 	k := (params.N.BitLen() + 7) / 8
 	hLen := 32
-	if digest == "sha384" {
+	switch digest {
+	case "sha384":
 		hLen = 48
-	} else if digest == "sha512" {
+	case "sha512":
 		hLen = 64
 	}
 	max := k - 2*hLen - 2

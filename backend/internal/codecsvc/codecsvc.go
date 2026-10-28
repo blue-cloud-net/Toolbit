@@ -47,7 +47,7 @@ func Normalize(enc string) (string, error) {
 		return EncodingBase64URL, nil
 	default:
 		return "", toolerr.Newf(toolerr.CodeInvalidEncoding, map[string]any{
-			"encoding": enc,
+			"encoding":  enc,
 			"supported": Encodings(),
 		})
 	}
@@ -91,7 +91,7 @@ func Decode(s string, enc string) ([]byte, error) {
 		return raw, nil
 	default:
 		return nil, toolerr.Newf(toolerr.CodeInvalidEncoding, map[string]any{
-			"encoding": enc,
+			"encoding":  enc,
 			"supported": Encodings(),
 		})
 	}
@@ -114,7 +114,7 @@ func Encode(b []byte, enc string) (string, error) {
 		return base64.URLEncoding.EncodeToString(b), nil
 	default:
 		return "", toolerr.Newf(toolerr.CodeInvalidEncoding, map[string]any{
-			"encoding": enc,
+			"encoding":  enc,
 			"supported": Encodings(),
 		})
 	}

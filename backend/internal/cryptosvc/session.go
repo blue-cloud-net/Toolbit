@@ -202,7 +202,7 @@ func (s *Session) Release(operation string) {
 	}
 	if s.ctx.Err() != nil {
 		s.orphans = append(s.orphans, Orphan{
-			Operation: operation,
+			Operation:  operation,
 			DurationMs: time.Since(s.heavyStart).Milliseconds(),
 		})
 	}

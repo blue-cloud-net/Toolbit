@@ -2,7 +2,6 @@ package crypto
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"os"
 	"path/filepath"
@@ -19,16 +18,6 @@ func testKey(t *testing.T, name string) string {
 		t.Fatalf("读取测试密钥失败：%v", err)
 	}
 	return string(b)
-}
-
-// mustHex 把十六进制串解码为字节。
-func mustHex(t *testing.T, s string) []byte {
-	t.Helper()
-	b, err := hex.DecodeString(s)
-	if err != nil {
-		t.Fatalf("十六进制解码失败：%v", err)
-	}
-	return b
 }
 
 // codeOf 返回错误的错误码。
@@ -58,8 +47,8 @@ func hasWarning(warnings []toolerr.Warning, code toolerr.WarningCode) bool {
 
 func TestHashCalcSM3KnownVector(t *testing.T) {
 	req := &HashCalcRequest{
-		Algorithms:    []string{"SM3"},
-		Input:         ByteInput{Data: "616263", Encoding: "hex"},
+		Algorithms:     []string{"SM3"},
+		Input:          ByteInput{Data: "616263", Encoding: "hex"},
 		OutputEncoding: "hex",
 	}
 	result, err := HashCalc(context.Background(), req)
@@ -348,7 +337,7 @@ func TestSignatureVerifyFailureIsBusinessResult(t *testing.T) {
 	signResult, err := Signature(context.Background(), &SignatureRequest{
 		Algorithm: "SM2", Operation: "sign",
 		Message: ByteInput{Data: "待签名内容", Encoding: "utf8"},
-		Key:      KeyInput{Data: privPEM, Format: "pem"},
+		Key:     KeyInput{Data: privPEM, Format: "pem"},
 	})
 	if err != nil {
 		t.Fatalf("签名失败：%v", err)
@@ -358,7 +347,7 @@ func TestSignatureVerifyFailureIsBusinessResult(t *testing.T) {
 	// 换一份消息：验签不通过，但**不是**错误。
 	verifyResult, err := Signature(context.Background(), &SignatureRequest{
 		Algorithm: "SM2", Operation: "verify",
-		Message: ByteInput{Data: "另一段内容", Encoding: "utf8"},
+		Message:   ByteInput{Data: "另一段内容", Encoding: "utf8"},
 		PublicKey: KeyInput{Data: pubPEM, Format: "pem"},
 		Signature: ByteInput{Data: sig, Encoding: "base64"},
 	})

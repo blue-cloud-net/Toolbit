@@ -15,7 +15,7 @@ import (
 func RandomBytes(n int) ([]byte, error) {
 	if n < 0 {
 		return nil, toolerr.Newf(toolerr.CodeInvalidField, map[string]any{
-			"field":   "length",
+			"field":    "length",
 			"expected": "non-negative",
 		})
 	}

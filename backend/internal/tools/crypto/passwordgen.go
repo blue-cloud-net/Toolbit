@@ -127,7 +127,7 @@ func PasswordGen(_ context.Context, req *PasswordGenRequest) (tools.Result, erro
 	}
 
 	return tools.Result{Data: PasswordGenResult{
-		Passwords:  passwords,
+		Passwords:   passwords,
 		EntropyBits: entropy,
 	}}, nil
 }

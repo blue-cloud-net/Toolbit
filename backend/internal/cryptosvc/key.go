@@ -17,8 +17,6 @@ import (
 type PrivateKey struct {
 	// key 是底层私钥；Close 之后置为 nil。
 	key asym.PrivateKey
-	// source 是加载时的 PEM 源缓冲；加载成功后立即清零。
-	source []byte
 }
 
 // PublicKey 是非对称公钥句柄。
