@@ -9,6 +9,40 @@
 
 尚无变更。
 
+## [0.2.1] - 2026-10-28
+
+前端骨架：让 v0.2.0 的后端链路在浏览器里跑起来。**不新增工具**。
+
+### Added
+
+- 前端工程脚手架（Vite 6 + Vue 3.5 + TypeScript 5.7 + Pinia + vue-router + vue-i18n + UnoCSS），Element Plus **按组件路径**引入
+- 设计令牌与布局：`tokens.css` / `base.css` / `element-overrides.css`，`header` / `nav` / `main` / `footer` 地标齐备，「跳到主内容」链接可用
+- API 客户端 `frontend/src/api/client.ts`：统一拆信封、`AbortController` 取消、超时归一化（`TIMEOUT`）、非 JSON 响应归为 `INVALID_RESPONSE`
+- 目录 store 与发现页：首页 70 个入口 + 10 个分类、中英文名搜索、分类页、404
+- 工具页骨架 `ToolPageLayout` / `ToolPanel` / `RunBar` / `ResultPanel` / `ErrorAlert` / `CopyButton` / `EncodingSelect`，四态齐备，`aria-live` 播报，`Ctrl` / `⌘ + Enter` 运行
+- `base64` 与 `number-base` 两个工具页，含示例数据与「填入示例 → 运行 → 复制」全链路
+- 双语词条：`zh-CN` 与 `en-US` 全覆盖（含 81 个错误码与警告码）
+- 侧栏导航：`全部工具` / `最近使用` / `我的收藏` 三个特殊快捷入口，分类可折叠并展开工具列表
+- 侧栏可折叠成图标轨道（仅图标 + 分类首两字），状态持久化；分类全部展开后菜单超出视口时**侧栏内部滚动且隐藏滚动条**
+- 顶栏：主题切换改为图标按钮；语言与「跟随系统」收进设置菜单（Esc 关闭、点击外部关闭、关闭后焦点回到触发器）
+- 工具页标题行新增收藏星标；新增 `/recent` 与 `/favorites` 两个页面
+- 布局：侧栏为整列直通到底部（贴住视口底、带右边框），页脚只占内容列；页脚文案居中，含数据说明、版权、Apache-2.0 许可证、版本号（链接到发布记录）与 GitHub 仓库链接
+- 站点常量集中在 `frontend/src/config/site.ts`（仓库地址、发布地址、版本号、版权年份），组件内不再写死
+- 主题（`system` / `light` / `dark`）与语言切换，持久化并同步 `<html lang>`
+- 体积预算脚本 `scripts/check-budget.mjs`：初始 JS < 250 KB（gzip）、单工具 chunk < 40 KB（gzip）
+- `Makefile` 新增 `lint-web` / `test-web` / `build-web` / `check-budget`，并纳入 `verify`
+
+### 依赖
+
+- adds: `vue` 3.5.44
+- adds: `vue-router` 4.6.4
+- adds: `pinia` 3.0.4
+- adds: `vue-i18n` 11.4.16
+- adds: `element-plus` 2.14.7
+- adds: `vite` 6.4.1
+- adds: `vitest` 3.2.7
+- adds: `unocss` 66.12.0
+
 ## [0.2.0] - 2026-10-28
 
 后端骨架与基础设施。**不含任何前端产物**，前端骨架见 `v0.2.1`。
