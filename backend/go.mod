@@ -5,6 +5,7 @@ go 1.25.0
 require (
 	github.com/blue-cloud-net/tongsuo-go v0.5.0
 	github.com/gin-gonic/gin v1.12.0
+	golang.org/x/text v0.34.0
 	golang.org/x/time v0.12.0
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.39.0
@@ -43,7 +44,6 @@ require (
 	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
 	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
-	golang.org/x/text v0.34.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	modernc.org/libc v1.66.3 // indirect
 	modernc.org/mathutil v1.7.1 // indirect

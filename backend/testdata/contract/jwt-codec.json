@@ -1,0 +1,83 @@
+{
+  "slug": "jwt-codec",
+  "description": "JWT 编解码与校验的契约测试数据。",
+  "cases": [
+    {
+      "name": "解析令牌结构",
+      "request": {
+        "operation": "decode",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "header": { "alg": "HS256", "typ": "JWT" },
+          "payload": { "sub": "1234567890", "name": "John Doe", "iat": 1516239022 }
+        }
+      }
+    },
+    {
+      "name": "生成令牌",
+      "request": {
+        "operation": "encode",
+        "header": { "alg": "HS256" },
+        "payload": { "sub": "42" },
+        "secret": "s3cret",
+        "algorithm": "HS256"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "header": { "alg": "HS256", "typ": "JWT" },
+          "payload": { "sub": "42" }
+        }
+      }
+    },
+    {
+      "name": "校验签名通过",
+      "request": {
+        "operation": "verify",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+        "secret": "your-256-bit-secret"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true }
+      }
+    },
+    {
+      "name": "非 HS 算法不支持",
+      "request": {
+        "operation": "verify",
+        "token": "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxIn0.c2ln",
+        "secret": "s3cret"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_ALGORITHM"
+      }
+    },
+    {
+      "name": "令牌格式非法",
+      "request": {
+        "operation": "decode",
+        "token": "not-a-token"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_JWT"
+      }
+    },
+    {
+      "name": "缺少密钥",
+      "request": {
+        "operation": "verify",
+        "token": "a.b.c"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

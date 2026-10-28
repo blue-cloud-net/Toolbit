@@ -1,0 +1,81 @@
+{
+  "slug": "encoding-convert",
+  "description": "字符编码转换的契约测试数据。",
+  "cases": [
+    {
+      "name": "GBK 转 UTF-8",
+      "request": {
+        "input": { "data": "1tDOxA==", "encoding": "base64" },
+        "from": "gbk",
+        "to": "utf-8",
+        "outputEncoding": "utf8"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "中文" }
+      }
+    },
+    {
+      "name": "自动探测 UTF-8",
+      "request": {
+        "input": { "data": "hello", "encoding": "utf8" },
+        "from": "auto",
+        "to": "utf-8",
+        "outputEncoding": "utf8"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "hello", "detected": "utf-8" }
+      }
+    },
+    {
+      "name": "UTF-8 转 GBK",
+      "request": {
+        "input": { "data": "中文", "encoding": "utf8" },
+        "from": "utf-8",
+        "to": "gbk",
+        "outputEncoding": "base64"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "1tDOxA==", "encoding": "base64" }
+      }
+    },
+    {
+      "name": "非法字节被替换并告警",
+      "request": {
+        "input": { "data": "gQ==", "encoding": "base64" },
+        "from": "gbk",
+        "to": "utf-8",
+        "outputEncoding": "utf8"
+      },
+      "expect": {
+        "code": 0,
+        "warnings": ["LOSSY_FORMAT"]
+      }
+    },
+    {
+      "name": "未知源字符集",
+      "request": {
+        "input": { "data": "x", "encoding": "utf8" },
+        "from": "nope",
+        "to": "utf-8"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_ENCODING"
+      }
+    },
+    {
+      "name": "缺少源字符集",
+      "request": {
+        "input": { "data": "x", "encoding": "utf8" },
+        "to": "utf-8"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}
