@@ -1,0 +1,79 @@
+#:schema https://json.schemastore.org/any.json
+#
+# Air 热重载配置。用法：在 backend/ 目录下执行 `air`（配置里的相对路径都以 backend/ 为根）。
+#
+# 改本文件前先看三条前提：
+#   1. 入口是 `./cmd/toolbit`，不是模块根 —— backend/ 根目录没有 main 包，
+#      写 `go build .` 只会得到 `no Go files`。
+#   2. catalog/tools.yaml 与 internal/stats/migrations/*.sql 由 //go:embed 编进二进制，
+#      所以 include_ext 必须带 yaml / sql；否则改了工具目录或迁移不会重编译，表现为"改了没生效"。
+#   3. 子进程用 SIGINT 停止（send_interrupt），正好走 main.run 的优雅退出路径；
+#      kill_delay(5s) 短于 TOOLBIT_SHUTDOWN_TIMEOUT(默认 15s)，避免优雅退出被 SIGKILL 打断。
+#
+# CGO_CFLAGS / CGO_LDFLAGS（Tongsuo 头文件与库）不写在这里：air 继承当前 shell 环境，
+# 需要时按 README「本地开发」或 make build 的方式先 export。
+
+env_files = []
+root = "."
+testdata_dir = "testdata"
+tmp_dir = "tmp"
+
+[build]
+  args_bin = []
+  bin = "./tmp/main"
+  cmd = "go build -o ./tmp/main ./cmd/toolbit"
+  delay = 500
+  entrypoint = ["./tmp/main"]
+  exclude_dir = ["assets", "tmp", "vendor", "testdata", "data", "node_modules", ".git"]
+  exclude_file = []
+  exclude_regex = ["_test.go$"]
+  # 编辑器保存但内容未变时不重启。
+  exclude_unchanged = true
+  follow_symlink = false
+  # 开发期运行环境：日志转可读的 text 格式并开 debug；静态资源交给 Vite dev server
+  # （故关闭内置静态托管）；统计库落在 tmp/ 里，不污染工作区。
+  # 若要在 30234 上直接验证前端构建产物，把 TOOLBIT_WEB_ROOT= 改成 ../frontend/dist。
+  full_bin = "TOOLBIT_LOG_FORMAT=text TOOLBIT_LOG_LEVEL=debug TOOLBIT_WEB_ROOT= TOOLBIT_DB_PATH=./tmp/stats.db ./tmp/main"
+  ignore_dangerous_root_dir = false
+  include_dir = []
+  include_ext = ["go", "tpl", "tmpl", "html", "yaml", "yml", "sql"]
+  include_file = []
+  kill_delay = "5s"
+  # 构建错误默认只打终端；若版本差异导致落盘，也放进 tmp/，不在 backend/ 根散落 build-errors.log。
+  log = "tmp/build-errors.log"
+  poll = false
+  poll_interval = 0
+  post_cmd = []
+  pre_cmd = []
+  rerun = false
+  rerun_delay = 500
+  send_interrupt = true
+  # 编译失败就停下，不要拿上一次的二进制冒充新代码。
+  stop_on_error = true
+
+[color]
+  app = ""
+  build = "yellow"
+  main = "magenta"
+  mode = ""
+  runner = "green"
+  watcher = "cyan"
+
+[log]
+  main_only = false
+  silent = false
+  time = true
+
+[misc]
+  # 退出时清掉 tmp/main，避免残留旧二进制被误当成最新构建。
+  clean_on_exit = true
+
+[proxy]
+  app_port = 0
+  app_start_timeout = 0
+  enabled = false
+  proxy_port = 0
+
+[screen]
+  clear_on_rebuild = false
+  keep_scroll = true

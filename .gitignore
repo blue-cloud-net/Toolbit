@@ -19,6 +19,8 @@ frontend/coverage/
 /dist/
 /build/
 /out/
+# air 热重载的编译产物与日志（见 backend/.air.toml）
+backend/tmp/
 
 # ---- 数据与运行时 ----
 *.db
@@ -26,6 +28,8 @@ frontend/coverage/
 *.db-wal
 /data/
 /tmp/
+# air 开发环境下的统计库（TOOLBIT_DB_PATH=./tmp/stats.db 之外的默认位置）
+backend/data/
 
 # ---- 编辑器 ----
 .idea/
