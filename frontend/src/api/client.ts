@@ -280,8 +280,7 @@ export function callToolBinary(
 
       if (contentType.includes('application/json')) {
         // 错误路径：后端返回 JSON 信封。
-        void xhr.response
-          .text()
+        void readBlobText(xhr.response as Blob)
           .then((text: string) => {
             let envelope: Envelope<unknown>
             try {
@@ -339,6 +338,26 @@ export function callToolBinary(
     // ⚠️ **不要**手动设置 Content-Type：
     // 浏览器需要自己补 multipart 的 boundary。
     xhr.send(form)
+  })
+}
+
+/**
+ * 读取 Blob 的文本内容。
+ *
+ * 用 `FileReader` 而不是 `blob.text()`：
+ * 后者的可用性取决于宿主环境的 Blob 实现
+ * （jsdom 就**没有**实现 `text()`），而 FileReader 是普遍可用的。
+ */
+function readBlobText(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      resolve(typeof reader.result === 'string' ? reader.result : '')
+    }
+    reader.onerror = () => {
+      reject(reader.error ?? new Error('failed to read blob'))
+    }
+    reader.readAsText(blob)
   })
 }
 
