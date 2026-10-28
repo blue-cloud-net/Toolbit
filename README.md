@@ -90,7 +90,7 @@ make -j"$(nproc)" && sudo make install
 export TONGSUO_HOME=/opt/tongsuo
 export CGO_CFLAGS="-I${TONGSUO_HOME}/include -Wno-deprecated-declarations"
 export CGO_LDFLAGS="-L${TONGSUO_HOME}/lib64"
-go run ./cmd/toolbit
+go run ./backend/cmd/toolbit
 
 # 3. 前端（另开终端）
 cd web && pnpm install && pnpm dev
@@ -110,31 +110,36 @@ cd web && pnpm install && pnpm dev
 | `make lint` | Go / TS / Markdown / 文档覆盖检查 |
 | `make check-docs` | 校验 catalog、错误码、环境变量在文档中的覆盖率 |
 | `make docker` | 构建容器镜像（本地） |
-| `make catalog-validate` | 校验 `catalog/tools.yaml` 结构与唯一性 |
+| `make catalog-validate` | 校验 `backend/catalog/tools.yaml` 结构与唯一性 |
 
 ---
 
 ## 目录结构
 
+仓库分为**两个独立构建单元**：`backend/`（Go 模块）与 `frontend/`（pnpm 项目）。
+
 ```text
 .
-├── cmd/toolbit/          # 程序入口
-├── internal/
-│   ├── api/              # HTTP 分发器（dispatcher）
-│   ├── catalog/          # 工具目录（内嵌 catalog/tools.yaml）
-│   ├── codecsvc/         # 编码 / PEM 归一化
-│   ├── cryptosvc/        # 唯一允许 import tongsuo-go 的层
-│   ├── httpx/            # 统一响应信封、错误码、中间件
-│   ├── netguard/         # 出网工具的 SSRF 防护
-│   ├── stats/            # SQLite 匿名调用统计
-│   ├── toolerr/          # 错误码注册表
-│   ├── tools/            # 各领域工具实现
-│   └── webui/            # 静态资源与 SPA 回退
-├── catalog/              # 工具元数据（单一事实来源）
-├── web/                  # Vue 前端
-├── deploy/               # Dockerfile / compose / entrypoint
-├── docs/                 # 架构、规范、API、工具规格
-└── .github/workflows/    # CI
+├── backend/                 # 后端：独立 Go 模块
+│   ├── cmd/toolbit/         # 程序入口
+│   ├── catalog/             # 工具目录（内嵌 backend/catalog/tools.yaml）
+│   └── internal/
+│       ├── api/             # HTTP 分发器（dispatcher）
+│       ├── buildinfo/       # 版本信息（ldflags 注入）
+│       ├── catalog/         # 工具目录解析与校验
+│       ├── codecsvc/        # 编码 / PEM 归一化
+│       ├── cryptosvc/       # 唯一允许 import tongsuo-go 的层
+│       ├── httpx/           # 统一响应信封、错误码、中间件
+│       ├── netguard/        # 出网工具的 SSRF 防护
+│       ├── stats/           # SQLite 匿名调用统计
+│       ├── toolerr/         # 错误码注册表
+│       ├── tools/           # 各领域工具实现
+│       └── webui/           # 静态资源与 SPA 回退
+├── frontend/                # Vue 前端
+├── deploy/                  # Dockerfile / compose / entrypoint
+├── docs/                    # 架构、规范、API、工具规格
+├── scripts/                 # 文档与一致性校验脚本
+└── .github/workflows/       # CI
 ```
 
 ---
