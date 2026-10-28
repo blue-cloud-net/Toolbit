@@ -347,9 +347,11 @@ func renderSQL(tokens []sqlToken, indent int, keywordCase string) string {
 				if buf.Len() > 0 && !lineStart {
 					buf.WriteString("\n")
 				}
-				lineStart = true
 				pendingSpace = false
 				buf.WriteString(text)
+				// 关键字本身已落在行首，**但**这一行已有内容：
+				// 后续 token 与它之间仍需要空格。
+				lineStart = false
 				depth = 0
 				continue
 			}

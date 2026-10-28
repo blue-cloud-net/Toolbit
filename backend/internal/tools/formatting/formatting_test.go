@@ -236,6 +236,29 @@ func TestSQLFormatPretty(t *testing.T) {
 	}
 }
 
+// TestSQLFormatKeepsTokenSpacing 断言关键字与后续 token 之间保留空格。
+//
+// 回归用例：曾经把子句关键字后的 `lineStart` 置为 true，
+// 导致 `SELECT` 与列名之间丢空格（输出 `SELECTid`）。
+func TestSQLFormatKeepsTokenSpacing(t *testing.T) {
+	res, err := SQLFormat(&SQLFormatRequest{
+		Input: TextInput{Data: "SELECT id FROM users WHERE id = 1"},
+	})
+	if err != nil {
+		t.Fatalf("格式化失败: %v", err)
+	}
+	for _, want := range []string{"SELECT id", "FROM users", "WHERE id = 1"} {
+		if !strings.Contains(res.Output, want) {
+			t.Errorf("输出缺少 %q：%s", want, res.Output)
+		}
+	}
+	for _, bad := range []string{"SELECTid", "FROMusers", "WHEREid"} {
+		if strings.Contains(res.Output, bad) {
+			t.Errorf("关键字与后续 token 之间丢了空格（%q）：%s", bad, res.Output)
+		}
+	}
+}
+
 func TestSQLFormatKeywordCase(t *testing.T) {
 	res, err := SQLFormat(&SQLFormatRequest{
 		Input:       TextInput{Data: "select 1 from t"},
