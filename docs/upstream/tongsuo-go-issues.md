@@ -1,6 +1,6 @@
 # 上游依赖缺口台账（tongsuo-go）
 
-> 状态：Draft ｜ 适用版本：v0.3.0 ｜ 最后更新：2026-10-28
+> 状态：Draft ｜ 适用版本：v0.4.0 ｜ 最后更新：2026-10-29
 
 本文登记 Toolbit 在使用 [`tongsuo-go`](https://github.com/blue-cloud-net/tongsuo-go) 时遇到的**能力缺口**。
 
@@ -32,6 +32,10 @@
 | I-08 | RSA-PSS 签名是**裸值**，与 OpenSSL 不互通 | `signature` | 0.3.x |
 | I-09 | `ecdh` 的密钥对象**没有 `Close()`** | `ecdh` | 0.3.x |
 | I-10 | SM2 **压缩点**裸密文无法解密 | `asymmetric-crypt` | 0.4.0 |
+| I-11 | `pkcs/pkcs7` 仅支持**证书袋**，无签名 / 加密 | `p7b-pack` `p7b-extract` | 0.6.0 |
+| I-12 | `jwk` 不支持 OKP（Ed25519 / X25519）与对称密钥 | `jwk-xml-convert` | 0.4.0 |
+| I-13 | `xml/rsa` **仅支持 RSA** | `jwk-xml-convert` | 0.4.0 |
+| I-14 | `asym` 缺 RSA **PKCS#1 公钥**的导出 / 加载入口 | `keygen` `key-convert` | 0.4.0 |
 
 ---
 
@@ -221,6 +225,82 @@ RSA 签名按「长度 == 模数字节数」判定，SM2 / ECDSA 按 DER 判定�
 
 **下游影响**　Toolbit 的 `asymmetric-crypt` 对压缩点密文返回
 `UNSUPPORTED_FORMAT`（不误报为「私钥不匹配」）。
+
+---
+
+## I-11 `pkcs/pkcs7` 仅支持**证书袋**，无签名 / 加密
+
+**现象**　`pkcs/pkcs7` 包的公开入口只有三个：`Build(certs)`（仅证书）、
+`MarshalPEM(der)` 与 `Extract(data)`（仅取证书）。包的 API 清单里
+`Sign` / `Verify` / `Encrypt` / `Decrypt` 均标注为「规划中（0.7.0）」。
+`internal/core.PKCS7` 也只实现了 `NewPKCS7SignedData` 的 certificates-only 形态。
+
+**期望**　补齐 PKCS#7 的签名与加密流程：`Sign` / `Verify` / `Encrypt` / `Decrypt`。
+
+**验收**
+
+- 能产出带 signerInfo 的 SignedData 并验签；
+- 能产出 EnvelopedData 并解密；
+- 与 `openssl smime -sign` / `-encrypt` 互通。
+
+**下游影响**　Toolbit 的 `p7b-pack` / `p7b-extract` **只做证书袋**（certs-only）。
+请求中出现「签名 / 加密容器」语义时返回 `UNSUPPORTED_FORMAT`。
+
+---
+
+## I-12 `jwk` 不支持 OKP（Ed25519 / X25519）与对称密钥
+
+**现象**　`jwk.Parse` 只接受 `kty` 为 `RSA` 与 `EC`，其它一律报
+`unsupported kty`；`jwk.MarshalKey` 对 OKP 类型同样不支持。
+包文档也写明「目前只支持 RSA 与 EC 参数导出」。
+
+**期望**　补齐 OKP（Ed25519 / Ed448 / X25519 / X448，RFC 8037 / 7748）
+与对称密钥（`kty: "oct"`）的导入导出。
+
+**验收**
+
+- `kty: "OKP"` 的 JWK 与 PEM 双向往返一致；
+- `kty: "oct"` 的对称密钥可导出与导入；
+- 与 `openssl` / RFC 7517 附录的样例一致。
+
+**下游影响**　Toolbit 的 `jwk-xml-convert` 的 JWK 侧**只支持 RSA 与 EC**；
+Ed25519 / X448 等输入返回 `UNSUPPORTED_FORMAT`。
+
+---
+
+## I-13 `xml/rsa` **仅支持 RSA**
+
+**现象**　`xml/rsa` 包的四个入口（`MarshalPrivate` / `MarshalPublic` /
+`UnmarshalPrivate` / `UnmarshalPublic`）都以 `asym.KeyParams` 的
+`Type == "RSA"` 为前提；非 RSA 密钥直接返回
+`not an RSA private key` / `not an RSA public key`。
+
+**期望**　要么补齐 EC / SM2 的 XML 表达（.NET 的 `RSAKeyValue` 本身是
+RSA 专用，建议另起 `ECKeyValue` 规范），要么在包文档中显式写明
+「本包只处理 RSA」。
+
+**验收**　包文档或 README 明确写出适用算法范围。
+
+**下游影响**　Toolbit 的 `jwk-xml-convert` 的 XML 目标**仅支持 RSA**；
+EC / SM2 输入返回 `UNSUPPORTED_FORMAT`。
+
+---
+
+## I-14 `asym` 缺 RSA **PKCS#1 公钥**的导出 / 加载入口
+
+**现象**　`asym` 提供了 `MarshalRSAPrivateKeyPKCS1PEM`（PKCS#1 **私钥**），
+但**没有**对应的 PKCS#1 **公钥**入口（`RSA PUBLIC KEY` 形态）。
+`asym.LoadPublicKeyPEM` 也只接受 SPKI（`PUBLIC KEY`），
+无法加载 `-----BEGIN RSA PUBLIC KEY-----` 块。
+
+**期望**　补 `MarshalRSAPublicKeyPKCS1PEM` 与对应的加载入口；
+或在包文档中写明「PKCS#1 公钥不支持」，让调用方不必试错。
+
+**验收**　同一把 RSA 密钥的 PKCS#1 公钥 PEM 可被加载并与私钥 `Match` 成功。
+
+**下游影响**　Toolbit 的 `keygen` 的 `publicFormat: pkcs1` 与
+`key-convert` 的 `to: pkcs1`（公钥输入）返回 `UNSUPPORTED_FORMAT`；
+PEM 块标签为 `RSA PUBLIC KEY` 的输入同样被显式拒绝。
 
 ---
 
