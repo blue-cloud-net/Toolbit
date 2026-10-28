@@ -29,7 +29,7 @@
 
 <!--
 检查清单：
-- [ ] slug 与 catalog/tools.yaml 一致
+- [ ] slug 与 backend/catalog/tools.yaml 一致
 - [ ] 字段名与 docs/api/tools/<分类>.md 一致
 - [ ] 涉及敏感材料时标注「安全提示」
 - [ ] 至少 2 条 FAQ

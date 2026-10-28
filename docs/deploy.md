@@ -62,23 +62,28 @@ sudo make install_sw
 
 ### 2.3 构建
 
-```bash
-# 前端
-pnpm install
-pnpm build          # 产出 web/dist
+后端与前端是**两个独立构建单元**，分别在各自目录内执行。
 
-# 后端
+```bash
+# 前端（frontend/）
+cd frontend
+pnpm install
+pnpm build          # 产出 frontend/dist
+
+# 后端（backend/，独立 Go 模块）
+cd ../backend
 export CGO_ENABLED=1
 export CGO_CFLAGS="-I/opt/tongsuo/include"
 export CGO_LDFLAGS="-L/opt/tongsuo/lib64 -Wl,-rpath,/opt/tongsuo/lib64"
-go build -o bin/toolbit ./cmd/toolbit
+go build -o ../bin/toolbit ./cmd/toolbit
 ```
 
 ### 2.4 运行
 
 ```bash
+cd ..
 TOOLBIT_ADDR=:8080 \
-TOOLBIT_WEB_ROOT=./web/dist \
+TOOLBIT_WEB_ROOT=./frontend/dist \
 TOOLBIT_DB_PATH=./data/stats.db \
 ./bin/toolbit
 ```
@@ -94,7 +99,7 @@ TOOLBIT_DB_PATH=./data/stats.db \
 | 变量 | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
 | `TOOLBIT_ADDR` | string | `:8080` | 监听地址 |
-| `TOOLBIT_WEB_ROOT` | string | `./web/dist` | 前端静态资源目录 |
+| `TOOLBIT_WEB_ROOT` | string | `./frontend/dist` | 前端静态资源目录 |
 | `TOOLBIT_DB_PATH` | string | `./data/stats.db` | SQLite 统计库路径 |
 | `TOOLBIT_LOG_LEVEL` | string | `info` | `debug` / `info` / `warn` / `error` |
 | `TOOLBIT_LOG_FORMAT` | string | `json` | `json` / `text` |

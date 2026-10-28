@@ -4,7 +4,7 @@
 
 本文面向**最终用户**，介绍 70 个工具的用途、输入输出、默认行为与注意事项。
 
-工具的技术契约见 [api/](api/)，工具元数据的事实来源是 [`catalog/tools.yaml`](../catalog/tools.yaml)。
+工具的技术契约见 [api/](api/)，工具元数据的事实来源是 [`backend/catalog/tools.yaml`](../backend/catalog/tools.yaml)。
 
 ---
 
