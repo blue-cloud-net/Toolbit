@@ -1,0 +1,52 @@
+{
+  "name": "Hash Calculator",
+  "description": "Compute MD5 / SHA / SM3 digests of text or files, with multiple algorithms at once.",
+  "category": "Cryptography",
+  "actions": {
+    "calculate": "Compute digests"
+  },
+  "fields": {
+    "input": "Input content",
+    "inputEncoding": "Input encoding",
+    "outputEncoding": "Output encoding",
+    "algorithms": "Digest algorithms"
+  },
+  "options": {
+    "algorithms": {
+      "SM3": "SM3 (Chinese national standard)",
+      "SHA256": "SHA-256",
+      "SHA384": "SHA-384",
+      "SHA512": "SHA-512",
+      "SHA224": "SHA-224",
+      "SHA1": "SHA-1",
+      "MD5": "MD5"
+    }
+  },
+  "results": {
+    "digests": "Digests"
+  },
+  "examples": [
+    {
+      "label": "Digest Chinese text with SM3 and SHA-256",
+      "value": "蓝云工具箱 Toolbit"
+    },
+    {
+      "label": "Digest hexadecimal content",
+      "value": "616263"
+    }
+  ],
+  "hints": {
+    "input": "The input is interpreted with the selected encoding; digests are binary and shown as hex by default.",
+    "algorithms": "MD5 and SHA-1 are weak hashes, suitable only for compatibility checks."
+  },
+  "faq": [
+    {
+      "q": "Can a digest be reversed into the original text?",
+      "a": "No. Digests are one-way and only allow comparing consistency."
+    },
+    {
+      "q": "How do I verify a downloaded file?",
+      "a": "Compute the digest of the local file and of the download with the same algorithm, then compare."
+    }
+  ]
+}

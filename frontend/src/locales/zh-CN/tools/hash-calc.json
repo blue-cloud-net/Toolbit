@@ -1,0 +1,52 @@
+{
+  "name": "摘要计算",
+  "description": "计算文本或文件的 MD5 / SHA / SM3 摘要，可一次选择多个算法。",
+  "category": "加密",
+  "actions": {
+    "calculate": "计算摘要"
+  },
+  "fields": {
+    "input": "输入内容",
+    "inputEncoding": "输入编码",
+    "outputEncoding": "输出编码",
+    "algorithms": "摘要算法"
+  },
+  "options": {
+    "algorithms": {
+      "SM3": "SM3（国密）",
+      "SHA256": "SHA-256",
+      "SHA384": "SHA-384",
+      "SHA512": "SHA-512",
+      "SHA224": "SHA-224",
+      "SHA1": "SHA-1",
+      "MD5": "MD5"
+    }
+  },
+  "results": {
+    "digests": "摘要结果"
+  },
+  "examples": [
+    {
+      "label": "计算中文文本的 SM3 与 SHA-256",
+      "value": "蓝云工具箱 Toolbit"
+    },
+    {
+      "label": "计算十六进制内容的摘要",
+      "value": "616263"
+    }
+  ],
+  "hints": {
+    "input": "输入按所选编码解释；摘要结果是二进制，默认按十六进制输出。",
+    "algorithms": "MD5 与 SHA-1 属于弱哈希，仅用于兼容性校验，不应用于安全场景。"
+  },
+  "faq": [
+    {
+      "q": "摘要可以还原原文吗？",
+      "a": "不能。摘要是单向的，只能用于比对一致性。"
+    },
+    {
+      "q": "如何校验下载的文件完整性？",
+      "a": "用相同算法分别计算本地文件与下载文件的摘要并比对。"
+    }
+  ]
+}

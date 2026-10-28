@@ -1,0 +1,62 @@
+{
+  "name": "ECDH Key Agreement",
+  "description": "Derive the same shared secret from two private keys, optionally followed by HKDF.",
+  "category": "Cryptography",
+  "actions": {
+    "derive": "Agree and derive"
+  },
+  "fields": {
+    "curve": "Curve",
+    "privateKey": "Your private key",
+    "peerPublicKey": "Peer public key",
+    "useKDF": "Derive with HKDF",
+    "kdfHash": "KDF digest",
+    "kdfLength": "Derived length",
+    "salt": "Salt",
+    "info": "Info",
+    "outputEncoding": "Output encoding"
+  },
+  "options": {
+    "curve": {
+      "P-256": "P-256",
+      "P-384": "P-384",
+      "P-521": "P-521",
+      "X25519": "X25519",
+      "X448": "X448"
+    },
+    "kdfHash": {
+      "SHA256": "SHA-256",
+      "SHA384": "SHA-384",
+      "SHA512": "SHA-512",
+      "SM3": "SM3"
+    }
+  },
+  "results": {
+    "sharedSecret": "Shared secret",
+    "derivedKey": "Derived key"
+  },
+  "examples": [
+    {
+      "label": "Agree a shared secret on P-256",
+      "value": "P-256 curve"
+    },
+    {
+      "label": "Agree on P-256 and derive with HKDF",
+      "value": "P-256 + HKDF-SHA256"
+    }
+  ],
+  "hints": {
+    "kdf": "The shared secret must be passed through a KDF before use; never use the raw shared secret as a session key.",
+    "curve": "SM2 is not an agreement curve; ECDH supports the NIST curves plus X25519 / X448."
+  },
+  "faq": [
+    {
+      "q": "Why do both sides get different results?",
+      "a": "Check that the curves match and that the public key was not compressed or converted."
+    },
+    {
+      "q": "Are X25519 and P-256 shared secrets the same length?",
+      "a": "Not always: X25519 yields 32 bytes, P-256 32 bytes, P-384 48 bytes, P-521 66 bytes."
+    }
+  ]
+}

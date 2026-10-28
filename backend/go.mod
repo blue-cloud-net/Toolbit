@@ -3,6 +3,7 @@ module github.com/blue-cloud-net/Toolbit/backend
 go 1.25.0
 
 require (
+	github.com/blue-cloud-net/tongsuo-go v0.5.0
 	github.com/gin-gonic/gin v1.12.0
 	golang.org/x/time v0.12.0
 	gopkg.in/yaml.v3 v3.0.1

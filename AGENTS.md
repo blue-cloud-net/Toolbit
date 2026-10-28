@@ -26,7 +26,7 @@
 | `backend/internal/api/` | HTTP 分发器：查目录、协商 Content-Type、限流、超时、Body 限制、Origin 校验 | `httpx` `catalog` `tools` `toolerr` `stats` |
 | `backend/internal/catalog/` | 工具目录：内嵌并解析 `backend/catalog/tools.yaml` | 标准库 + `yaml.v3` |
 | `backend/internal/tools/` | 各领域工具实现（按领域分子包） | `cryptosvc` `codecsvc` `toolerr` `netguard` |
-| `backend/internal/cryptosvc/` | **唯一**允许 `import tongsuo-go` 的层 | `tongsuo-go` |
+| `backend/internal/cryptosvc/` | **唯一**允许 `import tongsuo-go` 的层；所有密码学运算在此**转调 Tongsuo** | `tongsuo-go` |
 | `backend/internal/codecsvc/` | 编码归一化（utf8/hex/base64/base64url）与 PEM/DER 识别 | 标准库 |
 | `backend/internal/toolerr/` | 错误码注册表（唯一来源） | 标准库 |
 | `backend/internal/httpx/` | 响应信封、中间件、requestId | 标准库 |
@@ -90,6 +90,11 @@ make verify          # 提交前全量校验：vet + test + lint + 前端单测�
 12. **不新增依赖而不说明理由。** 变更 `backend/go.mod` / `frontend/package.json` 必须在提交信息中写明 `adds: <pkg> <version>`。
 13. **`backend/` 与 `frontend/` 互不依赖。** 后端不 import 前端产物，前端不 import 后端源码；二者只通过 HTTP 契约耦合。
 14. **`backend/internal/` 只允许被 `backend/` 内的包导入。** 这是 Go 的可见性边界，不得跨越。
+15. **密码学运算一律经 `cryptosvc` 转调 `tongsuo-go`。** Toolbit 内**不得**用 Go 标准库 `crypto/*`
+    实现或拼装密码学运算（分组模式链接、填充、KDF、签名与密文格式转换）。标准库仅可用于
+    **编码**（hex / base64 / PEM）与**结构解析**（不涉及密钥运算的只读查看）。
+    库缺能力时**先向上游提 issue**（登记于 [docs/upstream/tongsuo-go-issues.md](docs/upstream/tongsuo-go-issues.md)），
+    **禁止**自行实现兜底。
 
 ---
 
@@ -98,6 +103,8 @@ make verify          # 提交前全量校验：vet + test + lint + 前端单测�
 - ❌ 复制外部项目的代码、文档或文案；本仓库的工具清单、命名与描述必须自有。
 - ❌ 在本仓库任何文件（README、docs、注释、提交信息、配置、测试）中提及任何**参考项目**的名称或路径。
 - ❌ 在日志或响应中输出私钥、口令、请求体、证书正文。
+- ❌ 用 Go 标准库 `crypto/*` 在 Toolbit 内实现或拼装密码学运算（编码与结构解析除外）。
+- ❌ 为 `tongsuo-go` 的能力缺口自研兜底实现；缺口必须走上游 issue。
 - ❌ 把 `x509.Name.Add` 用于用户可控输入。
 - ❌ 跳过 `backend/internal/api` 分发器自行注册 `/api` 路由。
 - ❌ 在前端做密码学计算（唯一例外：`websocket-test` 的协议握手）。
@@ -138,6 +145,9 @@ make verify          # 提交前全量校验：vet + test + lint + 前端单测�
 2. **后端**：
    - 在对应领域包（如 `backend/internal/tools/crypto/`）实现 handler；
    - 需要密码学时在 `backend/internal/cryptosvc` 增加服务方法，**不要**在 handler 里直接调 `tongsuo-go`；
+   - 若 `cryptosvc` 缺少所需能力：先确认 `tongsuo-go` 是否已提供；仍未提供则在
+     [docs/upstream/tongsuo-go-issues.md](docs/upstream/tongsuo-go-issues.md) 登记并向 upstream 提 issue，
+     本版**跳过**该能力，**不得**自研兜底；
    - 定义请求 / 响应结构体并实现 `Validate()`，错误统一用 `toolerr`；
    - 在 `backend/internal/api` 的注册表登记 slug → handler。
 3. **前端**：
@@ -174,6 +184,7 @@ make verify          # 提交前全量校验：vet + test + lint + 前端单测�
 | --- | --- |
 | 文档总索引 | [docs/README.md](docs/README.md) |
 | 架构与决策 | [docs/architecture.md](docs/architecture.md) |
+| 上游依赖缺口 | [docs/upstream/tongsuo-go-issues.md](docs/upstream/tongsuo-go-issues.md) |
 | 前端规范 | [docs/standards/01-frontend.md](docs/standards/01-frontend.md) |
 | 后端规范 | [docs/standards/02-backend.md](docs/standards/02-backend.md) |
 | 密码学规范 | [docs/standards/03-crypto.md](docs/standards/03-crypto.md) |

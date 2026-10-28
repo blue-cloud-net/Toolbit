@@ -1,0 +1,68 @@
+{
+  "slug": "hash-calc",
+  "description": "摘要计算的契约测试数据。",
+  "cases": [
+    {
+      "name": "SM3 标准向量",
+      "request": {
+        "algorithms": ["SM3"],
+        "input": { "data": "616263", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "digests": [
+            {
+              "algorithm": "SM3",
+              "value": "66c7f0f462eeedd9d1f2d46bdc10e4e24167c4875cf2f7a2297da02b8f4ba8e0"
+            }
+          ],
+          "inputBytes": 3
+        }
+      }
+    },
+    {
+      "name": "多算法",
+      "request": {
+        "algorithms": ["SM3", "SHA256"],
+        "input": { "data": "abc", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "inputBytes": 3 }
+      }
+    },
+    {
+      "name": "弱摘要告警",
+      "request": {
+        "algorithms": ["MD5"],
+        "input": { "data": "abc", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 0,
+        "warnings": ["WEAK_HASH"]
+      }
+    },
+    {
+      "name": "未知算法",
+      "request": {
+        "algorithms": ["SHA999"],
+        "input": { "data": "abc", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_ALGORITHM"
+      }
+    },
+    {
+      "name": "缺少算法列表",
+      "request": {
+        "input": { "data": "abc", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

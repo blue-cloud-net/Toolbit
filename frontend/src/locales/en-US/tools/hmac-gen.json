@@ -1,0 +1,54 @@
+{
+  "name": "HMAC Generator",
+  "description": "Compute message authentication codes with HMAC-SM3 or the HMAC-SHA family.",
+  "category": "Cryptography",
+  "actions": {
+    "calculate": "Compute MAC"
+  },
+  "fields": {
+    "algorithm": "Algorithm",
+    "key": "Key",
+    "keyEncoding": "Key encoding",
+    "message": "Message",
+    "messageEncoding": "Message encoding",
+    "outputEncoding": "Output encoding"
+  },
+  "options": {
+    "algorithm": {
+      "HMAC-SM3": "HMAC-SM3 (Chinese national standard)",
+      "HMAC-SHA256": "HMAC-SHA-256",
+      "HMAC-SHA384": "HMAC-SHA-384",
+      "HMAC-SHA512": "HMAC-SHA-512",
+      "HMAC-SHA224": "HMAC-SHA-224",
+      "HMAC-SHA1": "HMAC-SHA-1",
+      "HMAC-MD5": "HMAC-MD5"
+    }
+  },
+  "results": {
+    "mac": "Authentication code"
+  },
+  "examples": [
+    {
+      "label": "Compute HMAC-SM3",
+      "value": "The quick brown fox jumps over the lazy dog"
+    },
+    {
+      "label": "Compute HMAC-SHA256",
+      "value": "The quick brown fox jumps over the lazy dog"
+    }
+  ],
+  "hints": {
+    "key": "The key and the message are interpreted with their own encodings; a mismatch yields a different result.",
+    "algorithm": "HMAC-MD5 and HMAC-SHA1 are based on weak digests and must not be used for security."
+  },
+  "faq": [
+    {
+      "q": "Why does my value differ from the peer?",
+      "a": "Check the algorithm, the key encoding, the message encoding and the output case."
+    },
+    {
+      "q": "Must the HMAC key be secret?",
+      "a": "Yes. Once the key leaks, authentication codes can be forged."
+    }
+  ]
+}

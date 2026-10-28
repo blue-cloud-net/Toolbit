@@ -1,0 +1,65 @@
+{
+  "slug": "hmac-gen",
+  "description": "HMAC 计算的契约测试数据。",
+  "cases": [
+    {
+      "name": "HMAC-SM3",
+      "request": {
+        "algorithm": "HMAC-SM3",
+        "key": { "data": "6b6579", "encoding": "hex" },
+        "message": { "data": "5468652071756963", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "algorithm": "HMAC-SM3" }
+      }
+    },
+    {
+      "name": "HMAC-SHA256",
+      "request": {
+        "algorithm": "HMAC-SHA256",
+        "key": { "data": "6b6579", "encoding": "hex" },
+        "message": { "data": "abc", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "algorithm": "HMAC-SHA256" }
+      }
+    },
+    {
+      "name": "弱摘要告警",
+      "request": {
+        "algorithm": "HMAC-MD5",
+        "key": { "data": "6b6579", "encoding": "hex" },
+        "message": { "data": "abc", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 0,
+        "warnings": ["WEAK_HASH"]
+      }
+    },
+    {
+      "name": "未知算法",
+      "request": {
+        "algorithm": "HMAC-SHA999",
+        "key": { "data": "6b6579", "encoding": "hex" },
+        "message": { "data": "abc", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_ALGORITHM"
+      }
+    },
+    {
+      "name": "缺少密钥",
+      "request": {
+        "algorithm": "HMAC-SM3",
+        "message": { "data": "abc", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

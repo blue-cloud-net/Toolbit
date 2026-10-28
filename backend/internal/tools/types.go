@@ -161,6 +161,22 @@ func UnsupportedFormat(format string, supported []string) *toolerr.Error {
 	})
 }
 
+// UnsupportedMode 构造模式不支持的错误。
+func UnsupportedMode(mode string, supported []string) *toolerr.Error {
+	return toolerr.Newf(toolerr.CodeUnsupportedMode, map[string]any{
+		"mode":      mode,
+		"supported": supported,
+	})
+}
+
+// UnsupportedPadding 构造填充方式不支持的错误。
+func UnsupportedPadding(padding string, supported []string) *toolerr.Error {
+	return toolerr.Newf(toolerr.CodeUnsupportedPadding, map[string]any{
+		"padding":   padding,
+		"supported": supported,
+	})
+}
+
 // String 返回用于日志的描述，不含用户输入。
 func (d Definition) String() string {
 	return fmt.Sprintf("tool(%s)", d.Slug)

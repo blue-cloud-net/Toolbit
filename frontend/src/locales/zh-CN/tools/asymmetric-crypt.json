@@ -1,0 +1,65 @@
+{
+  "name": "非对称加解密",
+  "description": "用 SM2 或 RSA 的公钥加密、用私钥解密。",
+  "category": "加密",
+  "actions": {
+    "encrypt": "加密",
+    "decrypt": "解密"
+  },
+  "fields": {
+    "algorithm": "算法",
+    "operation": "操作",
+    "key": "密钥",
+    "rsaPadding": "RSA 填充",
+    "oaepHash": "OAEP 摘要",
+    "input": "输入内容",
+    "inputEncoding": "输入编码",
+    "outputEncoding": "输出编码"
+  },
+  "options": {
+    "algorithm": {
+      "SM2": "SM2（国密）",
+      "RSA": "RSA"
+    },
+    "operation": {
+      "encrypt": "加密",
+      "decrypt": "解密"
+    },
+    "rsaPadding": {
+      "oaep": "OAEP",
+      "pkcs1": "PKCS#1 v1.5"
+    },
+    "oaepHash": {
+      "SHA256": "SHA-256",
+      "SHA384": "SHA-384",
+      "SHA512": "SHA-512"
+    }
+  },
+  "results": {
+    "output": "输出结果"
+  },
+  "examples": [
+    {
+      "label": "SM2 加密一段中文",
+      "value": "待加密内容"
+    },
+    {
+      "label": "RSA-OAEP 加密一段中文",
+      "value": "待加密内容"
+    }
+  ],
+  "hints": {
+    "algorithm": "SM2 输出为 C1C3C2 顺序 + 04 前缀的裸格式；解密时自动识别 DER、C1C3C2 与 C1C2C3 三种输入。",
+    "length": "RSA 密文长度受限，明文过长会直接报错；大文件请改用 SM4 文件加解密。"
+  },
+  "faq": [
+    {
+      "q": "SM2 密文能被 Java 库解开吗？",
+      "a": "多数实现用 C1C3C2，与本工具默认一致。"
+    },
+    {
+      "q": "RSA 报「明文过长」怎么办？",
+      "a": "RSA 只能加密极少量数据，请改用对称加密。"
+    }
+  ]
+}

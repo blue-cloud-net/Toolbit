@@ -1,6 +1,6 @@
 # 密码学与资源生命周期规范
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Draft ｜ 适用版本：v0.3.0 ｜ 最后更新：2026-10-28
 
 适用包：`backend/internal/cryptosvc`（以及所有间接使用 Tongsuo 的代码）。
 
@@ -15,11 +15,41 @@
 - 服务层**不得**依赖 `net/http`、Gin、JSON 编解码。
 - 服务层**不得**感知具体工具（不得出现 `toolSlug` 之类的概念）。
 
+### 1.1 密码学运算的归属
+
+- **必须**：分组模式链接、填充、KDF、签名与密文格式转换，**一律**经 `cryptosvc` 转调
+  `tongsuo-go`。
+- **禁止**：在 Toolbit 内用 Go 标准库 `crypto/*` 实现或拼装上述运算。
+  标准库 `crypto/*` **仅**可用于**编码**（hex / base64 / PEM）与**结构解析**
+  （不涉及密钥运算的只读查看）。
+- **禁止**：为 `tongsuo-go` 的能力缺口自研兜底实现。缺口**必须**先登记到
+  [../upstream/tongsuo-go-issues.md](../upstream/tongsuo-go-issues.md) 并向上游提 issue，
+  本版**跳过**该能力。
+
+该边界由 `.golangci.yml` 的 `depguard` 规则 `no-stdlib-crypto` 机器校验：
+`crypto/aes`、`cipher`、`des`、`rc4`、`hmac`、`rsa`、`ecdsa`、`ed25519`、
+`elliptic`、`ecdh` 在 `cryptosvc` 之外一律报错。
+
+> 摘要（`crypto/sha256` 等）与随机源（`crypto/rand`）**不在**禁止范围内：
+> 前者用于内容指纹（目录 `ETag`），后者用于非密钥标识（`requestId`）。
+> 二者一旦用于密码学用途，仍属违规。
+
 ---
 
 ## 2. Session 模型
 
 每个请求在 `backend/internal/api` 层创建**一个** `cryptosvc.Session`，并在请求结束时 `Close()`。
+
+Session **经 `ctx` 传递**，**不**改变 `tools.Handler` 的签名：
+
+```go
+sess := cryptosvc.NewSession(ctx)
+defer sess.Close()
+
+result, err := def.Handle(sess.Context(), req)
+```
+
+服务层内部用 `cryptosvc.FromContext(ctx)` 取回当前 Session。
 
 ```go
 type Session struct {
@@ -57,6 +87,11 @@ type Session struct {
 | `x509.CertificateRequest` | **无公开 `Close`**，只能靠 finalizer。**禁止**跨请求持有 |
 | `sym` 的 `cipher.AEAD` | **持有 key 切片引用**。使用后**必须**清零 key 切片 |
 | 私钥 PEM 源缓冲 | 加载后**必须**立即清零 |
+| `cryptosvc.PrivateKey` | 拥有句柄，**必须** `Close`（幂等） |
+| `cryptosvc.PublicKey` | 拥有句柄，**必须** `Close`（幂等） |
+
+> `PrivateKey.PublicKeyPEM()` 返回的是**字节**而不是 `PublicKey` 对象：
+> `priv.Public()` 与私钥共享底层句柄，单独关闭会造成重复释放。
 
 **禁止**在 `Session.Close()` 之后继续使用任何句柄（会得到明确错误，而非崩溃）。
 
@@ -89,11 +124,12 @@ SM2 密文的 `C1C3C2` / `C1C2C3` 顺序与 `04` 前缀在各实现间不统一�
 **必须**
 
 - **输出**：`EncryptWithOrder(pub, data, "c1c3c2")`，裸格式，`C1` 未压缩（`04` 前缀）。
-- **输入**：自动识别以下四种并给出正确结果：
+- **输入**：自动识别以下三种并给出正确结果：
   1. ASN.1 DER 密文（以 `30` 开头）；
   2. 裸格式 `C1C3C2`；
-  3. 裸格式 `C1C2C3`；
-  4. `C1` 带 `02` / `03` 压缩前缀。
+  3. 裸格式 `C1C2C3`。
+- `C1` 带 `02` / `03` 压缩前缀**当前不支持**（上游 `asym.Format` 的 `parseSM2Raw`
+  只识别未压缩点），返回 `UNSUPPORTED_FORMAT`；缺口登记为上游 issue I-09。
 - 转换统一走 `asym.Format(ct, from, to)`，`from` / `to` 取 `der` / `c1c3c2` / `c1c2c3`。
 - 解密失败**必须**区分「格式不认识」与「私钥不匹配」两种错误码。
 
@@ -109,6 +145,18 @@ SM2 密文的 `C1C3C2` / `C1C2C3` 顺序与 `04` 前缀在各实现间不统一�
 - 验签失败**必须**返回 `valid: false`（业务结果），**禁止**当作错误抛出。
 - 只有签名**结构非法**（无法解析为 DER / 长度不符）才返回 `SIGNATURE_INVALID`。
 
+**结构预校验**（`cryptosvc.checkSignatureStructure`）在调用验签**之前**执行，
+按算法区分：
+
+| 算法 | 结构判定 |
+| --- | --- |
+| Ed25519 / Ed448 | 长度**固定**（64 / 114 字节） |
+| RSA | 长度**等于**模长字节数（RSA-PSS 是**裸值**，**不是** DER） |
+| SM2 / ECDSA | ASN.1 DER `SEQUENCE { INTEGER, INTEGER }` |
+
+> RSA-PSS 签名是**裸值**而非 DER，与 OpenSSL 的输出不兼容（缺口 I-07）。
+> 本版按 OpenSSL 行为处理：结构合法但验签失败 ⇒ `valid: false`。
+
 ---
 
 ## 7. 对称加密
@@ -118,6 +166,26 @@ SM2 密文的 `C1C3C2` / `C1C2C3` 顺序与 `04` 前缀在各实现间不统一�
 - GCM **必须**使用 `EncryptSM4GCM` 或 `NewSM4GCM`；解密**必须**提供 `tag`。
 - **禁止**对 GCM 复用 `(key, nonce)` 组合。
 - ECB 模式**必须**产生 `INSECURE_ECB` 警告。
+
+### 7.1 支持矩阵由本层维护
+
+`tongsuo-go` 的按名入口对 AES 会**静默忽略** `padding` 参数（恒用 PKCS#7）。
+若不显式拦截，`padding: none` 的 AES 密文将无法按预期解密。
+因此 `cryptosvc.SymPaddings(algorithm, mode)` **自行维护**支持矩阵：
+
+| 算法 | 模式 | 允许的填充 |
+| --- | --- | --- |
+| SM4 | `ECB` `CBC` | `pkcs7` `zero` `none` |
+| SM4 | `CTR` `OFB` `CFB` `GCM` | `pkcs7` |
+| AES | `ECB` `CBC` `CTR` `GCM` | `pkcs7` |
+
+不在矩阵内的组合**必须**返回 `UNSUPPORTED_PADDING`，**禁止**放行。
+
+### 7.2 GCM nonce 的生成与回传
+
+- GCM **加密**未提供 `iv` 时，服务端生成 12 字节随机 nonce，并在响应的 `iv` 字段回传。
+- GCM **解密**必须复用同一个 nonce，否则 tag 校验失败（`TAG_INVALID`）。
+- **禁止**把随机 nonce 静默丢弃——那会让密文不可解密。
 
 ---
 
@@ -225,11 +293,29 @@ SM2 密文的 `C1C3C2` / `C1C2C3` 顺序与 `04` 前缀在各实现间不统一�
 
 **禁止**在测试中使用真实生产密钥；示例数据**必须**来自测试向量。
 
+### 13.1 v0.3.0 已落地的向量
+
+| 场景 | 向量 |
+| --- | --- |
+| SM3(`"abc"`) | 标准摘要 |
+| SM4-ECB | 密钥 `0123456789ABCDEFFEDCBA9876543210`、明文同串 → `681EDF34D206965E86B3E94F536E4246`（`padding: none`） |
+| SM4-CBC / SM4-GCM | 往返一致 |
+| SM2 签名 / 验签 | 默认与自定义 `userId` 各一组 |
+| SM2 加解密 | 往返一致 |
+| RSA-OAEP / RSA-PSS / RSA-PKCS#1 | 往返一致 |
+| Ed25519 / Ed448 | 往返一致 |
+| ECDH P-256 + HKDF-SHA256 | 双方结果一致 |
+
+> **陷阱**：SM4-ECB 的国标向量对应 `padding: none`，**不是** PKCS#7。
+> 用 `pkcs7` 加密同一明文会得到不同密文——两者必须分别断言。
+
 ---
 
 ## 14. 禁止清单
 
 - ❌ 在 `cryptosvc` 之外 import `tongsuo-go`。
+- ❌ 用标准库 `crypto/*` 拼装密码学运算（编码与结构解析除外）。
+- ❌ 为 `tongsuo-go` 的能力缺口自研兜底实现。
 - ❌ 依赖 finalizer 释放句柄。
 - ❌ 关闭 `priv.Public()`。
 - ❌ 用 `x509.Name.Add` 处理用户输入。

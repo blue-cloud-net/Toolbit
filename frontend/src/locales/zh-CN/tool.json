@@ -48,5 +48,22 @@
   "favorite": {
     "add": "加入收藏",
     "remove": "取消收藏"
+  },
+  "key": {
+    "fields": {
+      "key": "密钥内容",
+      "format": "密钥格式",
+      "passphrase": "私钥口令"
+    },
+    "format": {
+      "auto": "自动识别",
+      "pem": "PEM",
+      "der": "DER（二进制）",
+      "base64": "Base64",
+      "hex": "十六进制"
+    },
+    "hints": {
+      "format": "「自动识别」按 PEM → Base64 → DER → 十六进制的顺序尝试解析；显式指定格式时不做转换。"
+    }
   }
 }

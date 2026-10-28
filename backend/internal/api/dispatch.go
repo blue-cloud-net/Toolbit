@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/blue-cloud-net/Toolbit/backend/internal/cryptosvc"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/httpx"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/stats"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/toolerr"
@@ -91,9 +92,23 @@ func (s *Server) handleTool(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), time.Duration(tool.TimeoutMs)*time.Millisecond)
 	defer cancel()
 
-	result, err := def.Handle(ctx, req)
+	// 密码学句柄作用域：每个请求一个 Session，请求结束即释放。
+	//
+	// Session 通过 ctx 传给 handler（见 cryptosvc.FromContext），
+	// 因此**不**改变 tools.Handler 的签名。
+	sess := cryptosvc.NewSession(ctx)
+	defer sess.Close()
+
+	result, err := def.Handle(sess.Context(), req)
+
+	// 释放句柄必须在写响应**之前**完成：释放过程可能产生告警。
+	s.logOrphans(slug, sess)
+	if closeErr := sess.Close(); closeErr != nil {
+		s.logger.Warn("密码学句柄释放失败", "slug", slug, "error", closeErr.Error())
+	}
+
 	if err != nil {
-		s.fail(c, start, tools.Normalize(err))
+		s.failWith(c, start, tools.Normalize(err), sess.Warnings())
 		return
 	}
 
@@ -101,21 +116,56 @@ func (s *Server) handleTool(c *gin.Context) {
 	meta.DurationMs = time.Since(start).Milliseconds()
 	meta.InputBytes = c.Request.ContentLength
 	meta.OutputBytes = int64(c.Writer.Size())
-	if len(result.Warnings) > 0 {
-		meta.Warnings = result.Warnings
-	}
+	meta.Warnings = mergeWarnings(result.Warnings, sess.Warnings())
 	httpx.SetMeta(c, meta)
 
 	s.record(c, slug, http.StatusOK, "", time.Since(start))
 	httpx.Success(c, result.Data, meta)
 }
 
+// mergeWarnings 合并工具自身与 Session 累积的警告。
+//
+// 重复的警告码只保留一条，避免响应里出现重复提示。
+func mergeWarnings(lists ...[]toolerr.Warning) []toolerr.Warning {
+	seen := make(map[toolerr.WarningCode]bool)
+	out := make([]toolerr.Warning, 0, 8)
+	for _, list := range lists {
+		for _, w := range list {
+			if w.Code == "" || seen[w.Code] {
+				continue
+			}
+			seen[w.Code] = true
+			out = append(out, w)
+		}
+	}
+	return out
+}
+
+// logOrphans 记录「请求已超时但底层运算仍在跑」的重操作。
+//
+// 只记录 slug、操作名与耗时，**不**记录任何输入。
+func (s *Server) logOrphans(slug string, sess *cryptosvc.Session) {
+	for _, o := range sess.Orphans() {
+		s.logger.Warn("密码学操作在请求超时后继续运行",
+			"slug", slug,
+			"operation", o.Operation,
+			"durationMs", o.DurationMs,
+		)
+	}
+}
+
 // fail 写出失败信封并记录统计事件。
 func (s *Server) fail(c *gin.Context, start time.Time, err *toolerr.Error) {
+	s.failWith(c, start, err, nil)
+}
+
+// failWith 写出失败信封，并附带警告。
+func (s *Server) failWith(c *gin.Context, start time.Time, err *toolerr.Error, warnings []toolerr.Warning) {
 	httpx.SetErrorCode(c, string(err.Code))
 	meta := httpx.MetaOf(c)
 	meta.DurationMs = time.Since(start).Milliseconds()
 	meta.InputBytes = c.Request.ContentLength
+	meta.Warnings = mergeWarnings(meta.Warnings, warnings)
 	httpx.SetMeta(c, meta)
 
 	s.record(c, c.Param("slug"), err.HTTPStatus(), string(err.Code), time.Since(start))

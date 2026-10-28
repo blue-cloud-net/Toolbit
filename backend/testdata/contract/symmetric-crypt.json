@@ -1,0 +1,138 @@
+{
+  "slug": "symmetric-crypt",
+  "description": "对称加解密的契约测试数据。",
+  "cases": [
+    {
+      "name": "SM4-CBC 加密",
+      "request": {
+        "algorithm": "SM4",
+        "operation": "encrypt",
+        "mode": "CBC",
+        "key": { "data": "0123456789ABCDEFFEDCBA9876543210", "encoding": "hex" },
+        "iv": { "data": "000102030405060708090a0b0c0d0e0f", "encoding": "hex" },
+        "input": { "data": "48656c6c6f", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "algorithm": "SM4", "mode": "CBC", "keyBytes": 16, "ivBytes": 16 }
+      }
+    },
+    {
+      "name": "SM4-GCM 加密并自动生成 nonce",
+      "request": {
+        "algorithm": "SM4",
+        "operation": "encrypt",
+        "mode": "GCM",
+        "key": { "data": "0123456789ABCDEFFEDCBA9876543210", "encoding": "hex" },
+        "input": { "data": "48656c6c6f", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "algorithm": "SM4", "mode": "GCM", "ivBytes": 12 }
+      }
+    },
+    {
+      "name": "ECB 告警",
+      "request": {
+        "algorithm": "SM4",
+        "operation": "encrypt",
+        "mode": "ECB",
+        "key": { "data": "0123456789ABCDEFFEDCBA9876543210", "encoding": "hex" },
+        "input": { "data": "48656c6c6f", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 0,
+        "warnings": ["INSECURE_ECB"]
+      }
+    },
+    {
+      "name": "非 GCM 模式无认证告警",
+      "request": {
+        "algorithm": "AES",
+        "operation": "encrypt",
+        "mode": "CBC",
+        "key": { "data": "000102030405060708090a0b0c0d0e0f", "encoding": "hex" },
+        "iv": { "data": "000102030405060708090a0b0c0d0e0f", "encoding": "hex" },
+        "input": { "data": "48656c6c6f", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 0,
+        "warnings": ["NO_AUTHENTICATION"]
+      }
+    },
+    {
+      "name": "AES 不支持 OFB",
+      "request": {
+        "algorithm": "AES",
+        "operation": "encrypt",
+        "mode": "OFB",
+        "key": { "data": "000102030405060708090a0b0c0d0e0f", "encoding": "hex" },
+        "input": { "data": "48656c6c6f", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_MODE"
+      }
+    },
+    {
+      "name": "AES 不支持 zero 填充",
+      "request": {
+        "algorithm": "AES",
+        "operation": "encrypt",
+        "mode": "CBC",
+        "padding": "zero",
+        "key": { "data": "000102030405060708090a0b0c0d0e0f", "encoding": "hex" },
+        "iv": { "data": "000102030405060708090a0b0c0d0e0f", "encoding": "hex" },
+        "input": { "data": "48656c6c6f", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_PADDING"
+      }
+    },
+    {
+      "name": "密钥长度不符",
+      "request": {
+        "algorithm": "SM4",
+        "operation": "encrypt",
+        "mode": "ECB",
+        "key": { "data": "0011", "encoding": "hex" },
+        "input": { "data": "48656c6c6f", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "KEY_SIZE_MISMATCH"
+      }
+    },
+    {
+      "name": "IV 长度不符",
+      "request": {
+        "algorithm": "SM4",
+        "operation": "encrypt",
+        "mode": "CBC",
+        "key": { "data": "0123456789ABCDEFFEDCBA9876543210", "encoding": "hex" },
+        "iv": { "data": "0011", "encoding": "hex" },
+        "input": { "data": "48656c6c6f", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "IV_SIZE_MISMATCH"
+      }
+    },
+    {
+      "name": "GCM 解密缺少 tag",
+      "request": {
+        "algorithm": "SM4",
+        "operation": "decrypt",
+        "mode": "GCM",
+        "key": { "data": "0123456789ABCDEFFEDCBA9876543210", "encoding": "hex" },
+        "iv": { "data": "000102030405060708090a0b", "encoding": "hex" },
+        "input": { "data": "00112233", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "TAG_REQUIRED"
+      }
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "slug": "ecdh",
+  "description": "ECDH 密钥协商的契约测试数据。",
+  "cases": [
+    {
+      "name": "未知曲线",
+      "request": {
+        "curve": "P-192",
+        "privateKey": { "data": "", "format": "pem" },
+        "peerPublicKey": { "data": "", "format": "pem" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_ALGORITHM"
+      }
+    },
+    {
+      "name": "SM2 不是可协商曲线",
+      "request": {
+        "curve": "SM2",
+        "privateKey": { "data": "", "format": "pem" },
+        "peerPublicKey": { "data": "", "format": "pem" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_ALGORITHM"
+      }
+    },
+    {
+      "name": "未知 KDF 类型",
+      "request": {
+        "curve": "P-256",
+        "privateKey": { "data": "", "format": "pem" },
+        "peerPublicKey": { "data": "", "format": "pem" },
+        "kdf": { "type": "scrypt", "length": 32 }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_FORMAT"
+      }
+    },
+    {
+      "name": "缺少私钥",
+      "request": {
+        "curve": "P-256",
+        "peerPublicKey": { "data": "", "format": "pem" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

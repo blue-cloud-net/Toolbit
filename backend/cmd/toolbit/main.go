@@ -22,6 +22,7 @@ import (
 	"github.com/blue-cloud-net/Toolbit/backend/internal/config"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/stats"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/crypto"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/encoding"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/webui"
 )
@@ -49,7 +50,7 @@ func run() error {
 		return fmt.Errorf("加载工具目录失败: %w", err)
 	}
 
-	registry := tools.NewRegistry(encoding.Definitions())
+	registry := tools.NewRegistry(append(encoding.Definitions(), crypto.Definitions()...))
 	missing, orphan := tools.CrossCheck(cat, registry)
 	logger.Info("工具注册表",
 		"implemented", registry.Len(),
