@@ -1,0 +1,52 @@
+{
+  "sections": {
+    "input": "输入",
+    "options": "参数",
+    "result": "结果",
+    "usage": "使用说明",
+    "faq": "常见问题"
+  },
+  "fields": {
+    "encoding": "编码"
+  },
+  "encoding": {
+    "utf8": "UTF-8 文本",
+    "hex": "十六进制",
+    "base64": "Base64",
+    "base64url": "Base64（URL 安全）"
+  },
+  "result": {
+    "idle": "尚未运行",
+    "idleHint": "填写参数后点击「运行」。",
+    "loading": "运行中…",
+    "success": "完成",
+    "error": "失败",
+    "duration": "耗时 {ms} 毫秒",
+    "emptyOutput": "（空结果）"
+  },
+  "warnings": {
+    "title": "警告",
+    "hint": "以下提示不影响结果，请注意风险。"
+  },
+  "error": {
+    "title": "执行失败",
+    "requestId": "请求标识",
+    "retry": "重试",
+    "unknown": "发生未知错误。"
+  },
+  "run": {
+    "hint": "快捷键：Ctrl / ⌘ + Enter",
+    "running": "运行中"
+  },
+  "copy": {
+    "success": "已复制到剪贴板",
+    "failed": "复制失败，请手动选择文本。"
+  },
+  "related": {
+    "title": "相关工具"
+  },
+  "favorite": {
+    "add": "加入收藏",
+    "remove": "取消收藏"
+  }
+}

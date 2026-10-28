@@ -1,6 +1,6 @@
 # 前端规范
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Draft ｜ 适用版本：v0.2.1 ｜ 最后更新：2026-10-28
 
 适用目录：`frontend/`。
 
@@ -11,10 +11,17 @@
 - Vue 3.5（`<script setup>` + Composition API，**禁止** Options API）
 - TypeScript 5.7，`strict: true`
 - Vite 6
-- Element Plus 2.14（**按需自动导入**，不整体引入）
+- Element Plus 2.14（**按需引入**，不整体引入）
 - Pinia 3 / vue-router 4 / vue-i18n 11
 - UnoCSS 66
 - Node 22 LTS，pnpm 10
+
+> Element Plus 的引入方式：
+>
+> - 允许按组件路径显式引入（`element-plus/es/components/button/index`）；
+> - 允许经 `unplugin-vue-components` 的 `ElementPlusResolver` 自动引入；
+> - **禁止**从 `element-plus` 根 barrel 或 `element-plus/es` 根入口引入 ——
+>   实测会把整包打进 chunk（766 KB / 242 KB gzip），直接击穿体积预算。
 
 新增依赖必须在 PR 描述中写明 `adds: <pkg> <version>` 与引入理由。
 
@@ -121,6 +128,7 @@ ToolPageLayout
 
 - **Pinia** 只放**跨路由共享**的状态：`catalog`、`prefs`（主题、主色、语言、侧栏折叠、收藏、最近）。
 - **禁止**把工具的输入内容放进 Pinia 或任何全局 store。
+- **收藏与最近使用只存 slug 列表**（`toolbit.favorites` / `toolbit.recent`），最近使用上限 12 条；**禁止**在其中附带任何输入、结果或时间戳以外的元数据。
 - 工具内部状态用 `ref` / `reactive` / `computed` 局部管理。
 - 组合式函数**必须**在卸载时清理副作用（定时器、事件监听、AbortController）。
 

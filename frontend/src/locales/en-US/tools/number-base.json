@@ -1,0 +1,51 @@
+{
+  "name": "Number Base Converter",
+  "description": "Convert integers between bases 2 and 36 with arbitrary precision and optional prefixes.",
+  "category": "Encoding",
+  "actions": {
+    "convert": "Convert"
+  },
+  "fields": {
+    "value": "Value",
+    "from": "From base",
+    "to": "To base",
+    "prefix": "Add base prefix"
+  },
+  "options": {
+    "base": {
+      "2": "2 Binary",
+      "8": "8 Octal",
+      "10": "10 Decimal",
+      "16": "16 Hexadecimal",
+      "36": "36 Base 36"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "outputHint": "Large integers keep full precision."
+  },
+  "examples": [
+    {
+      "label": "Decimal to hexadecimal",
+      "value": "255"
+    },
+    {
+      "label": "Hexadecimal to binary",
+      "value": "deadbeef"
+    }
+  ],
+  "hints": {
+    "value": "Any integer length is supported; values beyond 64 bits do not overflow.",
+    "prefix": "Only bases 2, 8 and 16 have conventional prefixes (0b / 0o / 0x)."
+  },
+  "faq": [
+    {
+      "q": "Can I convert negative numbers?",
+      "a": "Yes. The sign is preserved while the magnitude is parsed and printed in the selected bases."
+    },
+    {
+      "q": "Are decimal fractions supported?",
+      "a": "No. This tool only handles integers."
+    }
+  ]
+}

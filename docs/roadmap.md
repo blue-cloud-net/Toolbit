@@ -264,6 +264,7 @@ flowchart LR
 | --- | --- | --- |
 | 前端工程 | `frontend/` | Vite + Vue 3 + TypeScript + Element Plus + Pinia + vue-i18n + UnoCSS |
 | 目录与发现 | `frontend/src/stores/catalog.ts` `frontend/src/views/` `frontend/src/components/discovery/` | 首页、分类页、搜索、404 |
+| 快捷入口与偏好 | `frontend/src/stores/prefs.ts` `frontend/src/views/RecentView.vue` `frontend/src/views/FavoritesView.vue` | 全部工具、最近使用、我的收藏；侧栏折叠；主题与语言 |
 | 工具页骨架 | `frontend/src/components/tool/` `frontend/src/composables/useToolRun.ts` | 输入 → 参数 → 运行 → 结果 的统一骨架 |
 | 两个工具页 | `frontend/src/tools/encoding/` | `base64`、`number-base` |
 | 双语词条 | `frontend/src/locales/` | `zh-CN` 与 `en-US` |
@@ -279,21 +280,22 @@ flowchart LR
 | F-T4 | 工具输入**不写**任何浏览器存储；仅偏好（语言、主题、侧栏）写 `localStorage` | 敏感输入离开页面即清空 |
 | F-T5 | API 通信只经 `frontend/src/api/client.ts`，统一拆信封与错误码本地化 | 组件内禁止直接 `fetch` |
 | F-T6 | 体积预算：初始 JS < 250 KB（gzip）、单工具 chunk < 40 KB（gzip） | 与 §13 的性能预算门禁保持同一口径 |
+| F-T7 | 收藏与最近使用只存 **slug 列表**，不存任何工具输入；最近使用上限 12 条 | 偏好可持久化，输入不行 |
 
 ### 5.3 任务清单
 
 #### Phase F —— 前端工程
 
-| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 |
-| --- | --- | --- | --- | --- |
-| F1 | 工程脚手架 | `frontend/package.json` `frontend/pnpm-lock.yaml` `frontend/index.html` `frontend/vite.config.ts` `frontend/tsconfig.json` `frontend/tsconfig.node.json` `frontend/uno.config.ts` `frontend/eslint.config.js` `frontend/vitest.config.ts` `frontend/src/main.ts` `frontend/src/App.vue` | `pnpm lint`、`pnpm type-check`、`pnpm test`、`pnpm build` 全绿；Element Plus 按需自动导入；按分类拆分 chunk | A1 |
-| F2 | 设计令牌与布局 | `frontend/src/styles/tokens.css` `frontend/src/styles/base.css` `frontend/src/styles/element-overrides.css` `frontend/src/layouts/DefaultLayout.vue` `frontend/src/components/layout/AppHeader.vue` `frontend/src/components/layout/AppSidebar.vue` `frontend/src/components/layout/AppFooter.vue` `frontend/src/stores/prefs.ts` | 颜色全部来自 `--tb-*` 变量；主题与语言切换即时生效并持久化；`<html lang>` 同步；`header` / `nav` / `main` / `footer` 地标齐备 | F1 |
-| F3 | API 客户端与类型 | `frontend/src/api/client.ts` `frontend/src/api/client.test.ts` `frontend/src/types/api.ts` `frontend/src/types/tools.ts` | 统一拆信封；`error.code` 映射到 `errors.<CODE>` 并插值 `params`；支持取消与超时归一化 | F1 |
-| F4 | 目录 store 与页面 | `frontend/src/stores/catalog.ts` `frontend/src/views/HomeView.vue` `frontend/src/views/CategoryView.vue` `frontend/src/views/NotFoundView.vue` `frontend/src/components/discovery/ToolCard.vue` `frontend/src/components/discovery/CategoryCard.vue` | 首页渲染 70 个入口与 10 个分类；搜索按中英文名过滤；未实现工具的卡片禁用并标注「即将上线」 | F3 |
-| F5 | 工具页骨架 | `frontend/src/components/tool/ToolPageLayout.vue` `frontend/src/components/tool/ToolPanel.vue` `frontend/src/components/tool/RunBar.vue` `frontend/src/components/tool/ResultPanel.vue` `frontend/src/components/tool/ErrorAlert.vue` `frontend/src/components/tool/CopyButton.vue` `frontend/src/components/tool/EncodingSelect.vue` `frontend/src/composables/useToolRun.ts` | 四态齐备（idle / loading / success / error）；错误内联展示并带错误码 chip 与重试；`aria-live` 播报；`Ctrl` / `Cmd` + `Enter` 运行；`wide` 工具在 1280 像素以上双栏，移动端运行按钮吸底 | F3 |
-| F6 | 两个工具页与词条 | `frontend/src/tools/index.ts` `frontend/src/tools/encoding/base64/index.ts` `frontend/src/tools/encoding/base64/Tool.vue` `frontend/src/tools/encoding/base64/example.ts` `frontend/src/tools/encoding/number-base/index.ts` `frontend/src/tools/encoding/number-base/Tool.vue` `frontend/src/tools/encoding/number-base/example.ts` `frontend/src/locales/zh-CN/common.json` `frontend/src/locales/zh-CN/home.json` `frontend/src/locales/zh-CN/tool.json` `frontend/src/locales/zh-CN/errors.json` `frontend/src/locales/en-US/common.json` `frontend/src/locales/en-US/home.json` `frontend/src/locales/en-US/tool.json` `frontend/src/locales/en-US/errors.json` `frontend/src/locales/zh-CN/tools/base64.json` `frontend/src/locales/zh-CN/tools/number-base.json` `frontend/src/locales/en-US/tools/base64.json` `frontend/src/locales/en-US/tools/number-base.json` | 「填入示例 → 运行 → 复制」全链路可用；工具输入不写任何浏览器存储；`zh-CN` 与 `en-US` 的词条 key 集合完全一致 | F4, F5 |
-| F7 | 前端门禁与体积预算 | `Makefile` `scripts/check-budget.mjs` | `make verify` 覆盖前端四命令；初始 JS 小于 250 KB（gzip）、单工具 chunk 小于 40 KB（gzip），超限时退出码非 0 | F1 |
-| F8 | 文档同步 | `docs/roadmap.md` `CHANGELOG.md` | 本节与实现一致且可勾选；CHANGELOG 增 `[0.2.1]` | F1 – F7 |
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| F1 | 工程脚手架 | `frontend/package.json` `frontend/pnpm-lock.yaml` `frontend/index.html` `frontend/vite.config.ts` `frontend/tsconfig.json` `frontend/tsconfig.node.json` `frontend/uno.config.ts` `frontend/eslint.config.js` `frontend/vitest.config.ts` `frontend/src/main.ts` `frontend/src/App.vue` | `pnpm lint`、`pnpm type-check`、`pnpm test`、`pnpm build` 全绿；Element Plus 按需自动导入；按分类拆分 chunk | A1 | ✅ |
+| F2 | 设计令牌与布局 | `frontend/src/styles/tokens.css` `frontend/src/styles/base.css` `frontend/src/styles/element-overrides.css` `frontend/src/layouts/DefaultLayout.vue` `frontend/src/components/layout/AppHeader.vue` `frontend/src/components/layout/AppSidebar.vue` `frontend/src/components/layout/AppFooter.vue` `frontend/src/stores/prefs.ts` | 颜色全部来自 `--tb-*` 变量；主题与语言切换即时生效并持久化；`<html lang>` 同步；`header` / `nav` / `main` / `footer` 地标齐备 | F1 | ✅ |
+| F3 | API 客户端与类型 | `frontend/src/api/client.ts` `frontend/src/api/client.test.ts` `frontend/src/types/api.ts` `frontend/src/types/tools.ts` | 统一拆信封；`error.code` 映射到 `errors.<CODE>` 并插值 `params`；支持取消与超时归一化 | F1 | ✅ |
+| F4 | 目录 store 与页面 | `frontend/src/stores/catalog.ts` `frontend/src/views/HomeView.vue` `frontend/src/views/CategoryView.vue` `frontend/src/views/NotFoundView.vue` `frontend/src/components/discovery/ToolCard.vue` `frontend/src/components/discovery/CategoryCard.vue` | 首页渲染 70 个入口与 10 个分类；搜索按中英文名过滤；未实现工具的卡片禁用并标注「即将上线」 | F3 | ✅ |
+| F5 | 工具页骨架 | `frontend/src/components/tool/ToolPageLayout.vue` `frontend/src/components/tool/ToolPanel.vue` `frontend/src/components/tool/RunBar.vue` `frontend/src/components/tool/ResultPanel.vue` `frontend/src/components/tool/ErrorAlert.vue` `frontend/src/components/tool/CopyButton.vue` `frontend/src/components/tool/EncodingSelect.vue` `frontend/src/composables/useToolRun.ts` | 四态齐备（idle / loading / success / error）；错误内联展示并带错误码 chip 与重试；`aria-live` 播报；`Ctrl` / `Cmd` + `Enter` 运行；`wide` 工具在 1280 像素以上双栏，移动端运行按钮吸底 | F3 | ✅ |
+| F6 | 两个工具页与词条 | `frontend/src/tools/index.ts` `frontend/src/tools/encoding/base64/index.ts` `frontend/src/tools/encoding/base64/Tool.vue` `frontend/src/tools/encoding/base64/example.ts` `frontend/src/tools/encoding/number-base/index.ts` `frontend/src/tools/encoding/number-base/Tool.vue` `frontend/src/tools/encoding/number-base/example.ts` `frontend/src/locales/zh-CN/common.json` `frontend/src/locales/zh-CN/home.json` `frontend/src/locales/zh-CN/tool.json` `frontend/src/locales/zh-CN/errors.json` `frontend/src/locales/en-US/common.json` `frontend/src/locales/en-US/home.json` `frontend/src/locales/en-US/tool.json` `frontend/src/locales/en-US/errors.json` `frontend/src/locales/zh-CN/tools/base64.json` `frontend/src/locales/zh-CN/tools/number-base.json` `frontend/src/locales/en-US/tools/base64.json` `frontend/src/locales/en-US/tools/number-base.json` | 「填入示例 → 运行 → 复制」全链路可用；工具输入不写任何浏览器存储；`zh-CN` 与 `en-US` 的词条 key 集合完全一致 | F4, F5 | ✅ |
+| F7 | 前端门禁与体积预算 | `Makefile` `scripts/check-budget.mjs` | `make verify` 覆盖前端四命令；初始 JS 小于 250 KB（gzip）、单工具 chunk 小于 40 KB（gzip），超限时退出码非 0 | F1 | ✅ |
+| F8 | 文档同步 | `docs/roadmap.md` `CHANGELOG.md` | 本节与实现一致且可勾选；CHANGELOG 增 `[0.2.1]` | F1 – F7 | ✅ |
 
 ### 5.4 完成标准
 

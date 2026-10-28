@@ -1,0 +1,6 @@
+node_modules/
+dist/
+coverage/
+components.d.ts
+*.local
+.DS_Store

@@ -1,0 +1,60 @@
+{
+  "name": "Base64 Codec",
+  "description": "Convert between text and Base64, with standard and URL-safe variants.",
+  "category": "Encoding",
+  "actions": {
+    "encode": "Encode",
+    "decode": "Decode"
+  },
+  "fields": {
+    "operation": "Operation",
+    "input": "Input",
+    "inputEncoding": "Input encoding",
+    "variant": "Base64 variant",
+    "padding": "Keep padding",
+    "outputEncoding": "Output encoding"
+  },
+  "options": {
+    "operation": {
+      "encode": "Encode",
+      "decode": "Decode"
+    },
+    "variant": {
+      "standard": "Standard (+ /)",
+      "url": "URL-safe (- _)"
+    },
+    "outputEncoding": {
+      "utf8": "UTF-8 text",
+      "hex": "Hexadecimal"
+    }
+  },
+  "results": {
+    "output": "Output",
+    "outputHint": "The result can be copied directly."
+  },
+  "examples": [
+    {
+      "label": "Encode some text",
+      "value": "Blue Cloud Toolbit"
+    },
+    {
+      "label": "Decode a Base64 string",
+      "value": "SGVsbG8sIFRvb2xiaXQh"
+    }
+  ],
+  "hints": {
+    "input": "When encoding, the input is read using the selected encoding; when decoding, whitespace and padding are ignored.",
+    "padding": "Turn it off to omit the 「=」 padding, which is common for URLs and file names.",
+    "output": "The decoded output can be rendered as UTF-8 text or hexadecimal."
+  },
+  "faq": [
+    {
+      "q": "Is Base64 encryption?",
+      "a": "No. Base64 is only an encoding and anyone can reverse it. Do not use it to protect sensitive data."
+    },
+    {
+      "q": "Why does decoding report invalid input?",
+      "a": "The input contains characters outside the selected variant or has an invalid length. Check whether the data uses the standard or URL-safe variant."
+    }
+  ]
+}

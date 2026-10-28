@@ -1,0 +1,211 @@
+/**
+ * 偏好设置。
+ *
+ * 只存「语言 / 主题 / 侧栏折叠」这类非敏感偏好；
+ * **禁止**把工具输入写进任何浏览器存储。
+ */
+import { defineStore } from 'pinia'
+import { computed, ref, watch } from 'vue'
+
+import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, i18n, isLocale, type Locale } from '@/i18n'
+
+/** 主题模式。 */
+export type ThemeMode = 'system' | 'light' | 'dark'
+
+/** 主题在 localStorage 中的键。 */
+export const THEME_STORAGE_KEY = 'toolbit.theme'
+
+/** 侧栏折叠状态在 localStorage 中的键。 */
+export const SIDEBAR_STORAGE_KEY = 'toolbit.sidebar'
+
+/** 收藏工具 slug 列表在 localStorage 中的键。 */
+export const FAVORITES_STORAGE_KEY = 'toolbit.favorites'
+
+/** 最近使用工具 slug 列表在 localStorage 中的键。 */
+export const RECENT_STORAGE_KEY = 'toolbit.recent'
+
+/** 最近使用最多保留的条数。 */
+export const RECENT_LIMIT = 12
+
+/** 读取存储的偏好；无值或非法值回退到默认值。 */
+function readStored(key: string): string | null {
+  if (typeof localStorage === 'undefined') {
+    return null
+  }
+  return localStorage.getItem(key)
+}
+
+/** 读取存储的字符串数组；非法内容回退为空数组。 */
+function readStoredList(key: string): string[] {
+  const raw = readStored(key)
+  if (!raw) {
+    return []
+  }
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+    return parsed.filter((item): item is string => typeof item === 'string')
+  } catch {
+    return []
+  }
+}
+
+/** 判断是否为受支持的主题模式。 */
+export function isThemeMode(value: unknown): value is ThemeMode {
+  return value === 'system' || value === 'light' || value === 'dark'
+}
+
+export const usePrefsStore = defineStore('prefs', () => {
+  const storedLocale = readStored(LOCALE_STORAGE_KEY)
+  const locale = ref<Locale>(isLocale(storedLocale) ? storedLocale : DEFAULT_LOCALE)
+
+  const storedTheme = readStored(THEME_STORAGE_KEY)
+  const theme = ref<ThemeMode>(isThemeMode(storedTheme) ? storedTheme : 'system')
+
+  const sidebarCollapsed = ref(readStored(SIDEBAR_STORAGE_KEY) === '1')
+
+  /** 收藏的工具 slug（有序，最近收藏在前）。 */
+  const favorites = ref<string[]>(readStoredList(FAVORITES_STORAGE_KEY))
+
+  /** 最近使用的工具 slug（有序，最近使用在前）。 */
+  const recent = ref<string[]>(readStoredList(RECENT_STORAGE_KEY))
+
+  /** 系统偏好是否为深色。 */
+  const systemPrefersDark = ref(false)
+
+  /** 实际生效的主题（把 system 解析为 light / dark）。 */
+  const resolvedTheme = computed<'light' | 'dark'>(() => {
+    if (theme.value === 'system') {
+      return systemPrefersDark.value ? 'dark' : 'light'
+    }
+    return theme.value
+  })
+
+  /** 把主题写到 `<html data-theme>`，并同步 Element Plus 主色。 */
+  function applyTheme(): void {
+    if (typeof document === 'undefined') {
+      return
+    }
+    document.documentElement.dataset.theme = resolvedTheme.value
+  }
+
+  /** 同步 `<html lang>`。 */
+  function applyLocale(): void {
+    if (typeof document === 'undefined') {
+      return
+    }
+    document.documentElement.lang = locale.value
+  }
+
+  /** 切换语言。 */
+  function setLocale(next: Locale): void {
+    locale.value = next
+  }
+
+  /** 切换主题模式。 */
+  function setTheme(next: ThemeMode): void {
+    theme.value = next
+  }
+
+  /** 折叠或展开侧栏。 */
+  function toggleSidebar(): void {
+    sidebarCollapsed.value = !sidebarCollapsed.value
+  }
+
+  /** 判断工具是否已收藏。 */
+  function isFavorite(slug: string): boolean {
+    return favorites.value.includes(slug)
+  }
+
+  /** 切换收藏状态。 */
+  function toggleFavorite(slug: string): void {
+    favorites.value = isFavorite(slug)
+      ? favorites.value.filter((item) => item !== slug)
+      : [slug, ...favorites.value]
+  }
+
+  /** 记录一次工具使用（去重并截断到上限）。 */
+  function recordRecent(slug: string): void {
+    recent.value = [slug, ...recent.value.filter((item) => item !== slug)].slice(0, RECENT_LIMIT)
+  }
+
+  /** 清空最近使用。 */
+  function clearRecent(): void {
+    recent.value = []
+  }
+
+  /** 监听系统主题变化。 */
+  function watchSystemTheme(): void {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      return
+    }
+    const query = window.matchMedia('(prefers-color-scheme: dark)')
+    systemPrefersDark.value = query.matches
+    const onChange = (event: MediaQueryListEvent) => {
+      systemPrefersDark.value = event.matches
+    }
+    query.addEventListener('change', onChange)
+  }
+
+  watch(locale, (next) => {
+    ;(i18n.global.locale as unknown as { value: string }).value = next
+    applyLocale()
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(LOCALE_STORAGE_KEY, next)
+    }
+  })
+
+  watch(theme, (next) => {
+    applyTheme()
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(THEME_STORAGE_KEY, next)
+    }
+  })
+
+  watch(sidebarCollapsed, (next) => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, next ? '1' : '0')
+    }
+  })
+
+  watch(favorites, (next) => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(next))
+    }
+  })
+
+  watch(recent, (next) => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(RECENT_STORAGE_KEY, JSON.stringify(next))
+    }
+  })
+
+  watch(resolvedTheme, applyTheme)
+
+  /** 初始化：应用持久化偏好并监听系统主题。 */
+  function init(): void {
+    applyLocale()
+    applyTheme()
+    watchSystemTheme()
+  }
+
+  return {
+    locale,
+    theme,
+    resolvedTheme,
+    sidebarCollapsed,
+    systemPrefersDark,
+    favorites,
+    recent,
+    setLocale,
+    setTheme,
+    toggleSidebar,
+    isFavorite,
+    toggleFavorite,
+    recordRecent,
+    clearRecent,
+    init,
+  }
+})

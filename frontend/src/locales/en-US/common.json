@@ -1,0 +1,68 @@
+{
+  "appName": "Toolbit",
+  "appTagline": "Blue Cloud Toolbit",
+  "actions": {
+    "run": "Run",
+    "reset": "Reset",
+    "example": "Load example",
+    "copy": "Copy",
+    "copied": "Copied",
+    "clear": "Clear",
+    "retry": "Retry",
+    "download": "Download",
+    "search": "Search",
+    "close": "Close",
+    "backHome": "Back to home"
+  },
+  "nav": {
+    "home": "Home",
+    "allTools": "All tools",
+    "recent": "Recently used",
+    "favorites": "Favorites",
+    "shortcuts": "Shortcuts",
+    "categories": "Categories",
+    "about": "About",
+    "sidebar": "Sidebar navigation",
+    "toggleSidebar": "Expand or collapse the sidebar",
+    "skipToContent": "Skip to main content"
+  },
+  "theme": {
+    "label": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "toDark": "Switch to the dark theme",
+    "toLight": "Switch to the light theme"
+  },
+  "locale": {
+    "label": "Language"
+  },
+  "settings": {
+    "title": "Settings",
+    "open": "Open settings",
+    "theme": "Appearance",
+    "locale": "Language"
+  },
+  "states": {
+    "loading": "Loading",
+    "empty": "No data",
+    "failed": "Failed to load",
+    "notFound": "Page not found",
+    "notFoundHint": "There is no page at this address."
+  },
+  "footer": {
+    "builtWith": "Every tool runs on the server; inputs are never stored.",
+    "copyright": "© {year} Blue Cloud Toolbit. All rights reserved.",
+    "licenseShort": "Apache-2.0",
+    "license": "Released under the Apache-2.0 license",
+    "github": "GitHub repository",
+    "versionLink": "View release notes",
+    "externalHint": "(opens in a new tab)"
+  },
+  "units": {
+    "ms": "ms",
+    "bytes": "bytes",
+    "kb": "KB",
+    "mb": "MB"
+  }
+}

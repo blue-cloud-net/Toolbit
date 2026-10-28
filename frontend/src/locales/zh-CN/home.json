@@ -1,0 +1,28 @@
+{
+  "title": "蓝云工具箱",
+  "subtitle": "70 个 IT 工具，全部在服务端计算，浏览器不保存任何输入。",
+  "searchPlaceholder": "搜索工具（支持中英文名）",
+  "searchEmpty": "没有匹配的工具。",
+  "categoriesTitle": "分类",
+  "toolsTitle": "全部工具",
+  "toolCount": "共 {count} 个工具",
+  "countTools": "{count} 个工具",
+  "soon": "即将上线",
+  "soonHint": "该工具尚未实现，点击可查看规划。",
+  "enabledOnly": "只看已上线",
+  "recentEmpty": "还没有使用记录。打开任意工具后会自动出现在这里。",
+  "favoritesEmpty": "还没有收藏。在工具页点击星标即可加入收藏。",
+  "clearRecent": "清空最近使用",
+  "categories": {
+    "crypto": "加密",
+    "keys": "密钥",
+    "certificates": "证书",
+    "encoding": "编码",
+    "formatting": "格式化",
+    "text": "文本",
+    "data": "数据",
+    "system": "系统",
+    "network": "网络",
+    "documents": "文档"
+  }
+}
