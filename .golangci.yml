@@ -29,6 +29,36 @@ linters:
           deny:
             - pkg: "github.com/blue-cloud-net/tongsuo-go"
               desc: "tongsuo-go 只允许在 internal/cryptosvc 中导入"
+        # AGENTS.md §4.15：密码学运算一律经 cryptosvc 转调 tongsuo-go，
+        # 禁止在 Toolbit 内用标准库拼装分组模式、填充、KDF、签名与密钥协商。
+        #
+        # 摘要（crypto/sha256 等）与随机源（crypto/rand）**不在**本规则内：
+        # 前者用于内容指纹（目录 ETag），后者用于非密钥标识（requestId）。
+        # 二者一旦用于密码学用途，仍属违规。
+        no-stdlib-crypto:
+          files:
+            - "!**/internal/cryptosvc/**"
+          deny:
+            - pkg: "crypto/aes"
+              desc: "密码学运算一律经 cryptosvc 转调 tongsuo-go"
+            - pkg: "crypto/cipher"
+              desc: "密码学运算一律经 cryptosvc 转调 tongsuo-go"
+            - pkg: "crypto/des"
+              desc: "密码学运算一律经 cryptosvc 转调 tongsuo-go"
+            - pkg: "crypto/rc4"
+              desc: "密码学运算一律经 cryptosvc 转调 tongsuo-go"
+            - pkg: "crypto/hmac"
+              desc: "密码学运算一律经 cryptosvc 转调 tongsuo-go"
+            - pkg: "crypto/rsa"
+              desc: "密码学运算一律经 cryptosvc 转调 tongsuo-go"
+            - pkg: "crypto/ecdsa"
+              desc: "密码学运算一律经 cryptosvc 转调 tongsuo-go"
+            - pkg: "crypto/ed25519"
+              desc: "密码学运算一律经 cryptosvc 转调 tongsuo-go"
+            - pkg: "crypto/elliptic"
+              desc: "密码学运算一律经 cryptosvc 转调 tongsuo-go"
+            - pkg: "crypto/ecdh"
+              desc: "密码学运算一律经 cryptosvc 转调 tongsuo-go"
     gocritic:
       disabled-checks:
         - ifElseChain
