@@ -2,7 +2,7 @@
 
 > 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
 
-错误码的**唯一事实来源**是 `internal/toolerr/registry.go`。本文是它的镜像文档，由 `scripts/check-docs.mjs` 校验覆盖率。
+错误码的**唯一事实来源**是 `backend/internal/toolerr/registry.go`。本文是它的镜像文档，由 `scripts/check-docs.mjs` 校验覆盖率。
 
 ---
 

@@ -11,7 +11,7 @@
 | 术语 | 英文 / 标识 | 含义 |
 | --- | --- | --- |
 | 工具 | tool | 一个可独立调用的功能单元，标识为 `slug` |
-| 目录 | catalog | `catalog/tools.yaml`，工具元数据的唯一事实来源 |
+| 目录 | catalog | `backend/catalog/tools.yaml`，工具元数据的唯一事实来源 |
 | 标识 | slug | 工具的小写 kebab-case 唯一标识，如 `sm4-file-crypt` |
 | 分类 | category | 工具的归属分组，共 10 个 |
 | 档位 | rateClass | 限流档位：`light` / `standard` / `heavy` / `file` / `network` |
@@ -85,7 +85,7 @@
 | 分发器 | dispatcher | 把 `/api/v1/tools/{slug}` 路由到对应 handler 的组件 |
 | 会话 | session | 一次请求内的密码学句柄与资源容器（`cryptosvc.Session`） |
 | 句柄 | handle | Tongsuo 对象的原生资源，需显式释放 |
-| 服务 | service | `internal/cryptosvc` 等不含 HTTP 语义的业务层 |
+| 服务 | service | `backend/internal/cryptosvc` 等不含 HTTP 语义的业务层 |
 | 限额 | limit | 单次请求允许的最大体积、条目数、时长等 |
 | 限流 | rate limit | 按 IP 限制请求速率 |
 | 幂等 | idempotent | 重复执行结果相同（如 `Close()`） |

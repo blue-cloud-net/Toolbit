@@ -2,7 +2,7 @@
 
 > 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
 
-适用目录：`web/`。
+适用目录：`frontend/`。
 
 ---
 
@@ -23,7 +23,7 @@
 ## 2. 目录结构
 
 ```text
-web/src/
+frontend/src/
 ├── api/            # 与后端通信的唯一入口
 ├── components/
 │   ├── layout/     # Header / Sidebar / Footer / Drawer
@@ -32,7 +32,7 @@ web/src/
 │   └── tool/       # 工具页专用共享组件
 ├── composables/    # use* 组合式函数
 ├── layouts/        # DefaultLayout
-├── locales/        # zh-CN.ts / en-US.ts
+├── locales/        # zh-CN/ 与 en-US/ 目录（common.json、home.json、tool.json、errors.json、tools/<slug>.json）
 ├── router/
 ├── stores/         # catalog / prefs
 ├── styles/         # tokens.css / element-overrides.css / base.css
@@ -43,9 +43,9 @@ web/src/
 
 **必须**
 
-- 工具组件只放在 `web/src/tools/<category>/<slug>/`；
-- 跨工具复用的组件放 `web/src/components/tool/`，**禁止**在工具目录内建「公共」组件；
-- 与后端 DTO 对齐的类型放 `web/src/types/`，**禁止**在组件内重复定义请求/响应结构。
+- 工具组件只放在 `frontend/src/tools/<category>/<slug>/`；
+- 跨工具复用的组件放 `frontend/src/components/tool/`，**禁止**在工具目录内建「公共」组件；
+- 与后端 DTO 对齐的类型放 `frontend/src/types/`，**禁止**在组件内重复定义请求/响应结构。
 
 ---
 
@@ -128,7 +128,7 @@ ToolPageLayout
 
 ## 6. API 调用
 
-- 后端通信**只能**经过 `web/src/api/client.ts`。
+- 后端通信**只能**经过 `frontend/src/api/client.ts`。
 - **禁止**在组件内直接 `fetch` / `XMLHttpRequest`。
 - 客户端**必须**统一拆信封：读 `code` / `data` / `error` / `meta`，并把 `error.code` 映射为本地化文案。
 - 请求**必须**携带 `AbortController`；组件卸载或用户重跑时**必须**中止上一次请求。
@@ -164,7 +164,7 @@ ToolPageLayout
 
 ### 8.1 设计令牌
 
-所有颜色、间距、圆角、字号**必须**来自 `web/src/styles/tokens.css` 的 CSS 变量，**禁止**在组件里写死十六进制颜色。
+所有颜色、间距、圆角、字号**必须**来自 `frontend/src/styles/tokens.css` 的 CSS 变量，**禁止**在组件里写死十六进制颜色。
 
 | 组 | 变量 |
 | --- | --- |

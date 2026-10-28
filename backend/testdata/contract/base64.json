@@ -1,0 +1,74 @@
+{
+  "slug": "base64",
+  "description": "Base64 编解码的契约测试数据。",
+  "cases": [
+    {
+      "name": "编码文本",
+      "request": {
+        "operation": "encode",
+        "input": { "data": "Hello", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "SGVsbG8=", "encoding": "base64" }
+      }
+    },
+    {
+      "name": "解码文本",
+      "request": {
+        "operation": "decode",
+        "input": { "data": "SGVsbG8=", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "Hello", "encoding": "utf8" }
+      }
+    },
+    {
+      "name": "URL 安全变体",
+      "request": {
+        "operation": "encode",
+        "input": { "data": "fbff", "encoding": "hex" },
+        "variant": "url"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "-_8=" }
+      }
+    },
+    {
+      "name": "十六进制输出",
+      "request": {
+        "operation": "decode",
+        "input": { "data": "SGVsbG8=", "encoding": "utf8" },
+        "outputEncoding": "hex"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "48656c6c6f", "encoding": "hex" }
+      }
+    },
+    {
+      "name": "非法 Base64 输入",
+      "request": {
+        "operation": "decode",
+        "input": { "data": "!!!not base64!!!", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_BASE64"
+      }
+    },
+    {
+      "name": "非法操作类型",
+      "request": {
+        "operation": "transcode",
+        "input": { "data": "Hello", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

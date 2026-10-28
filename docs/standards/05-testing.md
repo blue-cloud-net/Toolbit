@@ -69,7 +69,7 @@ func TestSymmetricCrypt(t *testing.T) {
 
 ### 2.4 契约测试
 
-每个工具在 `testdata/contract/<slug>.json` 存放一组 golden 请求 / 响应：
+每个工具在 `backend/testdata/contract/<slug>.json` 存放一组 golden 请求 / 响应：
 
 ```json
 {
@@ -185,10 +185,10 @@ CI 中**必须**执行：
 
 | 范围 | 目标 |
 | --- | --- |
-| `internal/cryptosvc` | ≥ 80% |
-| `internal/toolerr` | 100% |
-| `internal/httpx` | ≥ 80% |
-| `internal/tools/*` | 每个工具的正例 + 反例路径全覆盖（行覆盖 ≥ 70%） |
+| `backend/internal/cryptosvc` | ≥ 80% |
+| `backend/internal/toolerr` | 100% |
+| `backend/internal/httpx` | ≥ 80% |
+| `backend/internal/tools/*` | 每个工具的正例 + 反例路径全覆盖（行覆盖 ≥ 70%） |
 | 前端 `composables/` `api/` | ≥ 80% |
 | 前端 `components/` | ≥ 60% |
 

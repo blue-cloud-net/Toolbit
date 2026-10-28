@@ -45,41 +45,96 @@ flowchart LR
 
 - 进程同时承担 API 与静态资源两个角色，监听 `8080`。
 - Tongsuo 以 cgo 方式链接，运行时通过 ELF `rpath` 定位 `/opt/tongsuo/lib64`。
-- 出网仅限 5 个在线工具，全部经过 `internal/netguard`。
+- 出网仅限 5 个在线工具，全部经过 `backend/internal/netguard`。
 
 ---
 
-## 3. 目录与依赖方向
+## 3. 目录结构与依赖方向
+
+### 3.1 仓库目录结构
+
+仓库顶层是**两个独立构建单元**加**一组共享资产**：
+
+```text
+Toolbit/
+├── backend/                    ← 后端：独立 Go 模块
+│   ├── go.mod                  module github.com/blue-cloud-net/Toolbit/backend
+│   ├── go.sum
+│   ├── cmd/
+│   │   └── toolbit/            进程入口、装配、优雅退出
+│   ├── catalog/                工具目录（SSOT 载体）
+│   │   ├── embed.go            //go:embed tools.yaml
+│   │   └── tools.yaml          工具元数据唯一事实来源
+│   └── internal/               全部后端实现，禁止被外部导入
+│       ├── api/                HTTP 分发器与端点
+│       ├── buildinfo/          版本信息（ldflags 注入）
+│       ├── catalog/            目录解析与校验
+│       ├── codecsvc/           编码归一化
+│       ├── cryptosvc/          密码学服务层（唯一可 import tongsuo-go）
+│       ├── httpx/              响应信封、中间件、requestId
+│       ├── netguard/           出网防护
+│       ├── stats/              匿名统计
+│       ├── toolerr/            错误码注册表
+│       ├── tools/              各领域工具实现
+│       └── webui/              静态资源与 SPA 回退
+│
+├── frontend/                   ← 前端：独立 pnpm 项目
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── src/                    见 standards/01-frontend.md §2
+│
+├── docs/                       文档（standards / api / templates）
+├── scripts/                    文档与一致性校验脚本
+├── deploy/                     Dockerfile / compose / entrypoint
+│
+├── Makefile                    跨前后端的工程入口
+├── .golangci.yml               Go 静态检查规则
+├── .editorconfig               缩进与编码约定
+└── README.md / AGENTS.md / CHANGELOG.md / LICENSE
+```
+
+> **目录约定**
+>
+> - `backend/` 与 `frontend/` **互不依赖**：后端不 import 前端产物，前端不 import 后端源码。
+> - 后端 Go 模块根在 `backend/`，因此 import 路径为 `github.com/blue-cloud-net/Toolbit/backend/internal/...`。
+> - 工具目录 YAML 位于 `backend/catalog/tools.yaml`，**不**在仓库根：
+>   `//go:embed` 不能引用上级目录，SSOT 必须与 `embed.go` 同目录。
+>   该文件由文档与前端工具链按需读取，**不构成第二份副本**。
+> - `backend/internal/` 是 Go 的可见性边界：`backend/internal/...` 只允许被 `backend/` 内的包导入。
+
+### 3.2 依赖方向
 
 ```mermaid
 flowchart TD
-  CMD[cmd/toolbit] --> API[internal/api 分发器]
-  API --> CAT[internal/catalog]
-  API --> TOOLS[internal/tools 领域实现]
-  API --> STATS[internal/stats]
-  API --> WEBUI[internal/webui]
-  TOOLS --> CRYPTO[internal/cryptosvc]
-  TOOLS --> CODEC[internal/codecsvc]
-  TOOLS --> NG[internal/netguard]
-  TOOLS --> ERR[internal/toolerr]
+  CMD[backend/cmd/toolbit] --> API[backend/internal/api 分发器]
+  API --> CAT[backend/internal/catalog]
+  API --> TOOLS[backend/internal/tools 领域实现]
+  API --> STATS[backend/internal/stats]
+  API --> WEBUI[backend/internal/webui]
+  TOOLS --> CRYPTO[backend/internal/cryptosvc]
+  TOOLS --> CODEC[backend/internal/codecsvc]
+  TOOLS --> NG[backend/internal/netguard]
+  TOOLS --> ERR[backend/internal/toolerr]
   CRYPTO --> TONG[github.com/blue-cloud-net/tongsuo-go]
   CRYPTO --> TONG[NATIVE Tongsuo libcrypto]
-  API --> HTTPX[internal/httpx]
-  CAT --> YAML[catalog/tools.yaml]
+  API --> HTTPX[backend/internal/httpx]
+  CAT --> YAML[backend/catalog/tools.yaml]
+  FE[frontend/src] -.HTTP.-> API
 ```
 
 **规则**
 
 - 依赖单向向下，`api → tools → cryptosvc → tongsuo-go`。
-- `internal/cryptosvc` 是**唯一**允许 `import tongsuo-go` 的包。
-- `internal/httpx` 不依赖任何领域包，可被任意层使用。
-- `internal/catalog` 只读 YAML，不认识工具实现。
+- `backend/internal/cryptosvc` 是**唯一**允许 `import tongsuo-go` 的包。
+- `backend/internal/httpx` 不依赖任何领域包，可被任意层使用。
+- `backend/internal/catalog` 只读 YAML，不认识工具实现。
+- 前端与后端之间**只**通过 HTTP 契约耦合，无源码级依赖。
 
 ---
 
 ## 4. 后端分层
 
-### 4.1 分发器（`internal/api`）
+### 4.1 分发器（`backend/internal/api`）
 
 单一入口 `POST /api/v1/tools/{slug}`，处理顺序固定：
 
@@ -109,7 +164,7 @@ sequenceDiagram
 
 `RateLimit` **只作用于 `/api` 分组**：首屏会并发拉取几十个带内容 hash 的 chunk，若全局限流会直接 429。
 
-### 4.2 工具实现（`internal/tools`）
+### 4.2 工具实现（`backend/internal/tools`）
 
 按领域分包：`crypto`、`keys`、`cert`、`encoding`、`formatting`、`text`、`data`、`system`、`network`、`documents`。
 
@@ -121,7 +176,7 @@ sequenceDiagram
 
 handler **不做**算法实现，**不**直接接触 Tongsuo，**不**自己拼错误码。
 
-### 4.3 加密服务层（`internal/cryptosvc`）
+### 4.3 加密服务层（`backend/internal/cryptosvc`）
 
 唯一触碰 Tongsuo 的层。对外暴露按能力划分的服务：
 
@@ -182,7 +237,7 @@ flowchart LR
 
 ## 6. 工具目录（catalog）
 
-`catalog/tools.yaml` 是**工具元数据的唯一事实来源**：
+`backend/catalog/tools.yaml` 是**工具元数据的唯一事实来源**：
 
 ```yaml
 - slug: symmetric-crypt
@@ -229,7 +284,7 @@ flowchart TD
 
 **要点**
 
-- 工具组件**静态登记**在 `web/src/tools/index.ts`，slug → 组件是编译期映射；目录数据只提供展示元信息。
+- 工具组件**静态登记**在 `frontend/src/tools/index.ts`，slug → 组件是编译期映射；目录数据只提供展示元信息。
 - 路由级懒加载 + 按分类切 chunk；初始 JS 目标 < 250 KB（gzip），单工具 chunk < 40 KB。
 - 工具页统一为**单列上下**布局：输入 → 参数 → 运行 → 结果；标记 `wide` 的工具在 ≥1280 宽度下自动变为左右分栏。
 - 所有工具提供「填入示例」；示例数据放在各工具的 `example.ts`。
@@ -313,7 +368,7 @@ erDiagram
 ### D2 catalog 作为单一事实来源
 
 - **背景**：工具的分类、限额、限流档位、启用状态若分散在代码各处，必然漂移。
-- **决策**：`catalog/tools.yaml` 内嵌进二进制，同时驱动后端行为、前端渲染与文档校验。
+- **决策**：`backend/catalog/tools.yaml` 内嵌进二进制，同时驱动后端行为、前端渲染与文档校验。
 - **代价**：新增工具要改 YAML + 注册表 + 前端登记三处；由 CI 校验三者一致。
 
 ### D3 全部工具后端执行
@@ -355,7 +410,7 @@ erDiagram
 ### D9 加密服务层隔离
 
 - **背景**：Tongsuo 的句柄有明确的释放语义（幂等 Close、别名共享、finalizer 不可靠），散落在 handler 里极易泄漏或重复释放。
-- **决策**：所有 Tongsuo 调用集中在 `internal/cryptosvc`，由 `Session` 统一管理生命周期。
+- **决策**：所有 Tongsuo 调用集中在 `backend/internal/cryptosvc`，由 `Session` 统一管理生命周期。
 - **代价**：多一层抽象；换来的是可测试性与可替换性。
 
 ### D10 双语与 8 组预设主色

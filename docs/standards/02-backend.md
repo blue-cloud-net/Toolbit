@@ -2,7 +2,7 @@
 
 > 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
 
-适用目录：`cmd/`、`internal/`。
+适用目录：`backend/`。
 
 ---
 
@@ -10,7 +10,7 @@
 
 - Go 1.25，`CGO_ENABLED=1`（`tongsuo-go` 依赖 cgo）
 - Gin（HTTP 路由与中间件）
-- `github.com/blue-cloud-net/tongsuo-go` v0.5.0（**仅** `internal/cryptosvc` 可导入）
+- `github.com/blue-cloud-net/tongsuo-go` v0.5.0（**仅** `backend/internal/cryptosvc` 可导入）
 - `modernc.org/sqlite`（纯 Go 驱动）
 
 ---
@@ -18,15 +18,19 @@
 ## 2. 包布局与依赖方向
 
 ```text
-cmd/toolbit  →  internal/api  →  internal/tools  →  internal/cryptosvc  →  tongsuo-go
+backend/cmd/toolbit  →  backend/internal/api  →  backend/internal/tools
+                     →  backend/internal/cryptosvc  →  tongsuo-go
 ```
+
+后端是**独立 Go 模块**，模块根为 `backend/`，import 路径形如
+`github.com/blue-cloud-net/Toolbit/backend/internal/api`。
 
 **必须**
 
 - 依赖**单向向下**，禁止反向 import 与循环依赖；
-- `internal/cryptosvc` 是**唯一**允许 `import tongsuo-go` 的包；
-- `internal/httpx` **不得**依赖任何领域包；
-- `internal/catalog` **不得**认识工具实现；
+- `backend/internal/cryptosvc` 是**唯一**允许 `import tongsuo-go` 的包；
+- `backend/internal/httpx` **不得**依赖任何领域包；
+- `backend/internal/catalog` **不得**认识工具实现；
 - 工具之间**禁止**互相 import；需要共用能力时下沉到 `cryptosvc` / `codecsvc` / `netguard`。
 
 ---
@@ -35,19 +39,19 @@ cmd/toolbit  →  internal/api  →  internal/tools  →  internal/cryptosvc  �
 
 | 层 | 允许做 | 禁止做 |
 | --- | --- | --- |
-| `internal/api` | 查目录、协商 Content-Type、限流、超时、Body 限制、Origin 校验、注册路由 | 实现业务算法 |
-| `internal/tools/*` | 解码输入、字段校验、调用服务、编码 DTO | 直接调 `tongsuo-go`、自造错误码、写 SQL |
-| `internal/cryptosvc` | 调 Tongsuo、管理句柄生命周期、算法分发、限额校验 | 感知 HTTP / JSON / Gin |
-| `internal/codecsvc` | 编码归一化、PEM/DER 识别 | 感知具体工具 |
-| `internal/netguard` | SSRF 防护、出网策略 | 感知具体工具 |
-| `internal/stats` | 事件写入与聚合 | 感知具体工具的业务语义 |
+| `backend/internal/api` | 查目录、协商 Content-Type、限流、超时、Body 限制、Origin 校验、注册路由 | 实现业务算法 |
+| `backend/internal/tools/*` | 解码输入、字段校验、调用服务、编码 DTO | 直接调 `tongsuo-go`、自造错误码、写 SQL |
+| `backend/internal/cryptosvc` | 调 Tongsuo、管理句柄生命周期、算法分发、限额校验 | 感知 HTTP / JSON / Gin |
+| `backend/internal/codecsvc` | 编码归一化、PEM/DER 识别 | 感知具体工具 |
+| `backend/internal/netguard` | SSRF 防护、出网策略 | 感知具体工具 |
+| `backend/internal/stats` | 事件写入与聚合 | 感知具体工具的业务语义 |
 
 ---
 
 ## 4. handler 形态
 
 ```go
-// internal/tools/crypto/symmetric.go
+// backend/internal/tools/crypto/symmetric.go
 type symmetricRequest struct {
     Algorithm string `json:"algorithm"`
     Operation string `json:"operation"`
@@ -141,7 +145,7 @@ func SymmetricCrypt(ctx context.Context, in symmetricRequest) (tools.Result, err
 ## 9. 配置
 
 - 全部配置通过**环境变量**注入，前缀 `TOOLBIT_`；
-- 读取集中在 `internal/config`，启动时一次性解析并校验；
+- 读取集中在 `backend/internal/config`，启动时一次性解析并校验；
 - 解析失败**必须** `fail-fast`（打印错误并退出），**禁止**用「静默默认值」掩盖配置错误；
 - 配置项**不得**在运行时通过接口修改（v1 无热更新）；
 - 每个配置项**必须**有：名称、类型、默认值、取值范围说明、是否必填。
@@ -191,7 +195,7 @@ func SymmetricCrypt(ctx context.Context, in symmetricRequest) (tools.Result, err
 
 ## 14. 禁止清单
 
-- ❌ 在 `internal/api` 之外注册路由。
+- ❌ 在 `backend/internal/api` 之外注册路由。
 - ❌ handler 直接 import `tongsuo-go`。
 - ❌ 用 `map[string]any` 作为响应 `data`。
 - ❌ 关闭 `priv.Public()` 返回的公钥对象。

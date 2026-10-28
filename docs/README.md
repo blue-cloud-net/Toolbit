@@ -87,10 +87,10 @@
 
 | 主题 | 位置 |
 | --- | --- |
-| 工具元数据 | [`../catalog/tools.yaml`](../catalog/tools.yaml) |
-| 错误码与 HTTP 状态 | `internal/toolerr/registry.go` |
-| 配置项 | `internal/config` |
-| i18n 词条 | `web/src/locales/` |
+| 工具元数据 | [`../backend/catalog/tools.yaml`](../backend/catalog/tools.yaml) |
+| 错误码与 HTTP 状态 | `backend/internal/toolerr/registry.go` |
+| 配置项 | `backend/internal/config` |
+| i18n 词条 | `frontend/src/locales/` |
 | 架构决策 | [architecture.md](architecture.md) §关键决策 |
 
 **其它文档只引用，不重复定义。**

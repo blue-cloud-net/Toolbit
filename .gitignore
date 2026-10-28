@@ -9,9 +9,9 @@
 
 # ---- Node / 前端 ----
 node_modules/
-web/dist/
-web/.vite/
-web/coverage/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
 *.tsbuildinfo
 .pnpm-store/
 

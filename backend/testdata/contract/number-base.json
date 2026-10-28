@@ -1,0 +1,62 @@
+{
+  "slug": "number-base",
+  "description": "进制转换的契约测试数据。",
+  "cases": [
+    {
+      "name": "十进制转十六进制",
+      "request": { "value": "255", "from": 10, "to": 16 },
+      "expect": {
+        "code": 0,
+        "dataContains": { "result": "ff", "from": 10, "to": 16 }
+      }
+    },
+    {
+      "name": "十六进制转十进制",
+      "request": { "value": "ff", "from": 16, "to": 10 },
+      "expect": {
+        "code": 0,
+        "dataContains": { "result": "255" }
+      }
+    },
+    {
+      "name": "二进制转十进制",
+      "request": { "value": "1010", "from": 2, "to": 10 },
+      "expect": {
+        "code": 0,
+        "dataContains": { "result": "10" }
+      }
+    },
+    {
+      "name": "超 64 位大整数",
+      "request": { "value": "18446744073709551616", "from": 10, "to": 16 },
+      "expect": {
+        "code": 0,
+        "dataContains": { "result": "10000000000000000" }
+      }
+    },
+    {
+      "name": "带进制前缀",
+      "request": { "value": "10", "from": 10, "to": 16, "prefix": true },
+      "expect": {
+        "code": 0,
+        "dataContains": { "result": "0xa" }
+      }
+    },
+    {
+      "name": "源进制越界",
+      "request": { "value": "10", "from": 37, "to": 10 },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "缺少待转换的值",
+      "request": { "value": "  ", "from": 10, "to": 16 },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}
