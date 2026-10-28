@@ -18,58 +18,65 @@
 
 ## 2. 项目地图
 
+仓库分为**两个独立构建单元**：`backend/`（Go 模块）与 `frontend/`（pnpm 项目），二者只通过 HTTP 契约耦合。
+
 | 路径 | 职责 | 允许依赖 |
 | --- | --- | --- |
-| `cmd/toolbit/` | 进程入口、装配、优雅退出 | 全部 `internal/*` |
-| `internal/api/` | HTTP 分发器：查目录、协商 Content-Type、限流、超时、Body 限制、Origin 校验 | `httpx` `catalog` `tools` `toolerr` `stats` |
-| `internal/catalog/` | 工具目录：内嵌并解析 `catalog/tools.yaml` | 标准库 |
-| `internal/tools/` | 各领域工具实现（按领域分子包） | `cryptosvc` `codecsvc` `toolerr` `netguard` |
-| `internal/cryptosvc/` | **唯一**允许 `import tongsuo-go` 的层 | `tongsuo-go` |
-| `internal/codecsvc/` | 编码归一化（utf8/hex/base64/base64url）与 PEM/DER 识别 | 标准库 |
-| `internal/toolerr/` | 错误码注册表（唯一来源） | 标准库 |
-| `internal/httpx/` | 响应信封、中间件、requestId | 标准库 |
-| `internal/netguard/` | 出网防护（解析 → 私网校验 → 钉 IP → 重定向与体积上限） | 标准库 |
-| `internal/stats/` | SQLite 匿名统计：迁移、异步写入、聚合、保留期 | `modernc.org/sqlite` |
-| `internal/webui/` | 静态资源与 SPA 回退 | 标准库 |
-| `internal/buildinfo/` | 版本信息（ldflags 注入） | 标准库 |
-| `catalog/tools.yaml` | **工具元数据单一事实来源** | — |
-| `web/` | Vue 前端 | — |
+| `backend/cmd/toolbit/` | 进程入口、装配、优雅退出 | 全部 `backend/internal/*` |
+| `backend/internal/api/` | HTTP 分发器：查目录、协商 Content-Type、限流、超时、Body 限制、Origin 校验 | `httpx` `catalog` `tools` `toolerr` `stats` |
+| `backend/internal/catalog/` | 工具目录：内嵌并解析 `backend/catalog/tools.yaml` | 标准库 + `yaml.v3` |
+| `backend/internal/tools/` | 各领域工具实现（按领域分子包） | `cryptosvc` `codecsvc` `toolerr` `netguard` |
+| `backend/internal/cryptosvc/` | **唯一**允许 `import tongsuo-go` 的层 | `tongsuo-go` |
+| `backend/internal/codecsvc/` | 编码归一化（utf8/hex/base64/base64url）与 PEM/DER 识别 | 标准库 |
+| `backend/internal/toolerr/` | 错误码注册表（唯一来源） | 标准库 |
+| `backend/internal/httpx/` | 响应信封、中间件、requestId | 标准库 |
+| `backend/internal/netguard/` | 出网防护（解析 → 私网校验 → 钉 IP → 重定向与体积上限） | 标准库 |
+| `backend/internal/stats/` | SQLite 匿名统计：迁移、异步写入、聚合、保留期 | `modernc.org/sqlite` |
+| `backend/internal/webui/` | 静态资源与 SPA 回退 | 标准库 |
+| `backend/internal/buildinfo/` | 版本信息（ldflags 注入） | 标准库 |
+| `backend/catalog/tools.yaml` | **工具元数据单一事实来源** | — |
+| `backend/catalog/embed.go` | 把 `tools.yaml` 内嵌进二进制（`//go:embed`） | 标准库 |
+| `frontend/` | Vue 前端 | — |
 | `deploy/` | Dockerfile / compose / entrypoint | — |
 | `scripts/` | 文档与一致性校验脚本（`check-docs.mjs`） | 标准库 |
 | `docs/` | 文档（`standards/` `api/` `_templates/`） | — |
 
 **依赖方向是单向的**：`api → tools → cryptosvc → tongsuo-go`。任何反向依赖都是缺陷。
 
+> 工具目录 YAML 位于 `backend/catalog/` 而非仓库根：`//go:embed` 不能引用上级目录，
+> 单一事实来源必须与 `embed.go` 同目录。
+
 ---
 
 ## 3. 常用命令
 
 ```bash
-# 后端
+# 后端（在 backend/ 下，是独立 Go 模块）
 go build ./...
 go test ./... -race
 go vet ./...
 
-# 前端（在 web/ 下）
+# 前端（在 frontend/ 下）
 pnpm install
 pnpm lint
 pnpm type-check
 pnpm test
 pnpm build
 
-# 文档
-make lint            # 含 markdownlint 与文档覆盖检查
+# 跨前后端（在仓库根）
+make lint            # golangci-lint + markdownlint + 文档覆盖检查
 make check-docs      # catalog / 错误码 / 环境变量覆盖率
+make verify          # 提交前全量校验：vet + test + lint
 ```
 
-未落地 `Makefile` 前，直接使用上面列出的原生命令。
+`make verify` 是提交前的**唯一闸口**（v0.10.0+ 之前没有 CI）。
 
 ---
 
 ## 4. 架构不变量（违反即回归）
 
-1. **只有 `internal/cryptosvc` 可以 `import tongsuo-go`。** 其他包一律通过 `cryptosvc` 的服务接口调用。
-2. **`catalog/tools.yaml` 是工具元数据的唯一来源。** 分类、顺序、传输方式、限流档位、限额只在这里定义；代码与文档都不得另立一份。
+1. **只有 `backend/internal/cryptosvc` 可以 `import tongsuo-go`。** 其他包一律通过 `cryptosvc` 的服务接口调用。
+2. **`backend/catalog/tools.yaml` 是工具元数据的唯一来源。** 分类、顺序、传输方式、限流档位、限额只在这里定义；代码与文档都不得另立一份。
 3. **所有工具走后端 API。** 唯一例外是 `websocket-test`（浏览器原生 `WebSocket`），它**没有**后端端点。
 4. **工具响应必须 `Cache-Control: no-store`。** 错误响应同样。
 5. **不回显输入内容。** 错误 `message` 不得包含用户输入；可回显字段名与枚举值。
@@ -79,7 +86,9 @@ make check-docs      # catalog / 错误码 / 环境变量覆盖率
 9. **用户输入构造 DN 一律用 `x509.Name.TryAdd`**，禁止 `Add`（对非法字段会 panic）。
 10. **国际化的 key 必须成对存在。** `zh-CN` 与 `en-US` 缺一不可，由 CI 校验。
 11. **工具输入不写 `localStorage` / `sessionStorage` / IndexedDB。** 敏感输入离开页面即清空。
-12. **不新增依赖而不说明理由。** 变更 `go.mod` / `package.json` 必须在提交信息中写明 `adds: <pkg> <version>`。
+12. **不新增依赖而不说明理由。** 变更 `backend/go.mod` / `frontend/package.json` 必须在提交信息中写明 `adds: <pkg> <version>`。
+13. **`backend/` 与 `frontend/` 互不依赖。** 后端不 import 前端产物，前端不 import 后端源码；二者只通过 HTTP 契约耦合。
+14. **`backend/internal/` 只允许被 `backend/` 内的包导入。** 这是 Go 的可见性边界，不得跨越。
 
 ---
 
@@ -89,7 +98,7 @@ make check-docs      # catalog / 错误码 / 环境变量覆盖率
 - ❌ 在本仓库任何文件（README、docs、注释、提交信息、配置、测试）中提及任何**参考项目**的名称或路径。
 - ❌ 在日志或响应中输出私钥、口令、请求体、证书正文。
 - ❌ 把 `x509.Name.Add` 用于用户可控输入。
-- ❌ 跳过 `internal/api` 分发器自行注册 `/api` 路由。
+- ❌ 跳过 `backend/internal/api` 分发器自行注册 `/api` 路由。
 - ❌ 在前端做密码学计算（唯一例外：`websocket-test` 的协议握手）。
 - ❌ 用 `git commit --no-verify` 绕过检查。
 - ❌ 提交 `.env`、真实密钥、真实证书到仓库。
@@ -101,10 +110,10 @@ make check-docs      # catalog / 错误码 / 环境变量覆盖率
 
 | 变更内容 | 必须同步更新 |
 | --- | --- |
-| 新增 / 移除 / 改名工具 | `catalog/tools.yaml`、[docs/tools.md](docs/tools.md)、对应 `docs/api/tools/*.md`、前端 `web/src/tools/index.ts` |
+| 新增 / 移除 / 改名工具 | `backend/catalog/tools.yaml`、[docs/tools.md](docs/tools.md)、对应 `docs/api/tools/*.md`、前端 `frontend/src/tools/index.ts` |
 | 修改工具请求 / 响应字段 | 对应 `docs/api/tools/*.md`、前端 DTO 类型 |
-| 新增 / 修改错误码 | `internal/toolerr/registry.go`、[docs/api/errors.md](docs/api/errors.md)、前端 `errors.*` 文案 |
-| 新增 / 修改环境变量 | `internal/config`、[docs/standards/08-deploy.md](docs/standards/08-deploy.md)、[docs/deploy.md](docs/deploy.md) |
+| 新增 / 修改错误码 | `backend/internal/toolerr/registry.go`、[docs/api/errors.md](docs/api/errors.md)、前端 `errors.*` 文案 |
+| 新增 / 修改环境变量 | `backend/internal/config`、[docs/standards/08-deploy.md](docs/standards/08-deploy.md)、[docs/deploy.md](docs/deploy.md) |
 | 修改架构或关键决策 | [docs/architecture.md](docs/architecture.md) |
 | 修改工具的输入输出或默认值 | [docs/tools.md](docs/tools.md)、前端参数区默认值 |
 | 调整阶段范围或退出标准 | [docs/roadmap.md](docs/roadmap.md) |
@@ -124,24 +133,24 @@ make check-docs      # catalog / 错误码 / 环境变量覆盖率
 
 ## 8. 新增一个工具的完整流程
 
-1. **目录**：在 `catalog/tools.yaml` 登记 slug、分类、顺序、`transport`、`rateClass`、`maxBodyBytes`、`timeoutMs`、`sensitive`、`requiresNetwork`、`autoRun`、`wide`、`i18nKey`。
+1. **目录**：在 `backend/catalog/tools.yaml` 登记 slug、分类、顺序、`transport`、`rateClass`、`maxBodyBytes`、`timeoutMs`、`sensitive`、`requiresNetwork`、`autoRun`、`wide`、`i18nKey`。
 2. **后端**：
-   - 在对应领域包（如 `internal/tools/crypto/`）实现 handler；
-   - 需要密码学时在 `internal/cryptosvc` 增加服务方法，**不要**在 handler 里直接调 `tongsuo-go`；
+   - 在对应领域包（如 `backend/internal/tools/crypto/`）实现 handler；
+   - 需要密码学时在 `backend/internal/cryptosvc` 增加服务方法，**不要**在 handler 里直接调 `tongsuo-go`；
    - 定义请求 / 响应结构体并实现 `Validate()`，错误统一用 `toolerr`；
-   - 在 `internal/api` 的注册表登记 slug → handler。
+   - 在 `backend/internal/api` 的注册表登记 slug → handler。
 3. **前端**：
-   - 新建 `web/src/tools/<category>/<slug>/{index.ts,Tool.vue,example.ts}`；
-   - 在 `web/src/tools/index.ts` 登记；
+   - 新建 `frontend/src/tools/<category>/<slug>/{index.ts,Tool.vue,example.ts}`；
+   - 在 `frontend/src/tools/index.ts` 登记；
    - 复用共享组件（`EncodingSelect`、`KeyInput`、`CertTextInput`、`FileDropZone`、`CodeEditor`、`ResultPanel` 等），不要重复造。
-4. **文案**：在 `web/src/locales/zh-CN/tools/<slug>.json` 与 `web/src/locales/en-US/tools/<slug>.json`
+4. **文案**：在 `frontend/src/locales/zh-CN/tools/<slug>.json` 与 `frontend/src/locales/en-US/tools/<slug>.json`
    补齐 `tools.<slug>.*`，字段：`name` `description` `category` `actions` `fields` `options`
    `results` `examples` `hints` `faq`（见 [docs/i18n.md](docs/i18n.md)）。
 5. **示例**：`example.ts` 提供一组**测试用**示例数据（不得使用真实密钥）。
 6. **测试**：
    - handler 正例 + 反例各一；
    - 若涉及密码学，补标准向量测试（见 [docs/standards/05-testing.md](docs/standards/05-testing.md)）；
-   - 契约测试数据写入 `testdata/contract/<slug>.json`。
+   - 契约测试数据写入 `backend/testdata/contract/<slug>.json`。
 7. **文档**：更新 [docs/tools.md](docs/tools.md) 与对应 `docs/api/tools/*.md`。
 8. **校验**：`make check-docs` 通过。
 
