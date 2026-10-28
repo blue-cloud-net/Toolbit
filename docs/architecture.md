@@ -1,6 +1,6 @@
 # 架构总览
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Draft ｜ 适用版本：v0.3.0 ｜ 最后更新：2026-10-28
 
 本文描述蓝云工具箱的整体结构、运行时行为与关键决策。**先读目标与非目标，再读分层，最后看决策清单。**
 
@@ -192,20 +192,27 @@ handler **不做**算法实现，**不**直接接触 Tongsuo，**不**自己拼�
 
 ### 4.3 加密服务层（`backend/internal/cryptosvc`）
 
-唯一触碰 Tongsuo 的层。对外暴露按能力划分的服务：
+唯一触碰 Tongsuo 的层。对外暴露按能力划分的**包级函数**：
 
-| 服务 | 能力 |
-| --- | --- |
-| `DigestService` | SM3 / MD5 / SHA 系列摘要，支持流式 |
-| `MACService` | HMAC-SM3 / SHA 系列 |
-| `SymService` | SM4 / AES；ECB / CBC / CTR / OFB / CFB / GCM；pkcs7 / zero / none |
-| `AsymService` | SM2 / RSA / EC / Ed25519 / Ed448 / X25519 / X448 的生成、解析、签名、加解密 |
-| `PKIService` | 证书、CSR、证书链、CRL、OCSP、PKCS#7 / #12、JWK、ASN.1 |
-| `KDFService` | HKDF / PBKDF2 / scrypt / Argon2ID |
-| `ECDHService` | 曲线密钥协商 + 可选 HKDF 派生 |
-| `RandomService` | 安全随机数与密码生成 |
+| 能力 | 函数 | 说明 |
+| --- | --- | --- |
+| 摘要 | `Digest` | SM3 / MD5 / SHA 系列 |
+| MAC | `MAC` | HMAC-SM3 / SHA 系列 |
+| 对称 | `SymEncrypt` / `SymDecrypt` | SM4 / AES；ECB / CBC / CTR / OFB / CFB / GCM |
+| 签名 | `Sign` / `Verify` | SM2 / RSA / ECDSA / Ed25519 / Ed448 |
+| 非对称加解密 | `AsymEncrypt` / `AsymDecrypt` | SM2 / RSA |
+| 密钥协商 | `ECDHSharedSecret` / `ECDHDerive` | 曲线协商 + HKDF 派生 |
+| 随机 | `RandomBytes` | CSPRNG |
+| 密钥加载 | `LoadPrivateKey` / `LoadPublicKey` | PEM / DER / base64 / hex |
 
-**生命周期模型**：`cryptosvc.Session` 是每个请求的「句柄作用域」。
+> PKI 能力（证书、CSR、CRL、OCSP、PKCS#7 / #12、JWK）在 v0.5.0 – v0.6.0 交付，
+> 届时在同层新增对应函数。
+
+**能力缺口**：`tongsuo-go` 尚未提供的算法（DES / 3DES / ECIES 等）**不自研兜底**，
+一律登记到 [upstream/tongsuo-go-issues.md](upstream/tongsuo-go-issues.md) 并跳过。
+
+**生命周期模型**：`cryptosvc.Session` 是每个请求的「句柄作用域」，
+经 `ctx` 传递给 handler，**不**改变 `tools.Handler` 的签名。
 
 ```mermaid
 flowchart LR
@@ -223,11 +230,13 @@ flowchart LR
 - `x509.CertificateRequest` 没有公开 `Close`，只能靠 finalizer，**禁止跨请求持有**。
 - 私钥 PEM 源缓冲在加载后立即清零。
 - 服务不缓存任何密钥 / 证书对象；每请求重新加载。
+- Session 累积的警告在分发器**写响应之前**合并进 `meta.warnings`。
 
 **并发与限额**
 
-- 全局信号量：密钥生成、证书签发、PKCS#12 打包等重操作并发 ≤ 2。
-- cgo 调用**不可中断**：超时后请求返回 `504`，但底层工作仍会跑完；此时记录一条 orphan 日志并释放信号量。
+- 全局信号量：重操作并发 ≤ 2，由 `Session.Acquire(ctx)` / `Session.Release(operation)` 使用。
+- cgo 调用**不可中断**：超时后请求返回 `504`，但底层工作仍会跑完；
+  此时记录一条 orphan 日志并释放信号量。
 - 流式处理每 1 MB 检查一次 `ctx`。
 
 ---
@@ -432,6 +441,17 @@ erDiagram
 - **背景**：面向中文开发者，同时需要英文可用性；主题与主色是高频个性化需求。
 - **决策**：vue-i18n 双语；主题跟随系统（浅色优先）；主色仅 8 组预设，不做任意取色。
 - **代价**：无法满足「品牌级定制」需求；换取对比度可控与实现简单。
+
+### D11 密码学运算只转调，不自研
+
+- **背景**：`tongsuo-go` 的覆盖面有限（无 DES / 3DES / ECIES），
+  自行用标准库补齐会让同一个工具产生两套不同的密码学行为，
+  也会让「以铜锁为真源」的承诺失效。
+- **决策**：密码学运算**一律**经 `cryptosvc` 转调 `tongsuo-go`；
+  库缺能力时走上游 issue（登记在 [upstream/tongsuo-go-issues.md](upstream/tongsuo-go-issues.md)），
+  本版跳过该能力，**禁止**自研兜底。
+- **代价**：部分算法在 v0.3.0 不可用；换来的是结果一致性与可追溯的上游修复路径。
+- **校验**：`.golangci.yml` 的 `depguard` 规则 `no-stdlib-crypto` 在 CI 拦截越界导入。
 
 ---
 
