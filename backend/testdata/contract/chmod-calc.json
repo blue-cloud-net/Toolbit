@@ -1,0 +1,76 @@
+{
+  "slug": "chmod-calc",
+  "description": "权限计算的契约测试数据。",
+  "cases": [
+    {
+      "name": "八进制转符号",
+      "request": { "mode": "755" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "octal": "755", "symbolic": "rwxr-xr-x" }
+      }
+    },
+    {
+      "name": "符号转八进制",
+      "request": { "mode": "rwxr-x---" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "octal": "750", "symbolic": "rwxr-x---" }
+      }
+    },
+    {
+      "name": "长形式符号",
+      "request": { "mode": "u=rwx,g=rx,o=r" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "octal": "754" }
+      }
+    },
+    {
+      "name": "忽略特殊位",
+      "request": { "mode": "4755" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "octal": "755" }
+      }
+    },
+    {
+      "name": "权限位覆盖",
+      "request": {
+        "mode": "755",
+        "other": ["read"]
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "octal": "754" }
+      }
+    },
+    {
+      "name": "符号长度不对",
+      "request": { "mode": "rwxr-xr" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_CHMOD"
+      }
+    },
+    {
+      "name": "未知权限位",
+      "request": {
+        "mode": "755",
+        "user": ["append"]
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "缺少输入",
+      "request": {},
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

@@ -13,6 +13,8 @@ import (
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/crypto"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/encoding"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/formatting"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/system"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/text"
 )
 
 // Definitions 返回全部已实现工具的定义。
@@ -20,9 +22,11 @@ import (
 // 顺序稳定：先按分类，再按分类内 `Definitions()` 的登记顺序。
 // 该顺序**不**影响分发（分发按 slug 查表），但便于日志与测试比对。
 func Definitions() []tools.Definition {
-	defs := make([]tools.Definition, 0, 32)
+	defs := make([]tools.Definition, 0, 48)
 	defs = append(defs, encoding.Definitions()...)
 	defs = append(defs, formatting.Definitions()...)
 	defs = append(defs, crypto.Definitions()...)
+	defs = append(defs, text.Definitions()...)
+	defs = append(defs, system.Definitions()...)
 	return defs
 }

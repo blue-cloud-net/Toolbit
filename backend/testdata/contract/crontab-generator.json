@@ -1,0 +1,81 @@
+{
+  "slug": "crontab-generator",
+  "description": "Crontab 表达式生成的契约测试数据。",
+  "cases": [
+    {
+      "name": "每分钟预设",
+      "request": { "preset": "every-minute" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "expression": "* * * * *", "timezone": "UTC" }
+      }
+    },
+    {
+      "name": "每五分钟预设",
+      "request": { "preset": "every-5-minutes" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "expression": "*/5 * * * *" }
+      }
+    },
+    {
+      "name": "每天零点预设",
+      "request": { "preset": "daily" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "expression": "0 0 * * *" }
+      }
+    },
+    {
+      "name": "自定义字段",
+      "request": {
+        "minute": "30",
+        "hour": "2",
+        "dayOfMonth": "15",
+        "count": 3
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "expression": "30 2 15 * *" }
+      }
+    },
+    {
+      "name": "指定时区",
+      "request": {
+        "preset": "hourly",
+        "timezone": "Asia/Shanghai"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "timezone": "Asia/Shanghai" }
+      }
+    },
+    {
+      "name": "分钟越界",
+      "request": { "minute": "99" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_CRON"
+      }
+    },
+    {
+      "name": "未知预设",
+      "request": { "preset": "nope" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "非法时区",
+      "request": {
+        "preset": "hourly",
+        "timezone": "Not/AZone"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_TIME"
+      }
+    }
+  ]
+}

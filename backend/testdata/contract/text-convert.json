@@ -1,0 +1,60 @@
+{
+  "slug": "text-convert",
+  "description": "文本命名风格转换的契约测试数据。",
+  "cases": [
+    {
+      "name": "转下划线",
+      "request": {
+        "input": { "data": "http-server" },
+        "style": "snake"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "http_server", "style": "snake" }
+      }
+    },
+    {
+      "name": "转驼峰",
+      "request": {
+        "input": { "data": "http-server" },
+        "style": "camel"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "httpServer" }
+      }
+    },
+    {
+      "name": "转常量",
+      "request": {
+        "input": { "data": "http-server" },
+        "style": "constant"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "HTTP_SERVER" }
+      }
+    },
+    {
+      "name": "未知风格",
+      "request": {
+        "input": { "data": "abc" },
+        "style": "unknown"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "缺少输入",
+      "request": {
+        "style": "snake"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

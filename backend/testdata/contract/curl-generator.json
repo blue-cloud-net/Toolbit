@@ -1,0 +1,75 @@
+{
+  "slug": "curl-generator",
+  "description": "cURL 命令生成的契约测试数据。",
+  "cases": [
+    {
+      "name": "基本命令",
+      "request": {
+        "method": "POST",
+        "url": "https://example.com/api",
+        "body": "{\"a\":1}"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "shell": "bash" }
+      }
+    },
+    {
+      "name": "口令以占位符呈现",
+      "request": {
+        "url": "https://example.com",
+        "auth": "basic",
+        "username": "alice",
+        "password": "s3cret"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "placeholders": ["PASSWORD"] }
+      }
+    },
+    {
+      "name": "Token 以占位符呈现",
+      "request": {
+        "url": "https://example.com",
+        "auth": "bearer",
+        "token": "abcdef123456"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "placeholders": ["TOKEN"] }
+      }
+    },
+    {
+      "name": "缺少地址",
+      "request": {
+        "method": "GET"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "Bearer 缺少 Token",
+      "request": {
+        "url": "https://example.com",
+        "auth": "bearer"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "未知 Shell",
+      "request": {
+        "url": "https://example.com",
+        "shell": "fish"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}
