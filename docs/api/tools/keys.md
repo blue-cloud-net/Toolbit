@@ -1,6 +1,6 @@
 # 密钥 API
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Draft ｜ 适用版本：v0.4.0 ｜ 最后更新：2026-10-29
 
 覆盖 **6** 个密钥类工具。端点均为 `POST /api/v1/tools/{slug}`。
 
@@ -27,9 +27,9 @@
 | `bits` | int | RSA 时是 | 1024 / 2048（默认）/ 3072 / 4096 |
 | `curve` | string | EC / SM2 时是 | `P-256` \| `P-384` \| `P-521` \| `SM2` |
 | `privateFormat` | string | 否 | `pkcs8`（默认）\| `pkcs1` |
-| `publicFormat` | string | 否 | `spki`（默认）\| `pkcs1` |
+| `publicFormat` | string | 否 | `spki`（默认）；`pkcs1` **暂不支持**（上游无导出入口，见 [I-14](../../upstream/tongsuo-go-issues.md#i-14-asym-缺-rsa-pkcs1-公钥的导出--加载入口)） |
 | `encrypt` | object | 否 | `{ cipher, passphrase }`；`cipher` ∈ `AES-256-CBC` \| `DES-EDE3-CBC` |
-| `count` | int | 否 | 批量生成数量，默认 1 |
+| `count` | int | 否 | 生成数量；当前**只支持 1**（响应结构只能表达一把密钥），其余取值返回 `INVALID_FIELD` |
 
 ### 响应
 
@@ -62,7 +62,7 @@
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `key` | object | 是 | `KeyInput` |
-| `from` | string | 否 | `auto`（默认）\| `pkcs1` \| `pkcs8` \| `spki` \| `der` \| `pem` |
+| `from` | string | 否 | `auto`（默认）\| `pkcs1` \| `pkcs8` \| `spki` \| `der` \| `pem`；非 `auto` 时**约束**源格式，不匹配返回 `UNSUPPORTED_FORMAT` |
 | `to` | string | 是 | `pkcs1` \| `pkcs8` \| `spki` \| `der` \| `pem` |
 | `passphrase` | string | 否 | 加密私钥的现有口令 |
 
@@ -70,14 +70,18 @@
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `key` | object | `{ pem }` |
-| `detected` | object | `{ algorithm, format, bits, curve }` |
+| `key` | object | `{ pem, derBase64 }`；`to` 为 `der` 时 `pem` 为空、`derBase64` 有值，否则反之 |
+| `detected` | object | `{ algorithm, format, encrypted, bits, curve }`；`format` 为识别到的编码（`pkcs1` / `pkcs8` / `spki`） |
 
 ### 错误
 
-`INVALID_KEY`、`UNSUPPORTED_FORMAT`、`PASSPHRASE_REQUIRED`、`PASSPHRASE_INCORRECT`。
+`INVALID_KEY`、`INVALID_PEM`、`INVALID_DER`、`UNSUPPORTED_FORMAT`、`PASSPHRASE_REQUIRED`、`PASSPHRASE_INCORRECT`。
 
 > `pkcs1` 仅适用于 RSA；`spki` 为公钥格式。转换私钥到 `spki` **必须**报错。
+>
+> 源为加密私钥时，转换结果**保持加密**（AES-256-CBC + 原口令），不会因为转换而解密。
+>
+> `passphrase` 可写在顶层或 `key.passphrase`，两者等价。
 
 ---
 
@@ -98,10 +102,11 @@
 | --- | --- | --- |
 | `algorithm` | string | 算法 |
 | `keyType` | string | `private` \| `public` |
-| `format` | string | 原始格式 |
+| `format` | string | 识别到的编码（`pkcs1` / `pkcs8` / `spki`） |
 | `bits` | int | 位数（RSA） |
 | `curve` | string | 曲线 |
-| `fingerprintSha256` | string | SHA-256 指纹 |
+| `encrypted` | bool | 源是否为加密私钥 |
+| `fingerprintSha256` | string | 公钥 SPKI DER 的 SHA-256 指纹（小写十六进制） |
 | `params` | object | RSA 参数 `{ n, e, d, p, q, dp, dq, qi }`（私钥才有） |
 | `normalizedPem` | string | 规范化后的 PEM |
 
@@ -109,7 +114,11 @@
 
 `INVALID_KEY`、`PASSPHRASE_REQUIRED`、`PASSPHRASE_INCORRECT`。
 
-> `params` 中的私钥参数**仅**在用户显式请求解析私钥时返回；响应**禁止**被缓存（`no-store`）。
+> `params` 中的私钥参数**仅**在输入是**私钥**时返回；响应**禁止**被缓存（`no-store`）。
+>
+> 加密私钥的规范化输出**仍保持加密**，不会因为解析而解密。
+>
+> `passphrase` 可写在顶层或 `key.passphrase`，两者等价。
 
 ---
 
@@ -195,7 +204,12 @@ JWK / PEM / XML 之间的密钥格式转换。
 
 `INVALID_JWK`、`INVALID_KEY`、`INVALID_XML`、`UNSUPPORTED_FORMAT`。
 
-> XML 格式采用 RFC 7517 附录的 `ds:KeyInfo` 表达；RSA 与 EC 私钥均可导出。JWK 导出私钥时**必须**包含 `d` 成员，且需显式 `keyType: "private"`。
+> XML 采用 .NET `RSAKeyValue` 表达，**只支持 RSA**
+> （见 [I-13](../../upstream/tongsuo-go-issues.md#i-13-xmlrsa-仅支持-rsa)）；
+> JWK **只支持 RSA 与 EC**，不支持 OKP（Ed25519 / X25519，
+> 见 [I-12](../../upstream/tongsuo-go-issues.md#i-12-jwk-不支持-okp-ed25519--x25519-与对称密钥)）。
+>
+> JWK 导出私钥时**必须**包含 `d` 成员，且需显式 `keyType: "private"`。
 
 ---
 
