@@ -1,0 +1,77 @@
+{
+  "name": "数字签名",
+  "description": "用 SM2 / RSA / ECDSA / Ed25519 / Ed448 对消息签名，或用公钥验签。",
+  "category": "加密",
+  "actions": {
+    "sign": "签名",
+    "verify": "验签"
+  },
+  "fields": {
+    "algorithm": "算法",
+    "operation": "操作",
+    "hash": "摘要",
+    "rsaPadding": "RSA 填充",
+    "sm2UserId": "SM2 userId",
+    "message": "消息",
+    "messageEncoding": "消息编码",
+    "key": "私钥",
+    "publicKey": "公钥",
+    "signature": "签名值",
+    "signatureEncoding": "签名编码"
+  },
+  "options": {
+    "algorithm": {
+      "SM2": "SM2（国密）",
+      "RSA": "RSA",
+      "ECDSA": "ECDSA",
+      "ED25519": "Ed25519",
+      "ED448": "Ed448"
+    },
+    "operation": {
+      "sign": "签名",
+      "verify": "验签"
+    },
+    "hash": {
+      "SHA256": "SHA-256",
+      "SHA384": "SHA-384",
+      "SHA512": "SHA-512"
+    },
+    "rsaPadding": {
+      "pss": "PSS",
+      "pkcs1": "PKCS#1 v1.5"
+    }
+  },
+  "results": {
+    "output": "结果",
+    "valid": "验签通过",
+    "invalid": "验签未通过"
+  },
+  "examples": [
+    {
+      "label": "用 SM2 签名一段文本",
+      "value": "待签名内容"
+    },
+    {
+      "label": "用 Ed25519 签名一段文本",
+      "value": "待签名内容"
+    }
+  ],
+  "hints": {
+    "hash": "SM2 摘要固定为 SM3，ECDSA 固定为 SHA-256，Ed25519 / Ed448 是纯签名——这三者不接受摘要参数。",
+    "userId": "SM2 的 userId 签名与验签必须一致，否则验签不通过。"
+  },
+  "faq": [
+    {
+      "q": "验签显示「未通过」是出错了吗？",
+      "a": "不是，这是业务结论：消息被改动、密钥不配对或 userId 不一致都会导致该结果。"
+    },
+    {
+      "q": "SM2 签名能给 openssl 验吗？",
+      "a": "可以，输出为 ASN.1 DER，与 OpenSSL 兼容。"
+    },
+    {
+      "q": "RSA 用 PSS 还是 PKCS#1？",
+      "a": "默认 PSS；如需与老系统对接可切换为 PKCS#1 v1.5，但后者易受填充预言攻击。"
+    }
+  ]
+}

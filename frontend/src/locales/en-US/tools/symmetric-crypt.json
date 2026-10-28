@@ -1,0 +1,82 @@
+{
+  "name": "Symmetric Encryption",
+  "description": "Encrypt and decrypt with SM4 or AES in ECB / CBC / CTR / OFB / CFB / GCM mode.",
+  "category": "Cryptography",
+  "actions": {
+    "encrypt": "Encrypt",
+    "decrypt": "Decrypt"
+  },
+  "fields": {
+    "algorithm": "Algorithm",
+    "operation": "Operation",
+    "mode": "Mode",
+    "padding": "Padding",
+    "key": "Key",
+    "keyEncoding": "Key encoding",
+    "iv": "IV / nonce",
+    "ivEncoding": "IV encoding",
+    "aad": "Additional authenticated data (AAD)",
+    "aadEncoding": "AAD encoding",
+    "tag": "Authentication tag",
+    "tagEncoding": "Tag encoding",
+    "input": "Input content",
+    "inputEncoding": "Input encoding",
+    "outputEncoding": "Output encoding"
+  },
+  "options": {
+    "algorithm": {
+      "SM4": "SM4 (Chinese national standard)",
+      "AES": "AES"
+    },
+    "operation": {
+      "encrypt": "Encrypt",
+      "decrypt": "Decrypt"
+    },
+    "mode": {
+      "ECB": "ECB",
+      "CBC": "CBC",
+      "CTR": "CTR",
+      "OFB": "OFB",
+      "CFB": "CFB",
+      "GCM": "GCM"
+    },
+    "padding": {
+      "pkcs7": "PKCS#7",
+      "zero": "Zero padding",
+      "none": "No padding"
+    }
+  },
+  "results": {
+    "output": "Output",
+    "tag": "Authentication tag",
+    "iv": "Generated nonce"
+  },
+  "examples": [
+    {
+      "label": "Encrypt Chinese text with SM4-CBC",
+      "value": "蓝云工具箱 Toolbit"
+    },
+    {
+      "label": "Authenticated encryption with SM4-GCM",
+      "value": "蓝云工具箱 Toolbit"
+    }
+  ],
+  "hints": {
+    "mode": "AES supports only ECB / CBC / CTR / GCM; zero and no padding apply to SM4 ECB / CBC only.",
+    "padding": "\"No padding\" requires the input length to be a multiple of 16 bytes."
+  },
+  "faq": [
+    {
+      "q": "Why does GCM decryption report TAG_INVALID?",
+      "a": "The tag is missing or truncated, or the key / nonce / AAD differ from encryption."
+    },
+    {
+      "q": "Why is ECB flagged as risky?",
+      "a": "ECB provides no diffusion, so identical plaintext blocks yield identical ciphertext blocks."
+    },
+    {
+      "q": "What happens when no nonce is given for GCM?",
+      "a": "A random nonce is generated and returned with the result; reuse it for decryption."
+    }
+  ]
+}

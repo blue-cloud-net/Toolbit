@@ -48,5 +48,22 @@
   "favorite": {
     "add": "Add to favorites",
     "remove": "Remove from favorites"
+  },
+  "key": {
+    "fields": {
+      "key": "Key content",
+      "format": "Key format",
+      "passphrase": "Private key passphrase"
+    },
+    "format": {
+      "auto": "Auto-detect",
+      "pem": "PEM",
+      "der": "DER (binary)",
+      "base64": "Base64",
+      "hex": "Hexadecimal"
+    },
+    "hints": {
+      "format": "\"Auto-detect\" tries PEM → Base64 → DER → hexadecimal in order; an explicit format is parsed as-is."
+    }
   }
 }

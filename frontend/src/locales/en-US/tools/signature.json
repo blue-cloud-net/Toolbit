@@ -1,0 +1,77 @@
+{
+  "name": "Digital Signature",
+  "description": "Sign messages with SM2 / RSA / ECDSA / Ed25519 / Ed448, or verify with a public key.",
+  "category": "Cryptography",
+  "actions": {
+    "sign": "Sign",
+    "verify": "Verify"
+  },
+  "fields": {
+    "algorithm": "Algorithm",
+    "operation": "Operation",
+    "hash": "Digest",
+    "rsaPadding": "RSA padding",
+    "sm2UserId": "SM2 userId",
+    "message": "Message",
+    "messageEncoding": "Message encoding",
+    "key": "Private key",
+    "publicKey": "Public key",
+    "signature": "Signature",
+    "signatureEncoding": "Signature encoding"
+  },
+  "options": {
+    "algorithm": {
+      "SM2": "SM2 (Chinese national standard)",
+      "RSA": "RSA",
+      "ECDSA": "ECDSA",
+      "ED25519": "Ed25519",
+      "ED448": "Ed448"
+    },
+    "operation": {
+      "sign": "Sign",
+      "verify": "Verify"
+    },
+    "hash": {
+      "SHA256": "SHA-256",
+      "SHA384": "SHA-384",
+      "SHA512": "SHA-512"
+    },
+    "rsaPadding": {
+      "pss": "PSS",
+      "pkcs1": "PKCS#1 v1.5"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "valid": "Signature is valid",
+    "invalid": "Signature is not valid"
+  },
+  "examples": [
+    {
+      "label": "Sign text with SM2",
+      "value": "待签名内容"
+    },
+    {
+      "label": "Sign text with Ed25519",
+      "value": "待签名内容"
+    }
+  ],
+  "hints": {
+    "hash": "SM2 always uses SM3, ECDSA always uses SHA-256, and Ed25519 / Ed448 are pure signatures — none of them accept a digest parameter.",
+    "userId": "The SM2 userId must match between signing and verification, otherwise verification fails."
+  },
+  "faq": [
+    {
+      "q": "Does \"not valid\" mean an error?",
+      "a": "No. It is a business result: a modified message, a mismatched key or a different userId all cause it."
+    },
+    {
+      "q": "Can openssl verify an SM2 signature?",
+      "a": "Yes, the output is ASN.1 DER and interoperates with OpenSSL."
+    },
+    {
+      "q": "Should RSA use PSS or PKCS#1?",
+      "a": "PSS is the default. PKCS#1 v1.5 is available for legacy interoperability but is prone to padding-oracle attacks."
+    }
+  ]
+}

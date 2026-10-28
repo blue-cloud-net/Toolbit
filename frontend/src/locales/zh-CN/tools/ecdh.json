@@ -1,0 +1,62 @@
+{
+  "name": "ECDH 密钥协商",
+  "description": "双方各自持有私钥，协商出同一份共享密钥，可选再经 HKDF 派生。",
+  "category": "加密",
+  "actions": {
+    "derive": "协商并派生"
+  },
+  "fields": {
+    "curve": "曲线",
+    "privateKey": "本方私钥",
+    "peerPublicKey": "对端公钥",
+    "useKDF": "使用 HKDF 派生",
+    "kdfHash": "派生摘要",
+    "kdfLength": "派生长度",
+    "salt": "盐值（salt）",
+    "info": "上下文信息（info）",
+    "outputEncoding": "输出编码"
+  },
+  "options": {
+    "curve": {
+      "P-256": "P-256",
+      "P-384": "P-384",
+      "P-521": "P-521",
+      "X25519": "X25519",
+      "X448": "X448"
+    },
+    "kdfHash": {
+      "SHA256": "SHA-256",
+      "SHA384": "SHA-384",
+      "SHA512": "SHA-512",
+      "SM3": "SM3"
+    }
+  },
+  "results": {
+    "sharedSecret": "共享密钥",
+    "derivedKey": "派生密钥"
+  },
+  "examples": [
+    {
+      "label": "P-256 协商共享密钥",
+      "value": "P-256 曲线协商"
+    },
+    {
+      "label": "P-256 协商并用 HKDF 派生",
+      "value": "P-256 + HKDF-SHA256"
+    }
+  ],
+  "hints": {
+    "kdf": "共享密钥必须再经 KDF 派生后使用；不要把原始共享密钥直接当会话密钥。",
+    "curve": "SM2 不是可协商曲线，ECDH 仅支持 NIST 曲线与 X25519 / X448。"
+  },
+  "faq": [
+    {
+      "q": "为什么双方结果不一致？",
+      "a": "检查双方曲线是否相同、公钥是否被压缩或转换过。"
+    },
+    {
+      "q": "X25519 与 P-256 的共享密钥长度一样吗？",
+      "a": "不一样：X25519 为 32 字节，P-256 为 32 字节，P-384 为 48 字节，P-521 为 66 字节。"
+    }
+  ]
+}

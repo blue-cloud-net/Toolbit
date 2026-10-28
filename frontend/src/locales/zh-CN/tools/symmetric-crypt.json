@@ -1,0 +1,82 @@
+{
+  "name": "对称加解密",
+  "description": "用 SM4 或 AES 在 ECB / CBC / CTR / OFB / CFB / GCM 模式下加解密。",
+  "category": "加密",
+  "actions": {
+    "encrypt": "加密",
+    "decrypt": "解密"
+  },
+  "fields": {
+    "algorithm": "算法",
+    "operation": "操作",
+    "mode": "模式",
+    "padding": "填充",
+    "key": "密钥",
+    "keyEncoding": "密钥编码",
+    "iv": "IV / nonce",
+    "ivEncoding": "IV 编码",
+    "aad": "附加认证数据（AAD）",
+    "aadEncoding": "AAD 编码",
+    "tag": "认证标签（tag）",
+    "tagEncoding": "tag 编码",
+    "input": "输入内容",
+    "inputEncoding": "输入编码",
+    "outputEncoding": "输出编码"
+  },
+  "options": {
+    "algorithm": {
+      "SM4": "SM4（国密）",
+      "AES": "AES"
+    },
+    "operation": {
+      "encrypt": "加密",
+      "decrypt": "解密"
+    },
+    "mode": {
+      "ECB": "ECB",
+      "CBC": "CBC",
+      "CTR": "CTR",
+      "OFB": "OFB",
+      "CFB": "CFB",
+      "GCM": "GCM"
+    },
+    "padding": {
+      "pkcs7": "PKCS#7",
+      "zero": "零填充",
+      "none": "不填充"
+    }
+  },
+  "results": {
+    "output": "输出结果",
+    "tag": "认证标签",
+    "iv": "自动生成的 nonce"
+  },
+  "examples": [
+    {
+      "label": "SM4-CBC 加密一段中文",
+      "value": "蓝云工具箱 Toolbit"
+    },
+    {
+      "label": "SM4-GCM 认证加密",
+      "value": "蓝云工具箱 Toolbit"
+    }
+  ],
+  "hints": {
+    "mode": "AES 只支持 ECB / CBC / CTR / GCM；零填充与不填充只对 SM4 的 ECB / CBC 有效。",
+    "padding": "「不填充」要求输入长度为 16 字节的整数倍。"
+  },
+  "faq": [
+    {
+      "q": "GCM 解密报 TAG_INVALID？",
+      "a": "tag 缺失、被截断，或密钥 / nonce / AAD 与加密时不一致。"
+    },
+    {
+      "q": "为什么提示 ECB 模式有风险？",
+      "a": "ECB 没有扩散，相同明文块产生相同密文块，不适合真实数据。"
+    },
+    {
+      "q": "GCM 没填 nonce 会怎样？",
+      "a": "加密时自动生成随机 nonce，并在结果中回传，解密时需要使用它。"
+    }
+  ]
+}

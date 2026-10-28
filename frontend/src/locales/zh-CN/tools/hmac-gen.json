@@ -1,0 +1,54 @@
+{
+  "name": "HMAC 计算",
+  "description": "用 HMAC-SM3 或 HMAC-SHA 系列算法计算消息认证码。",
+  "category": "加密",
+  "actions": {
+    "calculate": "计算认证码"
+  },
+  "fields": {
+    "algorithm": "算法",
+    "key": "密钥",
+    "keyEncoding": "密钥编码",
+    "message": "消息",
+    "messageEncoding": "消息编码",
+    "outputEncoding": "输出编码"
+  },
+  "options": {
+    "algorithm": {
+      "HMAC-SM3": "HMAC-SM3（国密）",
+      "HMAC-SHA256": "HMAC-SHA-256",
+      "HMAC-SHA384": "HMAC-SHA-384",
+      "HMAC-SHA512": "HMAC-SHA-512",
+      "HMAC-SHA224": "HMAC-SHA-224",
+      "HMAC-SHA1": "HMAC-SHA-1",
+      "HMAC-MD5": "HMAC-MD5"
+    }
+  },
+  "results": {
+    "mac": "认证码"
+  },
+  "examples": [
+    {
+      "label": "用 HMAC-SM3 计算认证码",
+      "value": "The quick brown fox jumps over the lazy dog"
+    },
+    {
+      "label": "用 HMAC-SHA256 计算认证码",
+      "value": "The quick brown fox jumps over the lazy dog"
+    }
+  ],
+  "hints": {
+    "key": "密钥与消息各自按所选编码解释；编码不同会得到完全不同的结果。",
+    "algorithm": "HMAC-MD5 与 HMAC-SHA1 基于弱摘要，不应用于安全场景。"
+  },
+  "faq": [
+    {
+      "q": "算出来的值和对方不一致怎么办？",
+      "a": "逐项核对：算法、密钥编码、消息编码与输出大小写。"
+    },
+    {
+      "q": "HMAC 密钥需要保密吗？",
+      "a": "需要。HMAC 密钥一旦泄露，认证码即可被伪造。"
+    }
+  ]
+}

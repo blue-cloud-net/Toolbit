@@ -1,0 +1,65 @@
+{
+  "name": "Asymmetric Encryption",
+  "description": "Encrypt with an SM2 or RSA public key and decrypt with the matching private key.",
+  "category": "Cryptography",
+  "actions": {
+    "encrypt": "Encrypt",
+    "decrypt": "Decrypt"
+  },
+  "fields": {
+    "algorithm": "Algorithm",
+    "operation": "Operation",
+    "key": "Key",
+    "rsaPadding": "RSA padding",
+    "oaepHash": "OAEP digest",
+    "input": "Input content",
+    "inputEncoding": "Input encoding",
+    "outputEncoding": "Output encoding"
+  },
+  "options": {
+    "algorithm": {
+      "SM2": "SM2 (Chinese national standard)",
+      "RSA": "RSA"
+    },
+    "operation": {
+      "encrypt": "Encrypt",
+      "decrypt": "Decrypt"
+    },
+    "rsaPadding": {
+      "oaep": "OAEP",
+      "pkcs1": "PKCS#1 v1.5"
+    },
+    "oaepHash": {
+      "SHA256": "SHA-256",
+      "SHA384": "SHA-384",
+      "SHA512": "SHA-512"
+    }
+  },
+  "results": {
+    "output": "Output"
+  },
+  "examples": [
+    {
+      "label": "Encrypt Chinese text with SM2",
+      "value": "待加密内容"
+    },
+    {
+      "label": "Encrypt Chinese text with RSA-OAEP",
+      "value": "待加密内容"
+    }
+  ],
+  "hints": {
+    "algorithm": "SM2 output uses the C1C3C2 order with an 04 prefix; decryption auto-detects DER, C1C3C2 and C1C2C3 input.",
+    "length": "RSA ciphertexts are size-limited and long plaintexts are rejected; use symmetric encryption for large data."
+  },
+  "faq": [
+    {
+      "q": "Can a Java library decrypt the SM2 ciphertext?",
+      "a": "Most implementations use C1C3C2, which matches the default here."
+    },
+    {
+      "q": "What does \"plaintext too long\" mean for RSA?",
+      "a": "RSA can only encrypt a very small amount of data; use symmetric encryption instead."
+    }
+  ]
+}
