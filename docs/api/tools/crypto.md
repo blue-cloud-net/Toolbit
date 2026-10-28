@@ -1,6 +1,6 @@
 # 加密 API
 
-> 状态：Draft ｜ 适用版本：v0.3.0 ｜ 最后更新：2026-10-28
+> 状态：Draft ｜ 适用版本：v0.3.1 ｜ 最后更新：2026-10-28
 
 覆盖 **8** 个加密类工具。所有端点为 `POST /api/v1/tools/{slug}`，请求与响应使用[统一信封](../README.md)。
 
@@ -13,7 +13,7 @@
 | [hmac-gen](#hmac-gen) | HMAC 计算 | JSON | light | ✅ v0.3.0 |
 | [password-gen](#password-gen) | 密码生成 | JSON | light | ✅ v0.3.0 |
 | [hash-calc](#hash-calc) | 摘要计算 | JSON | light | ✅ v0.3.0 |
-| [sm4-file-crypt](#sm4-file-crypt) | SM4 文件加解密 | multipart | file | ⏳ v0.3.1 |
+| [sm4-file-crypt](#sm4-file-crypt) | SM4 文件加解密 | multipart | file | ✅ v0.3.1 |
 
 > **实现状态**列标注该工具的端点是否已交付。
 > 未实现的工具返回 `501 NOT_IMPLEMENTED`，catalog 仍返回全部条目。
@@ -275,19 +275,23 @@ ECDH 密钥协商 + 可选 KDF 派生。
 
 SM4 文件级加解密，使用自定义容器 `TBFC`（分块 GCM）。
 
-> ⏳ **v0.3.1 交付**：本版未实现，端点返回 `501 NOT_IMPLEMENTED`。
-> 以下为已冻结的契约。
-
-### 请求（multipart）
+### 请求（multipart/form-data）
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `operation` | string | 是 | `encrypt` \| `decrypt` |
-| `mode` | string | 否 | 仅 `GCM` |
-| `key` | string | 是 | JSON 串 `{"data":"…","encoding":"hex"}` |
-| `iv` | string | 否 | JSON 串；缺省时生成随机 12 字节并随响应头返回 |
-| `chunkSize` | int | 否 | 分块大小，默认 1048576 |
-| `file` | file | 是 | 待处理文件（单文件） |
+| `mode` | string | 否 | 仅 `GCM`（默认） |
+| `key` | string | 是 | JSON 串 `{"data":"…","encoding":"hex"}`；密钥固定 16 字节 |
+| `iv` | string | 否 | JSON 串；基础 nonce，12 字节；缺省时随机生成 |
+| `chunkSize` | int | 否 | 分块大小，默认 1048576（范围 4096 – 16777216） |
+| `file` | file | 是 | 待处理文件（**单文件**，**必须**是最后一个 part） |
+
+> **文件部分必须是最后一个 part**：服务端按顺序读表单，
+> 读到文件后就无法回头取后面的字段。
+>
+> `key` / `iv` 的取值格式与 [ByteInput](../README.md#42-byteinput-output) 相同，
+> 但以 **JSON 字符串**传递（multipart 的表单字段都是字符串）。
+> `encoding` 缺省按 `hex` 处理。
 
 ### 响应
 
@@ -295,16 +299,61 @@ SM4 文件级加解密，使用自定义容器 `TBFC`（分块 GCM）。
 
 | 场景 | `Content-Type` | `Content-Disposition` |
 | --- | --- | --- |
-| 加密 | `application/octet-stream` | `attachment; filename*=UTF-8''<原名>.sm4` |
-| 解密 | `application/octet-stream` | `attachment; filename*=UTF-8''<原名>` |
+| 加密 | `application/octet-stream` | `attachment; filename="<原名>.sm4"` |
+| 解密 | `application/octet-stream` | `attachment; filename="<原名>"` |
 
-响应头额外携带 `X-Warnings`。
+响应头：
+
+| 响应头 | 说明 |
+| --- | --- |
+| `X-Warnings` | 警告列表（JSON 数组）；无警告时**不**出现 |
+| `X-Duration-Ms` / `X-Input-Bytes` / `X-Output-Bytes` | 与信封的 `meta` 同义 |
+
+> 文件名来自客户端，**不可信**：服务端只取基础名并剔除路径分隔符与控制字符。
+> `filename*` 用 RFC 5987 的 UTF-8 编码，`filename` 是 ASCII 回退。
 
 ### 错误
 
-`TOO_LARGE`、`KEY_SIZE_MISMATCH`、`IV_SIZE_MISMATCH`、`DECRYPT_FAILED`、`INVALID_FIELD`。
+错误**在响应头发出之前**就能确定，因此失败时返回 **JSON 信封**（不是二进制流）：
 
-> 容器格式：`TBFC`(4) + version(1) + flags(1) + chunkSize(4) + baseNonce(12)，随后为分块。分块 nonce 由 `baseNonce[0:8] || uint32be(块索引)` 派生，AAD 绑定块索引。
+| 错误码 | 触发条件 |
+| --- | --- |
+| `INVALID_FIELD` | 操作 / 模式 / 分块大小非法；表单字段畸形；输入不是 TBFC 容器 |
+| `MISSING_FIELD` | 缺少 `key` 或 `file` |
+| `KEY_SIZE_MISMATCH` | 密钥长度不是 16 字节 |
+| `IV_SIZE_MISMATCH` | 基础 nonce 长度不是 12 字节 |
+| `UNSUPPORTED_MODE` | 模式不是 `GCM` |
+| `TOO_LARGE` | 请求体超过 100 MB |
+
+> **解密失败**（密钥不对、容器被篡改、容器被截断）返回 `400` + JSON 信封。
+> 服务端会**先同步校验容器头与第一块**，因此这类错误**不会**表现为
+> 「200 + 被截断的下载」。
+>
+> 流式响应**开始之后**的中断无法再改状态码，只能记日志与统计。
+
+### 容器格式 `TBFC`
+
+```text
+Header (22 字节)
+  magic      [4]byte  = "TBFC"
+  version    uint8    = 1
+  flags      uint8    = 0
+  chunkSize  uint32be
+  baseNonce  [12]byte
+
+Chunk
+  length     uint32be   （明文长度；0 表示结束）
+  ciphertext [length]byte
+  tag        [16]byte
+```
+
+- **分块 nonce**：`baseNonce[0:8] || uint32be(chunkIndex)`；
+- **AAD**：`容器头 || uint32be(chunkIndex)`；
+- **结束块**：`length = 0` + 一个对空明文计算的 `tag`。
+  它让**截断**的容器能被检测出来，而不被误判成「文件到此为止」；
+- 内存占用约 `2 × chunkSize`，与文件大小无关。
+
+> ⚠️ 容器是**自定义格式**，`openssl` **不能**直接解密。
 
 ---
 

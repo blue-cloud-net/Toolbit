@@ -1,6 +1,6 @@
 # 架构总览
 
-> 状态：Draft ｜ 适用版本：v0.3.0 ｜ 最后更新：2026-10-28
+> 状态：Draft ｜ 适用版本：v0.3.1 ｜ 最后更新：2026-10-28
 
 本文描述蓝云工具箱的整体结构、运行时行为与关键决策。**先读目标与非目标，再读分层，最后看决策清单。**
 
@@ -150,6 +150,16 @@ flowchart TD
 
 ### 4.1 分发器（`backend/internal/api`）
 
+分发器有**两条**通道，按 catalog 的 `transport` 分流：
+
+| 通道 | `transport` | 请求 | 响应 |
+| --- | --- | --- | --- |
+| JSON | `json` | `application/json` | 统一信封 |
+| multipart | `multipart` | `multipart/form-data` | **二进制流**，不套信封 |
+
+两条通道共用同一套校验顺序（见 `api/dispatch.go` 的注释）与同一套
+Session / 超时 / 限流 / 统计机制。
+
 单一入口 `POST /api/v1/tools/{slug}`，处理顺序固定：
 
 ```mermaid
@@ -180,6 +190,16 @@ sequenceDiagram
 
 ### 4.2 工具实现（`backend/internal/tools`）
 
+工具实现有两种形态：
+
+| 形态 | 接口 | 适用 |
+| --- | --- | --- |
+| JSON | `Handler(ctx, Request) (Result, error)` | 绝大多数工具 |
+| multipart | `MultipartHandler(ctx, MultipartRequest) (MultipartResult, error)` | 文件类工具 |
+
+multipart 形态的请求绑定**流式**的 `multipart.Reader`；
+文件部分**必须**是最后一个 part（读到文件就无法回头取字段）。
+
 按领域分包：`crypto`、`keys`、`cert`、`encoding`、`formatting`、`text`、`data`、`system`、`network`、`documents`。
 
 每个 handler 的职责**只有三件事**：
@@ -204,6 +224,7 @@ handler **不做**算法实现，**不**直接接触 Tongsuo，**不**自己拼�
 | 密钥协商 | `ECDHSharedSecret` / `ECDHDerive` | 曲线协商 + HKDF 派生 |
 | 随机 | `RandomBytes` | CSPRNG |
 | 密钥加载 | `LoadPrivateKey` / `LoadPublicKey` | PEM / DER / base64 / hex |
+| 文件容器 | `NewTBFCWriter` / `NewTBFCReader` | `TBFC` 分块 GCM 容器（流式） |
 
 > PKI 能力（证书、CSR、CRL、OCSP、PKCS#7 / #12、JWK）在 v0.5.0 – v0.6.0 交付，
 > 届时在同层新增对应函数。

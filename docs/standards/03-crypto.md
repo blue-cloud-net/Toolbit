@@ -1,6 +1,6 @@
 # 密码学与资源生命周期规范
 
-> 状态：Draft ｜ 适用版本：v0.3.0 ｜ 最后更新：2026-10-28
+> 状态：Draft ｜ 适用版本：v0.3.1 ｜ 最后更新：2026-10-28
 
 适用包：`backend/internal/cryptosvc`（以及所有间接使用 Tongsuo 的代码）。
 
@@ -249,22 +249,74 @@ SM2 密文的 `C1C3C2` / `C1C2C3` 顺序与 `04` 前缀在各实现间不统一�
 
 ## 11. 文件加密容器
 
-`sm4-file-crypt` 使用自定义容器 `TBFC`：
+`sm4-file-crypt` 使用自定义容器 `TBFC`，实现在
+`backend/internal/cryptosvc/tbfc.go`。
 
-| 部分 | 内容 |
+### 11.1 格式
+
+```text
+Header (22 字节)
+  magic      [4]byte  = "TBFC"
+  version    uint8    = 1
+  flags      uint8    = 0
+  chunkSize  uint32be
+  baseNonce  [12]byte
+
+Chunk
+  length     uint32be   （明文长度；0 表示结束）
+  ciphertext [length]byte
+  tag        [16]byte
+```
+
+| 派生量 | 取值 |
 | --- | --- |
-| Header | `TBFC`(4) + version(1) + flags(1) + chunkSize(4) + baseNonce(12) |
-| Chunk | `uint32 length` + ciphertext + `tag(16)`；末块 `length = 0` |
-| Nonce | `baseNonce[0:8]` + `uint32be(chunkIndex)` |
-| AAD | header + `uint32be(chunkIndex)` |
+| 分块 nonce | `baseNonce[0:8] \|\| uint32be(chunkIndex)` |
+| AAD | `容器头 \|\| uint32be(chunkIndex)` |
+
+### 11.2 规则
 
 **必须**
 
-- 分块大小默认 1 MB，**必须**支持流式；
+- 分块大小默认 1 MB，范围 4 KiB – 16 MiB，**必须**支持流式；
 - nonce **必须**按块索引派生，**禁止**每块复用同一 nonce；
-- AAD **必须**绑定块索引，防止块重排；
-- 解密时任一块 `tag` 校验失败 → `DECRYPT_FAILED`；
-- 缓冲池复用，内存占用约 2×chunkSize。
+  基础 nonce 随机生成，因此跨容器也不复用；
+- AAD **必须**绑定容器头与块索引：
+  绑定容器头 → 改分块大小或基础 nonce 会认证失败；
+  绑定块索引 → 块重排或删除会认证失败；
+- **结束块必须带认证标签**：`length = 0` + 一个对空明文计算的 `tag`。
+  因此**截断**的容器会被检测出来，而不会被误判成「文件到此为止」；
+- 解密时任一块 `tag` 校验失败 → `TAG_INVALID`；
+- 输入不是容器（魔数 / 版本 / 分块大小不符）→ `INVALID_FIELD`；
+- 内存占用约 2×chunkSize，**不**随文件大小增长。
+
+**禁止**
+
+- 在 handler 里手写容器字节布局：容器读写**必须**经 `cryptosvc`；
+- 把结束块当成「可选」：没有它就无法检测截断。
+
+### 11.3 首块预校验
+
+解密**必须**在响应头发出**之前**同步读出容器头并校验第一块
+（`cryptosvc.TBFCReader.Probe`）。
+
+**理由**：密钥不对、文件被篡改、文件不是容器——这三类错误占误用的绝大多数。
+若等到流式输出中途才发现，响应头已经发出，用户只会拿到一个
+「200 + 被截断的下载」，既无法判断原因，也无法重试。
+
+因此解密失败**必须**返回 JSON 错误信封，而不是二进制流。
+
+### 11.4 multipart 的顺序约束
+
+multipart 表单是**顺序**的：服务端读到文件部分后就无法回头取后面的字段。
+
+因此**必须**规定：**文件部分是最后一个 part**。
+
+- 客户端**必须**先发所有普通字段，最后发文件；
+- 服务端**必须**在读到文件部分时停止读取表单字段；
+- 该约束**必须**写进 API 契约与前端实现（前端用 `FormData.append` 控制顺序）。
+
+**禁止**使用 `ParseMultipartForm`：它会把超限文件**落盘**到临时目录，
+违反「禁止落盘」的约束。**必须**用 `Request.MultipartReader()` 流式读取。
 
 ---
 

@@ -1,6 +1,6 @@
 # API 总览
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Draft ｜ 适用版本：v0.3.1 ｜ 最后更新：2026-10-28
 
 本文描述 Toolbit 的 HTTP 接口约定。所有工具共用**一个分发端点**，请求与响应结构由 catalog 驱动。
 
@@ -112,8 +112,14 @@
 | `X-Request-Id` | 请求标识 |
 | `X-Duration-Ms` | 耗时（毫秒） |
 | `X-Input-Bytes` / `X-Output-Bytes` | 字节数 |
-| `X-Warnings` | 逗号分隔的 warning code |
+| `X-Warnings` | 警告列表（JSON 数组，元素形如 `{"code":"…","params":{…}}`）；无警告时**不**出现该头 |
 | `Cache-Control` | 固定 `no-store` |
+
+> 二进制响应**没有**信封可挂 `meta`，因此元信息与警告改走响应头。
+>
+> **失败时仍返回 JSON 信封**：只要错误能在响应头发出之前确定
+> （参数非法、密钥不对、输入格式不对），服务端就返回标准的
+> `code` / `error` 信封，而不是一个半截的二进制流。
 
 ---
 
@@ -174,6 +180,10 @@
 ### 4.5 FileInput
 
 multipart 的 `file` 字段，**单文件**，**流式**读取，**禁止**落盘。
+
+> **文件部分必须是最后一个 part**：服务端按顺序读表单，
+> 读到文件后就无法回头取后面的字段。
+> 因此客户端**必须**先发所有普通字段，最后再发文件。
 
 ### 4.6 TimeInput
 
@@ -247,7 +257,8 @@ X-RateLimit-Reset: 1760000000
 
 1. 路由与工具存在性 → `TOOL_NOT_FOUND` / `TOOL_DISABLED`
 2. HTTP 方法 → `METHOD_NOT_ALLOWED`
-3. `Content-Type` → `UNSUPPORTED_MEDIA_TYPE`
+3. `Content-Type` → `UNSUPPORTED_MEDIA_TYPE`（按 catalog 的 `transport` 分流：
+   `multipart` 走表单 + 二进制流通道，其余走 JSON 通道）
 4. `Origin` / `Sec-Fetch-Site` → `CROSS_ORIGIN_BLOCKED`
 5. 限流 → `RATE_LIMITED`
 6. 请求体大小 → `TOO_LARGE`
@@ -408,6 +419,8 @@ curl -sS -X POST http://localhost:30234/api/v1/tools/cert-parse \
 
 ### 12.4 文件加密（multipart）
 
+⚠️ **文件部分必须是最后一个 part**：普通字段先发，文件最后发。
+
 ```bash
 curl -sS -X POST http://localhost:30234/api/v1/tools/sm4-file-crypt \
   -F 'operation=encrypt' \
@@ -415,6 +428,17 @@ curl -sS -X POST http://localhost:30234/api/v1/tools/sm4-file-crypt \
   -F 'key={"data":"0123456789ABCDEFFEDCBA9876543210","encoding":"hex"}' \
   -F 'file=@report.pdf' \
   -o report.pdf.sm4
+```
+
+解密时把 `operation` 换成 `decrypt`，文件换成上一步的产物：
+
+```bash
+curl -sS -X POST http://localhost:30234/api/v1/tools/sm4-file-crypt \
+  -F 'operation=decrypt' \
+  -F 'mode=GCM' \
+  -F 'key={"data":"0123456789ABCDEFFEDCBA9876543210","encoding":"hex"}' \
+  -F 'file=@report.pdf.sm4' \
+  -o report.pdf
 ```
 
 ### 12.5 触发错误

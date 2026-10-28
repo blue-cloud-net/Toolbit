@@ -65,7 +65,7 @@ RC 是 `1.0.0` 的**预发布标识**，与 `0.x` 是两条独立轨道。
 | `v0.2.0` | **后端骨架与基础设施** | 2 | 2 | ✅ 已完成 |
 | `v0.2.1` | **前端骨架** | 0 | 2 | ✅ 已完成 |
 | `v0.3.0` | 密码学核心 | 7 | 9 | ✅ 已完成 |
-| `v0.3.1` | 密码学文件工具 | 1 | 10 | 待开始 |
+| `v0.3.1` | 密码学文件工具 | 1 | 10 | ✅ 已完成 |
 | `v0.4.0` | 密钥管理 | 6 | 16 | 待开始 |
 | `v0.5.0` | PKI 解析与链验证 | 8 | 24 | 待开始 |
 | `v0.6.0` | PKI 生成、吊销与容器 | 12 | 36 | 待开始 |
@@ -426,16 +426,57 @@ flowchart LR
 
 **目标**：交付 `sm4-file-crypt`，让大文件加解密可用。
 
+**状态**：✅ 已完成（2026-10-28）。
+
+#### 交付物（1）
+
 | 工具 | 备注 |
 | --- | --- |
 | `sm4-file-crypt` | TBFC 容器，分块 GCM，multipart 上传 + 二进制流响应 |
 
-**完成标准**
+#### 工程交付物
 
-- 分块加解密往返一致，容器头与分块 nonce 派生符合 [standards/03-crypto.md](standards/03-crypto.md) §11；
-- 100 MB 上限下内存占用约 2×chunkSize，不落盘；
-- 加密结果可用本工具解密，跨进程一致；
-- 前端页面提供文件拖放与进度提示。
+| 交付物 | 位置 | 说明 |
+| --- | --- | --- |
+| 文件容器 | `backend/internal/cryptosvc/tbfc.go` | `TBFC` 分块 GCM；流式读写，首块预校验 |
+| multipart 通道 | `backend/internal/tools/multipart.go` | 表单辅助器、文件名清洗、Content-Disposition |
+| 分发器分流 | `backend/internal/api/dispatch_multipart.go` | 按 `transport` 分流；二进制响应 |
+| 前端客户端 | `frontend/src/api/client.ts` | `callToolBinary`：XHR + 上传进度 |
+| 拖放组件 | `frontend/src/components/tool/FileDropZone.vue` | 点击选择 + 拖放 |
+
+#### 技术决策
+
+| # | 决策 | 理由 |
+| --- | --- | --- |
+| F-T1 | 分发器按 catalog 的 `transport` 分流成两条通道 | JSON 通道无法承载二进制响应；两条通道共用校验顺序与 Session 机制 |
+| F-T2 | multipart 表单**流式**读取，用 `Request.MultipartReader()` | `ParseMultipartForm` 会把超限文件**落盘**，违反「禁止落盘」 |
+| F-T3 | 文件部分**必须**是最后一个 part | 表单是顺序的：读到文件就无法回头取后面的字段 |
+| F-T4 | 解密**先同步**校验容器头与第一块 | 让「密钥不对 / 不是容器」在响应头发出**之前**被发现，返回干净的 JSON 错误而不是 200 + 截断下载 |
+| F-T5 | 结束块**带**认证标签 | 否则被截断的容器会被静默接受 |
+| F-T6 | 前端用 XMLHttpRequest 而不是 fetch | fetch **不提供**上传进度事件，而本工具可能上传 100 MB |
+| F-T7 | 错误信封用 FileReader 读 Blob | `blob.text()` 的可用性取决于宿主环境的 Blob 实现，FileReader 普遍可用 |
+
+#### 任务清单
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| V1 | 文件容器 | `backend/internal/cryptosvc/tbfc.go` `backend/internal/cryptosvc/tbfc_test.go` | 分块往返一致；nonce 唯一；篡改 / 截断 / 错误密钥均被检测；内存占用与文件大小无关 | — | ✅ |
+| V2 | multipart 抽象 | `backend/internal/tools/types.go` `backend/internal/tools/multipart.go` | `MultipartRequest` / `MultipartResult` / `MultipartHandler`；文件名清洗；`Content-Disposition` 双编码 | V1 | ✅ |
+| V3 | 分发器分流 | `backend/internal/api/dispatch.go` `backend/internal/api/dispatch_multipart.go` `backend/internal/httpx/security.go` | 按 `transport` 分流；二进制响应带 `X-Warnings`；流式中断记日志与统计 | V2 | ✅ |
+| V4 | 工具实现 | `backend/internal/tools/crypto/sm4filecrypt.go` `backend/internal/tools/crypto/register.go` | 加解密往返；错误密钥返回 JSON 错误；文件不落盘 | V1, V3 | ✅ |
+| V5 | 契约测试 | `backend/internal/api/contract_test.go` `backend/testdata/contract/sm4-file-crypt.json` | 契约执行器支持 multipart；正例与反例各就位 | V4 | ✅ |
+| V6 | 前端客户端 | `frontend/src/api/client.ts` `frontend/src/composables/useFileToolRun.ts` `frontend/src/composables/useFileToolRun.test.ts` | 二进制响应取 blob；JSON 错误走信封；上传进度；下载后回收 object URL | V3 | ✅ |
+| V7 | 前端页面 | `frontend/src/components/tool/FileDropZone.vue` `frontend/src/tools/crypto/sm4-file-crypt/` `frontend/src/locales/*/tools/sm4-file-crypt.json` | 拖放 + 进度提示 + 下载；文件不写浏览器存储 | V6 | ✅ |
+| V8 | 文档同步 | `docs/api/tools/crypto.md` `docs/api/README.md` `docs/tools.md` `docs/standards/03-crypto.md` `docs/architecture.md` | 与实现逐字段一致；容器格式与顺序约束落档 | V4, V7 | ✅ |
+
+#### 完成标准
+
+1. 分块加解密往返一致，容器头与分块 nonce 派生符合 [standards/03-crypto.md](standards/03-crypto.md) §11；
+2. 100 MB 上限下内存占用约 2×chunkSize，不落盘（实测 50 MB 文件，服务端 RSS 稳定在 33 MB）；
+3. 加密结果可用本工具解密，跨进程一致；
+4. 前端页面提供文件拖放与进度提示；
+5. 错误密钥、容器被篡改、容器被截断、输入不是容器——四类错误都返回 JSON 错误信封，**不**表现为截断的下载；
+6. `make verify` 一条命令通过。
 
 ---
 
