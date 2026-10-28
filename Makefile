@@ -5,12 +5,13 @@
 #   frontend/  pnpm 项目（Vue 3 + TypeScript）
 #
 # 常用目标：
-#   make lint        静态检查（Go + Markdown + 文档一致性）
-#   make test        Go 单元测试与契约测试（带 -race）
-#   make verify      提交前全量校验（vet + test + lint）
-#   make check-docs  文档一致性检查
-#
-# 前端相关目标（web-lint / web-build 等）在 v0.2.1 落地，见 docs/roadmap.md §5。
+#   make lint         静态检查（Go + Markdown + 文档一致性 + 前端 ESLint 与类型检查）
+#   make test         Go 单元测试与契约测试（带 -race）
+#   make test-web     前端单元测试
+#   make build-web    前端生产构建
+#   make check-docs   文档一致性检查
+#   make check-budget 前端体积预算检查
+#   make verify       提交前全量校验（vet + test + test-web + lint + build-web + check-budget）
 
 SHELL := /bin/sh
 .SHELLFLAGS := -eu -c
@@ -21,6 +22,7 @@ GO         ?= go
 GOLANGCI_LINT ?= golangci-lint
 MARKDOWNLINT  ?= markdownlint-cli2
 NODE          ?= node
+PNPM          ?= pnpm
 
 # golangci-lint 内嵌的 go/types 版本**不**得高于它所解析的标准库版本，
 # 否则会以 "file requires newer Go version" 崩溃。
@@ -67,9 +69,26 @@ check-docs: ## 文档一致性检查（catalog / 错误码 / 配置项 / 状态�
 	$(NODE) scripts/check-docs.mjs
 
 .PHONY: lint
-lint: lint-go lint-md check-docs ## 全部静态检查
+lint: lint-go lint-md check-docs lint-web ## 全部静态检查
+
+.PHONY: lint-web
+lint-web: ## 前端 ESLint 与类型检查
+	cd $(FRONTEND) && $(PNPM) lint
+	cd $(FRONTEND) && $(PNPM) type-check
+
+.PHONY: test-web
+test-web: ## 前端单元测试
+	cd $(FRONTEND) && $(PNPM) test
+
+.PHONY: build-web
+build-web: ## 前端生产构建
+	cd $(FRONTEND) && $(PNPM) build
+
+.PHONY: check-budget
+check-budget: ## 前端体积预算（初始 JS 与单工具 chunk）
+	$(NODE) scripts/check-budget.mjs
 
 .PHONY: verify
-verify: vet test lint ## 提交前全量校验
+verify: vet test test-web lint build-web check-budget ## 提交前全量校验
 	@echo "✅ 校验通过"
 
