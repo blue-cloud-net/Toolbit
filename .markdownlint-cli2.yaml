@@ -32,8 +32,8 @@
   "globs": ["**/*.md"],
   "ignores": [
     "node_modules/**",
-    "web/node_modules/**",
-    "web/dist/**",
+    "frontend/node_modules/**",
+    "frontend/dist/**",
     "vendor/**",
     "docs/_templates/**"
   ]
