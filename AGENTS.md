@@ -64,9 +64,10 @@ pnpm test
 pnpm build
 
 # 跨前后端（在仓库根）
-make lint            # golangci-lint + markdownlint + 文档覆盖检查
+make lint            # golangci-lint + markdownlint + 文档覆盖 + 前端 ESLint 与类型检查
 make check-docs      # catalog / 错误码 / 环境变量覆盖率
-make verify          # 提交前全量校验：vet + test + lint
+make check-budget    # 前端体积预算（初始 JS 与单工具 chunk）
+make verify          # 提交前全量校验：vet + test + lint + 前端单测、构建与体积预算
 ```
 
 `make verify` 是提交前的**唯一闸口**（v0.10.0+ 之前没有 CI）。
