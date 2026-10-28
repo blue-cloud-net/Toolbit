@@ -1,0 +1,86 @@
+{
+  "name": "cURL 命令生成",
+  "description": "按方法、请求头、认证与请求体拼装 cURL 命令，口令与 Token 只以占位符出现。",
+  "category": "系统",
+  "actions": {
+    "addHeader": "添加请求头",
+    "removeHeader": "移除"
+  },
+  "fields": {
+    "method": "请求方法",
+    "url": "请求地址",
+    "body": "请求体",
+    "headers": "请求头",
+    "headerName": "请求头名称",
+    "headerValue": "请求头值",
+    "headerSensitive": "以占位符呈现",
+    "bodyFormat": "请求体类型",
+    "auth": "认证方式",
+    "username": "用户名",
+    "password": "口令",
+    "token": "Token",
+    "shell": "目标 Shell",
+    "timeout": "超时秒数",
+    "followRedirects": "跟随重定向",
+    "insecure": "跳过 TLS 证书校验"
+  },
+  "options": {
+    "bodyFormat": {
+      "json": "JSON",
+      "form": "表单",
+      "raw": "原始内容"
+    },
+    "auth": {
+      "none": "不带认证",
+      "basic": "Basic",
+      "bearer": "Bearer Token"
+    },
+    "shell": {
+      "bash": "Bash / Zsh",
+      "sh": "POSIX sh",
+      "powershell": "PowerShell",
+      "cmd": "Windows 命令提示符"
+    }
+  },
+  "results": {
+    "command": "生成的命令",
+    "shell": "目标 Shell",
+    "placeholders": "占位符"
+  },
+  "examples": [
+    {
+      "label": "普通 GET 请求",
+      "value": "https://api.example.com/v1/status"
+    },
+    {
+      "label": "POST JSON 请求",
+      "value": "https://api.example.com/v1/items"
+    },
+    {
+      "label": "Basic 认证请求",
+      "value": "https://api.example.com/v1/me"
+    }
+  ],
+  "hints": {
+    "url": "地址是必填项；GET 不会额外生成 -X GET。",
+    "headers": "勾选「以占位符呈现」的请求头，其值会被替换成 <头名称>，明文不会进入命令。",
+    "auth": "Basic 的口令与 Bearer 的 Token 同样只以占位符出现，明文不会写进结果。",
+    "insecure": "跳过证书校验会降低安全性，只在排查自签名证书时临时使用。",
+    "placeholders": "命令里的占位符需要你在本地替换成真实值。",
+    "output": "命令按目标 Shell 的引号规则转义，复制后可直接在终端执行。"
+  },
+  "faq": [
+    {
+      "q": "为什么我的口令没有出现在命令里？",
+      "a": "口令、Token 与标记为敏感的请求头一律以 <PASSWORD>、<TOKEN> 这类占位符呈现，避免明文被贴进聊天窗口或存进脚本。"
+    },
+    {
+      "q": "请求体类型会改变命令吗？",
+      "a": "会。表单与 JSON 用 --data-raw 传递，原始内容用 --data-binary 传递。"
+    },
+    {
+      "q": "为什么 GET 请求没有 -X 参数？",
+      "a": "GET 是默认方法，生成命令时会被省略；其他方法都会带上 -X。"
+    }
+  ]
+}

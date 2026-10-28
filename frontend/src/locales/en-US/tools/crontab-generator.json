@@ -1,0 +1,71 @@
+{
+  "name": "Crontab Generator",
+  "description": "Build a five-field crontab expression and preview the next trigger times.",
+  "category": "System",
+  "actions": {
+    "generate": "Generate expression"
+  },
+  "fields": {
+    "preset": "Preset",
+    "fields": "Time fields",
+    "minute": "Minute",
+    "hour": "Hour",
+    "dayOfMonth": "Day of month",
+    "month": "Month",
+    "dayOfWeek": "Day of week",
+    "timezone": "Timezone",
+    "count": "Preview count"
+  },
+  "options": {
+    "preset": {
+      "every-minute": "Every minute",
+      "every-5-minutes": "Every 5 minutes",
+      "hourly": "Hourly",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "custom": "Custom fields"
+    }
+  },
+  "results": {
+    "expression": "Expression",
+    "description": "Meaning",
+    "timezone": "Timezone used",
+    "occurrences": "Next trigger times"
+  },
+  "examples": [
+    {
+      "label": "Every day at midnight",
+      "value": "0 0 * * *"
+    },
+    {
+      "label": "Every five minutes",
+      "value": "*/5 * * * *"
+    },
+    {
+      "label": "Half past two on the 15th of each month",
+      "value": "30 2 15 * *"
+    }
+  ],
+  "hints": {
+    "preset": "With a preset the five time fields are ignored.",
+    "fields": "The fields are minute, hour, day of month, month and day of week; *, a, a-b, */n and comma lists are supported.",
+    "timezone": "Use an IANA name such as Asia/Shanghai; an empty value means UTC.",
+    "output": "Trigger times are listed in the selected timezone, in RFC 3339 format."
+  },
+  "faq": [
+    {
+      "q": "How are day of month and day of week combined?",
+      "a": "They are combined with a union, following the traditional crontab semantics: a match on either field triggers the job."
+    },
+    {
+      "q": "Can I write 7 for the day of week?",
+      "a": "Yes. Both 7 and 0 mean Sunday."
+    },
+    {
+      "q": "Does this tool produce the command to run?",
+      "a": "No. It only produces the time expression; it neither interprets the command part nor performs any safety assessment."
+    }
+  ]
+}

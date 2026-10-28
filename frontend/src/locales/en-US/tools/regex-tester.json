@@ -1,0 +1,66 @@
+{
+  "name": "Regex Tester",
+  "description": "Test regular expressions with RE2 syntax and inspect every match, its position and capture groups.",
+  "category": "Text",
+  "actions": {
+    "test": "Test"
+  },
+  "fields": {
+    "pattern": "Regular expression",
+    "input": "Text to match",
+    "flags": "Flags",
+    "maxMatches": "Maximum matches",
+    "groupNames": "Capture group names"
+  },
+  "options": {
+    "flags": {
+      "i": "Ignore case (i)",
+      "m": "Multiline mode (m)",
+      "s": "Dot matches newline (s)",
+      "x": "Ignore whitespace and comments (x)"
+    }
+  },
+  "results": {
+    "matches": "Matches",
+    "count": "Number of matches",
+    "truncated": "The result was truncated at the limit; more matches may exist.",
+    "position": "Position",
+    "offset": "Byte offset",
+    "groupIndex": "Group {index}"
+  },
+  "examples": [
+    {
+      "label": "Match e-mail addresses",
+      "value": "mail: alice@example.com"
+    },
+    {
+      "label": "Ignore case",
+      "value": "ERROR\nError\nerror"
+    },
+    {
+      "label": "Extract log fields",
+      "value": "2026-10-29 INFO service started"
+    }
+  ],
+  "hints": {
+    "input": "The server uses RE2 syntax and matches in linear time; backreferences and lookaround are not supported.",
+    "flags": "Several flags can be combined.",
+    "maxMatches": "0 means the server default (1000).",
+    "groupNames": "Comma separated, in the order of the 1st, 2nd … capture group.",
+    "output": "The result lists the line and column, the matched text and the capture groups of every match."
+  },
+  "faq": [
+    {
+      "q": "Why is my lookahead rejected?",
+      "a": "The server uses RE2 syntax and rejects (?=, (?!, (?<= and (?<! at compile time. Use an environment with PCRE support if you need them."
+    },
+    {
+      "q": "Why do the position and offset look unusual?",
+      "a": "The offset is the starting byte position of the match in the source text, and the column is counted in bytes as well, so it lines up byte for byte with server-side logs."
+    },
+    {
+      "q": "What does it mean when the result is truncated?",
+      "a": "The match limit was reached. Raise \"Maximum matches\" or tighten the expression."
+    }
+  ]
+}

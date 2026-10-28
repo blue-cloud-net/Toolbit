@@ -1,0 +1,86 @@
+{
+  "name": "cURL Generator",
+  "description": "Assemble a cURL command from method, headers, authentication and body; passwords and tokens appear as placeholders only.",
+  "category": "System",
+  "actions": {
+    "addHeader": "Add header",
+    "removeHeader": "Remove"
+  },
+  "fields": {
+    "method": "Method",
+    "url": "URL",
+    "body": "Body",
+    "headers": "Headers",
+    "headerName": "Header name",
+    "headerValue": "Header value",
+    "headerSensitive": "Use a placeholder",
+    "bodyFormat": "Body format",
+    "auth": "Authentication",
+    "username": "Username",
+    "password": "Password",
+    "token": "Token",
+    "shell": "Target shell",
+    "timeout": "Timeout in seconds",
+    "followRedirects": "Follow redirects",
+    "insecure": "Skip TLS certificate verification"
+  },
+  "options": {
+    "bodyFormat": {
+      "json": "JSON",
+      "form": "Form",
+      "raw": "Raw"
+    },
+    "auth": {
+      "none": "No authentication",
+      "basic": "Basic",
+      "bearer": "Bearer token"
+    },
+    "shell": {
+      "bash": "Bash / Zsh",
+      "sh": "POSIX sh",
+      "powershell": "PowerShell",
+      "cmd": "Windows Command Prompt"
+    }
+  },
+  "results": {
+    "command": "Generated command",
+    "shell": "Target shell",
+    "placeholders": "Placeholders"
+  },
+  "examples": [
+    {
+      "label": "Plain GET request",
+      "value": "https://api.example.com/v1/status"
+    },
+    {
+      "label": "POST JSON request",
+      "value": "https://api.example.com/v1/items"
+    },
+    {
+      "label": "Basic authentication request",
+      "value": "https://api.example.com/v1/me"
+    }
+  ],
+  "hints": {
+    "url": "The URL is required; GET does not produce an extra -X GET.",
+    "headers": "A header marked \"Use a placeholder\" has its value replaced by <header name>, so the plain value never reaches the command.",
+    "auth": "A Basic password and a Bearer token are placeholders as well; the plain value never ends up in the result.",
+    "insecure": "Skipping certificate verification weakens security; use it only to debug self-signed certificates.",
+    "placeholders": "Replace the placeholders in the command with your real values locally.",
+    "output": "Arguments are quoted for the target shell, so the command can be pasted into a terminal as is."
+  },
+  "faq": [
+    {
+      "q": "Why is my password missing from the command?",
+      "a": "Passwords, tokens and headers marked sensitive are always rendered as placeholders such as <PASSWORD> and <TOKEN>, so plain credentials are never pasted into a chat window or committed to a script."
+    },
+    {
+      "q": "Does the body format change the command?",
+      "a": "Yes. Form and JSON bodies are passed with --data-raw, raw bodies with --data-binary."
+    },
+    {
+      "q": "Why does the GET request have no -X flag?",
+      "a": "GET is the default method and is left out; every other method gets an -X flag."
+    }
+  ]
+}
