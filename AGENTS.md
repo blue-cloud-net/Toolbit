@@ -25,8 +25,10 @@
 | `backend/cmd/toolbit/` | 进程入口、装配、优雅退出 | 全部 `backend/internal/*` |
 | `backend/internal/api/` | HTTP 分发器：查目录、协商 Content-Type、限流、超时、Body 限制、Origin 校验 | `httpx` `catalog` `tools` `toolerr` `stats` |
 | `backend/internal/catalog/` | 工具目录：内嵌并解析 `backend/catalog/tools.yaml` | 标准库 + `yaml.v3` |
-| `backend/internal/tools/` | 各领域工具实现（按领域分子包） | `cryptosvc` `codecsvc` `toolerr` `netguard` |
-| `backend/internal/cryptosvc/` | **唯一**允许 `import tongsuo-go` 的层；所有密码学运算在此**转调 Tongsuo** | `tongsuo-go` |
+| `backend/internal/tools/` | 各领域工具实现（按领域分子包） | `cryptosvc` `pkisvc` `codecsvc` `toolerr` `netguard` |
+| `backend/internal/toolset/` | 工具装配层：汇总各分类的 `Definitions()` | `tools` `tools/<分类>` |
+| `backend/internal/cryptosvc/` | 密码学**原语**层；所有摘要 / MAC / 对称 / 非对称运算在此**转调 Tongsuo** | `tongsuo-go` |
+| `backend/internal/pkisvc/` | 密钥与 **PKI** 层（密钥生成与格式、X.509、JWK、PKCS 容器） | `tongsuo-go` `cryptosvc` |
 | `backend/internal/codecsvc/` | 编码归一化（utf8/hex/base64/base64url）与 PEM/DER 识别 | 标准库 |
 | `backend/internal/toolerr/` | 错误码注册表（唯一来源） | 标准库 |
 | `backend/internal/httpx/` | 响应信封、中间件、requestId | 标准库 |
@@ -41,7 +43,7 @@
 | `scripts/` | 文档与一致性校验脚本（`check-docs.mjs`） | 标准库 |
 | `docs/` | 文档（`standards/` `api/` `_templates/`） | — |
 
-**依赖方向是单向的**：`api → tools → cryptosvc → tongsuo-go`。任何反向依赖都是缺陷。
+**依赖方向是单向的**：`api → tools → {cryptosvc, pkisvc} → tongsuo-go`。任何反向依赖都是缺陷。
 
 > 工具目录 YAML 位于 `backend/catalog/` 而非仓库根：`//go:embed` 不能引用上级目录，
 > 单一事实来源必须与 `embed.go` 同目录。
@@ -76,7 +78,9 @@ make verify          # 提交前全量校验：vet + test + lint + 前端单测�
 
 ## 4. 架构不变量（违反即回归）
 
-1. **只有 `backend/internal/cryptosvc` 可以 `import tongsuo-go`。** 其他包一律通过 `cryptosvc` 的服务接口调用。
+1. **只有 `backend/internal/cryptosvc` 与 `backend/internal/pkisvc` 可以 `import tongsuo-go`。** 其他包一律通过这两个包的服务接口调用。
+   - `cryptosvc` —— 密码学**原语**（摘要 / MAC / 对称加解密 / 非对称运算 / 签名）；
+   - `pkisvc` —— 密钥与 **PKI 领域**（密钥生成与格式、X.509、JWK、PKCS 容器）。
 2. **`backend/catalog/tools.yaml` 是工具元数据的唯一来源。** 分类、顺序、传输方式、限流档位、限额只在这里定义；代码与文档都不得另立一份。
 3. **所有工具走后端 API。** 唯一例外是 `websocket-test`（浏览器原生 `WebSocket`），它**没有**后端端点。
 4. **工具响应必须 `Cache-Control: no-store`。** 错误响应同样。
@@ -90,11 +94,15 @@ make verify          # 提交前全量校验：vet + test + lint + 前端单测�
 12. **不新增依赖而不说明理由。** 变更 `backend/go.mod` / `frontend/package.json` 必须在提交信息中写明 `adds: <pkg> <version>`。
 13. **`backend/` 与 `frontend/` 互不依赖。** 后端不 import 前端产物，前端不 import 后端源码；二者只通过 HTTP 契约耦合。
 14. **`backend/internal/` 只允许被 `backend/` 内的包导入。** 这是 Go 的可见性边界，不得跨越。
-15. **密码学运算一律经 `cryptosvc` 转调 `tongsuo-go`。** Toolbit 内**不得**用 Go 标准库 `crypto/*`
+15. **密码学运算一律经 `cryptosvc` / `pkisvc` 转调 `tongsuo-go`。** Toolbit 内**不得**用 Go 标准库 `crypto/*`
     实现或拼装密码学运算（分组模式链接、填充、KDF、签名与密文格式转换）。标准库仅可用于
     **编码**（hex / base64 / PEM）与**结构解析**（不涉及密钥运算的只读查看）。
     库缺能力时**先向上游提 issue**（登记于 [docs/upstream/tongsuo-go-issues.md](docs/upstream/tongsuo-go-issues.md)），
     **禁止**自行实现兜底。
+16. **两个密码学层的句柄类型互不通用。** `cryptosvc.PrivateKey` 与 `pkisvc.PrivateKey` 各自持有原生句柄，
+    都必须显式释放；跨层不得直接传递句柄，只能传 PEM / DER 等**表示层**数据。
+17. **工具实现必须登记在 `backend/internal/toolset`。** 进程入口与 API 测试共用该装配层，
+    不允许各自维护一份清单（漏改会导致测试与实际装配不一致）。
 
 ---
 
@@ -143,13 +151,15 @@ make verify          # 提交前全量校验：vet + test + lint + 前端单测�
 
 1. **目录**：在 `backend/catalog/tools.yaml` 登记 slug、分类、顺序、`transport`、`rateClass`、`maxBodyBytes`、`timeoutMs`、`sensitive`、`requiresNetwork`、`autoRun`、`wide`、`i18nKey`。
 2. **后端**：
-   - 在对应领域包（如 `backend/internal/tools/crypto/`）实现 handler；
-   - 需要密码学时在 `backend/internal/cryptosvc` 增加服务方法，**不要**在 handler 里直接调 `tongsuo-go`；
-   - 若 `cryptosvc` 缺少所需能力：先确认 `tongsuo-go` 是否已提供；仍未提供则在
+   - 在对应领域包（如 `backend/internal/tools/crypto/`、`backend/internal/tools/keys/`）实现 handler；
+   - 需要密码学**原语**时在 `backend/internal/cryptosvc` 增加服务方法；
+   - 需要密钥 / **PKI**（生成与格式、X.509、JWK、PKCS 容器）时在 `backend/internal/pkisvc` 增加服务方法；
+   - **不要**在 handler 里直接调 `tongsuo-go`；
+   - 若两个服务层都缺少所需能力：先确认 `tongsuo-go` 是否已提供；仍未提供则在
      [docs/upstream/tongsuo-go-issues.md](docs/upstream/tongsuo-go-issues.md) 登记并向 upstream 提 issue，
      本版**跳过**该能力，**不得**自研兜底；
    - 定义请求 / 响应结构体并实现 `Validate()`，错误统一用 `toolerr`；
-   - 在 `backend/internal/api` 的注册表登记 slug → handler。
+   - 在 `backend/internal/toolset` 登记 slug → handler（进程入口与 API 测试共用该装配层）。
 3. **前端**：
    - 新建 `frontend/src/tools/<category>/<slug>/{index.ts,Tool.vue,example.ts}`；
    - 在 `frontend/src/tools/index.ts` 登记；
