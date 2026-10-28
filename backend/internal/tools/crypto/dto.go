@@ -35,13 +35,9 @@ func KeyFormats() []string {
 
 // ByteInput 是字节输入。
 //
-// data 始终是字符串，字节序列由 encoding 解释。
-type ByteInput struct {
-	// Data 是数据文本。
-	Data string `json:"data"`
-	// Encoding 是 utf8 / hex / base64 / base64url。
-	Encoding string `json:"encoding"`
-}
+// 复用 `tools.Bytes`（跨分类共享的通用输入类型），
+// 本包只保留别名以便既有引用点不变。
+type ByteInput = tools.Bytes
 
 // KeyInput 是密钥输入。
 type KeyInput struct {
@@ -51,35 +47,6 @@ type KeyInput struct {
 	Format string `json:"format"`
 	// Passphrase 是私钥口令；仅对加密私钥有效。
 	Passphrase string `json:"passphrase,omitempty"`
-}
-
-// Decode 把字节输入解释为字节序列。
-func (in ByteInput) Decode() ([]byte, error) {
-	if in.Data == "" {
-		return nil, tools.MissingField("input.data")
-	}
-	return codecsvc.Decode(in.Data, in.Encoding)
-}
-
-// Decode 把字节输入编码为指定格式的文本。
-func (in ByteInput) EncodeTo(enc string) (string, error) {
-	raw, err := in.Decode()
-	if err != nil {
-		return "", err
-	}
-	return codecsvc.Encode(raw, enc)
-}
-
-// Validate 校验字节输入的编码名。
-func (in ByteInput) Validate(field string) error {
-	_, err := codecsvc.Normalize(in.Encoding)
-	if err != nil {
-		return toolerr.Newf(toolerr.CodeInvalidField, map[string]any{
-			"field":    field + ".encoding",
-			"expected": codecsvc.Encodings(),
-		})
-	}
-	return nil
 }
 
 // Validate 校验密钥格式名。

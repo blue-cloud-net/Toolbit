@@ -34,6 +34,7 @@
 | `backend/internal/stats/` | SQLite 匿名统计：迁移、异步写入、聚合、保留期 | `modernc.org/sqlite` |
 | `backend/internal/webui/` | 静态资源与 SPA 回退 | 标准库 |
 | `backend/internal/buildinfo/` | 版本信息（ldflags 注入） | 标准库 |
+| `backend/internal/toolset/` | 工具装配层：汇总各分类的 `Definitions()` | `tools` `tools/*` |
 | `backend/catalog/tools.yaml` | **工具元数据单一事实来源** | — |
 | `backend/catalog/embed.go` | 把 `tools.yaml` 内嵌进二进制（`//go:embed`） | 标准库 |
 | `frontend/` | Vue 前端 | — |

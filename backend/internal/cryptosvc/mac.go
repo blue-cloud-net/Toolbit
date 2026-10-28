@@ -1,6 +1,8 @@
 package cryptosvc
 
 import (
+	"crypto/subtle"
+
 	"github.com/blue-cloud-net/tongsuo-go/mac"
 )
 
@@ -50,4 +52,18 @@ func MAC(algorithm string, key, data []byte) ([]byte, error) {
 		return nil, MapError(err)
 	}
 	return sum, nil
+}
+
+// MACEqual 比较两个 MAC 值是否相等。
+//
+// 比较使用**常数时间**算法：耗时与内容无关，
+// 避免通过计时差异推断出正确的 MAC 值。
+//
+// 长度不同时直接返回 false——MAC 值长度是公开的，
+// 无需为它做常数时间处理。
+func MACEqual(a, b []byte) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	return subtle.ConstantTimeCompare(a, b) == 1
 }

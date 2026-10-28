@@ -16,14 +16,17 @@ import (
 	"syscall"
 	"time"
 
+	// 内嵌 IANA 时区数据库：基础镜像通常不含 zoneinfo，
+	// 而 timestamp / date-calc 需要按 IANA 名解析时区。
+	_ "time/tzdata"
+
 	"github.com/blue-cloud-net/Toolbit/backend/internal/api"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/buildinfo"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/catalog"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/config"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/stats"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
-	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/crypto"
-	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/encoding"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/toolset"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/webui"
 )
 
@@ -50,7 +53,7 @@ func run() error {
 		return fmt.Errorf("加载工具目录失败: %w", err)
 	}
 
-	registry := tools.NewRegistry(append(encoding.Definitions(), crypto.Definitions()...))
+	registry := tools.NewRegistry(toolset.Definitions())
 	missing, orphan := tools.CrossCheck(cat, registry)
 	logger.Info("工具注册表",
 		"implemented", registry.Len(),
