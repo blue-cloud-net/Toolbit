@@ -1,0 +1,98 @@
+/**
+ * 设计令牌。
+ *
+ * 所有颜色、间距、圆角、字号都来自这里的 CSS 变量，
+ * 组件内**禁止**写死十六进制颜色。
+ */
+
+:root {
+  /* 主色 */
+  --tb-primary: #4f46e5;
+  --tb-primary-hover: #4338ca;
+  --tb-primary-active: #3730a3;
+  --tb-primary-soft: #eef2ff;
+  --tb-primary-contrast: #ffffff;
+
+  /* 背景 */
+  --tb-bg: #f7f8fa;
+  --tb-bg-elevated: #ffffff;
+  --tb-bg-sunken: #eef0f4;
+
+  /* 边框 */
+  --tb-border: #e5e7eb;
+  --tb-border-strong: #d1d5db;
+
+  /* 文字 */
+  --tb-text: #111827;
+  --tb-text-secondary: #4b5563;
+  --tb-text-tertiary: #9ca3af;
+
+  /* 语义 */
+  --tb-success: #16a34a;
+  --tb-warning: #d97706;
+  --tb-danger: #dc2626;
+  --tb-info: #2563eb;
+
+  /* 间距 */
+  --tb-space-1: 4px;
+  --tb-space-2: 8px;
+  --tb-space-3: 12px;
+  --tb-space-4: 16px;
+  --tb-space-5: 20px;
+  --tb-space-6: 24px;
+  --tb-space-8: 32px;
+  --tb-space-10: 40px;
+  --tb-space-12: 48px;
+
+  /* 圆角 */
+  --tb-radius-control: 6px;
+  --tb-radius-card: 10px;
+  --tb-radius-panel: 14px;
+  --tb-radius-pill: 999px;
+
+  /* 字号 */
+  --tb-font-xs: 12px;
+  --tb-font-sm: 13px;
+  --tb-font-base: 14px;
+  --tb-font-md: 16px;
+  --tb-font-lg: 18px;
+  --tb-font-xl: 20px;
+  --tb-font-2xl: 24px;
+  --tb-font-3xl: 30px;
+
+  /* 动效 */
+  --tb-transition: 180ms ease-out;
+
+  /* 布局：页头高度，侧栏粘位与满高计算都依赖它 */
+  --tb-header-h: 52px;
+
+  /* 字体 */
+  --tb-font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', sans-serif;
+  --tb-font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+:root[data-theme='dark'] {
+  --tb-primary: #818cf8;
+  --tb-primary-hover: #a5b4fc;
+  --tb-primary-active: #c7d2fe;
+  --tb-primary-soft: #1e1b4b;
+  --tb-primary-contrast: #0b0f17;
+
+  --tb-bg: #0b0f17;
+  --tb-bg-elevated: #111827;
+  --tb-bg-sunken: #0f1520;
+
+  --tb-border: #1f2937;
+  --tb-border-strong: #374151;
+
+  --tb-text: #e5e7eb;
+  --tb-text-secondary: #9ca3af;
+  --tb-text-tertiary: #6b7280;
+
+  --tb-success: #4ade80;
+  --tb-warning: #fbbf24;
+  --tb-danger: #f87171;
+  --tb-info: #60a5fa;
+}

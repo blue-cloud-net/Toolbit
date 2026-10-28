@@ -1,0 +1,68 @@
+{
+  "appName": "Toolbit",
+  "appTagline": "蓝云工具箱",
+  "actions": {
+    "run": "运行",
+    "reset": "重置",
+    "example": "填入示例",
+    "copy": "复制",
+    "copied": "已复制",
+    "clear": "清空",
+    "retry": "重试",
+    "download": "下载",
+    "search": "搜索",
+    "close": "关闭",
+    "backHome": "返回首页"
+  },
+  "nav": {
+    "home": "首页",
+    "allTools": "全部工具",
+    "recent": "最近使用",
+    "favorites": "我的收藏",
+    "shortcuts": "快捷",
+    "categories": "分类",
+    "about": "关于",
+    "sidebar": "侧栏导航",
+    "toggleSidebar": "展开或收起侧栏",
+    "skipToContent": "跳到主内容"
+  },
+  "theme": {
+    "label": "主题",
+    "system": "跟随系统",
+    "light": "浅色",
+    "dark": "深色",
+    "toDark": "切换到深色主题",
+    "toLight": "切换到浅色主题"
+  },
+  "locale": {
+    "label": "语言"
+  },
+  "settings": {
+    "title": "设置",
+    "open": "打开设置",
+    "theme": "外观",
+    "locale": "语言"
+  },
+  "states": {
+    "loading": "加载中",
+    "empty": "暂无数据",
+    "failed": "加载失败",
+    "notFound": "页面不存在",
+    "notFoundHint": "你访问的地址没有对应的页面。"
+  },
+  "footer": {
+    "builtWith": "所有工具均在服务端计算，输入不会被存储。",
+    "copyright": "© {year} 蓝云工具箱。保留所有权利。",
+    "licenseShort": "Apache-2.0",
+    "license": "基于 Apache-2.0 许可证开源",
+    "github": "GitHub 仓库",
+    "versionLink": "查看版本发布记录",
+    "externalHint": "（在新标签页打开）"
+  },
+  "units": {
+    "ms": "毫秒",
+    "bytes": "字节",
+    "kb": "KB",
+    "mb": "MB"
+  }
+}

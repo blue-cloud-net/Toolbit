@@ -1,0 +1,60 @@
+{
+  "name": "Base64 编解码",
+  "description": "在文本与 Base64 之间互转，支持标准与 URL 安全变体。",
+  "category": "编码",
+  "actions": {
+    "encode": "编码",
+    "decode": "解码"
+  },
+  "fields": {
+    "operation": "操作",
+    "input": "输入内容",
+    "inputEncoding": "输入编码",
+    "variant": "Base64 变体",
+    "padding": "保留填充字符",
+    "outputEncoding": "输出编码"
+  },
+  "options": {
+    "operation": {
+      "encode": "编码",
+      "decode": "解码"
+    },
+    "variant": {
+      "standard": "标准（+ /）",
+      "url": "URL 安全（- _）"
+    },
+    "outputEncoding": {
+      "utf8": "UTF-8 文本",
+      "hex": "十六进制"
+    }
+  },
+  "results": {
+    "output": "输出结果",
+    "outputHint": "结果可直接复制。"
+  },
+  "examples": [
+    {
+      "label": "编码一段中文",
+      "value": "蓝云工具箱 Toolbit"
+    },
+    {
+      "label": "解码一段 Base64",
+      "value": "SGVsbG8sIFRvb2xiaXQh"
+    }
+  ],
+  "hints": {
+    "input": "编码时按所选输入编码解释内容；解码时自动忽略空白与填充字符。",
+    "padding": "关闭后不输出「=」填充，常用于 URL 与文件名场景。",
+    "output": "解码结果的输出编码可选 UTF-8 文本或十六进制。"
+  },
+  "faq": [
+    {
+      "q": "Base64 是加密吗？",
+      "a": "不是。Base64 只是编码，任何人都能还原，请不要用它保护敏感数据。"
+    },
+    {
+      "q": "为什么解码时提示非法输入？",
+      "a": "输入含有不属于所选变体的字符，或长度不合法。请确认使用的是标准变体还是 URL 安全变体。"
+    }
+  ]
+}

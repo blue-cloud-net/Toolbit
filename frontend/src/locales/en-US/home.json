@@ -1,0 +1,28 @@
+{
+  "title": "Blue Cloud Toolbit",
+  "subtitle": "70 IT tools, all computed on the server; the browser never stores your input.",
+  "searchPlaceholder": "Search tools (Chinese and English names)",
+  "searchEmpty": "No matching tool.",
+  "categoriesTitle": "Categories",
+  "toolsTitle": "All tools",
+  "toolCount": "{count} tools in total",
+  "countTools": "no tools | 1 tool | {count} tools",
+  "soon": "Coming soon",
+  "soonHint": "This tool is not implemented yet; open it to see the plan.",
+  "enabledOnly": "Implemented only",
+  "recentEmpty": "No history yet. Tools you open will show up here automatically.",
+  "favoritesEmpty": "No favorites yet. Star a tool on its page to add it here.",
+  "clearRecent": "Clear history",
+  "categories": {
+    "crypto": "Cryptography",
+    "keys": "Keys",
+    "certificates": "Certificates",
+    "encoding": "Encoding",
+    "formatting": "Formatting",
+    "text": "Text",
+    "data": "Data",
+    "system": "System",
+    "network": "Network",
+    "documents": "Documents"
+  }
+}

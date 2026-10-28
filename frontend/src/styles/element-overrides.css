@@ -1,0 +1,51 @@
+/**
+ * Element Plus 覆盖。
+ *
+ * 只覆盖配色与圆角，不改组件结构。
+ */
+
+:root {
+  --el-color-primary: var(--tb-primary);
+  --el-color-primary-light-3: var(--tb-primary-hover);
+  --el-color-primary-light-5: var(--tb-primary-hover);
+  --el-color-primary-light-7: var(--tb-primary-soft);
+  --el-color-primary-light-8: var(--tb-primary-soft);
+  --el-color-primary-light-9: var(--tb-primary-soft);
+  --el-color-primary-dark-2: var(--tb-primary-active);
+
+  --el-color-success: var(--tb-success);
+  --el-color-warning: var(--tb-warning);
+  --el-color-danger: var(--tb-danger);
+  --el-color-error: var(--tb-danger);
+  --el-color-info: var(--tb-text-tertiary);
+
+  --el-text-color-primary: var(--tb-text);
+  --el-text-color-regular: var(--tb-text-secondary);
+  --el-text-color-secondary: var(--tb-text-tertiary);
+  --el-text-color-placeholder: var(--tb-text-tertiary);
+
+  --el-border-color: var(--tb-border);
+  --el-border-color-light: var(--tb-border);
+  --el-border-color-lighter: var(--tb-border);
+  --el-border-color-extra-light: var(--tb-border);
+
+  --el-bg-color: var(--tb-bg-elevated);
+  --el-bg-color-page: var(--tb-bg);
+  --el-bg-color-overlay: var(--tb-bg-elevated);
+  --el-fill-color-blank: var(--tb-bg-elevated);
+  --el-fill-color-light: var(--tb-bg-sunken);
+  --el-fill-color-lighter: var(--tb-bg-sunken);
+
+  --el-border-radius-base: var(--tb-radius-control);
+  --el-font-family: var(--tb-font-sans);
+  --el-font-size-base: var(--tb-font-base);
+}
+
+:root[data-theme='dark'] {
+  --el-color-primary-light-3: var(--tb-primary-active);
+  --el-color-primary-light-5: var(--tb-primary-active);
+  --el-color-primary-light-7: var(--tb-primary-soft);
+  --el-color-primary-light-8: var(--tb-primary-soft);
+  --el-color-primary-light-9: var(--tb-primary-soft);
+  --el-mask-color: rgba(11, 15, 23, 0.8);
+}

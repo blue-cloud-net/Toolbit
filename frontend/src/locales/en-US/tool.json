@@ -1,0 +1,52 @@
+{
+  "sections": {
+    "input": "Input",
+    "options": "Options",
+    "result": "Result",
+    "usage": "Usage",
+    "faq": "FAQ"
+  },
+  "fields": {
+    "encoding": "Encoding"
+  },
+  "encoding": {
+    "utf8": "UTF-8 text",
+    "hex": "Hexadecimal",
+    "base64": "Base64",
+    "base64url": "Base64 (URL-safe)"
+  },
+  "result": {
+    "idle": "Not run yet",
+    "idleHint": "Fill in the options and click Run.",
+    "loading": "Running…",
+    "success": "Done",
+    "error": "Failed",
+    "duration": "Took {ms} ms",
+    "emptyOutput": "(empty result)"
+  },
+  "warnings": {
+    "title": "Warnings",
+    "hint": "The following notices do not affect the result, but you should be aware of the risks."
+  },
+  "error": {
+    "title": "Execution failed",
+    "requestId": "Request ID",
+    "retry": "Retry",
+    "unknown": "An unknown error occurred."
+  },
+  "run": {
+    "hint": "Shortcut: Ctrl / ⌘ + Enter",
+    "running": "Running"
+  },
+  "copy": {
+    "success": "Copied to the clipboard",
+    "failed": "Copy failed. Please select the text manually."
+  },
+  "related": {
+    "title": "Related tools"
+  },
+  "favorite": {
+    "add": "Add to favorites",
+    "remove": "Remove from favorites"
+  }
+}
