@@ -1,0 +1,103 @@
+{
+  "slug": "key-match",
+  "description": "密钥配对检测的契约测试数据。",
+  "cases": [
+    {
+      "name": "私钥与公钥配对",
+      "request": {
+        "a": {
+          "data": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCgmHI5l/YUIs2G\nuhqmi6RjGCMC3DT4glmDQnuMAQu/D83LCkmegXblfcJzp/iXDbp4tZbY3aUCDE/t\nzcrhI7GKErWuFvrR1IXMQW/1gXg3upTTssKjWNxvdtT0st9OWAPoJMKSixb9znm2\nYyK7olab8XWXS8/9/tDIzc6p2gCGMyN7wuV/MBQ+bPq9HmCy4z3nLanpNXX1HCPT\nIZ8gAlh+wnFnVAAQqEmh4hnEm0Bexe4ntgDhw2Q/uuW2aq1WiWpuFS84xN+ha5cf\nbHVL8XKS9PwCQs6kiQ2hVxiRGJT7tt3GntNUGdL4kxXWp9wyqWQNyZ1MLBzTTxss\nefk+nEpLAgMBAAECggEAAyTzo5YKmY/+4dhApP8km6jBfWZYsSmYMr45U19CiXNN\nQ7WdWw73iCcYs2atXYPFdrnozLE2RbPTrXkd3kpHyRzJqtwZ/W7BpI3+xln1GR48\nQ2guGxWmfJY2it36X6XQhG89J10Kzl2zELOgiUz0kNQUSdSQViLy7TjpBsv/vkuN\nDVEYLJ9fTKbYPNK3BjTATjNRE4a54Qs1j/1vvUHwJfFHHjzE5MDh7gg0KpohRtoM\n8hytSELOJksW/Qi9MyCoCvsJhVsoPI4uTws5cMgKWrI8Moe9NYrsQlu49wi4Ytib\n0gul+mvTFlqArmTfOYjKFaSYkn8p6X9C+kjNAIUO2QKBgQDfu2XYolLc2L1f4XN+\nahsFx5P+uObHgylut3Gxv9ZGBL1Ng94waQSi6OjPRSLxp9eGHGRCFy7BVgiqqPKc\nA1JWnqR4MGKfx0uDaAevAnJAzsGBLxlkD/sa7+fSZCcia9Hsmr+0RtGqJxBtPB/A\nZzwac7JTjIrbtY3uQqXW3GWGQwKBgQC3we4o4iRKHN7gc8z2plQ0NZ8REWxcOlWs\nuO6Gymg9/iyyZkrbnufYjLkksmr/ex0hnofVJgDrcnGASjTjGXQXo92LoM3uYLV3\nyl+XK08FECDyaMVh8f81Gxw3B0QXo/IcCNTGhg5NBss9H6AGkN5zT/A1WN7JeuOx\n8Rac0Q+fWQKBgQDDot9k9lQU76Vw4PiX8vpcLG96Dn8muMeTG+/cKU6Z/Wz3CjdR\nB5PZTGa/T8pFm6m3iL4WmKT2xF9hs8gpqjHmsmRJAK5M3v1mE6KcYzw69VB5wRCn\n0d2WaW/CJned/sAa8Bpv7nlKG0ye6DMvkFYbH04xBrUpd/F7BWZ0olZYdwKBgDgX\nbYBzT0qEN5BiKM2dhhSNzaljHSWl9OMNbFoezOUngjNOwEj735+djSJjh//Gb+UE\nREhPGnbEb1sOy8gKzAIvVgA6LMI4KQyQ7M7zPGK6QqRcUOwN964ZQWqWwDVLKStf\nkruqzhC7IyzcS3fVnuGqJBPUteTgq0J06kciFde5AoGAawHp0rntGcQjps1RvQPR\nfF9YZDskHMuXXqxTNoUF0KfU3YlYdCKLxi809/NjUiCXiu3IC4rWJIy/CWr9bWwn\nzC1XSuRoS/upHdsTws+NM6hFztW2u/cL/rfdImSqaohW3rsRsxB4UcbWf5DyQr1o\ntLrxqx2DPdc12gzCcZGDUQA=\n-----END PRIVATE KEY-----\n",
+          "format": "pem"
+        },
+        "b": {
+          "data": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoJhyOZf2FCLNhroapouk\nYxgjAtw0+IJZg0J7jAELvw/NywpJnoF25X3Cc6f4lw26eLWW2N2lAgxP7c3K4SOx\nihK1rhb60dSFzEFv9YF4N7qU07LCo1jcb3bU9LLfTlgD6CTCkosW/c55tmMiu6JW\nm/F1l0vP/f7QyM3OqdoAhjMje8LlfzAUPmz6vR5gsuM95y2p6TV19Rwj0yGfIAJY\nfsJxZ1QAEKhJoeIZxJtAXsXuJ7YA4cNkP7rltmqtVolqbhUvOMTfoWuXH2x1S/Fy\nkvT8AkLOpIkNoVcYkRiU+7bdxp7TVBnS+JMV1qfcMqlkDcmdTCwc008bLHn5PpxK\nSwIDAQAB\n-----END PUBLIC KEY-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "match": true,
+          "reason": "matched"
+        }
+      }
+    },
+    {
+      "name": "私钥与证书配对",
+      "request": {
+        "a": {
+          "data": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCgmHI5l/YUIs2G\nuhqmi6RjGCMC3DT4glmDQnuMAQu/D83LCkmegXblfcJzp/iXDbp4tZbY3aUCDE/t\nzcrhI7GKErWuFvrR1IXMQW/1gXg3upTTssKjWNxvdtT0st9OWAPoJMKSixb9znm2\nYyK7olab8XWXS8/9/tDIzc6p2gCGMyN7wuV/MBQ+bPq9HmCy4z3nLanpNXX1HCPT\nIZ8gAlh+wnFnVAAQqEmh4hnEm0Bexe4ntgDhw2Q/uuW2aq1WiWpuFS84xN+ha5cf\nbHVL8XKS9PwCQs6kiQ2hVxiRGJT7tt3GntNUGdL4kxXWp9wyqWQNyZ1MLBzTTxss\nefk+nEpLAgMBAAECggEAAyTzo5YKmY/+4dhApP8km6jBfWZYsSmYMr45U19CiXNN\nQ7WdWw73iCcYs2atXYPFdrnozLE2RbPTrXkd3kpHyRzJqtwZ/W7BpI3+xln1GR48\nQ2guGxWmfJY2it36X6XQhG89J10Kzl2zELOgiUz0kNQUSdSQViLy7TjpBsv/vkuN\nDVEYLJ9fTKbYPNK3BjTATjNRE4a54Qs1j/1vvUHwJfFHHjzE5MDh7gg0KpohRtoM\n8hytSELOJksW/Qi9MyCoCvsJhVsoPI4uTws5cMgKWrI8Moe9NYrsQlu49wi4Ytib\n0gul+mvTFlqArmTfOYjKFaSYkn8p6X9C+kjNAIUO2QKBgQDfu2XYolLc2L1f4XN+\nahsFx5P+uObHgylut3Gxv9ZGBL1Ng94waQSi6OjPRSLxp9eGHGRCFy7BVgiqqPKc\nA1JWnqR4MGKfx0uDaAevAnJAzsGBLxlkD/sa7+fSZCcia9Hsmr+0RtGqJxBtPB/A\nZzwac7JTjIrbtY3uQqXW3GWGQwKBgQC3we4o4iRKHN7gc8z2plQ0NZ8REWxcOlWs\nuO6Gymg9/iyyZkrbnufYjLkksmr/ex0hnofVJgDrcnGASjTjGXQXo92LoM3uYLV3\nyl+XK08FECDyaMVh8f81Gxw3B0QXo/IcCNTGhg5NBss9H6AGkN5zT/A1WN7JeuOx\n8Rac0Q+fWQKBgQDDot9k9lQU76Vw4PiX8vpcLG96Dn8muMeTG+/cKU6Z/Wz3CjdR\nB5PZTGa/T8pFm6m3iL4WmKT2xF9hs8gpqjHmsmRJAK5M3v1mE6KcYzw69VB5wRCn\n0d2WaW/CJned/sAa8Bpv7nlKG0ye6DMvkFYbH04xBrUpd/F7BWZ0olZYdwKBgDgX\nbYBzT0qEN5BiKM2dhhSNzaljHSWl9OMNbFoezOUngjNOwEj735+djSJjh//Gb+UE\nREhPGnbEb1sOy8gKzAIvVgA6LMI4KQyQ7M7zPGK6QqRcUOwN964ZQWqWwDVLKStf\nkruqzhC7IyzcS3fVnuGqJBPUteTgq0J06kciFde5AoGAawHp0rntGcQjps1RvQPR\nfF9YZDskHMuXXqxTNoUF0KfU3YlYdCKLxi809/NjUiCXiu3IC4rWJIy/CWr9bWwn\nzC1XSuRoS/upHdsTws+NM6hFztW2u/cL/rfdImSqaohW3rsRsxB4UcbWf5DyQr1o\ntLrxqx2DPdc12gzCcZGDUQA=\n-----END PRIVATE KEY-----\n",
+          "format": "pem"
+        },
+        "b": {
+          "data": "-----BEGIN CERTIFICATE-----\nMIIDDzCCAfegAwIBAgIUQ5ODlCa9sY2M66VdPPLhbFEf3xswDQYJKoZIhvcNAQEL\nBQAwFzEVMBMGA1UEAwwMdG9vbGJpdC10ZXN0MB4XDTI2MTAyODE2MjkwMFoXDTM2\nMTAyNTE2MjkwMFowFzEVMBMGA1UEAwwMdG9vbGJpdC10ZXN0MIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoJhyOZf2FCLNhroapoukYxgjAtw0+IJZg0J7\njAELvw/NywpJnoF25X3Cc6f4lw26eLWW2N2lAgxP7c3K4SOxihK1rhb60dSFzEFv\n9YF4N7qU07LCo1jcb3bU9LLfTlgD6CTCkosW/c55tmMiu6JWm/F1l0vP/f7QyM3O\nqdoAhjMje8LlfzAUPmz6vR5gsuM95y2p6TV19Rwj0yGfIAJYfsJxZ1QAEKhJoeIZ\nxJtAXsXuJ7YA4cNkP7rltmqtVolqbhUvOMTfoWuXH2x1S/FykvT8AkLOpIkNoVcY\nkRiU+7bdxp7TVBnS+JMV1qfcMqlkDcmdTCwc008bLHn5PpxKSwIDAQABo1MwUTAd\nBgNVHQ4EFgQU/XhuRS6TLIUnQfHBJ5jZKlkA/JAwHwYDVR0jBBgwFoAU/XhuRS6T\nLIUnQfHBJ5jZKlkA/JAwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOC\nAQEAXexDhtyaznHGEY/mVPifSgz+RB2df2i5DPLJkBqm0qHVzSLgAyG7xhHYAjvv\nS0xn9qyG/KKWy9FZ1AGW/tD72wDiwXQtQKWmJpFvC2lucjKfQLVJseK9V4N06Yuz\nEfyfupxKjp6mMg9hchqTxdazYnLwNCx5rYxl5eYFAX2TDZKGztTjXREEwb34uAoQ\n9Xt4DxH3I3hTZy81KuvOOWfI4xrN0T/GUGkv/C7pE5JSj9Z1bFeU/OfHwRwApOQC\nAy5decpiZnSulEKxWQYqQrIkrRfOlKIWaXP/fv/iXWeKm010ZZcMXkHjNN2ecQFj\njcSdPGsYBk416+65CCTgaipYUA==\n-----END CERTIFICATE-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "match": true,
+          "reason": "matched"
+        }
+      }
+    },
+    {
+      "name": "相同私钥",
+      "request": {
+        "a": {
+          "data": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCgmHI5l/YUIs2G\nuhqmi6RjGCMC3DT4glmDQnuMAQu/D83LCkmegXblfcJzp/iXDbp4tZbY3aUCDE/t\nzcrhI7GKErWuFvrR1IXMQW/1gXg3upTTssKjWNxvdtT0st9OWAPoJMKSixb9znm2\nYyK7olab8XWXS8/9/tDIzc6p2gCGMyN7wuV/MBQ+bPq9HmCy4z3nLanpNXX1HCPT\nIZ8gAlh+wnFnVAAQqEmh4hnEm0Bexe4ntgDhw2Q/uuW2aq1WiWpuFS84xN+ha5cf\nbHVL8XKS9PwCQs6kiQ2hVxiRGJT7tt3GntNUGdL4kxXWp9wyqWQNyZ1MLBzTTxss\nefk+nEpLAgMBAAECggEAAyTzo5YKmY/+4dhApP8km6jBfWZYsSmYMr45U19CiXNN\nQ7WdWw73iCcYs2atXYPFdrnozLE2RbPTrXkd3kpHyRzJqtwZ/W7BpI3+xln1GR48\nQ2guGxWmfJY2it36X6XQhG89J10Kzl2zELOgiUz0kNQUSdSQViLy7TjpBsv/vkuN\nDVEYLJ9fTKbYPNK3BjTATjNRE4a54Qs1j/1vvUHwJfFHHjzE5MDh7gg0KpohRtoM\n8hytSELOJksW/Qi9MyCoCvsJhVsoPI4uTws5cMgKWrI8Moe9NYrsQlu49wi4Ytib\n0gul+mvTFlqArmTfOYjKFaSYkn8p6X9C+kjNAIUO2QKBgQDfu2XYolLc2L1f4XN+\nahsFx5P+uObHgylut3Gxv9ZGBL1Ng94waQSi6OjPRSLxp9eGHGRCFy7BVgiqqPKc\nA1JWnqR4MGKfx0uDaAevAnJAzsGBLxlkD/sa7+fSZCcia9Hsmr+0RtGqJxBtPB/A\nZzwac7JTjIrbtY3uQqXW3GWGQwKBgQC3we4o4iRKHN7gc8z2plQ0NZ8REWxcOlWs\nuO6Gymg9/iyyZkrbnufYjLkksmr/ex0hnofVJgDrcnGASjTjGXQXo92LoM3uYLV3\nyl+XK08FECDyaMVh8f81Gxw3B0QXo/IcCNTGhg5NBss9H6AGkN5zT/A1WN7JeuOx\n8Rac0Q+fWQKBgQDDot9k9lQU76Vw4PiX8vpcLG96Dn8muMeTG+/cKU6Z/Wz3CjdR\nB5PZTGa/T8pFm6m3iL4WmKT2xF9hs8gpqjHmsmRJAK5M3v1mE6KcYzw69VB5wRCn\n0d2WaW/CJned/sAa8Bpv7nlKG0ye6DMvkFYbH04xBrUpd/F7BWZ0olZYdwKBgDgX\nbYBzT0qEN5BiKM2dhhSNzaljHSWl9OMNbFoezOUngjNOwEj735+djSJjh//Gb+UE\nREhPGnbEb1sOy8gKzAIvVgA6LMI4KQyQ7M7zPGK6QqRcUOwN964ZQWqWwDVLKStf\nkruqzhC7IyzcS3fVnuGqJBPUteTgq0J06kciFde5AoGAawHp0rntGcQjps1RvQPR\nfF9YZDskHMuXXqxTNoUF0KfU3YlYdCKLxi809/NjUiCXiu3IC4rWJIy/CWr9bWwn\nzC1XSuRoS/upHdsTws+NM6hFztW2u/cL/rfdImSqaohW3rsRsxB4UcbWf5DyQr1o\ntLrxqx2DPdc12gzCcZGDUQA=\n-----END PRIVATE KEY-----\n",
+          "format": "pem"
+        },
+        "b": {
+          "data": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCgmHI5l/YUIs2G\nuhqmi6RjGCMC3DT4glmDQnuMAQu/D83LCkmegXblfcJzp/iXDbp4tZbY3aUCDE/t\nzcrhI7GKErWuFvrR1IXMQW/1gXg3upTTssKjWNxvdtT0st9OWAPoJMKSixb9znm2\nYyK7olab8XWXS8/9/tDIzc6p2gCGMyN7wuV/MBQ+bPq9HmCy4z3nLanpNXX1HCPT\nIZ8gAlh+wnFnVAAQqEmh4hnEm0Bexe4ntgDhw2Q/uuW2aq1WiWpuFS84xN+ha5cf\nbHVL8XKS9PwCQs6kiQ2hVxiRGJT7tt3GntNUGdL4kxXWp9wyqWQNyZ1MLBzTTxss\nefk+nEpLAgMBAAECggEAAyTzo5YKmY/+4dhApP8km6jBfWZYsSmYMr45U19CiXNN\nQ7WdWw73iCcYs2atXYPFdrnozLE2RbPTrXkd3kpHyRzJqtwZ/W7BpI3+xln1GR48\nQ2guGxWmfJY2it36X6XQhG89J10Kzl2zELOgiUz0kNQUSdSQViLy7TjpBsv/vkuN\nDVEYLJ9fTKbYPNK3BjTATjNRE4a54Qs1j/1vvUHwJfFHHjzE5MDh7gg0KpohRtoM\n8hytSELOJksW/Qi9MyCoCvsJhVsoPI4uTws5cMgKWrI8Moe9NYrsQlu49wi4Ytib\n0gul+mvTFlqArmTfOYjKFaSYkn8p6X9C+kjNAIUO2QKBgQDfu2XYolLc2L1f4XN+\nahsFx5P+uObHgylut3Gxv9ZGBL1Ng94waQSi6OjPRSLxp9eGHGRCFy7BVgiqqPKc\nA1JWnqR4MGKfx0uDaAevAnJAzsGBLxlkD/sa7+fSZCcia9Hsmr+0RtGqJxBtPB/A\nZzwac7JTjIrbtY3uQqXW3GWGQwKBgQC3we4o4iRKHN7gc8z2plQ0NZ8REWxcOlWs\nuO6Gymg9/iyyZkrbnufYjLkksmr/ex0hnofVJgDrcnGASjTjGXQXo92LoM3uYLV3\nyl+XK08FECDyaMVh8f81Gxw3B0QXo/IcCNTGhg5NBss9H6AGkN5zT/A1WN7JeuOx\n8Rac0Q+fWQKBgQDDot9k9lQU76Vw4PiX8vpcLG96Dn8muMeTG+/cKU6Z/Wz3CjdR\nB5PZTGa/T8pFm6m3iL4WmKT2xF9hs8gpqjHmsmRJAK5M3v1mE6KcYzw69VB5wRCn\n0d2WaW/CJned/sAa8Bpv7nlKG0ye6DMvkFYbH04xBrUpd/F7BWZ0olZYdwKBgDgX\nbYBzT0qEN5BiKM2dhhSNzaljHSWl9OMNbFoezOUngjNOwEj735+djSJjh//Gb+UE\nREhPGnbEb1sOy8gKzAIvVgA6LMI4KQyQ7M7zPGK6QqRcUOwN964ZQWqWwDVLKStf\nkruqzhC7IyzcS3fVnuGqJBPUteTgq0J06kciFde5AoGAawHp0rntGcQjps1RvQPR\nfF9YZDskHMuXXqxTNoUF0KfU3YlYdCKLxi809/NjUiCXiu3IC4rWJIy/CWr9bWwn\nzC1XSuRoS/upHdsTws+NM6hFztW2u/cL/rfdImSqaohW3rsRsxB4UcbWf5DyQr1o\ntLrxqx2DPdc12gzCcZGDUQA=\n-----END PRIVATE KEY-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "match": true,
+          "reason": "identical"
+        }
+      }
+    },
+    {
+      "name": "不同密钥",
+      "request": {
+        "a": {
+          "data": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCgmHI5l/YUIs2G\nuhqmi6RjGCMC3DT4glmDQnuMAQu/D83LCkmegXblfcJzp/iXDbp4tZbY3aUCDE/t\nzcrhI7GKErWuFvrR1IXMQW/1gXg3upTTssKjWNxvdtT0st9OWAPoJMKSixb9znm2\nYyK7olab8XWXS8/9/tDIzc6p2gCGMyN7wuV/MBQ+bPq9HmCy4z3nLanpNXX1HCPT\nIZ8gAlh+wnFnVAAQqEmh4hnEm0Bexe4ntgDhw2Q/uuW2aq1WiWpuFS84xN+ha5cf\nbHVL8XKS9PwCQs6kiQ2hVxiRGJT7tt3GntNUGdL4kxXWp9wyqWQNyZ1MLBzTTxss\nefk+nEpLAgMBAAECggEAAyTzo5YKmY/+4dhApP8km6jBfWZYsSmYMr45U19CiXNN\nQ7WdWw73iCcYs2atXYPFdrnozLE2RbPTrXkd3kpHyRzJqtwZ/W7BpI3+xln1GR48\nQ2guGxWmfJY2it36X6XQhG89J10Kzl2zELOgiUz0kNQUSdSQViLy7TjpBsv/vkuN\nDVEYLJ9fTKbYPNK3BjTATjNRE4a54Qs1j/1vvUHwJfFHHjzE5MDh7gg0KpohRtoM\n8hytSELOJksW/Qi9MyCoCvsJhVsoPI4uTws5cMgKWrI8Moe9NYrsQlu49wi4Ytib\n0gul+mvTFlqArmTfOYjKFaSYkn8p6X9C+kjNAIUO2QKBgQDfu2XYolLc2L1f4XN+\nahsFx5P+uObHgylut3Gxv9ZGBL1Ng94waQSi6OjPRSLxp9eGHGRCFy7BVgiqqPKc\nA1JWnqR4MGKfx0uDaAevAnJAzsGBLxlkD/sa7+fSZCcia9Hsmr+0RtGqJxBtPB/A\nZzwac7JTjIrbtY3uQqXW3GWGQwKBgQC3we4o4iRKHN7gc8z2plQ0NZ8REWxcOlWs\nuO6Gymg9/iyyZkrbnufYjLkksmr/ex0hnofVJgDrcnGASjTjGXQXo92LoM3uYLV3\nyl+XK08FECDyaMVh8f81Gxw3B0QXo/IcCNTGhg5NBss9H6AGkN5zT/A1WN7JeuOx\n8Rac0Q+fWQKBgQDDot9k9lQU76Vw4PiX8vpcLG96Dn8muMeTG+/cKU6Z/Wz3CjdR\nB5PZTGa/T8pFm6m3iL4WmKT2xF9hs8gpqjHmsmRJAK5M3v1mE6KcYzw69VB5wRCn\n0d2WaW/CJned/sAa8Bpv7nlKG0ye6DMvkFYbH04xBrUpd/F7BWZ0olZYdwKBgDgX\nbYBzT0qEN5BiKM2dhhSNzaljHSWl9OMNbFoezOUngjNOwEj735+djSJjh//Gb+UE\nREhPGnbEb1sOy8gKzAIvVgA6LMI4KQyQ7M7zPGK6QqRcUOwN964ZQWqWwDVLKStf\nkruqzhC7IyzcS3fVnuGqJBPUteTgq0J06kciFde5AoGAawHp0rntGcQjps1RvQPR\nfF9YZDskHMuXXqxTNoUF0KfU3YlYdCKLxi809/NjUiCXiu3IC4rWJIy/CWr9bWwn\nzC1XSuRoS/upHdsTws+NM6hFztW2u/cL/rfdImSqaohW3rsRsxB4UcbWf5DyQr1o\ntLrxqx2DPdc12gzCcZGDUQA=\n-----END PRIVATE KEY-----\n",
+          "format": "pem"
+        },
+        "b": {
+          "data": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgGwqnKKRB9rM8hWLG\n+AI1OunZ01mh1hf6g+EKxv49yCChRANCAATezLe+zpGco0/2+ULojGH0b3LFcKcB\nMsSgVfioPfwBorQv+GUqGpC+qZIlWF+Iz8QlDdtRwO6nVXtBB41PdLgX\n-----END PRIVATE KEY-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "match": false,
+          "reason": "not_a_key_pair"
+        }
+      }
+    },
+    {
+      "name": "非法输入",
+      "request": {
+        "a": {
+          "data": "not-a-key",
+          "format": "pem"
+        },
+        "b": {
+          "data": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoJhyOZf2FCLNhroapouk\nYxgjAtw0+IJZg0J7jAELvw/NywpJnoF25X3Cc6f4lw26eLWW2N2lAgxP7c3K4SOx\nihK1rhb60dSFzEFv9YF4N7qU07LCo1jcb3bU9LLfTlgD6CTCkosW/c55tmMiu6JW\nm/F1l0vP/f7QyM3OqdoAhjMje8LlfzAUPmz6vR5gsuM95y2p6TV19Rwj0yGfIAJY\nfsJxZ1QAEKhJoeIZxJtAXsXuJ7YA4cNkP7rltmqtVolqbhUvOMTfoWuXH2x1S/Fy\nkvT8AkLOpIkNoVcYkRiU+7bdxp7TVBnS+JMV1qfcMqlkDcmdTCwc008bLHn5PpxK\nSwIDAQAB\n-----END PUBLIC KEY-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_KEY"
+      }
+    }
+  ]
+}

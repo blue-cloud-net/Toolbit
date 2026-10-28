@@ -1,0 +1,102 @@
+{
+  "slug": "key-parse",
+  "description": "密钥解析的契约测试数据。",
+  "cases": [
+    {
+      "name": "解析 RSA 私钥",
+      "request": {
+        "key": {
+          "data": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCgmHI5l/YUIs2G\nuhqmi6RjGCMC3DT4glmDQnuMAQu/D83LCkmegXblfcJzp/iXDbp4tZbY3aUCDE/t\nzcrhI7GKErWuFvrR1IXMQW/1gXg3upTTssKjWNxvdtT0st9OWAPoJMKSixb9znm2\nYyK7olab8XWXS8/9/tDIzc6p2gCGMyN7wuV/MBQ+bPq9HmCy4z3nLanpNXX1HCPT\nIZ8gAlh+wnFnVAAQqEmh4hnEm0Bexe4ntgDhw2Q/uuW2aq1WiWpuFS84xN+ha5cf\nbHVL8XKS9PwCQs6kiQ2hVxiRGJT7tt3GntNUGdL4kxXWp9wyqWQNyZ1MLBzTTxss\nefk+nEpLAgMBAAECggEAAyTzo5YKmY/+4dhApP8km6jBfWZYsSmYMr45U19CiXNN\nQ7WdWw73iCcYs2atXYPFdrnozLE2RbPTrXkd3kpHyRzJqtwZ/W7BpI3+xln1GR48\nQ2guGxWmfJY2it36X6XQhG89J10Kzl2zELOgiUz0kNQUSdSQViLy7TjpBsv/vkuN\nDVEYLJ9fTKbYPNK3BjTATjNRE4a54Qs1j/1vvUHwJfFHHjzE5MDh7gg0KpohRtoM\n8hytSELOJksW/Qi9MyCoCvsJhVsoPI4uTws5cMgKWrI8Moe9NYrsQlu49wi4Ytib\n0gul+mvTFlqArmTfOYjKFaSYkn8p6X9C+kjNAIUO2QKBgQDfu2XYolLc2L1f4XN+\nahsFx5P+uObHgylut3Gxv9ZGBL1Ng94waQSi6OjPRSLxp9eGHGRCFy7BVgiqqPKc\nA1JWnqR4MGKfx0uDaAevAnJAzsGBLxlkD/sa7+fSZCcia9Hsmr+0RtGqJxBtPB/A\nZzwac7JTjIrbtY3uQqXW3GWGQwKBgQC3we4o4iRKHN7gc8z2plQ0NZ8REWxcOlWs\nuO6Gymg9/iyyZkrbnufYjLkksmr/ex0hnofVJgDrcnGASjTjGXQXo92LoM3uYLV3\nyl+XK08FECDyaMVh8f81Gxw3B0QXo/IcCNTGhg5NBss9H6AGkN5zT/A1WN7JeuOx\n8Rac0Q+fWQKBgQDDot9k9lQU76Vw4PiX8vpcLG96Dn8muMeTG+/cKU6Z/Wz3CjdR\nB5PZTGa/T8pFm6m3iL4WmKT2xF9hs8gpqjHmsmRJAK5M3v1mE6KcYzw69VB5wRCn\n0d2WaW/CJned/sAa8Bpv7nlKG0ye6DMvkFYbH04xBrUpd/F7BWZ0olZYdwKBgDgX\nbYBzT0qEN5BiKM2dhhSNzaljHSWl9OMNbFoezOUngjNOwEj735+djSJjh//Gb+UE\nREhPGnbEb1sOy8gKzAIvVgA6LMI4KQyQ7M7zPGK6QqRcUOwN964ZQWqWwDVLKStf\nkruqzhC7IyzcS3fVnuGqJBPUteTgq0J06kciFde5AoGAawHp0rntGcQjps1RvQPR\nfF9YZDskHMuXXqxTNoUF0KfU3YlYdCKLxi809/NjUiCXiu3IC4rWJIy/CWr9bWwn\nzC1XSuRoS/upHdsTws+NM6hFztW2u/cL/rfdImSqaohW3rsRsxB4UcbWf5DyQr1o\ntLrxqx2DPdc12gzCcZGDUQA=\n-----END PRIVATE KEY-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "algorithm": "RSA",
+          "keyType": "private",
+          "format": "pkcs8",
+          "bits": 2048
+        }
+      }
+    },
+    {
+      "name": "解析 RSA 公钥",
+      "request": {
+        "key": {
+          "data": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoJhyOZf2FCLNhroapouk\nYxgjAtw0+IJZg0J7jAELvw/NywpJnoF25X3Cc6f4lw26eLWW2N2lAgxP7c3K4SOx\nihK1rhb60dSFzEFv9YF4N7qU07LCo1jcb3bU9LLfTlgD6CTCkosW/c55tmMiu6JW\nm/F1l0vP/f7QyM3OqdoAhjMje8LlfzAUPmz6vR5gsuM95y2p6TV19Rwj0yGfIAJY\nfsJxZ1QAEKhJoeIZxJtAXsXuJ7YA4cNkP7rltmqtVolqbhUvOMTfoWuXH2x1S/Fy\nkvT8AkLOpIkNoVcYkRiU+7bdxp7TVBnS+JMV1qfcMqlkDcmdTCwc008bLHn5PpxK\nSwIDAQAB\n-----END PUBLIC KEY-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "algorithm": "RSA",
+          "keyType": "public",
+          "format": "spki"
+        }
+      }
+    },
+    {
+      "name": "解析 EC 私钥",
+      "request": {
+        "key": {
+          "data": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgGwqnKKRB9rM8hWLG\n+AI1OunZ01mh1hf6g+EKxv49yCChRANCAATezLe+zpGco0/2+ULojGH0b3LFcKcB\nMsSgVfioPfwBorQv+GUqGpC+qZIlWF+Iz8QlDdtRwO6nVXtBB41PdLgX\n-----END PRIVATE KEY-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "algorithm": "EC",
+          "keyType": "private",
+          "curve": "P-256"
+        }
+      }
+    },
+    {
+      "name": "私钥带参数",
+      "request": {
+        "key": {
+          "data": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCgmHI5l/YUIs2G\nuhqmi6RjGCMC3DT4glmDQnuMAQu/D83LCkmegXblfcJzp/iXDbp4tZbY3aUCDE/t\nzcrhI7GKErWuFvrR1IXMQW/1gXg3upTTssKjWNxvdtT0st9OWAPoJMKSixb9znm2\nYyK7olab8XWXS8/9/tDIzc6p2gCGMyN7wuV/MBQ+bPq9HmCy4z3nLanpNXX1HCPT\nIZ8gAlh+wnFnVAAQqEmh4hnEm0Bexe4ntgDhw2Q/uuW2aq1WiWpuFS84xN+ha5cf\nbHVL8XKS9PwCQs6kiQ2hVxiRGJT7tt3GntNUGdL4kxXWp9wyqWQNyZ1MLBzTTxss\nefk+nEpLAgMBAAECggEAAyTzo5YKmY/+4dhApP8km6jBfWZYsSmYMr45U19CiXNN\nQ7WdWw73iCcYs2atXYPFdrnozLE2RbPTrXkd3kpHyRzJqtwZ/W7BpI3+xln1GR48\nQ2guGxWmfJY2it36X6XQhG89J10Kzl2zELOgiUz0kNQUSdSQViLy7TjpBsv/vkuN\nDVEYLJ9fTKbYPNK3BjTATjNRE4a54Qs1j/1vvUHwJfFHHjzE5MDh7gg0KpohRtoM\n8hytSELOJksW/Qi9MyCoCvsJhVsoPI4uTws5cMgKWrI8Moe9NYrsQlu49wi4Ytib\n0gul+mvTFlqArmTfOYjKFaSYkn8p6X9C+kjNAIUO2QKBgQDfu2XYolLc2L1f4XN+\nahsFx5P+uObHgylut3Gxv9ZGBL1Ng94waQSi6OjPRSLxp9eGHGRCFy7BVgiqqPKc\nA1JWnqR4MGKfx0uDaAevAnJAzsGBLxlkD/sa7+fSZCcia9Hsmr+0RtGqJxBtPB/A\nZzwac7JTjIrbtY3uQqXW3GWGQwKBgQC3we4o4iRKHN7gc8z2plQ0NZ8REWxcOlWs\nuO6Gymg9/iyyZkrbnufYjLkksmr/ex0hnofVJgDrcnGASjTjGXQXo92LoM3uYLV3\nyl+XK08FECDyaMVh8f81Gxw3B0QXo/IcCNTGhg5NBss9H6AGkN5zT/A1WN7JeuOx\n8Rac0Q+fWQKBgQDDot9k9lQU76Vw4PiX8vpcLG96Dn8muMeTG+/cKU6Z/Wz3CjdR\nB5PZTGa/T8pFm6m3iL4WmKT2xF9hs8gpqjHmsmRJAK5M3v1mE6KcYzw69VB5wRCn\n0d2WaW/CJned/sAa8Bpv7nlKG0ye6DMvkFYbH04xBrUpd/F7BWZ0olZYdwKBgDgX\nbYBzT0qEN5BiKM2dhhSNzaljHSWl9OMNbFoezOUngjNOwEj735+djSJjh//Gb+UE\nREhPGnbEb1sOy8gKzAIvVgA6LMI4KQyQ7M7zPGK6QqRcUOwN964ZQWqWwDVLKStf\nkruqzhC7IyzcS3fVnuGqJBPUteTgq0J06kciFde5AoGAawHp0rntGcQjps1RvQPR\nfF9YZDskHMuXXqxTNoUF0KfU3YlYdCKLxi809/NjUiCXiu3IC4rWJIy/CWr9bWwn\nzC1XSuRoS/upHdsTws+NM6hFztW2u/cL/rfdImSqaohW3rsRsxB4UcbWf5DyQr1o\ntLrxqx2DPdc12gzCcZGDUQA=\n-----END PRIVATE KEY-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "params": {
+            "e": "10001",
+            "qi": "6b01e9d2b9ed19c423a6cd51bd03d17c5f58643b241ccb975eac53368505d0a7d4dd895874228bc62f34f7f3635220978aedc80b8ad6248cbf096afd6d6c27cc2d574ae4684bfba91ddb13c2cf8d33a845ced5b6bbf70bfeb7dd2264aa6a8856debb11b3107851c6d67f90f242bd68b4baf1ab1d833dd735da0cc27191835100"
+          }
+        }
+      }
+    },
+    {
+      "name": "加密私钥缺少口令",
+      "request": {
+        "key": {
+          "data": "-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIIFLTBXBgkqhkiG9w0BBQ0wSjApBgkqhkiG9w0BBQwwHAQIVyWCtQN6BskCAggA\nMAwGCCqGSIb3DQIJBQAwHQYJYIZIAWUDBAEqBBAabkuWxDseYIQZLHqsd7TOBIIE\n0MD8ySPpn5hnWqu8g5odSCKixP+mIaVyqZl9QMJNLm34rmL2c+QQWaGnJxUAbUJ/\nCcjzHgaslFtXsmLrG8c99YCPa4Tpznzj6aytZy/cVvwKfZQ/9JmKXT3L3gWu6thk\nVSwnU/le1sW/bRWFeiYjwzYHYrutuAO32IfLDiK1PKE2h0pJHyItbil5CTfPQm/g\nE/s8VjLPnSsiSXdBGKgfRVw0zRt4s9eHRORa8o11mx/PHs92No+LieTaCnRWIw4J\nt8pLVYf+pCw1VdqcfMA6XSqH9SVV2XQF5T0KJJIKNFOhjGk9HAlYt1ZWnyRQnz+b\nu5cy8DJxDwyo6+51fbyiLieE3myf84irJZbT1VvUAzX0+NkthO9HVavI71rtUQ9K\nXMw2m5OQnMJi5YtkK0pe+ycDxbehFh7EE7BT7Iobq9WQE7TkuoRSn6Z2VZANcO0k\n20eMrwRrHv8d6wrLBwDCtEH4E/ZrpLWMWUQK0oMnRlV2F2BmFkQi0RJyloAiQGdL\nnjrMRu8GIYk8Nt4Q5GgQlNoO4w7TkTf1RkkxTzX5zxy28igQKzZ9PMORn60VjB+7\nTeraeD6JSYblQnY4mwj67WO9El/ZqMNteoLWIm2ts9lITqgBgX8h9Bu2obl7oXHl\n+5pN2BpjAj7uNXgH5hFNRrFEg64Z2n+pJm11OZHtQnJF+73w/ZvXZ626oQB8NDRE\n0oep4z16vJrtWaM/dU4hjEucC35/2fz4B2pyatCY2DeY4iLRy8+Bg/j2NNuiFqBg\nQ+UjnRPVzMYUkWILo87ZagjBziaTEZLOr4nqbtnKP3VrUAsi0rMsQLYc+mrRZutE\ncFPF6FiAd0TRcYMIgEimD1nhsYvJBleJcx8vNIVuU4bB3Be3AhE84RimyauajAdS\nWtHRHmSvTpIlzNL1CiNnhgoB58Bympur8lCZ9TOfxnUod0m5hJi68jQE5KhVsjh3\n+U5VPck/xUbIXNjt2TxS34HzRrDd2ilzMab1ZcIfMfHkLGgc63B6NgHdi1WsuW7E\ntTebGdj44xI91IFyuk1Yi9YGKRmuHgLaeweFsaEwpAfj2jhuLFiHrzHrU031ZAIw\nbrw9sTzhlGPj2J17omaXuuhQwJiwfghYuS1fjijdrBE+tHZ5Ik4siKd0z/5Bt14v\nYHonFnB2ClO0cI+iC1vD6OlXFy26CFEA1ddeCh278qgANXZaaLi9tglBLIBkjgSt\nCNJBeJupcNMx174VJL7mwvgHoaxEST/X/L83hLHDyRaliiEvZctv7LgEhigyoN0m\n0GtENfT2Bgj1wsUBXmyMX2B5exGpaDPHuJoVnns8fOzKWLx4AU7WAmYivqcd4qUk\nCNlYny0y6kbKkmcoLkrWgNgyojDNhlp/RelpifnzdVWlZmRPy0Bx8owVdZdMhI77\n1bumRCaIEbx8U/njnA/NkvyX3QNakfq2ygHS1MVsTa5nEIISSuO4UwX8JYW73SGo\nswKPHjir7YvHSddjt69Bs/jyC4gkMoeE7q4OTQXFYl8R/7ys40Fk80J10Bg1whyK\nGIoAVJgQUkGQUBpC+58Ciy/jJywOT2FhZZcBHHSo7+XEaw1VmaOEz+78LDn5H9+x\nz6TZrSvi0DeKp0GuAdm68ZJ7bIrw2kkJl/whk+TAguVU\n-----END ENCRYPTED PRIVATE KEY-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "PASSPHRASE_REQUIRED"
+      }
+    },
+    {
+      "name": "非法密钥",
+      "request": {
+        "key": {
+          "data": "not-a-key",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_PEM"
+      }
+    }
+  ]
+}
