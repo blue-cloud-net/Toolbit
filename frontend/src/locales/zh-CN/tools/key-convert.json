@@ -1,0 +1,45 @@
+{
+  "name": "密钥格式转换",
+  "description": "在 PKCS#1 / PKCS#8 / SPKI / DER / PEM 之间转换密钥，并识别源密钥的算法与格式。",
+  "category": "密钥",
+  "actions": {
+    "convert": "转换"
+  },
+  "fields": {
+    "key": "密钥",
+    "from": "源格式",
+    "to": "目标格式"
+  },
+  "options": {},
+  "results": {
+    "key": "转换结果",
+    "detected": "识别到的源密钥"
+  },
+  "examples": [
+    {
+      "label": "把 SPKI 公钥转成 PKCS#8（演示格式约束）",
+      "value": "spki → pkcs8"
+    },
+    {
+      "label": "把 SPKI 公钥转成 DER",
+      "value": "spki → der"
+    }
+  ],
+  "hints": {
+    "format": "私钥不能转成 SPKI（公钥格式），公钥也不能转成 PKCS#1 / PKCS#8；这些组合会被显式拒绝。"
+  },
+  "faq": [
+    {
+      "q": "加密私钥转换后会变成明文吗？",
+      "a": "不会。加密私钥在转换后仍然保持加密，需要提供口令才能读取。"
+    },
+    {
+      "q": "DER 和 PEM 有什么区别？",
+      "a": "PEM 是带 Base64 文本外壳的 DER；选择 der 时结果以 Base64 形式给出。"
+    },
+    {
+      "q": "为什么私钥转 SPKI 会报错？",
+      "a": "SPKI 是公钥的封装格式，私钥转成 SPKI 会丢掉私钥材料，因此被显式拒绝而不是静默丢弃。"
+    }
+  ]
+}

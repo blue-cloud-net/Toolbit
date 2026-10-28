@@ -1,0 +1,50 @@
+{
+  "name": "Key Pair Matcher",
+  "description": "Check whether a private key pairs with a public key or a certificate by comparing public key fingerprints.",
+  "category": "Keys",
+  "actions": {
+    "check": "Check"
+  },
+  "fields": {
+    "a": "Key A",
+    "b": "Key B"
+  },
+  "options": {
+    "reasons": {
+      "matched": "Paired (the private key and public key belong to the same key)",
+      "identical": "Identical (both inputs are the same private key)",
+      "public_key_mismatch": "Public key mismatch (same algorithm, different keys)",
+      "not_a_key_pair": "Not a key pair (the two inputs use different algorithms)"
+    }
+  },
+  "results": {
+    "result": "Result",
+    "match": "Paired",
+    "reason": "Conclusion",
+    "aFingerprint": "Fingerprint of A",
+    "bFingerprint": "Fingerprint of B"
+  },
+  "examples": [
+    {
+      "label": "Compare two different RSA public keys",
+      "value": "RSA ↔ RSA"
+    },
+    {
+      "label": "Compare an RSA and an EC public key",
+      "value": "RSA ↔ EC"
+    }
+  ],
+  "hints": {
+    "compare": "The comparison is based on the public key fingerprint, so a private key can also be checked against a certificate."
+  },
+  "faq": [
+    {
+      "q": "Can I compare a certificate with a private key?",
+      "a": "Yes. The public key is taken from the certificate and compared with the fingerprint of the private key."
+    },
+    {
+      "q": "Is a failed match an error?",
+      "a": "No. A mismatch is a normal result and the page still shows the full comparison details."
+    }
+  ]
+}

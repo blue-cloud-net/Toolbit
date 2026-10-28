@@ -1,0 +1,45 @@
+{
+  "name": "Key Format Converter",
+  "description": "Convert keys between PKCS#1 / PKCS#8 / SPKI / DER / PEM and report the detected algorithm and format.",
+  "category": "Keys",
+  "actions": {
+    "convert": "Convert"
+  },
+  "fields": {
+    "key": "Key",
+    "from": "Source format",
+    "to": "Target format"
+  },
+  "options": {},
+  "results": {
+    "key": "Converted key",
+    "detected": "Detected source key"
+  },
+  "examples": [
+    {
+      "label": "Convert an SPKI public key to PKCS#8 (format constraint)",
+      "value": "spki → pkcs8"
+    },
+    {
+      "label": "Convert an SPKI public key to DER",
+      "value": "spki → der"
+    }
+  ],
+  "hints": {
+    "format": "A private key cannot become SPKI (a public key format), and a public key cannot become PKCS#1 / PKCS#8; such combinations are rejected explicitly."
+  },
+  "faq": [
+    {
+      "q": "Does converting an encrypted private key decrypt it?",
+      "a": "No. An encrypted private key stays encrypted after conversion and still needs the passphrase to be read."
+    },
+    {
+      "q": "What is the difference between DER and PEM?",
+      "a": "PEM is DER wrapped in a Base64 text envelope; choosing der returns the DER bytes in Base64."
+    },
+    {
+      "q": "Why does converting a private key to SPKI fail?",
+      "a": "SPKI carries public keys only, so the conversion would silently drop the private material; it is rejected instead."
+    }
+  ]
+}

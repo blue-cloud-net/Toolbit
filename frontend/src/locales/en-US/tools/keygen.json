@@ -1,0 +1,62 @@
+{
+  "name": "Key Generator",
+  "description": "Generate RSA / SM2 / EC / Ed25519 / Ed448 / X25519 / X448 key pairs, optionally encrypting the private key with a passphrase.",
+  "category": "Keys",
+  "actions": {
+    "generate": "Generate keys"
+  },
+  "fields": {
+    "algorithm": "Key algorithm",
+    "bits": "RSA bits",
+    "curve": "Elliptic curve",
+    "privateFormat": "Private key format",
+    "publicFormat": "Public key format",
+    "encrypt": "Encrypt private key with a passphrase",
+    "pbeCipher": "Encryption algorithm",
+    "passphrase": "Passphrase"
+  },
+  "options": {
+    "algorithms": {
+      "RSA": "RSA",
+      "SM2": "SM2 (Chinese national standard)",
+      "EC": "EC (elliptic curve)",
+      "Ed25519": "Ed25519",
+      "Ed448": "Ed448",
+      "X25519": "X25519",
+      "X448": "X448"
+    }
+  },
+  "results": {
+    "keys": "Generated keys",
+    "privateKey": "Private key",
+    "publicKey": "Public key"
+  },
+  "examples": [
+    {
+      "label": "Generate an RSA 2048 key pair",
+      "value": "RSA · 2048"
+    },
+    {
+      "label": "Generate an SM2 key pair",
+      "value": "SM2 · SM2"
+    }
+  ],
+  "hints": {
+    "format": "The private key is emitted as PKCS#8 and the public key as SPKI by default; PKCS#1 is RSA only.",
+    "encrypt": "Remember the passphrase: losing it means losing the private key."
+  },
+  "faq": [
+    {
+      "q": "Is the generated private key stored on the server?",
+      "a": "No. It is only returned in the response; nothing is written to disk or to the logs, and the browser drops it when you leave the page."
+    },
+    {
+      "q": "How many RSA bits should I use?",
+      "a": "2048 bits or more is the current recommendation; 1024 bits is no longer considered secure."
+    },
+    {
+      "q": "How do SM2 and EC differ?",
+      "a": "SM2 is the Chinese national standard, typically paired with SM3 and the national PKI stack; EC is the generic elliptic curve algorithm."
+    }
+  ]
+}

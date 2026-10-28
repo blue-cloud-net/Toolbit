@@ -23,6 +23,12 @@ export const toolRegistry: Record<string, ToolLoader> = {
   'asymmetric-crypt': () => import('./crypto/asymmetric-crypt/index'),
   'ecdh': () => import('./crypto/ecdh/index'),
   'sm4-file-crypt': () => import('./crypto/sm4-file-crypt/index'),
+  'keygen': () => import('./keys/keygen/index'),
+  'key-convert': () => import('./keys/key-convert/index'),
+  'key-parse': () => import('./keys/key-parse/index'),
+  'key-ops': () => import('./keys/key-ops/index'),
+  'key-match': () => import('./keys/key-match/index'),
+  'jwk-xml-convert': () => import('./keys/jwk-xml-convert/index'),
 }
 
 /** 已实现的工具 slug 集合。 */
