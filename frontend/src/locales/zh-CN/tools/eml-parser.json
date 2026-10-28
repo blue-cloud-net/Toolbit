@@ -1,0 +1,69 @@
+{
+  "name": "EML 邮件解析",
+  "description": "解析 EML 邮件的头字段、正文分部与附件。",
+  "category": "文档",
+  "actions": {
+    "parse": "解析"
+  },
+  "fields": {
+    "input": "邮件源文",
+    "file": "邮件文件",
+    "encoding": "源文字符编码",
+    "maxAttachmentBytes": "单附件字节上限"
+  },
+  "options": {
+    "encoding": {
+      "utf-8": "UTF-8",
+      "gbk": "GBK",
+      "gb2312": "GB2312",
+      "big5": "Big5",
+      "iso-8859-1": "ISO-8859-1"
+    }
+  },
+  "results": {
+    "output": "邮件头字段",
+    "headers": "头字段",
+    "bodies": "正文分部",
+    "attachments": "附件",
+    "name": "字段名",
+    "value": "字段值",
+    "contentType": "内容类型",
+    "charset": "字符编码",
+    "text": "正文",
+    "filename": "文件名",
+    "mime": "媒体类型",
+    "size": "字节数",
+    "truncated": "内容超限被截断",
+    "empty": "没有正文或附件。"
+  },
+  "examples": [
+    {
+      "label": "纯文本邮件",
+      "value": "From: sender@example.com"
+    },
+    {
+      "label": "带附件的邮件",
+      "value": "Content-Type: multipart/mixed; boundary=\"B\""
+    }
+  ],
+  "hints": {
+    "input": "粘贴 `.eml` 源文，或拖入邮件文件自动填入。",
+    "encoding": "源文的字符编码；正文实际按 `Content-Type` 里声明的编码解码。",
+    "maxAttachmentBytes": "单附件字节上限，0 表示用服务端默认的 10 MB，最大 50 MB。",
+    "output": "头字段按出现顺序保留，便于查看 `Received` 链；编码字（RFC 2047）会被解码。"
+  },
+  "faq": [
+    {
+      "q": "为什么头字段顺序会被保留？",
+      "a": "标准库的邮件解析把头字段存成映射，会丢掉顺序。工具自己按原文顺序解析，因此 `Received` 链仍然可读。"
+    },
+    {
+      "q": "附件内容会被保存吗？",
+      "a": "不会。附件只在响应里以 base64 形式返回，服务端不落盘、不写日志，也不缓存。"
+    },
+    {
+      "q": "正文乱码怎么办？",
+      "a": "正文按 `Content-Type` 中声明的 charset 解码；声明缺失或不可识别时按 UTF-8 处理，无法解码的字节替换为 U+FFFD。"
+    }
+  ]
+}

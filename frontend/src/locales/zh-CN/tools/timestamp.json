@@ -1,0 +1,71 @@
+{
+  "name": "时间戳转换",
+  "description": "时间戳与日期互转，支持秒、毫秒、微秒、纳秒与 IANA 时区。",
+  "category": "数据",
+  "actions": {
+    "toDate": "转为日期",
+    "toTimestamp": "转为时间戳"
+  },
+  "fields": {
+    "value": "时间戳或日期",
+    "operation": "转换方向",
+    "unit": "时间戳单位",
+    "timezone": "时区"
+  },
+  "options": {
+    "operation": {
+      "toDate": "时间戳 → 日期",
+      "toTimestamp": "日期 → 时间戳"
+    },
+    "unit": {
+      "auto": "自动识别",
+      "s": "秒（s）",
+      "ms": "毫秒（ms）",
+      "us": "微秒（us）",
+      "ns": "纳秒（ns）"
+    }
+  },
+  "results": {
+    "output": "转换结果",
+    "seconds": "秒级时间戳",
+    "milliseconds": "毫秒级时间戳",
+    "iso8601": "ISO 8601",
+    "rfc3339": "RFC 3339",
+    "local": "本地时间",
+    "utc": "UTC 时间"
+  },
+  "examples": [
+    {
+      "label": "秒时间戳转日期",
+      "value": "1700000000"
+    },
+    {
+      "label": "毫秒时间戳转日期",
+      "value": "1700000000123"
+    },
+    {
+      "label": "日期转时间戳",
+      "value": "2023-11-14"
+    }
+  ],
+  "hints": {
+    "value": "可填时间戳或日期文本；留空表示当前时间。",
+    "unit": "不选单位时按位数自动识别：13 位按毫秒，其余按秒。",
+    "timezone": "填 IANA 时区名（如 `Asia/Shanghai`）；留空时按 UTC 换算并给出警告。",
+    "output": "「本地时间」按所选时区显示，「UTC 时间」始终是协调世界时。"
+  },
+  "faq": [
+    {
+      "q": "为什么会出现时区警告？",
+      "a": "服务端不猜时区。未指定时区时一律按 UTC 换算，并在结果区给出 `TIMEZONE_ASSUMED` 警告。"
+    },
+    {
+      "q": "自动识别单位可靠吗？",
+      "a": "只按位数判断：13 位视为毫秒，其余按秒。需要精确时请显式选择单位。"
+    },
+    {
+      "q": "支持哪些日期格式？",
+      "a": "支持 RFC 3339、`YYYY-MM-DDTHH:MM:SS`、`YYYY-MM-DD HH:MM:SS` 与 `YYYY-MM-DD`。"
+    }
+  ]
+}

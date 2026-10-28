@@ -1,0 +1,65 @@
+{
+  "name": "China Administrative Regions",
+  "description": "Look up province, prefecture and county level administrative division codes of China.",
+  "category": "Data",
+  "actions": {
+    "search": "Search"
+  },
+  "fields": {
+    "query": "Name or code keyword",
+    "province": "Limit to province"
+  },
+  "options": {
+    "level": {
+      "province": "Province",
+      "city": "Prefecture",
+      "district": "County"
+    }
+  },
+  "results": {
+    "output": "Search result",
+    "total": "Matches",
+    "dataVersion": "Dataset version",
+    "provinces": "Provinces",
+    "cities": "Lower level regions",
+    "code": "Code",
+    "name": "Name",
+    "level": "Level",
+    "parent": "Parent code",
+    "provinceCode": "Province code",
+    "empty": "No matching administrative region."
+  },
+  "examples": [
+    {
+      "label": "Search a city by name",
+      "value": "杭州"
+    },
+    {
+      "label": "Limit the range to a province",
+      "value": "浙江省"
+    },
+    {
+      "label": "Limit the range by province code",
+      "value": "110000"
+    }
+  ],
+  "hints": {
+    "query": "Matches the name or the six digit code; leave it empty to list every province.",
+    "province": "After naming a province or its code, only the lower level regions of that province are returned.",
+    "output": "The dataset is a bundled offline snapshot and may lag behind recent changes; the version ships with the result."
+  },
+  "faq": [
+    {
+      "q": "Why does an empty query only return provinces?",
+      "a": "There are more than three thousand prefecture and county level entries, so the default response keeps only the province list to stay fast and readable."
+    },
+    {
+      "q": "How many digits does a code have?",
+      "a": "Always six: the first two digits are the province, the middle two the prefecture, and the last two the county."
+    },
+    {
+      "q": "Can I look up Hong Kong, Macao or Taiwan?",
+      "a": "The snapshot follows the administrative division code series. Hong Kong, Macao and Taiwan use their own coding systems and are not part of the six digit sequence."
+    }
+  ]
+}

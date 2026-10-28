@@ -1,0 +1,55 @@
+{
+  "name": "Country Codes",
+  "description": "Look up ISO 3166-1 country and territory codes.",
+  "category": "Data",
+  "actions": {
+    "search": "Search"
+  },
+  "fields": {
+    "query": "Name or code keyword"
+  },
+  "options": {},
+  "results": {
+    "output": "Search result",
+    "total": "Matches",
+    "dataVersion": "Dataset version",
+    "alpha2": "Alpha-2",
+    "alpha3": "Alpha-3",
+    "numeric": "Numeric",
+    "nameZh": "Chinese name",
+    "nameEn": "English name",
+    "empty": "No matching country or territory."
+  },
+  "examples": [
+    {
+      "label": "Search by Chinese name",
+      "value": "中国"
+    },
+    {
+      "label": "Search by alpha-2 code",
+      "value": "JP"
+    },
+    {
+      "label": "Search by English name",
+      "value": "Germany"
+    }
+  ],
+  "hints": {
+    "query": "Matches the alpha-2, alpha-3, numeric code or the Chinese and English names; leave it empty to list everything.",
+    "output": "The dataset is a bundled offline snapshot of ISO 3166-1; the tool never goes online."
+  },
+  "faq": [
+    {
+      "q": "Where are these codes used?",
+      "a": "The alpha-2 letter code drives country top level domains and region identifiers in most systems; alpha-3 and numeric codes show up in customs, treasury and statistics."
+    },
+    {
+      "q": "Why does searching `JP` return only one row?",
+      "a": "Matching is substring based, and `JP` only occurs in Japan's codes. Searching `j` returns more rows."
+    },
+    {
+      "q": "Is the data up to date?",
+      "a": "It is an offline snapshot and the version ships with the result. It can lag behind recent changes, so check the official source when precision matters."
+    }
+  ]
+}
