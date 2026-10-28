@@ -93,7 +93,11 @@
 | `valid` | bool | **仅 `verify` 时**返回 |
 | `signature` | string | **仅 `sign` 时**返回，Base64 编码的 DER |
 | `algorithm` | string | 实际使用的算法 |
-| `hash` | string | 实际使用的摘要（Ed25519 / Ed448 为空） |
+| `hash` | string | 实际使用的摘要；**仅 RSA** 返回（`SHA256` / `SHA384` / `SHA512`），其余算法为空 |
+
+> 响应里的 `hash` 只在**摘要由调用方选择**时才有值。
+> `SM2`（固定 SM3）、`ECDSA`（固定 SHA-256）、`ED25519` / `ED448`（纯签名）
+> 的摘要由算法决定，因此该字段为空字符串。
 
 ### 错误
 
