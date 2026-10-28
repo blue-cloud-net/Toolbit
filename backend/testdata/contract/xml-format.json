@@ -1,0 +1,39 @@
+{
+  "slug": "xml-format",
+  "description": "XML 美化 / 压缩 / 校验的契约测试数据。",
+  "cases": [
+    {
+      "name": "美化并保持文本内联",
+      "request": {
+        "input": { "data": "<root><a>1</a><b attr=\"x\">2</b></root>" },
+        "action": "format",
+        "indent": 2
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true, "output": "<root>\n  <a>1</a>\n  <b attr=\"x\">2</b>\n</root>" }
+      }
+    },
+    {
+      "name": "压缩",
+      "request": {
+        "input": { "data": "<root>\n  <a>1</a>\n</root>" },
+        "action": "minify"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "<root><a>1</a></root>", "valid": true }
+      }
+    },
+    {
+      "name": "语法错误判为非法",
+      "request": {
+        "input": { "data": "<root><a></root>" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": false }
+      }
+    }
+  ]
+}

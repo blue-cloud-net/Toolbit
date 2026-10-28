@@ -1,0 +1,82 @@
+{
+  "slug": "json-format",
+  "description": "JSON 美化 / 压缩 / 校验的契约测试数据。",
+  "cases": [
+    {
+      "name": "美化并保持键序",
+      "request": {
+        "input": { "data": "{\"b\":1,\"a\":2}" },
+        "action": "format",
+        "indent": 2
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true, "output": "{\n  \"b\": 1,\n  \"a\": 2\n}" }
+      }
+    },
+    {
+      "name": "按键排序",
+      "request": {
+        "input": { "data": "{\"b\":1,\"a\":2}" },
+        "sortKeys": true
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true }
+      }
+    },
+    {
+      "name": "压缩",
+      "request": {
+        "input": { "data": "{\n  \"a\" : 1\n}" },
+        "action": "minify"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "{\"a\":1}", "valid": true }
+      }
+    },
+    {
+      "name": "校验合法内容",
+      "request": {
+        "input": { "data": "{\"a\":1}" },
+        "action": "validate"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true }
+      }
+    },
+    {
+      "name": "语法错误给出位置",
+      "request": {
+        "input": { "data": "{\n  \"a\": 1,\n}" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": false }
+      }
+    },
+    {
+      "name": "重复键判为非法",
+      "request": {
+        "input": { "data": "{\"a\":1,\"a\":2}" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": false }
+      }
+    },
+    {
+      "name": "非法操作",
+      "request": {
+        "input": { "data": "{}" },
+        "action": "beautify"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

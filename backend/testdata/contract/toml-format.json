@@ -1,0 +1,37 @@
+{
+  "slug": "toml-format",
+  "description": "TOML 美化 / 压缩 / 校验的契约测试数据。",
+  "cases": [
+    {
+      "name": "美化",
+      "request": {
+        "input": { "data": "name = \"toolbit\"\ncount = 3\n" },
+        "action": "format"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true }
+      }
+    },
+    {
+      "name": "注释丢失被标记",
+      "request": {
+        "input": { "data": "# 注释\nkey = 'value'\n" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true, "commentsLost": true }
+      }
+    },
+    {
+      "name": "语法错误判为非法",
+      "request": {
+        "input": { "data": "key = \n" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": false }
+      }
+    }
+  ]
+}

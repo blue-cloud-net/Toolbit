@@ -1,0 +1,49 @@
+{
+  "slug": "sql-format",
+  "description": "SQL 美化 / 压缩 / 校验的契约测试数据。",
+  "cases": [
+    {
+      "name": "美化并子句换行",
+      "request": {
+        "input": { "data": "select id,name from users where id=1" },
+        "action": "format",
+        "indent": 2
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true }
+      }
+    },
+    {
+      "name": "关键字转大写",
+      "request": {
+        "input": { "data": "select 1 from t" },
+        "keywordCase": "upper"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true }
+      }
+    },
+    {
+      "name": "字符串内容不被改写",
+      "request": {
+        "input": { "data": "select 'from where' as x from t" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true }
+      }
+    },
+    {
+      "name": "未闭合字符串判为非法",
+      "request": {
+        "input": { "data": "select 'abc from t" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": false }
+      }
+    }
+  ]
+}

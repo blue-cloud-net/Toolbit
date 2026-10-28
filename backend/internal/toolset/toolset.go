@@ -12,6 +12,7 @@ import (
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/crypto"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/encoding"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/formatting"
 )
 
 // Definitions 返回全部已实现工具的定义。
@@ -21,6 +22,7 @@ import (
 func Definitions() []tools.Definition {
 	defs := make([]tools.Definition, 0, 32)
 	defs = append(defs, encoding.Definitions()...)
+	defs = append(defs, formatting.Definitions()...)
 	defs = append(defs, crypto.Definitions()...)
 	return defs
 }

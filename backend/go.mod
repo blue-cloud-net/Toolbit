@@ -5,6 +5,10 @@ go 1.25.0
 require (
 	github.com/blue-cloud-net/tongsuo-go v0.5.0
 	github.com/gin-gonic/gin v1.12.0
+	github.com/pelletier/go-toml/v2 v2.2.4
+	github.com/tdewolff/minify/v2 v2.24.12
+	github.com/tdewolff/parse/v2 v2.8.16
+	golang.org/x/net v0.51.0
 	golang.org/x/text v0.34.0
 	golang.org/x/time v0.12.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -32,7 +36,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
-	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
@@ -42,7 +45,6 @@ require (
 	golang.org/x/arch v0.22.0 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
-	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	modernc.org/libc v1.66.3 // indirect
