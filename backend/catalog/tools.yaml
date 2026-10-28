@@ -440,11 +440,11 @@ tools:
     nameEn: Revocation Checker
     enabled: true
     transport: json
-    rateClass: network
+    rateClass: standard
     maxBodyBytes: 4194304
     timeoutMs: 30000
     sensitive: false
-    requiresNetwork: true
+    requiresNetwork: false
     autoRun: false
     wide: false
     i18nKey: tools.revocation-check
