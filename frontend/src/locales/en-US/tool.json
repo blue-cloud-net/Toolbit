@@ -65,5 +65,10 @@
     "hints": {
       "format": "\"Auto-detect\" tries PEM → Base64 → DER → hexadecimal in order; an explicit format is parsed as-is."
     }
+  },
+  "file": {
+    "dropzone": "Drop a file here, or click to choose one",
+    "choose": "Choose a file",
+    "clear": "Clear the file"
   }
 }

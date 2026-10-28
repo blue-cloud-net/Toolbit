@@ -1,0 +1,66 @@
+{
+  "name": "SM4 File Encryption",
+  "description": "Encrypt a whole file in chunks, suitable for large files; the output uses a custom container format.",
+  "category": "Cryptography",
+  "actions": {
+    "encrypt": "Encrypt",
+    "decrypt": "Decrypt"
+  },
+  "fields": {
+    "file": "File to process",
+    "operation": "Operation",
+    "key": "Key",
+    "keyEncoding": "Key encoding",
+    "nonce": "Base nonce",
+    "nonceEncoding": "Nonce encoding",
+    "chunkSize": "Chunk size"
+  },
+  "options": {
+    "operation": {
+      "encrypt": "Encrypt",
+      "decrypt": "Decrypt"
+    },
+    "chunkSize": {
+      "default": "Default 1 MiB"
+    }
+  },
+  "results": {
+    "download": "Download file",
+    "uploading": "Uploading file…",
+    "uploadingPercent": "Uploading file… {percent}%",
+    "processing": "Encrypting or decrypting…"
+  },
+  "examples": [
+    {
+      "label": "Encrypt a file with SM4",
+      "value": "Pick a file and encrypt it with the test key"
+    },
+    {
+      "label": "Decrypt a file with SM4",
+      "value": "Pick a .sm4 container and decrypt it"
+    }
+  ],
+  "hints": {
+    "nonce": "Leave it empty to let the server generate a random base nonce; per-chunk nonces are derived from it.",
+    "chunkSize": "The chunk size drives memory usage (about 2×) and is independent of the file size.",
+    "file": "Files are processed on the server and never written to disk; only a download link is returned."
+  },
+  "faq": [
+    {
+      "q": "How large a file can I process?",
+      "a": "The per-request limit is 100 MB."
+    },
+    {
+      "q": "Can openssl decrypt the output?",
+      "a": "No. This tool uses the custom TBFC container format."
+    },
+    {
+      "q": "What if decryption reports a wrong key?",
+      "a": "Make sure the key matches the one used for encryption; per-chunk authentication detects any tampering."
+    },
+    {
+      "q": "Are files stored?",
+      "a": "No. Files are streamed in memory, never written to disk, logs or statistics."
+    }
+  ]
+}

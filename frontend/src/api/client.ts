@@ -191,7 +191,7 @@ export function fetchCatalog(options: RequestOptions = {}): Promise<ToolCallResu
 /**
  * 执行一个工具。
  *
- * 请求体为 JSON；multipart 与二进制工具由后续版本扩展。
+ * 请求体为 JSON；二进制（multipart）工具用 `callToolBinary`。
  */
 export function callTool<T = unknown>(
   slug: string,
@@ -207,6 +207,187 @@ export function callTool<T = unknown>(
     },
     options,
   )
+}
+
+/** 二进制工具的调用结果。 */
+export interface BinaryCallResult {
+  /** 响应体。 */
+  blob: Blob
+  /** 建议的文件名（来自 Content-Disposition）。 */
+  filename: string
+  /** 执行元信息。 */
+  meta: Meta
+}
+
+/** 二进制请求的选项。 */
+export interface BinaryRequestOptions extends RequestOptions {
+  /** 上传进度回调。 */
+  onUploadProgress?: (loaded: number, total: number) => void
+}
+
+/**
+ * 执行一个返回二进制流的工具。
+ *
+ * multipart 工具的响应**不套**统一信封：
+ *   - 成功 → `application/octet-stream`，警告走 `X-Warnings` 响应头；
+ *   - 失败 → 仍是 JSON 信封（错误在响应头发出之前就能确定）。
+ *
+ * 因此这里按 Content-Type 分流：二进制取 blob，JSON 走信封拆包。
+ *
+ * ⚠️ 这里用 XMLHttpRequest 而不是 fetch：
+ * fetch **不提供**上传进度事件，而本工具可能上传 100 MB，
+ * 没有进度用户会以为卡死了。
+ */
+export function callToolBinary(
+  slug: string,
+  form: FormData,
+  options: BinaryRequestOptions = {},
+): Promise<BinaryCallResult> {
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS
+  const url = `${API_BASE}/api/v1/tools/${encodeURIComponent(slug)}`
+
+  return new Promise<BinaryCallResult>((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', url)
+    xhr.responseType = 'blob'
+    xhr.timeout = timeoutMs
+    xhr.setRequestHeader('Accept', 'application/octet-stream, application/json')
+
+    const signal = options.signal
+    const onAbort = (): void => {
+      xhr.abort()
+    }
+    if (signal) {
+      if (signal.aborted) {
+        reject(toCancelError())
+        return
+      }
+      signal.addEventListener('abort', onAbort, { once: true })
+    }
+    const cleanup = (): void => {
+      signal?.removeEventListener('abort', onAbort)
+    }
+
+    xhr.upload.onprogress = (event: ProgressEvent): void => {
+      if (event.lengthComputable) {
+        options.onUploadProgress?.(event.loaded, event.total)
+      }
+    }
+
+    xhr.onload = (): void => {
+      cleanup()
+      const contentType = xhr.getResponseHeader('Content-Type') ?? ''
+
+      if (contentType.includes('application/json')) {
+        // 错误路径：后端返回 JSON 信封。
+        void xhr.response
+          .text()
+          .then((text: string) => {
+            let envelope: Envelope<unknown>
+            try {
+              envelope = JSON.parse(text) as Envelope<unknown>
+            } catch {
+              reject(
+                new ApiError(
+                  xhr.status,
+                  'INVALID_RESPONSE',
+                  `unexpected response body (status ${xhr.status})`,
+                ),
+              )
+              return
+            }
+            const payload = envelope.error
+            reject(
+              new ApiError(
+                envelope.code || xhr.status,
+                payload?.code ?? 'INTERNAL_ERROR',
+                envelope.message || 'request failed',
+                payload?.params ?? {},
+                envelope.requestId,
+              ),
+            )
+          })
+          .catch(reject)
+        return
+      }
+
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new ApiError(xhr.status, 'INTERNAL_ERROR', `request failed (status ${xhr.status})`))
+        return
+      }
+
+      resolve({
+        blob: xhr.response as Blob,
+        filename: filenameFromDisposition(xhr.getResponseHeader('Content-Disposition')),
+        meta: metaFromHeaders(xhr),
+      })
+    }
+
+    xhr.onerror = (): void => {
+      cleanup()
+      reject(new ApiError(0, 'NETWORK_ERROR', 'network error'))
+    }
+    xhr.ontimeout = (): void => {
+      cleanup()
+      reject(new ApiError(0, 'TIMEOUT', 'request timeout'))
+    }
+    xhr.onabort = (): void => {
+      cleanup()
+      reject(toCancelError())
+    }
+
+    // ⚠️ **不要**手动设置 Content-Type：
+    // 浏览器需要自己补 multipart 的 boundary。
+    xhr.send(form)
+  })
+}
+
+/** 从 Content-Disposition 响应头解析文件名。 */
+function filenameFromDisposition(header: string | null): string {
+  if (!header) {
+    return ''
+  }
+  const utf8 = /filename\*=UTF-8''([^;]+)/i.exec(header)
+  if (utf8?.[1]) {
+    try {
+      return decodeURIComponent(utf8[1].trim())
+    } catch {
+      // 编码损坏时退回 ASCII 文件名。
+    }
+  }
+  const ascii = /filename="([^"]*)"/i.exec(header)
+  return ascii?.[1] ?? ''
+}
+
+/** 从响应头构造元信息。 */
+function metaFromHeaders(headers: XMLHttpRequest): Meta {
+  const num = (name: string): number => {
+    const raw = headers.getResponseHeader(name)
+    const value = raw ? Number(raw) : Number.NaN
+    return Number.isFinite(value) ? value : 0
+  }
+  return {
+    durationMs: num('X-Duration-Ms'),
+    inputBytes: num('X-Input-Bytes'),
+    outputBytes: num('X-Output-Bytes'),
+    warnings: parseWarningsHeader(headers.getResponseHeader('X-Warnings')),
+  }
+}
+
+/** 解析 `X-Warnings` 响应头。 */
+function parseWarningsHeader(raw: string | null): Warning[] {
+  if (!raw) {
+    return []
+  }
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    if (Array.isArray(parsed)) {
+      return parsed.filter((w): w is Warning => typeof w === 'object' && w !== null && 'code' in w)
+    }
+  } catch {
+    // 响应头损坏时忽略：警告不影响结果可用性。
+  }
+  return []
 }
 
 /** 提取警告码列表。 */

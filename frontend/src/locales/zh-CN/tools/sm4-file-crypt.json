@@ -1,0 +1,66 @@
+{
+  "name": "SM4 文件加解密",
+  "description": "对整个文件做分块加密，支持大文件；产物是自定义容器格式。",
+  "category": "加密",
+  "actions": {
+    "encrypt": "加密",
+    "decrypt": "解密"
+  },
+  "fields": {
+    "file": "待处理文件",
+    "operation": "操作",
+    "key": "密钥",
+    "keyEncoding": "密钥编码",
+    "nonce": "基础 nonce",
+    "nonceEncoding": "nonce 编码",
+    "chunkSize": "分块大小"
+  },
+  "options": {
+    "operation": {
+      "encrypt": "加密",
+      "decrypt": "解密"
+    },
+    "chunkSize": {
+      "default": "默认 1 MiB"
+    }
+  },
+  "results": {
+    "download": "下载文件",
+    "uploading": "正在上传文件…",
+    "uploadingPercent": "正在上传文件… {percent}%",
+    "processing": "正在加解密…"
+  },
+  "examples": [
+    {
+      "label": "SM4 文件加密",
+      "value": "选择文件后用测试密钥加密"
+    },
+    {
+      "label": "SM4 文件解密",
+      "value": "选择 .sm4 容器后解密"
+    }
+  ],
+  "hints": {
+    "nonce": "留空时由服务端随机生成基础 nonce；同一容器内的分块 nonce 由它派生。",
+    "chunkSize": "分块大小决定内存占用（约 2 倍），与文件大小无关。",
+    "file": "文件在服务端处理，不落盘；处理完成后只返回下载链接。"
+  },
+  "faq": [
+    {
+      "q": "支持多大文件？",
+      "a": "单次请求上限 100 MB。"
+    },
+    {
+      "q": "加密后的文件能直接用 openssl 解吗？",
+      "a": "不能，本工具使用自定义容器格式 TBFC。"
+    },
+    {
+      "q": "解密时提示密钥不对怎么办？",
+      "a": "确认密钥与加密时一致；容器的分块认证能检测出任何被改动的内容。"
+    },
+    {
+      "q": "文件会被保存吗？",
+      "a": "不会。文件在内存中流式处理，既不落盘也不写入日志与统计。"
+    }
+  ]
+}

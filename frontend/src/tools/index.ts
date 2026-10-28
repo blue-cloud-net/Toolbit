@@ -22,6 +22,7 @@ export const toolRegistry: Record<string, ToolLoader> = {
   'signature': () => import('./crypto/signature/index'),
   'asymmetric-crypt': () => import('./crypto/asymmetric-crypt/index'),
   'ecdh': () => import('./crypto/ecdh/index'),
+  'sm4-file-crypt': () => import('./crypto/sm4-file-crypt/index'),
 }
 
 /** 已实现的工具 slug 集合。 */
