@@ -24,6 +24,22 @@ MARKDOWNLINT  ?= markdownlint-cli2
 NODE          ?= node
 PNPM          ?= pnpm
 
+# ── Tongsuo（cgo 依赖）────────────────────────────────────────────────
+#
+# 密码学能力全部经 tongsuo-go 转调 Tongsuo 原生库，因此后端**必须**开 cgo。
+# 安装步骤见 docs/deploy.md §2.2；库目录默认 lib64（本机布局），可用 TONGSUO_LIBDIR 覆盖。
+TONGSUO_HOME   ?= /opt/tongsuo
+TONGSUO_LIBDIR ?= $(TONGSUO_HOME)/lib64
+
+CGO_ENABLED ?= 1
+CGO_CFLAGS  ?= -I$(TONGSUO_HOME)/include -Wno-deprecated-declarations
+# rpath 写死绝对路径：容器内路径与此处一致，因此不依赖 LD_LIBRARY_PATH。
+CGO_LDFLAGS ?= -L$(TONGSUO_LIBDIR) -Wl,-rpath,$(TONGSUO_LIBDIR)
+
+export CGO_ENABLED
+export CGO_CFLAGS
+export CGO_LDFLAGS
+
 # golangci-lint 内嵌的 go/types 版本**不**得高于它所解析的标准库版本，
 # 否则会以 "file requires newer Go version" 崩溃。
 # 这里从 `golangci-lint version` 里读出它构建时使用的 Go 版本，并让分析用同一版本。
@@ -37,23 +53,36 @@ help: ## 显示可用目标
 		| awk 'BEGIN {FS = ":.*## "}; {printf "  %-14s %s\n", $$1, $$2}'
 
 .PHONY: build
-build: ## 编译后端所有包
+build: check-tongsuo ## 编译后端所有包
 	cd $(BACKEND) && $(GO) build ./...
 
 .PHONY: vet
-vet: ## go vet 静态检查
+vet: check-tongsuo ## go vet 静态检查
 	cd $(BACKEND) && $(GO) vet ./...
 
 .PHONY: test
-test: ## 单元测试与契约测试（带竞态检测）
+test: check-tongsuo ## 单元测试与契约测试（带竞态检测）
 	cd $(BACKEND) && $(GO) test ./... -race -count=1
 
 .PHONY: fmt
 fmt: ## 格式化 Go 源码
 	cd $(BACKEND) && $(GO) fmt ./...
 
+.PHONY: check-tongsuo
+check-tongsuo: ## 检查 Tongsuo 头文件与运行库是否就位
+	@if [ ! -f "$(TONGSUO_HOME)/include/openssl/opensslv.h" ]; then \
+		echo "错误：未找到 Tongsuo 头文件 $(TONGSUO_HOME)/include/openssl/opensslv.h"; \
+		echo "请先安装 Tongsuo 8.4.0+（参考 docs/deploy.md §2.2），或用 TONGSUO_HOME 指定安装根目录。"; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(TONGSUO_LIBDIR)/libcrypto.so" ]; then \
+		echo "错误：未找到 Tongsuo 运行库 $(TONGSUO_LIBDIR)/libcrypto.so"; \
+		echo "请确认库目录（默认 lib64），或用 TONGSUO_LIBDIR 指定。"; \
+		exit 1; \
+	fi
+
 .PHONY: lint-go
-lint-go: ## Go 静态检查（golangci-lint）
+lint-go: check-tongsuo ## Go 静态检查（golangci-lint）
 	@command -v $(GOLANGCI_LINT) >/dev/null 2>&1 || { \
 		echo "错误：未找到 $(GOLANGCI_LINT)。"; \
 		echo "安装：go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest"; \
