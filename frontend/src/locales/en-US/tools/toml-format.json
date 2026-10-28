@@ -1,0 +1,67 @@
+{
+  "name": "TOML Formatter",
+  "description": "Pretty-print, minify or validate TOML text.",
+  "category": "Formatting",
+  "actions": {
+    "format": "Format",
+    "minify": "Minify",
+    "validate": "Validate"
+  },
+  "fields": {
+    "input": "TOML text",
+    "action": "Action",
+    "indent": "Indent width"
+  },
+  "options": {
+    "action": {
+      "format": "Format (re-indent)",
+      "minify": "Minify (drop blank lines)",
+      "validate": "Validate (syntax only)"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "outputHint": "The result can be copied directly.",
+    "validity": "Validity",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "position": "Error position",
+    "reason": "Error reason",
+    "commentsLost": "Comments were lost",
+    "commentsLostHint": "The TOML parser does not keep comments, so the reformatted content no longer contains them."
+  },
+  "examples": [
+    {
+      "label": "Format TOML",
+      "value": "name = \"toolbit\"\nversion = 1\n"
+    },
+    {
+      "label": "Minify TOML",
+      "value": "name = \"toolbit\"\n\nversion = 1\n"
+    },
+    {
+      "label": "Syntax error sample",
+      "value": "key = \n"
+    }
+  ],
+  "hints": {
+    "input": "TOML only has key/value pairs and tables, so indentation only affects how table headers are laid out, never the meaning.",
+    "action": "Validate only reports whether the syntax is legal; it does not rewrite the content.",
+    "indent": "The indent width is measured in spaces; 2, 4 and 8 are available.",
+    "output": "Format puts every table header on its own line; minify drops blank lines."
+  },
+  "faq": [
+    {
+      "q": "Why does the result report lost comments?",
+      "a": "The TOML parser does not store comment information, so the reformatted content naturally has none. The tool flags it explicitly so you do not overwrite your original file by accident."
+    },
+    {
+      "q": "Are dates rewritten?",
+      "a": "Date-times are emitted per the TOML specification, for example `1979-05-27T07:32:00Z`; the meaning is unchanged."
+    },
+    {
+      "q": "What does minify remove?",
+      "a": "Only blank lines and trailing whitespace; everything else is kept as is."
+    }
+  ]
+}

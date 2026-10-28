@@ -1,0 +1,67 @@
+{
+  "name": "TOML 格式化",
+  "description": "美化、压缩或校验 TOML 文本。",
+  "category": "格式化",
+  "actions": {
+    "format": "美化",
+    "minify": "压缩",
+    "validate": "校验"
+  },
+  "fields": {
+    "input": "TOML 文本",
+    "action": "操作",
+    "indent": "缩进宽度"
+  },
+  "options": {
+    "action": {
+      "format": "美化（重新排版）",
+      "minify": "压缩（去掉空行）",
+      "validate": "校验（只检查语法）"
+    }
+  },
+  "results": {
+    "output": "结果",
+    "outputHint": "结果可直接复制。",
+    "validity": "合法性",
+    "valid": "合法",
+    "invalid": "非法",
+    "position": "错误位置",
+    "reason": "错误原因",
+    "commentsLost": "注释已丢失",
+    "commentsLostHint": "TOML 解析器不保留注释，重排后的内容不含原注释。"
+  },
+  "examples": [
+    {
+      "label": "美化 TOML",
+      "value": "name = \"toolbit\"\nversion = 1\n"
+    },
+    {
+      "label": "压缩 TOML",
+      "value": "name = \"toolbit\"\n\nversion = 1\n"
+    },
+    {
+      "label": "语法错误示例",
+      "value": "key = \n"
+    }
+  ],
+  "hints": {
+    "input": "TOML 只有键值对与表，缩进只影响表头的排版，不影响语义。",
+    "action": "「校验」只判断语法是否合法，不改写内容。",
+    "indent": "缩进宽度以空格计，可选 2、4 或 8。",
+    "output": "「美化」会把表头单独成行；「压缩」去掉空行。"
+  },
+  "faq": [
+    {
+      "q": "为什么结果提示注释丢失？",
+      "a": "TOML 解析器不保存注释信息，重排后的内容自然不含原注释。工具会显式标记，提醒你不要直接覆盖原文件。"
+    },
+    {
+      "q": "日期会被改写吗？",
+      "a": "日期时间会按 TOML 规范输出，例如 `1979-05-27T07:32:00Z`，语义不变。"
+    },
+    {
+      "q": "「压缩」会删掉什么？",
+      "a": "只删空行与行尾空白，其余内容原样保留。"
+    }
+  ]
+}

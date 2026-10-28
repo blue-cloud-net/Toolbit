@@ -1,0 +1,63 @@
+{
+  "name": "Format Converter",
+  "description": "Convert between JSON, YAML, TOML and XML.",
+  "category": "Formatting",
+  "actions": {
+    "convert": "Convert"
+  },
+  "fields": {
+    "input": "Content to convert",
+    "from": "Source format",
+    "to": "Target format",
+    "indent": "Indent width",
+    "pretty": "Pretty output"
+  },
+  "options": {
+    "format": {
+      "json": "JSON",
+      "yaml": "YAML",
+      "toml": "TOML",
+      "xml": "XML"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "outputHint": "The result can be copied directly.",
+    "route": "Conversion route",
+    "lossy": "Information lost",
+    "lossyHint": "The target format cannot express part of the content."
+  },
+  "examples": [
+    {
+      "label": "JSON to YAML",
+      "value": "{\"name\":\"toolbit\",\"count\":3}"
+    },
+    {
+      "label": "YAML to JSON",
+      "value": "name: toolbit\ncount: 3\n"
+    },
+    {
+      "label": "XML to JSON",
+      "value": "<root><name>toolbit</name></root>"
+    }
+  ],
+  "hints": {
+    "input": "Pick the source format that matches the content; a wrong choice produces a parse error.",
+    "pretty": "Disabling the option produces compact output, which suits request bodies.",
+    "output": "Any pair of the four formats converts to any other; the conversion goes through a common representation, so key order is preserved."
+  },
+  "faq": [
+    {
+      "q": "Why does it report lost information?",
+      "a": "Some structures have no counterpart in the target format, for example XML has no native array and allows only one root element. The tool names the reason."
+    },
+    {
+      "q": "Do numbers lose precision?",
+      "a": "No. Numbers are carried as their original literal and never pass through a floating point value."
+    },
+    {
+      "q": "Are comments preserved?",
+      "a": "No. The intermediate representation only carries structured data; comments are not part of the data."
+    }
+  ]
+}

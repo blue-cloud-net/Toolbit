@@ -1,0 +1,72 @@
+{
+  "name": "JWT 编解码",
+  "description": "解析、生成与校验 JWT 令牌。",
+  "category": "编码",
+  "actions": {
+    "decode": "解析",
+    "encode": "生成",
+    "verify": "校验"
+  },
+  "fields": {
+    "token": "令牌",
+    "header": "头部（JSON）",
+    "payload": "载荷（JSON）",
+    "secret": "HMAC 密钥",
+    "operation": "操作",
+    "algorithm": "签名算法"
+  },
+  "options": {
+    "operation": {
+      "decode": "解析令牌",
+      "encode": "生成令牌",
+      "verify": "校验签名"
+    }
+  },
+  "results": {
+    "output": "结果",
+    "outputHint": "结果可直接复制。",
+    "validity": "签名结论",
+    "valid": "签名有效",
+    "invalid": "签名无效",
+    "signature": "签名",
+    "expired": "已过期",
+    "expiredHint": "载荷中的 exp 早于当前时间。",
+    "notYetValid": "尚未生效",
+    "notYetValidHint": "载荷中的 nbf 晚于当前时间。"
+  },
+  "examples": [
+    {
+      "label": "解析 JWT",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0b29sYml0In0.D9MwAs0iXS3XR6s3EQSUnyuDB7oTVqLuabXe20IBKR8"
+    },
+    {
+      "label": "生成 JWT",
+      "value": "{\"alg\":\"HS256\"}"
+    },
+    {
+      "label": "校验签名",
+      "value": "toolbit-demo-secret"
+    }
+  ],
+  "hints": {
+    "input": "「解析」与「校验」需要一个完整令牌；「生成」需要填写头部与载荷。",
+    "secret": "密钥只随请求发送，不会写入浏览器存储；请勿粘贴生产密钥。",
+    "algorithm": "只支持 HS256 / HS384 / HS512 三个 HMAC-SHA 算法。",
+    "invalidJson": "头部与载荷必须是合法的 JSON 对象。",
+    "output": "解析结果会列出头部与载荷；载荷含 exp 或 nbf 时还会给出时间状态。"
+  },
+  "faq": [
+    {
+      "q": "为什么只支持 HS 系列算法？",
+      "a": "校验 RS / ES 签名需要公钥材料，超出本工具范围。遇到非 HS 算法时工具直接报「不支持的算法」，而不是假装校验通过。"
+    },
+    {
+      "q": "「解析」能拿到密钥吗？",
+      "a": "不能。JWT 的头部与载荷只是 Base64URL 编码，不是加密，任何人拿到令牌都能读出内容。"
+    },
+    {
+      "q": "生成结果里的签名可信吗？",
+      "a": "签名由服务端用 Tongsuo 计算，前端不参与密码学运算；同一个密钥与输入会得到同一个签名。"
+    }
+  ]
+}

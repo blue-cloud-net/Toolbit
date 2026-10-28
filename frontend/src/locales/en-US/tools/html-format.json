@@ -1,0 +1,65 @@
+{
+  "name": "HTML Formatter",
+  "description": "Pretty-print, minify or validate an HTML fragment.",
+  "category": "Formatting",
+  "actions": {
+    "format": "Format",
+    "minify": "Minify",
+    "validate": "Validate"
+  },
+  "fields": {
+    "input": "HTML fragment",
+    "action": "Action",
+    "indent": "Indent width"
+  },
+  "options": {
+    "action": {
+      "format": "Format (re-indent)",
+      "minify": "Minify (strip whitespace)",
+      "validate": "Validate (syntax only)"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "outputHint": "The result can be copied directly.",
+    "validity": "Validity",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "position": "Error position",
+    "reason": "Error reason"
+  },
+  "examples": [
+    {
+      "label": "Format HTML",
+      "value": "<div class=\"wrap\"><p>hello</p></div>"
+    },
+    {
+      "label": "Minify HTML",
+      "value": "<div>\n  <p>hello</p>\n</div>"
+    },
+    {
+      "label": "Void element sample",
+      "value": "<img src=\"a.png\" alt=\"a\">"
+    }
+  ],
+  "hints": {
+    "input": "The tool parses a fragment and never wraps the content in `<html><head><body>`.",
+    "action": "Validate only reports whether a structure can be parsed; it does not rewrite the content.",
+    "indent": "The indent width is measured in spaces; 2, 4 and 8 are available.",
+    "output": "Format indents by depth and keeps attributes; minify strips the whitespace between tags."
+  },
+  "faq": [
+    {
+      "q": "Why are syntax errors so rare?",
+      "a": "The HTML parser is fault tolerant and completes unclosed tags automatically, so validate really means whether a structure can be parsed."
+    },
+    {
+      "q": "Can I embed the formatted HTML into a page?",
+      "a": "No. Formatting only rearranges tags and performs no sanitising. Escape or sanitise the HTML separately when you need XSS protection."
+    },
+    {
+      "q": "Will `<br>` get a closing tag?",
+      "a": "No. Void elements such as `br`, `img` and `input` are emitted as they are, without an end tag."
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "name": "URL 编解码",
+  "description": "URL 百分号编解码与结构解析。",
+  "category": "编码",
+  "actions": {
+    "encode": "编码",
+    "decode": "解码",
+    "parse": "解析"
+  },
+  "fields": {
+    "input": "URL 或查询串",
+    "operation": "操作",
+    "component": "作用范围",
+    "plusAsSpace": "把 + 视为空格"
+  },
+  "options": {
+    "operation": {
+      "encode": "编码",
+      "decode": "解码",
+      "parse": "解析结构"
+    },
+    "component": {
+      "full": "整条 URL",
+      "path": "路径部分",
+      "query": "查询串",
+      "fragment": "片段标识"
+    }
+  },
+  "results": {
+    "output": "结果",
+    "outputHint": "结果可直接复制。",
+    "parts": {
+      "scheme": "协议",
+      "host": "主机",
+      "port": "端口",
+      "path": "路径",
+      "query": "查询串"
+    }
+  },
+  "examples": [
+    {
+      "label": "编码查询串",
+      "value": "https://example.com/search?q=蓝云 工具箱&page=2"
+    },
+    {
+      "label": "解码百分号编码",
+      "value": "q=%E8%93%9D%E4%BA%91%E5%B7%A5%E5%85%B7%E7%AE%B1&page=2"
+    },
+    {
+      "label": "解析 URL 结构",
+      "value": "https://user@example.com:8443/path/to/page?q=1&lang=zh#section"
+    }
+  ],
+  "hints": {
+    "input": "编码会把非 ASCII 字符转成百分号形式；解码会还原它们。",
+    "plusAsSpace": "表单提交常把空格写成 `+`，勾选后解码时还原为空格。",
+    "output": "「解析结构」会额外列出协议、主机、端口、路径与查询参数。"
+  },
+  "faq": [
+    {
+      "q": "编码和转义有什么区别？",
+      "a": "URL 编码只处理百分号转义，不涉及 HTML 转义。需要防 XSS 时请另做 HTML 转义。"
+    },
+    {
+      "q": "为什么 `+` 没变成空格？",
+      "a": "关闭「把 + 视为空格」即可。路径里的 `+` 是字面加号，不是空格。"
+    },
+    {
+      "q": "解析结果里端口是空的？",
+      "a": "URL 没有显式写端口时就是默认端口（HTTP 为 80，HTTPS 为 443），工具不会补全。"
+    }
+  ]
+}

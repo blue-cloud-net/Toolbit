@@ -1,0 +1,67 @@
+{
+  "name": "YAML 格式化",
+  "description": "美化、压缩或校验 YAML 文本。",
+  "category": "格式化",
+  "actions": {
+    "format": "美化",
+    "minify": "压缩",
+    "validate": "校验"
+  },
+  "fields": {
+    "input": "YAML 文本",
+    "action": "操作",
+    "indent": "缩进宽度",
+    "sortKeys": "按键排序"
+  },
+  "options": {
+    "action": {
+      "format": "美化（重新排版）",
+      "minify": "压缩（去掉空行）",
+      "validate": "校验（只检查语法）"
+    }
+  },
+  "results": {
+    "output": "结果",
+    "outputHint": "结果可直接复制。",
+    "validity": "合法性",
+    "valid": "合法",
+    "invalid": "非法",
+    "position": "错误位置",
+    "reason": "错误原因"
+  },
+  "examples": [
+    {
+      "label": "美化 YAML",
+      "value": "# 注释\nname: toolbit\ntags:\n  - cli\n  - web\n"
+    },
+    {
+      "label": "压缩 YAML",
+      "value": "name: toolbit\n\nversion: 1\n"
+    },
+    {
+      "label": "语法错误示例",
+      "value": "key: [unclosed\n"
+    }
+  ],
+  "hints": {
+    "input": "YAML 的缩进本身是语义，因此「压缩」只去掉空行与文档分隔符，不改变缩进。",
+    "action": "「校验」只判断语法是否合法，不改写内容。",
+    "indent": "缩进宽度以空格计，可选 2、4 或 8。",
+    "sortKeys": "排序只影响映射的键顺序；注释与锚点仍然保留。",
+    "output": "「美化」会保留注释与键序；「压缩」去掉多余空行与 `---` 分隔符。"
+  },
+  "faq": [
+    {
+      "q": "注释会丢吗？",
+      "a": "不会。工具按节点树重排，注释与锚点都会保留。"
+    },
+    {
+      "q": "为什么 YAML 也被判非法？",
+      "a": "YAML 对缩进敏感，多一个空格就可能改变结构。工具会指出出错的行号，便于定位。"
+    },
+    {
+      "q": "锚点和别名安全吗？",
+      "a": "别名可以指数级放大文档体积，工具在展开之前先统计别名数量与嵌套深度，超限直接拒绝。"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "name": "编码转换",
+  "description": "在常见字符集之间转换文本。",
+  "category": "编码",
+  "actions": {
+    "convert": "转换"
+  },
+  "fields": {
+    "input": "待转换内容",
+    "inputEncoding": "输入编码",
+    "from": "源字符集",
+    "to": "目标字符集",
+    "outputEncoding": "输出编码",
+    "bom": "写入字节序标记"
+  },
+  "options": {
+    "charset": {
+      "auto": "自动探测",
+      "utf-8": "UTF-8",
+      "utf-16": "UTF-16",
+      "utf-16le": "UTF-16 LE",
+      "utf-16be": "UTF-16 BE",
+      "gbk": "GBK",
+      "big5": "Big5",
+      "shift_jis": "Shift_JIS",
+      "latin-1": "Latin-1"
+    }
+  },
+  "results": {
+    "output": "结果",
+    "outputHint": "结果可直接复制。",
+    "encoding": "输出编码",
+    "detected": "探测到的源字符集"
+  },
+  "examples": [
+    {
+      "label": "GBK 转 UTF-8",
+      "value": "1tDOxA=="
+    },
+    {
+      "label": "自动探测源字符集",
+      "value": "hello"
+    },
+    {
+      "label": "UTF-8 转 GBK",
+      "value": "中文"
+    }
+  ],
+  "hints": {
+    "input": "输入编码决定内容如何被读成字节；源字符集决定这些字节原本的含义，两者不要混淆。",
+    "bom": "字节序标记（BOM）只对 UTF-8 与 UTF-16 有意义，勾选后会在输出开头写入。",
+    "output": "输出默认是 Base64，方便直接粘贴到需要字节串的地方。"
+  },
+  "faq": [
+    {
+      "q": "为什么结果里出现了替换字符？",
+      "a": "源字符集中没有的字符无法映射，会被替换成占位符，同时给出「有损转换」的警告。"
+    },
+    {
+      "q": "「自动探测」可靠吗？",
+      "a": "它按字节特征猜测，在 UTF-8 与单字节字符集之间比较可靠；GBK 与 Big5 这类同形字集容易误判，重要数据请显式指定。"
+    },
+    {
+      "q": "UTF-16 为什么有两个字节序？",
+      "a": "UTF-16 有大小端两种字节排列。写 UTF-16 时会写入 BOM，按字节序标记（bom）可以在目标端自动判定。"
+    }
+  ]
+}

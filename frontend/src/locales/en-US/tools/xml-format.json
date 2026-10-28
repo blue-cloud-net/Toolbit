@@ -1,0 +1,67 @@
+{
+  "name": "XML Formatter",
+  "description": "Pretty-print, minify or validate XML text.",
+  "category": "Formatting",
+  "actions": {
+    "format": "Format",
+    "minify": "Minify",
+    "validate": "Validate"
+  },
+  "fields": {
+    "input": "XML text",
+    "action": "Action",
+    "indent": "Indent width",
+    "keepComments": "Keep comments"
+  },
+  "options": {
+    "action": {
+      "format": "Format (re-indent)",
+      "minify": "Minify (strip whitespace)",
+      "validate": "Validate (syntax only)"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "outputHint": "The result can be copied directly.",
+    "validity": "Validity",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "position": "Error position",
+    "reason": "Error reason"
+  },
+  "examples": [
+    {
+      "label": "Format XML",
+      "value": "<root><name>toolbit</name><item id=\"1\">first</item></root>"
+    },
+    {
+      "label": "Minify XML",
+      "value": "<root>\n  <name>toolbit</name>\n</root>"
+    },
+    {
+      "label": "Syntax error sample",
+      "value": "<root><a></root>"
+    }
+  ],
+  "hints": {
+    "input": "Elements that contain text only stay inline: moving the text to the next line would insert whitespace into the content, which rewrites the data.",
+    "action": "Validate only reports whether the syntax is legal; it does not rewrite the content.",
+    "indent": "The indent width is measured in spaces; 2, 4 and 8 are available.",
+    "keepComments": "Comments are dropped by default; enabling the option keeps them near their original position.",
+    "output": "Format indents by depth; minify strips the whitespace between tags."
+  },
+  "faq": [
+    {
+      "q": "Does the attribute order change?",
+      "a": "No. The tool works token by token, so attributes are emitted in their original order."
+    },
+    {
+      "q": "Why do text-only elements stay on one line?",
+      "a": "Whitespace inside an element is meaningful in XML. Splitting `<a>1</a>` across two lines turns it into `<a>\\n1\\n</a>`, which changes the content."
+    },
+    {
+      "q": "Are DTDs and entities supported?",
+      "a": "No. The tool only parses markup and text; it does not resolve DTD declarations or custom entities."
+    }
+  ]
+}

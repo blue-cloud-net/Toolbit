@@ -1,0 +1,73 @@
+{
+  "name": "URL Codec",
+  "description": "Percent-encode, decode, and inspect the structure of URLs.",
+  "category": "Encoding",
+  "actions": {
+    "encode": "Encode",
+    "decode": "Decode",
+    "parse": "Parse"
+  },
+  "fields": {
+    "input": "URL or query string",
+    "operation": "Operation",
+    "component": "Scope",
+    "plusAsSpace": "Treat + as space"
+  },
+  "options": {
+    "operation": {
+      "encode": "Encode",
+      "decode": "Decode",
+      "parse": "Parse structure"
+    },
+    "component": {
+      "full": "Whole URL",
+      "path": "Path",
+      "query": "Query string",
+      "fragment": "Fragment"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "outputHint": "The result can be copied directly.",
+    "parts": {
+      "scheme": "Scheme",
+      "host": "Host",
+      "port": "Port",
+      "path": "Path",
+      "query": "Query"
+    }
+  },
+  "examples": [
+    {
+      "label": "Encode a query string",
+      "value": "https://example.com/search?q=blue cloud&page=2"
+    },
+    {
+      "label": "Decode percent-encoding",
+      "value": "q=%E8%93%9D%E4%BA%91%E5%B7%A5%E5%85%B7%E7%AE%B1&page=2"
+    },
+    {
+      "label": "Parse a URL structure",
+      "value": "https://user@example.com:8443/path/to/page?q=1&lang=zh#section"
+    }
+  ],
+  "hints": {
+    "input": "Encoding turns non-ASCII characters into percent-escapes; decoding restores them.",
+    "plusAsSpace": "Form submissions often write spaces as `+`. Enable this to restore them while decoding.",
+    "output": "\"Parse structure\" additionally lists the scheme, host, port, path, and query parameters."
+  },
+  "faq": [
+    {
+      "q": "How is encoding different from escaping?",
+      "a": "URL encoding only handles percent-escaping; it is not HTML escaping. Use a separate HTML escape when you need XSS protection."
+    },
+    {
+      "q": "Why did `+` not become a space?",
+      "a": "Turn off \"Treat + as space\". A `+` in a path is a literal plus sign, not a space."
+    },
+    {
+      "q": "Why is the port empty in the parsed result?",
+      "a": "The URL does not spell out a port, so it uses the default one (80 for HTTP, 443 for HTTPS). The tool does not fill it in."
+    }
+  ]
+}

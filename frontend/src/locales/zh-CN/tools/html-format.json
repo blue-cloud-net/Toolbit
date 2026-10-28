@@ -1,0 +1,65 @@
+{
+  "name": "HTML 格式化",
+  "description": "美化、压缩或校验 HTML 片段。",
+  "category": "格式化",
+  "actions": {
+    "format": "美化",
+    "minify": "压缩",
+    "validate": "校验"
+  },
+  "fields": {
+    "input": "HTML 片段",
+    "action": "操作",
+    "indent": "缩进宽度"
+  },
+  "options": {
+    "action": {
+      "format": "美化（重新排版）",
+      "minify": "压缩（去掉空白）",
+      "validate": "校验（只检查语法）"
+    }
+  },
+  "results": {
+    "output": "结果",
+    "outputHint": "结果可直接复制。",
+    "validity": "合法性",
+    "valid": "合法",
+    "invalid": "非法",
+    "position": "错误位置",
+    "reason": "错误原因"
+  },
+  "examples": [
+    {
+      "label": "美化 HTML",
+      "value": "<div class=\"wrap\"><p>hello</p></div>"
+    },
+    {
+      "label": "压缩 HTML",
+      "value": "<div>\n  <p>hello</p>\n</div>"
+    },
+    {
+      "label": "含自闭合标签",
+      "value": "<img src=\"a.png\" alt=\"a\">"
+    }
+  ],
+  "hints": {
+    "input": "工具按片段解析，不会给内容硬套上 `<html><head><body>`。",
+    "action": "「校验」只判断能否解析出结构，不改写内容。",
+    "indent": "缩进宽度以空格计，可选 2、4 或 8。",
+    "output": "「美化」按层级缩进并保留属性；「压缩」去掉标签之间的空白。"
+  },
+  "faq": [
+    {
+      "q": "为什么很少报语法错误？",
+      "a": "HTML 解析器是容错的，会自动补全未闭合的标签，所以「校验」的结论是「能否解析出结构」。"
+    },
+    {
+      "q": "格式化后的 HTML 可以直接嵌入网页吗？",
+      "a": "不可以。格式化只重排标签，不做任何净化。需要防 XSS 请另做 HTML 转义或净化。"
+    },
+    {
+      "q": "`<br>` 后面会被补上 `</br>` 吗？",
+      "a": "不会。void 元素（`br`、`img`、`input` 等）保持原样，不会补结束标签。"
+    }
+  ]
+}
