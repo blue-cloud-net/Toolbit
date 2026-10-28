@@ -80,8 +80,22 @@ Toolbit/
 │
 ├── frontend/                   ← 前端：独立 pnpm 项目
 │   ├── package.json
-│   ├── vite.config.ts
-│   └── src/                    见 standards/01-frontend.md §2
+│   ├── vite.config.ts          构建与 manualChunks（按工具拆 chunk）
+│   ├── uno.config.ts           原子化 CSS 与设计令牌映射
+│   ├── vitest.config.ts        单测配置
+│   └── src/
+│       ├── api/                后端通信唯一入口（统一拆信封）
+│       ├── components/         layout / discovery / tool 三组共享组件
+│       ├── composables/        useToolRun 等组合式函数
+│       ├── i18n/               词条装配与错误码本地化
+│       ├── layouts/            DefaultLayout
+│       ├── locales/            zh-CN/ 与 en-US/（含 tools/<slug>.json）
+│       ├── router/             路由表（路由级懒加载）
+│       ├── stores/             catalog / prefs
+│       ├── styles/             tokens.css / base.css / element-overrides.css
+│       ├── tools/              <category>/<slug>/{index.ts,Tool.vue,example.ts}
+│       ├── types/              与后端 DTO 对齐的类型
+│       └── views/              路由级页面组件
 │
 ├── docs/                       文档（standards / api / templates）
 ├── scripts/                    文档与一致性校验脚本
