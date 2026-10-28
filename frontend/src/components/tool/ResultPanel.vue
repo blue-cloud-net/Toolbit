@@ -149,6 +149,8 @@ watch(
       >
         {{ t('tool.result.emptyOutput') }}
       </p>
+
+      <slot name="extra" />
     </template>
   </section>
 </template>

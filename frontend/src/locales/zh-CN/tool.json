@@ -65,5 +65,15 @@
     "hints": {
       "format": "「自动识别」按 PEM → Base64 → DER → 十六进制的顺序尝试解析；显式指定格式时不做转换。"
     }
+  },
+  "dropzone": {
+    "hint": "拖入文件，或点击选择",
+    "tooLarge": "文件超过 {max} 字节上限。",
+    "readFailed": "文件读取失败。"
+  },
+  "actions": {
+    "copy": "复制",
+    "download": "下载",
+    "clear": "清空"
   }
 }

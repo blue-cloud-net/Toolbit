@@ -1,0 +1,81 @@
+/**
+ * 工具表单通用样式。
+ *
+ * 工具页的输入区、参数区共用这套类名，**不要**在各工具页里重复定义。
+ * 早期工具页曾把同样的样式抄进各自的 `<style scoped>`，
+ * 新增工具一律依赖本文件。
+ */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+}
+
+.field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--tb-space-2);
+}
+
+.field__label {
+  font-size: var(--tb-font-xs);
+  color: var(--tb-text-secondary);
+}
+
+.field__textarea {
+  width: 100%;
+  padding: var(--tb-space-2) var(--tb-space-3);
+  font-family: var(--tb-font-mono);
+  font-size: var(--tb-font-sm);
+  line-height: 1.6;
+  color: var(--tb-text);
+  background: var(--tb-bg-sunken);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-control);
+  resize: vertical;
+}
+
+.field__input {
+  width: 100%;
+  padding: var(--tb-space-2) var(--tb-space-3);
+  font-family: inherit;
+  font-size: var(--tb-font-sm);
+  color: var(--tb-text);
+  background: var(--tb-bg-elevated);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-control);
+}
+
+.field__select {
+  padding: var(--tb-space-1) var(--tb-space-2);
+  font-family: inherit;
+  font-size: var(--tb-font-sm);
+  color: var(--tb-text);
+  background: var(--tb-bg-elevated);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-control);
+  cursor: pointer;
+}
+
+.field__checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--tb-primary);
+}
+
+.field__hint {
+  margin: 0;
+  font-size: var(--tb-font-xs);
+  color: var(--tb-text-tertiary);
+}
+
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-3);
+}
+
+.field-row > .field {
+  flex: 1 1 180px;
+}

@@ -65,5 +65,15 @@
     "hints": {
       "format": "\"Auto-detect\" tries PEM → Base64 → DER → hexadecimal in order; an explicit format is parsed as-is."
     }
+  },
+  "dropzone": {
+    "hint": "Drop a file here, or click to choose",
+    "tooLarge": "The file exceeds the {max} byte limit.",
+    "readFailed": "Failed to read the file."
+  },
+  "actions": {
+    "copy": "Copy",
+    "download": "Download",
+    "clear": "Clear"
   }
 }
