@@ -27,6 +27,11 @@ const (
 	HeaderInputBytes = "X-Input-Bytes"
 	// HeaderOutputBytes 是响应体字节数响应头。
 	HeaderOutputBytes = "X-Output-Bytes"
+	// HeaderWarnings 是警告列表响应头。
+	//
+	// 流式（二进制）响应没有信封可挂警告，只能走响应头；
+	// 取值是 `toolerr.Warning` 的 JSON 数组。
+	HeaderWarnings = "X-Warnings"
 )
 
 // SecurityHeaders 设置安全响应头。

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/blue-cloud-net/Toolbit/backend/internal/catalog"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/cryptosvc"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/httpx"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/stats"
@@ -23,7 +24,7 @@ import (
 //  1. 路由与工具存在性 → TOOL_NOT_FOUND / TOOL_DISABLED
 //  2. 本版是否已实现 → NOT_IMPLEMENTED
 //  3. HTTP 方法 → METHOD_NOT_ALLOWED
-//  4. Content-Type → UNSUPPORTED_MEDIA_TYPE
+//  4. Content-Type → UNSUPPORTED_MEDIA_TYPE（按 transport 分流）
 //  5. 跨站请求 → CROSS_ORIGIN_BLOCKED（中间件）
 //  6. 限流 → RATE_LIMITED（中间件）
 //  7. 请求体大小 → TOO_LARGE
@@ -63,7 +64,15 @@ func (s *Server) handleTool(c *gin.Context) {
 		return
 	}
 
-	// 4. Content-Type。
+	// 4. Content-Type：按 catalog 的 transport 分流。
+	//
+	// multipart 工具走独立的通道（表单输入 + 二进制输出），
+	// 其余走 JSON 通道。
+	if tool.Transport == catalog.TransportMultipart {
+		s.handleMultipartTool(c, start, tool, def)
+		return
+	}
+
 	if !hasJSONContentType(c) {
 		s.fail(c, start, toolerr.Newf(toolerr.CodeUnsupportedMediaType, map[string]any{
 			"contentType": c.GetHeader("Content-Type"),

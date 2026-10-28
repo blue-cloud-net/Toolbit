@@ -74,5 +74,16 @@ func Definitions() []tools.Definition {
 				return ECDH(ctx, req.(*ECDHRequest))
 			},
 		},
+		{
+			// sm4-file-crypt 走 multipart 通道：
+			// 表单输入 + 二进制流输出，**不**套统一信封。
+			Slug: "sm4-file-crypt",
+			NewMultipart: func() tools.MultipartRequest {
+				return &SM4FileCryptRequest{}
+			},
+			HandleMultipart: func(ctx context.Context, req tools.MultipartRequest) (tools.MultipartResult, error) {
+				return SM4FileCrypt(ctx, req.(*SM4FileCryptRequest))
+			},
+		},
 	}
 }

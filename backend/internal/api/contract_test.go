@@ -1,7 +1,11 @@
 package api
 
 import (
+	"bytes"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
+	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -13,10 +17,24 @@ import (
 type contractCase struct {
 	// Name 是用例名称。
 	Name string `json:"name"`
-	// Request 是工具请求体。
+	// Request 是工具请求体（JSON 通道）。
 	Request map[string]any `json:"request"`
+	// Multipart 是 multipart 通道的请求。
+	//
+	// 与 Request **互斥**：有它就走 multipart，没有就��� JSON。
+	Multipart *contractMultipart `json:"multipart"`
 	// Expect 是期望结果。
 	Expect contractExpect `json:"expect"`
+}
+
+// contractMultipart 是 multipart 通道的请求描述。
+type contractMultipart struct {
+	// Fields 是表单字段。
+	Fields map[string]string `json:"fields"`
+	// FileName 是上传文件名；为空表示不带文件。
+	FileName string `json:"fileName"`
+	// FileContentBase64 是上传文件内容的 base64。
+	FileContentBase64 string `json:"fileContentBase64"`
 }
 
 // contractExpect 是契约用例的期望。
@@ -29,6 +47,14 @@ type contractExpect struct {
 	DataContains map[string]any `json:"dataContains"`
 	// Warnings 是期望出现的警告码。
 	Warnings []string `json:"warnings"`
+	// ContentType 是期望的响应 Content-Type（multipart 通道）。
+	ContentType string `json:"contentType"`
+	// BodyPrefixHex 是期望的响应体前缀（十六进制）。
+	//
+	// 用于二进制响应：容器头等固定前缀。
+	BodyPrefixHex string `json:"bodyPrefixHex"`
+	// BodyMinBytes 是响应体的最小字节数。
+	BodyMinBytes int `json:"bodyMinBytes"`
 }
 
 // contractFile 是一个工具的契约测试数据。
@@ -84,58 +110,124 @@ func runContractFile(t *testing.T, path string) int {
 	h := newTestServer(t)
 	for _, c := range file.Cases {
 		t.Run(c.Name, func(t *testing.T) {
-			body, err := json.Marshal(c.Request)
-			if err != nil {
-				t.Fatalf("序列化请求失败：%v", err)
+			if c.Multipart != nil {
+				runMultipartContractCase(t, h, file.Slug, c)
+				return
 			}
-			rec := postJSON(t, h, "/api/v1/tools/"+file.Slug, string(body))
-
-			wantCode := c.Expect.Code
-			if wantCode == 0 {
-				wantCode = 200
-			}
-			if rec.Code != wantCode {
-				t.Fatalf("状态码 = %d，期望 %d；body=%s", rec.Code, wantCode, rec.Body.String())
-			}
-
-			env := decode(t, rec)
-
-			if c.Expect.ErrorCode != "" {
-				if env.Error == nil {
-					t.Fatalf("期望错误码 %s，实际无错误；body=%s", c.Expect.ErrorCode, rec.Body.String())
-				}
-				if env.Error.Code != c.Expect.ErrorCode {
-					t.Errorf("错误码 = %s，期望 %s", env.Error.Code, c.Expect.ErrorCode)
-				}
-			}
-
-			if len(c.Expect.DataContains) > 0 {
-				if len(env.Data) == 0 {
-					t.Fatalf("期望有 data，实际为 null")
-				}
-				var actual any
-				if err := json.Unmarshal(env.Data, &actual); err != nil {
-					t.Fatalf("解析 data 失败：%v", err)
-				}
-				if !jsonContains(actual, c.Expect.DataContains) {
-					t.Errorf("data 不满足期望子集 %v；实际 %s", c.Expect.DataContains, rec.Body.String())
-				}
-			}
-
-			if len(c.Expect.Warnings) > 0 {
-				got := map[string]bool{}
-				for _, w := range env.Meta.Warnings {
-					got[w.Code] = true
-				}
-				for _, want := range c.Expect.Warnings {
-					if !got[want] {
-						t.Errorf("缺少警告 %s；实际 %v", want, env.Meta.Warnings)
-					}
-				}
-			}
+			runJSONContractCase(t, h, file.Slug, c)
 		})
 	}
 	return len(file.Cases)
+}
+
+// runJSONContractCase 执行一个 JSON 通道的契约用例。
+func runJSONContractCase(t *testing.T, h http.Handler, slug string, c contractCase) {
+	t.Helper()
+	body, err := json.Marshal(c.Request)
+	if err != nil {
+		t.Fatalf("序列化请求失败：%v", err)
+	}
+	rec := postJSON(t, h, "/api/v1/tools/"+slug, string(body))
+
+	wantCode := c.Expect.Code
+	if wantCode == 0 {
+		wantCode = 200
+	}
+	if rec.Code != wantCode {
+		t.Fatalf("状态码 = %d，期望 %d；body=%s", rec.Code, wantCode, rec.Body.String())
+	}
+
+	env := decode(t, rec)
+
+	if c.Expect.ErrorCode != "" {
+		if env.Error == nil {
+			t.Fatalf("期望错误码 %s，实际无错误；body=%s", c.Expect.ErrorCode, rec.Body.String())
+		}
+		if env.Error.Code != c.Expect.ErrorCode {
+			t.Errorf("错误码 = %s，期望 %s", env.Error.Code, c.Expect.ErrorCode)
+		}
+	}
+
+	if len(c.Expect.DataContains) > 0 {
+		if len(env.Data) == 0 {
+			t.Fatalf("期望有 data，实际为 null")
+		}
+		var actual any
+		if err := json.Unmarshal(env.Data, &actual); err != nil {
+			t.Fatalf("解析 data 失败：%v", err)
+		}
+		if !jsonContains(actual, c.Expect.DataContains) {
+			t.Errorf("data 不满足期望子集 %v；实际 %s", c.Expect.DataContains, rec.Body.String())
+		}
+	}
+
+	if len(c.Expect.Warnings) > 0 {
+		got := map[string]bool{}
+		for _, w := range env.Meta.Warnings {
+			got[w.Code] = true
+		}
+		for _, want := range c.Expect.Warnings {
+			if !got[want] {
+				t.Errorf("缺少警告 %s；实际 %v", want, env.Meta.Warnings)
+			}
+		}
+	}
+}
+
+// runMultipartContractCase 执行一个 multipart 通道的契约用例。
+//
+// multipart 工具的响应是**二进制流**，不套信封：
+// 因此断言的是状态码、错误码、Content-Type 与响应体前缀。
+func runMultipartContractCase(t *testing.T, h http.Handler, slug string, c contractCase) {
+	t.Helper()
+
+	content, err := base64.StdEncoding.DecodeString(c.Multipart.FileContentBase64)
+	if err != nil {
+		t.Fatalf("解析文件内容失败：%v", err)
+	}
+
+	rec := postMultipart(t, h, "/api/v1/tools/"+slug, multipartBody{
+		Fields:      c.Multipart.Fields,
+		FileName:    c.Multipart.FileName,
+		FileContent: content,
+	})
+
+	wantCode := c.Expect.Code
+	if wantCode == 0 {
+		wantCode = 200
+	}
+	if rec.Code != wantCode {
+		t.Fatalf("状态码 = %d，期望 %d；body=%s", rec.Code, wantCode, rec.Body.String())
+	}
+
+	if c.Expect.ErrorCode != "" {
+		env := decode(t, rec)
+		if env.Error == nil {
+			t.Fatalf("期望错误码 %s，实际无错误；body=%s", c.Expect.ErrorCode, rec.Body.String())
+		}
+		if env.Error.Code != c.Expect.ErrorCode {
+			t.Errorf("错误码 = %s，期望 %s", env.Error.Code, c.Expect.ErrorCode)
+		}
+		return
+	}
+
+	if c.Expect.ContentType != "" {
+		if got := rec.Header().Get("Content-Type"); got != c.Expect.ContentType {
+			t.Errorf("Content-Type = %q，期望 %q", got, c.Expect.ContentType)
+		}
+	}
+	if c.Expect.BodyPrefixHex != "" {
+		prefix, err := hex.DecodeString(c.Expect.BodyPrefixHex)
+		if err != nil {
+			t.Fatalf("解析期望前缀失败：%v", err)
+		}
+		if !bytes.HasPrefix(rec.Body.Bytes(), prefix) {
+			t.Errorf("响应体前缀 = %x，期望 %x", rec.Body.Bytes()[:min(len(prefix), rec.Body.Len())], prefix)
+		}
+	}
+	if c.Expect.BodyMinBytes > 0 && rec.Body.Len() < c.Expect.BodyMinBytes {
+		t.Errorf("响应体长度 = %d，期望至少 %d", rec.Body.Len(), c.Expect.BodyMinBytes)
+	}
 }
 
 // jsonContains 判断 actual 是否包含 expected 的全部字段（递归）。

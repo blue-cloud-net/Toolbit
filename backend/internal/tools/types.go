@@ -15,6 +15,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 
 	"github.com/blue-cloud-net/Toolbit/backend/internal/toolerr"
@@ -42,6 +43,45 @@ type Result struct {
 // Handler 是工具处理函数。
 type Handler func(ctx context.Context, req Request) (Result, error)
 
+// MultipartRequest 是 multipart 工具的请求。
+//
+// 与 Request 的区别：输入来自 multipart/form-data，
+// 且可能携带**大文件**——因此表单是**流式**的。
+type MultipartRequest interface {
+	// BindMultipart 绑定 multipart 表单。
+	//
+	// 表单按 part 顺序到达。实现**必须**先把所有小字段读完，
+	// 再处理文件部分：一旦开始读文件，就无法回头取后面的字段。
+	//
+	// 因此**文件部分必须是最后一个 part**。
+	// 实现**不得**把文件内容读入内存，也**不得**落盘。
+	//
+	// 返回 *toolerr.Error 表示表单非法。
+	BindMultipart(r *multipart.Reader) error
+
+	// Validate 做字段级校验，返回 *toolerr.Error。
+	Validate() error
+}
+
+// MultipartResult 是 multipart 工具的响应。
+//
+// 与 Result 的区别：响应体是**二进制流**，**不套**统一信封。
+type MultipartResult struct {
+	// ContentType 是响应的 Content-Type；为空时用 application/octet-stream。
+	ContentType string
+	// Filename 是建议的下载文件名；为空时不带 Content-Disposition。
+	Filename string
+	// Body 是响应体。
+	//
+	// 分发器负责关闭它。
+	Body io.ReadCloser
+	// Warnings 是警告列表，可为空。
+	Warnings []toolerr.Warning
+}
+
+// MultipartHandler 处理 multipart 请求。
+type MultipartHandler func(ctx context.Context, req MultipartRequest) (MultipartResult, error)
+
 // Definition 描述一个工具的实现。
 type Definition struct {
 	// Slug 是工具标识，必须与 catalog 中的 slug 一致。
@@ -50,6 +90,20 @@ type Definition struct {
 	NewRequest func() Request
 	// Handle 执行工具。
 	Handle Handler
+
+	// NewMultipart 返回一个空的 multipart 请求结构体。
+	//
+	// 仅 `transport: multipart` 的工具需要；为 nil 表示该工具不支持 multipart。
+	NewMultipart func() MultipartRequest
+	// HandleMultipart 执行 multipart 工具。
+	//
+	// 仅 `transport: multipart` 的工具需要；为 nil 表示该工具不支持 multipart。
+	HandleMultipart MultipartHandler
+}
+
+// SupportsMultipart 报告该工具是否支持 multipart。
+func (d Definition) SupportsMultipart() bool {
+	return d.NewMultipart != nil && d.HandleMultipart != nil
 }
 
 // DecodeJSON 严格解码 JSON 请求体到 req。

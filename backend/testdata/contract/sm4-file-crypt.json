@@ -1,0 +1,138 @@
+{
+  "slug": "sm4-file-crypt",
+  "description": "SM4 文件级加解密：TBFC 容器，分块 GCM，multipart 上传 + 二进制流响应。",
+  "cases": [
+    {
+      "name": "加密：空文件",
+      "multipart": {
+        "fields": {
+          "operation": "encrypt",
+          "mode": "GCM",
+          "key": "{\"data\":\"0123456789ABCDEFFEDCBA9876543210\",\"encoding\":\"hex\"}"
+        },
+        "fileName": "empty.txt",
+        "fileContentBase64": ""
+      },
+      "expect": {
+        "code": 200,
+        "contentType": "application/octet-stream",
+        "bodyPrefixHex": "54424643",
+        "bodyMinBytes": 22
+      }
+    },
+    {
+      "name": "加密：有内容",
+      "multipart": {
+        "fields": {
+          "operation": "encrypt",
+          "mode": "GCM",
+          "key": "{\"data\":\"0123456789ABCDEFFEDCBA9876543210\",\"encoding\":\"hex\"}"
+        },
+        "fileName": "secret.txt",
+        "fileContentBase64": "5py65a+G5YaF5a655py65a+G5YaF5a65"
+      },
+      "expect": {
+        "code": 200,
+        "contentType": "application/octet-stream",
+        "bodyPrefixHex": "54424643",
+        "bodyMinBytes": 42
+      }
+    },
+    {
+      "name": "加密：显式指定基础 nonce",
+      "multipart": {
+        "fields": {
+          "operation": "encrypt",
+          "mode": "GCM",
+          "key": "{\"data\":\"0123456789ABCDEFFEDCBA9876543210\",\"encoding\":\"hex\"}",
+          "iv": "{\"data\":\"000102030405060708090a0b\",\"encoding\":\"hex\"}"
+        },
+        "fileName": "secret.txt",
+        "fileContentBase64": "5py65a+G5YaF5a655py65a+G5YaF5a65"
+      },
+      "expect": {
+        "code": 200,
+        "contentType": "application/octet-stream",
+        "bodyPrefixHex": "54424643",
+        "bodyMinBytes": 42
+      }
+    },
+    {
+      "name": "反例：密钥长度非法",
+      "multipart": {
+        "fields": {
+          "operation": "encrypt",
+          "key": "{\"data\":\"0011\",\"encoding\":\"hex\"}"
+        },
+        "fileName": "secret.txt",
+        "fileContentBase64": "5py65a+G5YaF5a655py65a+G5YaF5a65"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "KEY_SIZE_MISMATCH"
+      }
+    },
+    {
+      "name": "反例：操作非法",
+      "multipart": {
+        "fields": {
+          "operation": "transform",
+          "key": "{\"data\":\"0123456789ABCDEFFEDCBA9876543210\",\"encoding\":\"hex\"}"
+        },
+        "fileName": "secret.txt",
+        "fileContentBase64": "5py65a+G5YaF5a655py65a+G5YaF5a65"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "反例：模式非法",
+      "multipart": {
+        "fields": {
+          "operation": "encrypt",
+          "mode": "CBC",
+          "key": "{\"data\":\"0123456789ABCDEFFEDCBA9876543210\",\"encoding\":\"hex\"}"
+        },
+        "fileName": "secret.txt",
+        "fileContentBase64": "5py65a+G5YaF5a655py65a+G5YaF5a65"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_MODE"
+      }
+    },
+    {
+      "name": "反例：分块大小越界",
+      "multipart": {
+        "fields": {
+          "operation": "encrypt",
+          "key": "{\"data\":\"0123456789ABCDEFFEDCBA9876543210\",\"encoding\":\"hex\"}",
+          "chunkSize": "16"
+        },
+        "fileName": "secret.txt",
+        "fileContentBase64": "5py65a+G5YaF5a655py65a+G5YaF5a65"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "反例：输入不是容器",
+      "multipart": {
+        "fields": {
+          "operation": "decrypt",
+          "key": "{\"data\":\"0123456789ABCDEFFEDCBA9876543210\",\"encoding\":\"hex\"}"
+        },
+        "fileName": "not-a-container.txt",
+        "fileContentBase64": "5py65a+G5YaF5a655py65a+G5YaF5a65"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

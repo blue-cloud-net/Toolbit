@@ -399,6 +399,7 @@ func TestContractDataFilesExist(t *testing.T) {
 		"base64", "number-base",
 		"hash-calc", "hmac-gen", "password-gen",
 		"symmetric-crypt", "signature", "asymmetric-crypt", "ecdh",
+		"sm4-file-crypt",
 	}
 	for _, slug := range slugs {
 		path := filepath.Join("..", "..", "testdata", "contract", slug+".json")
