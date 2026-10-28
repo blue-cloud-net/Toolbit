@@ -1,0 +1,31 @@
+# EditorConfig —— 统一缩进、换行与编码
+# 约定见 docs/standards/02-backend.md 与 docs/standards/01-frontend.md
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.go]
+indent_style = tab
+indent_size = 4
+
+[*.{ts,tsx,vue,js,jsx,json,yaml,yml,css,scss,html}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+# Markdown 保留行尾双空格（换行语义）
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab
+
+[*.{sql,sh}]
+indent_style = space
+indent_size = 2

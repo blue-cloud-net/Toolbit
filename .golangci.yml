@@ -1,0 +1,66 @@
+# golangci-lint 配置
+#
+# 架构约束由 depguard 强制：
+#   仅 internal/cryptosvc 允许导入 tongsuo-go（见 AGENTS.md §4.1）。
+
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - depguard
+    - gocritic
+    - misspell
+    - noctx
+    - revive
+    - unconvert
+    - whitespace
+  settings:
+    depguard:
+      rules:
+        tongsuo-go-only-in-cryptosvc:
+          files:
+            - "!**/internal/cryptosvc/**"
+          deny:
+            - pkg: "github.com/blue-cloud-net/tongsuo-go"
+              desc: "tongsuo-go 只允许在 internal/cryptosvc 中导入"
+    gocritic:
+      disabled-checks:
+        - ifElseChain
+    misspell:
+      locale: US
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - path: _test\.go
+        linters:
+          - errcheck
+          - gocritic
+          - bodyclose
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/blue-cloud-net/Toolbit
+  exclusions:
+    generated: lax
