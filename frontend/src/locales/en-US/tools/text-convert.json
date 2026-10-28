@@ -20,6 +20,7 @@
       "kebab": "kebab-case",
       "constant": "CONSTANT_CASE",
       "title": "Title Case",
+      "sentence": "Sentence case",
       "dot": "dot.case",
       "path": "path/case",
       "custom": "Custom separator"

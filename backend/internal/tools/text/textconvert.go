@@ -25,6 +25,8 @@ const (
 	StyleConstant = "constant"
 	// StyleTitle 标题：Http Server。
 	StyleTitle = "title"
+	// StyleSentence 句首大写：Http server。
+	StyleSentence = "sentence"
 	// StyleDot 点分：http.server。
 	StyleDot = "dot"
 	// StylePath 路径：http/server。
@@ -36,7 +38,7 @@ func TextStyles() []string {
 	return []string{
 		StyleUpper, StyleLower, StyleCamel, StylePascal,
 		StyleSnake, StyleKebab, StyleConstant, StyleTitle,
-		StyleDot, StylePath,
+		StyleSentence, StyleDot, StylePath,
 	}
 }
 
@@ -89,7 +91,8 @@ func TextConvert(req *TextConvertRequest) (TextConvertResult, error) {
 func (r *TextConvertRequest) Validate() error {
 	switch r.Style {
 	case "", StyleUpper, StyleLower, StyleCamel, StylePascal,
-		StyleSnake, StyleKebab, StyleConstant, StyleTitle, StyleDot, StylePath:
+		StyleSnake, StyleKebab, StyleConstant, StyleTitle,
+		StyleSentence, StyleDot, StylePath:
 	default:
 		return tools.InvalidField("style", TextStyles(), r.Style)
 	}
@@ -142,7 +145,9 @@ func joinWords(words []string, style string, separator string) string {
 	case StyleConstant:
 		return strings.ToUpper(strings.Join(words, "_"))
 	case StyleTitle:
-		return strings.ToLower(strings.Join(words, " "))
+		return titleWords(words)
+	case StyleSentence:
+		return sentenceWords(words)
 	case StyleDot:
 		return strings.ToLower(strings.Join(words, "."))
 	case StylePath:
@@ -152,6 +157,30 @@ func joinWords(words []string, style string, separator string) string {
 	default:
 		return strings.Join(words, separator)
 	}
+}
+
+// titleWords 把词元拼成标题式：每个词首字母大写，其余小写。
+func titleWords(words []string) string {
+	if len(words) == 0 {
+		return ""
+	}
+	out := make([]string, 0, len(words))
+	for _, w := range words {
+		out = append(out, capitalize(strings.ToLower(w)))
+	}
+	return strings.Join(out, " ")
+}
+
+// sentenceWords 把词元拼成句首大写：只有首词首字母大写。
+func sentenceWords(words []string) string {
+	if len(words) == 0 {
+		return ""
+	}
+	rest := make([]string, 0, len(words)-1)
+	for _, w := range words[1:] {
+		rest = append(rest, strings.ToLower(w))
+	}
+	return capitalize(strings.ToLower(words[0])) + " " + strings.Join(rest, " ")
 }
 
 // pascalWords 把词元拼成帕斯卡风格。

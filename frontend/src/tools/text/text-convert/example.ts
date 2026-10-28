@@ -12,6 +12,7 @@ export type TextStyle =
   | 'kebab'
   | 'constant'
   | 'title'
+  | 'sentence'
   | 'dot'
   | 'path'
 

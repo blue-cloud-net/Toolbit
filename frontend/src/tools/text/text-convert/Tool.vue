@@ -43,6 +43,7 @@ const STYLES: readonly TextStyle[] = [
   'kebab',
   'constant',
   'title',
+  'sentence',
   'dot',
   'path',
 ]

@@ -20,9 +20,10 @@ func TestTextConvertStyles(t *testing.T) {
 		{"下划线", StyleSnake, "http_server"},
 		{"短横线", StyleKebab, "http-server"},
 		{"常量", StyleConstant, "HTTP_SERVER"},
+		{"标题", StyleTitle, "Http Server"},
+		{"句首大写", StyleSentence, "Http server"},
 		{"点分", StyleDot, "http.server"},
 		{"路径", StylePath, "http/server"},
-		{"标题", StyleTitle, "http server"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

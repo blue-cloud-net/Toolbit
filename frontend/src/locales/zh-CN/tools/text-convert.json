@@ -20,6 +20,7 @@
       "kebab": "短横线（kebab-case）",
       "constant": "常量（CONSTANT_CASE）",
       "title": "标题（Title Case）",
+      "sentence": "句首大写（Sentence case）",
       "dot": "点分（dot.case）",
       "path": "路径（path/case）",
       "custom": "自定义分隔符"
