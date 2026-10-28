@@ -22,13 +22,13 @@ import process from "node:process";
 // ── 配置 ────────────────────────────────────────────────────────────────
 
 const ROOT = path.resolve(import.meta.dirname, "..");
-const CATALOG = path.join(ROOT, "catalog", "tools.yaml");
+const CATALOG = path.join(ROOT, "backend", "catalog", "tools.yaml");
 const API_TOOLS_DIR = path.join(ROOT, "docs", "api", "tools");
 const ERRORS_DOC = path.join(ROOT, "docs", "api", "errors.md");
 const DEPLOY_DOC = path.join(ROOT, "docs", "deploy.md");
 const TOOLS_DOC = path.join(ROOT, "docs", "tools.md");
-const REGISTRY = path.join(ROOT, "internal", "toolerr", "registry.go");
-const CONFIG_GO = path.join(ROOT, "internal", "config", "config.go");
+const REGISTRY_DIR = path.join(ROOT, "backend", "internal", "toolerr");
+const CONFIG_GO = path.join(ROOT, "backend", "internal", "config", "config.go");
 const DOCS_DIR = path.join(ROOT, "docs");
 const README = path.join(ROOT, "README.md");
 
@@ -122,14 +122,19 @@ function parseCatalog(text) {
 /** 从 Go 源码中提取错误码常量名 */
 function parseErrorCodes(text) {
   const codes = new Set();
+  // 先剥离行注释，避免注释中的示例代码被当成真实声明。
+  const source = text
+    .split("\n")
+    .map((line) => line.replace(/\/\/.*$/, ""))
+    .join("\n");
   const re = /Code([A-Z][A-Za-z0-9]*)\s*ErrorCode\s*=/g;
   let m;
-  while ((m = re.exec(text)) !== null) {
+  while ((m = re.exec(source)) !== null) {
     codes.add(m[1].toUpperCase());
   }
   // 兜底：匹配 "CODE": http.Status... 形式的注册表条目
   const re2 = /"([A-Z][A-Z0-9_]{3,})"\s*:\s*\{/g;
-  while ((m = re2.exec(text)) !== null) {
+  while ((m = re2.exec(source)) !== null) {
     codes.add(m[1]);
   }
   return [...codes].sort();
@@ -218,13 +223,21 @@ async function checkCatalogCoverage() {
 }
 
 async function checkErrorCodes() {
-  if (!existsSync(REGISTRY)) {
-    notes.push("errors: internal/toolerr/registry.go 尚不存在，跳过（代码未实现）");
+  if (!existsSync(REGISTRY_DIR)) {
+    notes.push("errors: backend/internal/toolerr 尚不存在，跳过（代码未实现）");
     return;
   }
-  const codes = parseErrorCodes(await readFile(REGISTRY, "utf8"));
+  const files = (await readdir(REGISTRY_DIR)).filter((f) => f.endsWith(".go"));
+  if (files.length === 0) {
+    notes.push("errors: backend/internal/toolerr 下没有 .go 文件，跳过");
+    return;
+  }
+  const source = (
+    await Promise.all(files.map((f) => readFile(path.join(REGISTRY_DIR, f), "utf8")))
+  ).join("\n");
+  const codes = parseErrorCodes(source);
   if (codes.length === 0) {
-    notes.push("errors: 未从 registry.go 解析到错误码，跳过");
+    notes.push("errors: 未从 toolerr 包解析到错误码，跳过");
     return;
   }
   const doc = existsSync(ERRORS_DOC) ? await readFile(ERRORS_DOC, "utf8") : "";
@@ -237,12 +250,12 @@ async function checkErrorCodes() {
       fail("errors", `错误码 ${code} 未在 docs/api/errors.md 中记录`);
     }
   }
-  notes.push(`errors: ${codes.length} 个错误码已校验`);
+  notes.push(`errors: ${codes.length} 个错误码已校验（来自 ${files.length} 个源文件）`);
 }
 
 async function checkConfigVars() {
   if (!existsSync(CONFIG_GO)) {
-    notes.push("config: internal/config/config.go 尚不存在，跳过（代码未实现）");
+    notes.push("config: backend/internal/config/config.go 尚不存在，跳过（代码未实现）");
     return;
   }
   const vars = parseEnvVars(await readFile(CONFIG_GO, "utf8"));
