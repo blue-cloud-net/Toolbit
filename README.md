@@ -62,17 +62,17 @@ docker pull ghcr.io/blue-cloud-net/toolbit:latest
 
 # 运行（数据卷用于存放匿名统计数据库）
 docker run -d --name toolbit \
-  -p 8080:8080 \
+  -p 30234:30234 \
   -v toolbit-data:/app/data \
   ghcr.io/blue-cloud-net/toolbit:latest
 
 # 探活
-curl http://127.0.0.1:8080/api/health
+curl http://127.0.0.1:30234/api/health
 ```
 
-浏览器打开 <http://127.0.0.1:8080>。
+浏览器打开 <http://127.0.0.1:30234>。
 
-> ⚠️ **部署形态说明**：本项目默认只监听 `8080` 端口的 **HTTP**，不内置 TLS。
+> ⚠️ **部署形态说明**：本项目默认只监听 `30234` 端口的 **HTTP**，不内置 TLS。
 > 由于工具会在服务端处理密钥与明文，**公网暴露时务必在其前方加一层 TLS 反向代理**（Nginx / Caddy），示例见 [docs/deploy.md](docs/deploy.md)。
 
 ### 本地开发
@@ -96,7 +96,7 @@ go run ./backend/cmd/toolbit
 cd web && pnpm install && pnpm dev
 ```
 
-前端开发服务器默认 <http://127.0.0.1:5173>，并把 `/api` 代理到后端 `8080`。
+前端开发服务器默认 <http://127.0.0.1:5173>，并把 `/api` 代理到后端 `30234`。
 
 ---
 

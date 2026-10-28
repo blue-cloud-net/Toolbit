@@ -37,7 +37,7 @@ const (
 
 // 默认值。
 const (
-	DefaultAddr            = ":8080"
+	DefaultAddr            = ":30234"
 	DefaultWebRoot         = "./frontend/dist"
 	DefaultDBPath          = "./data/stats.db"
 	DefaultLogLevel        = "info"

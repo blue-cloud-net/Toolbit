@@ -36,7 +36,7 @@ runtime-base  →  拷贝二进制 + dist + tongsuo 运行库 + CA 证书
 - 非 root 用户：`app`，UID/GID **必须**为 `10001:10001`；
 - `WORKDIR /app`；
 - 数据目录 `/app/data`（统计库），**必须**属主 `10001:10001`；
-- 暴露 `8080`；
+- 暴露 `30234`；
 - `ENTRYPOINT ["/app/toolbit"]`（exec 形式，**必须**让进程收到 SIGTERM）。
 
 ### 2.2 基础镜像选择
@@ -53,7 +53,7 @@ runtime-base  →  拷贝二进制 + dist + tongsuo 运行库 + CA 证书
 
 | 变量 | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
-| `TOOLBIT_ADDR` | string | `:8080` | 监听地址 |
+| `TOOLBIT_ADDR` | string | `:30234` | 监听地址 |
 | `TOOLBIT_WEB_ROOT` | string | `./frontend/dist` | 静态资源目录 |
 | `TOOLBIT_DB_PATH` | string | `./data/stats.db` | SQLite 路径 |
 | `TOOLBIT_LOG_LEVEL` | string | `info` | `debug`/`info`/`warn`/`error` |
@@ -99,9 +99,9 @@ services:
     image: bluecloud/toolbit:0.1.0
     container_name: toolbit
     ports:
-      - "8080:8080"
+      - "30234:30234"
     environment:
-      TOOLBIT_ADDR: ":8080"
+      TOOLBIT_ADDR: ":30234"
       TOOLBIT_DB_PATH: "/app/data/stats.db"
     volumes:
       - toolbit-data:/app/data
@@ -150,7 +150,7 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/toolbit.example.com/privkey.pem;
     client_max_body_size 100m;
     location / {
-        proxy_pass         http://127.0.0.1:8080;
+        proxy_pass         http://127.0.0.1:30234;
         proxy_http_version 1.1;
         proxy_set_header   Host              $host;
         proxy_set_header   X-Forwarded-Proto $scheme;

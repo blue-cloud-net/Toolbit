@@ -33,7 +33,7 @@
 ```mermaid
 flowchart LR
   U[浏览器用户] -->|HTTPS 由前置代理终止| R[反向代理 Nginx / Caddy]
-  R -->|HTTP :8080| T[Toolbit 进程]
+  R -->|HTTP :30234| T[Toolbit 进程]
   T --> C[catalog 工具目录]
   T --> S[(SQLite 匿名统计)]
   T --> X[Tongsuo 原生库<br/>libcrypto.so.3]
@@ -43,7 +43,7 @@ flowchart LR
 
 **要点**
 
-- 进程同时承担 API 与静态资源两个角色，监听 `8080`。
+- 进程同时承担 API 与静态资源两个角色，监听 `30234`。
 - Tongsuo 以 cgo 方式链接，运行时通过 ELF `rpath` 定位 `/opt/tongsuo/lib64`。
 - 出网仅限 5 个在线工具，全部经过 `backend/internal/netguard`。
 
@@ -368,7 +368,7 @@ erDiagram
 - 非 root 运行（UID 10001）。
 - 只读根文件系统 + `tmpfs` 挂载 `/tmp`；数据卷挂 `/app/data`。
 - `cap_drop: ALL`；`no-new-privileges`。
-- 暴露端口 `8080`；`HEALTHCHECK` 打 `/api/health`。
+- 暴露端口 `30234`；`HEALTHCHECK` 打 `/api/health`。
 
 ### 9.3 网络形态
 
@@ -427,7 +427,7 @@ erDiagram
 ### D8 不内置 TLS
 
 - **背景**：证书续期是运维职责，不应绑死在应用镜像里。
-- **决策**：进程只监听明文 `8080`；部署文档给出 Nginx / Caddy 反代示例。
+- **决策**：进程只监听明文 `30234`；部署文档给出 Nginx / Caddy 反代示例。
 - **代价**：公网暴露时若不自行加 TLS，密钥类输入会以明文过网。文档与 UI 提示中会明确风险。
 
 ### D9 加密服务层隔离

@@ -18,13 +18,13 @@ cd Toolbit
 docker compose up -d
 ```
 
-访问 <http://localhost:8080>。
+访问 <http://localhost:30234>。
 
 ### 1.2 使用预构建镜像
 
 ```bash
 docker run -d --name toolbit \
-  -p 8080:8080 \
+  -p 30234:30234 \
   -v toolbit-data:/app/data \
   --restart unless-stopped \
   bluecloud/toolbit:0.1.0
@@ -33,8 +33,8 @@ docker run -d --name toolbit \
 ### 1.3 验证
 
 ```bash
-curl -fsS http://localhost:8080/readyz
-curl -fsS http://localhost:8080/api/v1/tools | head -c 200
+curl -fsS http://localhost:30234/readyz
+curl -fsS http://localhost:30234/api/v1/tools | head -c 200
 ```
 
 ---
@@ -82,7 +82,7 @@ go build -o ../bin/toolbit ./cmd/toolbit
 
 ```bash
 cd ..
-TOOLBIT_ADDR=:8080 \
+TOOLBIT_ADDR=:30234 \
 TOOLBIT_WEB_ROOT=./frontend/dist \
 TOOLBIT_DB_PATH=./data/stats.db \
 ./bin/toolbit
@@ -98,7 +98,7 @@ TOOLBIT_DB_PATH=./data/stats.db \
 
 | 变量 | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
-| `TOOLBIT_ADDR` | string | `:8080` | 监听地址 |
+| `TOOLBIT_ADDR` | string | `:30234` | 监听地址 |
 | `TOOLBIT_WEB_ROOT` | string | `./frontend/dist` | 前端静态资源目录 |
 | `TOOLBIT_DB_PATH` | string | `./data/stats.db` | SQLite 统计库路径 |
 | `TOOLBIT_LOG_LEVEL` | string | `info` | `debug` / `info` / `warn` / `error` |
@@ -125,7 +125,7 @@ TOOLBIT_DB_PATH=./data/stats.db \
 
 ## 4. 反向代理与 TLS
 
-> **本服务不内置 TLS。** 容器内监听**明文 HTTP** :8080。
+> **本服务不内置 TLS。** 容器内监听**明文 HTTP** :30234。
 > 公网暴露**必须**由反向代理终止 TLS，否则密钥与明文会经明文网络传输。
 
 ### 4.1 Nginx
@@ -141,7 +141,7 @@ server {
     client_max_body_size 100m;
 
     location / {
-        proxy_pass         http://127.0.0.1:8080;
+        proxy_pass         http://127.0.0.1:30234;
         proxy_http_version 1.1;
         proxy_set_header   Host              $host;
         proxy_set_header   X-Forwarded-Proto $scheme;
@@ -224,7 +224,7 @@ volumes:
 ```bash
 docker compose pull
 docker compose up -d
-curl -fsS http://localhost:8080/readyz
+curl -fsS http://localhost:30234/readyz
 ```
 
 **必须**：升级**不得**删除数据卷；数据库迁移**必须**向前兼容（只增列 / 加表）。
@@ -272,7 +272,7 @@ docker exec -u 0 toolbit chown 10001:10001 /app/data/stats.db
 2. **必须**保持 `TOOLBIT_TRUST_PROXY=false`（除非反代已正确覆写头）；
 3. **必须**保持 `TOOLBIT_ENABLE_INTERNAL_ENDPOINTS=false`（除非内网可达）；
 4. **应当**定期更新基础镜像（CI 已用 Trivy 扫描）；
-5. **不应当**把服务直接暴露在公网 8080 端口；
+5. **不应当**把服务直接暴露在公网 30234 端口；
 6. **应当**在反代层再加一层速率限制。
 
 ---

@@ -366,7 +366,7 @@ Upgrade: websocket
 ### 12.1 Base64 编码
 
 ```bash
-curl -sS -X POST http://localhost:8080/api/v1/tools/base64 \
+curl -sS -X POST http://localhost:30234/api/v1/tools/base64 \
   -H 'Content-Type: application/json' \
   -d '{"operation":"encode","input":{"data":"Hello","encoding":"utf8"},"outputEncoding":"base64"}'
 ```
@@ -385,7 +385,7 @@ curl -sS -X POST http://localhost:8080/api/v1/tools/base64 \
 ### 12.2 SM4-GCM 加密
 
 ```bash
-curl -sS -X POST http://localhost:8080/api/v1/tools/symmetric-crypt \
+curl -sS -X POST http://localhost:30234/api/v1/tools/symmetric-crypt \
   -H 'Content-Type: application/json' \
   -d '{
     "algorithm": "SM4",
@@ -401,7 +401,7 @@ curl -sS -X POST http://localhost:8080/api/v1/tools/symmetric-crypt \
 ### 12.3 证书解析
 
 ```bash
-curl -sS -X POST http://localhost:8080/api/v1/tools/cert-parse \
+curl -sS -X POST http://localhost:30234/api/v1/tools/cert-parse \
   -H 'Content-Type: application/json' \
   -d '{"input":{"data":"-----BEGIN CERTIFICATE-----\n…\n-----END CERTIFICATE-----"}}'
 ```
@@ -409,7 +409,7 @@ curl -sS -X POST http://localhost:8080/api/v1/tools/cert-parse \
 ### 12.4 文件加密（multipart）
 
 ```bash
-curl -sS -X POST http://localhost:8080/api/v1/tools/sm4-file-crypt \
+curl -sS -X POST http://localhost:30234/api/v1/tools/sm4-file-crypt \
   -F 'operation=encrypt' \
   -F 'mode=GCM' \
   -F 'key={"data":"0123456789ABCDEFFEDCBA9876543210","encoding":"hex"}' \
@@ -420,7 +420,7 @@ curl -sS -X POST http://localhost:8080/api/v1/tools/sm4-file-crypt \
 ### 12.5 触发错误
 
 ```bash
-curl -sS -X POST http://localhost:8080/api/v1/tools/symmetric-crypt \
+curl -sS -X POST http://localhost:30234/api/v1/tools/symmetric-crypt \
   -H 'Content-Type: application/json' \
   -d '{"algorithm":"SM4","operation":"encrypt","mode":"GCM","key":{"data":"00","encoding":"hex"},"input":{"data":"x","encoding":"utf8"}}'
 ```

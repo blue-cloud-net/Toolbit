@@ -309,7 +309,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 
 `toolbit healthcheck` 子命令**必须**：
 
-- 访问 `http://127.0.0.1:8080/readyz`；
+- 访问 `http://127.0.0.1:30234/readyz`；
 - 状态非 `200` 时**退出码 1**；
 - 设置 ≤ 3 秒超时；
 - **不**输出敏感信息。
@@ -317,9 +317,9 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 ### 9.2 冒烟检查
 
 ```bash
-curl -fsS http://localhost:8080/readyz >/dev/null
-curl -fsS http://localhost:8080/api/v1/tools | head -c 200
-curl -fsS -X POST http://localhost:8080/api/v1/tools/base64 \
+curl -fsS http://localhost:30234/readyz >/dev/null
+curl -fsS http://localhost:30234/api/v1/tools | head -c 200
+curl -fsS -X POST http://localhost:30234/api/v1/tools/base64 \
   -H 'Content-Type: application/json' \
   -d '{"operation":"encode","input":{"data":"ok","encoding":"utf8"},"outputEncoding":"base64"}'
 ```
