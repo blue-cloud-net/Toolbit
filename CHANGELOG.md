@@ -9,6 +9,57 @@
 
 尚无变更。
 
+## [0.3.1] - 2026-10-28
+
+密码学文件工具：交付 `sm4-file-crypt`，让大文件加解密可用。
+**新增 1 个工具**（累计 10 个已实现）。
+
+本版打通 multipart 通道：此前分发器只认 JSON，
+既无法接收表单，也无法返回二进制流。
+
+### Added
+
+- 文件容器 `backend/internal/cryptosvc/tbfc.go`：`TBFC` 分块 GCM 容器
+  - 头（22 字节）：magic `TBFC`(4) + version(1) + flags(1) + chunkSize(4) + baseNonce(12)
+  - 块：`length`(4) + ciphertext + `tag`(16)；`length = 0` 表示结束
+  - 分块 nonce：`baseNonce[0:8] || uint32be(chunkIndex)`
+  - AAD：`容器头 || uint32be(chunkIndex)`，同时绑定容器头与块索引
+  - 流式读写，内存占用约 2×chunkSize，与文件大小无关
+- multipart 通道 `backend/internal/tools/multipart.go`
+  - `MultipartRequest` / `MultipartResult` / `MultipartHandler`
+  - `MultipartForm`：把 `multipart.Reader` 的顺序读取包装成「先收小字段、再收文件」
+  - `SanitizeFilename` / `ContentDisposition`：文件名来自客户端，**不可信**，必须清洗
+- 分发器分流 `backend/internal/api/dispatch_multipart.go`
+  - 按 catalog 的 `transport` 分流：`multipart` 走表单 + 二进制流通道
+  - 二进制响应不套信封，警告改走 `X-Warnings` 响应头
+  - 失败时**仍返回 JSON 信封**：错误在响应头发出之前就能确定
+- 工具 `sm4-file-crypt`：TBFC 容器，分块 GCM，100 MB 上限
+  - 解密**先同步**校验容器头与第一块：密钥不对、容器被篡改、不是容器
+    这三类错误因此返回干净的 JSON 错误，而不是「200 + 被截断的下载」
+- 前端 `callToolBinary`：multipart 请求 + 二进制响应，带上传进度
+- 共享组件 `FileDropZone`：点击选择 + 拖放，单文件
+- 工具页 `sm4-file-crypt`：操作、密钥、基础 nonce、分块大小与拖放区；结果以「下载」给出
+- 组合式函数 `useFileToolRun`：与 `useToolRun` 同构，但结果是二进制文件，额外提供上传进度
+- 契约测试执行器支持 multipart 分支；契约数据落在 `backend/testdata/contract/sm4-file-crypt.json`
+
+### Changed
+
+- 密码学规范 `docs/standards/03-crypto.md` §11 重写：容器格式逐字节落档，
+  补「首块预校验」「multipart 顺序约束」两节
+- 加密 API 契约 `docs/api/tools/crypto.md`：`sm4-file-crypt` 章节按实现重写，
+  含容器格式与错误码表
+- 通用 API 契约 `docs/api/README.md`：`X-Warnings` 的格式明确为 JSON 数组；
+  §8 补 `transport` 分流；§4.5 与 §12.4 补「文件必须是最后一个 part」
+- 架构文档 `docs/architecture.md`：§4.1 双通道、§4.2 两种工具形态、§4.3 补文件容器
+- 路线图 `docs/roadmap.md`：v0.3.1 补齐 8 项任务清单与完成标准
+
+### 破坏性变更
+
+- multipart 工具的**文件部分必须是最后一个 part**：客户端必须先发所有普通字段，
+  最后再发文件。服务端读到文件后就无法回头取后面的字段
+- multipart 工具的**失败响应仍是 JSON 信封**，不是二进制流；
+  客户端必须按 `Content-Type` 分流
+
 ## [0.3.0] - 2026-10-28
 
 密码学核心：国密能力就绪，建立 `cryptosvc` 服务层与句柄生命周期规范。
@@ -144,7 +195,8 @@
 - CI 工作流骨架：`ci`（lint / test）、`builder`（构建 Tongsuo 基础镜像）、`docker`（多架构镜像推 GHCR）
 - 文档校验：Markdown lint、相对链接检查、catalog / 错误码 / 环境变量覆盖率检查
 
-[未发布]: https://github.com/blue-cloud-net/Toolbit/compare/v0.3.0...HEAD
+[未发布]: https://github.com/blue-cloud-net/Toolbit/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/blue-cloud-net/Toolbit/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/blue-cloud-net/Toolbit/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/blue-cloud-net/Toolbit/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/blue-cloud-net/Toolbit/compare/v0.1.0...v0.2.0
