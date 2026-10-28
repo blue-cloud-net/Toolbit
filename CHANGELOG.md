@@ -9,6 +9,58 @@
 
 尚无变更。
 
+## [0.3.0] - 2026-10-28
+
+密码学核心：国密能力就绪，建立 `cryptosvc` 服务层与句柄生命周期规范。
+**新增 7 个工具**（累计 9 个已实现）。
+
+### Added
+
+- 密码学服务层 `backend/internal/cryptosvc/`：**唯一**允许 import `tongsuo-go` 的层，所有密码学运算在此转调 Tongsuo
+  - `Session` 句柄作用域：LIFO 释放、`Close` 幂等、警告累积、重操作信号量（≤ 2）、orphan 记录
+  - Session 经 `ctx` 传递，**不**改变 `tools.Handler` 签名
+  - `Digest` / `MAC` / `SymEncrypt` / `SymDecrypt` / `Sign` / `Verify` / `AsymEncrypt` / `AsymDecrypt` / `ECDHSharedSecret` / `ECDHDerive` / `RandomBytes` 服务方法
+  - 底层错误统一映射为 `toolerr` 错误码，不回显底层英文文本
+  - 密钥封装 `PrivateKey` / `PublicKey`：显式 `Close`，源缓冲用后清零
+- 编码服务层 `backend/internal/codecsvc/`：utf8 / hex / base64 / base64url 归一化与 PEM / DER 识别
+- 加密类工具 `backend/internal/tools/crypto/`：
+  - `hash-calc` —— SM3 / MD5 / SHA1 / SHA224 / SHA256 / SHA384 / SHA512 多算法摘要，弱哈希告警
+  - `hmac-gen` —— HMAC-SM3 与 HMAC-SHA 系列
+  - `password-gen` —— CSPRNG 密码生成，拒绝采样避免模偏差，附带熵估算
+  - `symmetric-crypt` —— SM4 / AES，ECB / CBC / CTR / OFB / CFB / GCM，GCM 自动生成 nonce 并回传
+  - `signature` —— SM2 / RSA / ECDSA / Ed25519 / Ed448 签名与验签
+  - `asymmetric-crypt` —— SM2 / RSA 公私钥加解密
+  - `ecdh` —— P-256 / P-384 / P-521 / X25519 / X448 协商 + HKDF 派生
+- 前端 7 个加密工具页 `frontend/src/tools/crypto/`，含共享 `KeyInput` 组件（密钥只存于组件局部状态，**不**写浏览器存储）
+- 双语词条：7 个工具的 `zh-CN` / `en-US` 十项字段全覆盖；词条一致性测试改为用 `import.meta.glob` 自动收集，新增工具无需再改测试
+- 契约测试执行器 `backend/internal/api/contract_test.go`：遍历 `backend/testdata/contract/*.json` 校验状态码、错误码、响应数据与警告
+- 上游能力缺口登记 `docs/upstream/tongsuo-go-issues.md`：10 条缺口的现象 / 期望 / 验收标准 / 下游影响
+- CGO 构建基线：`Makefile` 新增 `check-tongsuo`，`CGO_CFLAGS` / `CGO_LDFLAGS` 指向 `/opt/tongsuo`，以 rpath 固定运行期库路径
+
+### Changed
+
+- 密码学规范 `docs/standards/03-crypto.md`：新增 §1.1 运算归属、对称加解密的「算法 × 模式 × 填充」支持矩阵、签名结构预校验规则、GCM nonce 回传约定
+- 架构文档 `docs/architecture.md`：§4.3 服务层改为与实现一致的包级函数清单；新增关键决策 D11「密码学运算只转调，不自研」
+- 加密 API 契约 `docs/api/tools/crypto.md`：逐字段对齐实现，新增算法支持矩阵与实现状态列
+- 产品文档 `docs/tools.md`：加密章节新增状态列，移除未实现算法的承诺
+- 路线图 `docs/roadmap.md`：v0.3.0 补齐 6 个阶段的任务清单与验收标准；新增 v0.3.1（`sm4-file-crypt`）
+- 工程门禁 `.golangci.yml`：新增 `depguard` 规则 `no-stdlib-crypto`，禁止在 `cryptosvc` 之外导入标准库密码学包
+- 协作契约 `AGENTS.md`：新增不变量 §4.15（密码学运算一律经 `cryptosvc` 转调）、两条禁止项与上游 issue 登记流程
+
+### 破坏性变更
+
+- 加密类 API 契约按实际实现收敛，**删除**以下尚未实现的承诺：
+  - `symmetric-crypt`：`DES` / `3DES` 算法；AES 的 `OFB` / `CFB` 模式；AES 的 `zero` / `none` 填充
+  - `asymmetric-crypt`：`ECIES` 算法；请求参数 `sm2Order` / `sm2Prefix04` / `sm2Format`（SM2 输出恒为 `C1C3C2` + `04` 前缀 + 裸格式）
+  - `signature`：请求参数 `format` / `saltLength`；响应中的 `format` 字段（签名值改为 Base64 字符串）
+  - `hmac-gen`：算法名改为 `HMAC-SM3` / `HMAC-SHA256` 等带前缀形式；移除文件输入
+- `sm4-file-crypt` **未在本版交付**，端点返回 `501 NOT_IMPLEMENTED`，顺延至 v0.3.1
+- `tongsuo-go` 能力缺口不做兜底：`DES` / `3DES` / `ECIES` / SM2 压缩点密文 / RSA-PSS 的 DER 形式**均不可用**，缺口登记在上游 issue 文档
+
+### 依赖
+
+- adds: `github.com/blue-cloud-net/tongsuo-go` v0.5.0
+
 ## [0.2.1] - 2026-10-28
 
 前端骨架：让 v0.2.0 的后端链路在浏览器里跑起来。**不新增工具**。
@@ -92,5 +144,8 @@
 - CI 工作流骨架：`ci`（lint / test）、`builder`（构建 Tongsuo 基础镜像）、`docker`（多架构镜像推 GHCR）
 - 文档校验：Markdown lint、相对链接检查、catalog / 错误码 / 环境变量覆盖率检查
 
-[未发布]: https://github.com/blue-cloud-net/Toolbit/compare/v0.1.0...HEAD
+[未发布]: https://github.com/blue-cloud-net/Toolbit/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/blue-cloud-net/Toolbit/compare/v0.2.1...v0.3.0
+[0.2.1]: https://github.com/blue-cloud-net/Toolbit/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/blue-cloud-net/Toolbit/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/blue-cloud-net/Toolbit/releases/tag/v0.1.0

@@ -1,6 +1,6 @@
 # 文档索引
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Draft ｜ 适用版本：v0.3.0 ｜ 最后更新：2026-10-28
 
 本目录是 Toolbit 的完整文档集。
 
@@ -14,7 +14,7 @@
 | **运维** | [deploy.md](deploy.md) → [api/admin.md](api/admin.md) |
 | **前端开发者** | [standards/01-frontend.md](standards/01-frontend.md) → [api/README.md](api/README.md) → [i18n.md](i18n.md) |
 | **后端开发者** | [standards/02-backend.md](standards/02-backend.md) → [architecture.md](architecture.md) → [api/errors.md](api/errors.md) |
-| **密码学相关** | [standards/03-crypto.md](standards/03-crypto.md) |
+| **密码学相关** | [standards/03-crypto.md](standards/03-crypto.md) → [api/tools/crypto.md](api/tools/crypto.md) |
 | **贡献者** | [../AGENTS.md](../AGENTS.md) → [standards/10-git.md](standards/10-git.md) |
 
 ---
@@ -34,10 +34,16 @@
 
 | 文档 | 说明 |
 | --- | --- |
-| [architecture.md](architecture.md) | 系统上下文、分层、关键决策 D1–D10 |
+| [architecture.md](architecture.md) | 系统上下文、分层、关键决策 D1–D11 |
 | [tools.md](tools.md) | 70 个工具的产品规格与使用说明 |
 | [roadmap.md](roadmap.md) | 阶段计划、v1.1 展望、风险对策 |
 | [glossary.md](glossary.md) | 术语表 |
+
+### 2.2.1 上游依赖
+
+| 文档 | 说明 |
+| --- | --- |
+| [upstream/tongsuo-go-issues.md](upstream/tongsuo-go-issues.md) | `tongsuo-go` 的能力缺口登记与验收标准 |
 
 ### 2.3 规范（`standards/`）
 
@@ -120,5 +126,5 @@ CI 会执行：
 | catalog ↔ 文档覆盖 | `scripts/check-docs.mjs` |
 | 错误码 ↔ 文档覆盖 | `scripts/check-docs.mjs` |
 | 配置项 ↔ 文档覆盖 | `scripts/check-docs.mjs` |
-| i18n 词条一致性 | `scripts/check-docs.mjs` |
+| i18n 词条一致性 | `frontend/src/i18n/parity.test.ts` |
 | 禁词 | `scripts/check-docs.mjs` |

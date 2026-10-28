@@ -62,9 +62,10 @@ RC 是 `1.0.0` 的**预发布标识**，与 `0.x` 是两条独立轨道。
 | 版本 | 主题 | 新增工具 | 累计 | 状态 |
 | --- | --- | --- | --- | --- |
 | `v0.1.0` | 文档与契约 | 0 | 0 | ✅ 已完成 |
-| `v0.2.0` | **后端骨架与基础设施** | 2 | 2 | 待开始 |
-| `v0.2.1` | **前端骨架** | 0 | 2 | 待开始 |
-| `v0.3.0` | 密码学核心 | 8 | 10 | 待开始 |
+| `v0.2.0` | **后端骨架与基础设施** | 2 | 2 | ✅ 已完成 |
+| `v0.2.1` | **前端骨架** | 0 | 2 | ✅ 已完成 |
+| `v0.3.0` | 密码学核心 | 7 | 9 | ✅ 已完成 |
+| `v0.3.1` | 密码学文件工具 | 1 | 10 | 待开始 |
 | `v0.4.0` | 密钥管理 | 6 | 16 | 待开始 |
 | `v0.5.0` | PKI 解析与链验证 | 8 | 24 | 待开始 |
 | `v0.6.0` | PKI 生成、吊销与容器 | 12 | 36 | 待开始 |
@@ -84,7 +85,8 @@ flowchart LR
   V1["v0.1.0<br/>文档与契约"] --> V2["v0.2.0<br/>后端骨架"]
   V2 --> V21["v0.2.1<br/>前端骨架"]
   V21 --> V3["v0.3.0<br/>密码学核心"]
-  V3 --> V4["v0.4.0<br/>密钥管理"]
+  V3 --> V31["v0.3.1<br/>密码学文件工具"]
+  V31 --> V4["v0.4.0<br/>密钥管理"]
   V4 --> V5["v0.5.0<br/>PKI 解析"]
   V5 --> V6["v0.6.0<br/>PKI 生成"]
   V6 --> V7["v0.7.0<br/>网络探测"]
@@ -327,9 +329,11 @@ flowchart LR
 
 ## 6. v0.3.0 —— 密码学核心
 
-**目标**：国密能力就继，建立 `cryptosvc` 与句柄生命周期规范。
+**目标**：国密能力就绪，建立 `cryptosvc` 与句柄生命周期规范。
 
-### 交付物（8）
+**状态**：✅ 已完成（2026-10-28）。7 个工具已上线，`sm4-file-crypt` 顺延至 §6.7。
+
+### 6.1 交付物（7）
 
 | 工具 | 备注 |
 | --- | --- |
@@ -337,18 +341,101 @@ flowchart LR
 | `hmac-gen` | 含 HMAC-SM3 |
 | `password-gen` | CSPRNG |
 | `symmetric-crypt` | SM4 / AES，含 GCM |
-| `asymmetric-crypt` | SM2（默认 `C1C3C2` + `04` 前缀）/ RSA / ECIES |
+| `asymmetric-crypt` | SM2（`C1C3C2` + `04` 前缀）/ RSA |
 | `signature` | SM2 / RSA / ECDSA / Ed25519 / Ed448 |
 | `ecdh` | P-256/384/521、X25519/X448 |
-| `sm4-file-crypt` | TBFC 容器，分块流式 |
+
+### 6.2 工程交付物
+
+| 交付物 | 位置 | 说明 |
+| --- | --- | --- |
+| 密码学服务层 | `backend/internal/cryptosvc/` | 唯一允许 import `tongsuo-go` 的层；Session 句柄作用域 |
+| 编码服务层 | `backend/internal/codecsvc/` | utf8 / hex / base64 / base64url 与 PEM/DER 识别 |
+| 加密类工具 | `backend/internal/tools/crypto/` | 7 个工具的 handler、DTO 与契约测试 |
+| 前端页面 | `frontend/src/tools/crypto/` | 7 个工具页 + 共享 `KeyInput` 组件 |
+| 双语词条 | `frontend/src/locales/*/tools/` | 7 个工具的十项词条字段 |
+| 上游缺口登记 | `docs/upstream/tongsuo-go-issues.md` | 10 条能力缺口与验收标准 |
+| 依赖守卫 | `.golangci.yml` | `depguard` 拦截 `cryptosvc` 之外的标准库密码学包 |
+
+### 6.3 技术决策
+
+| # | 决策 | 理由 |
+| --- | --- | --- |
+| C-T1 | 密码学运算**一律**经 `cryptosvc` 转调 `tongsuo-go`，不自研兜底 | 避免同一工具产生两套密码学行为；缺口走上游 issue（[architecture.md](architecture.md) D11） |
+| C-T2 | Session 经 `ctx` 传递，不改变 `tools.Handler` 签名 | 保持 handler 抽象稳定，同时让句柄作用域可控 |
+| C-T3 | 对称加解密的「算法 × 模式 × 填充」矩阵由本层维护 | 底层库对 AES 静默忽略 `padding`（恒用 pkcs7），不显式拦截会产出无法解密的密文 |
+| C-T4 | 验签失败返回 `valid: false`（业务结果），结构非法才报 `SIGNATURE_INVALID` | 区分「签名不匹配」与「输入损坏」两类语义 |
+| C-T5 | 密钥输入统一用 `KeyInput`（`format: auto`），字节输入统一用 `ByteInput` | 避免每个工具各写一套编码解析 |
+| C-T6 | `sm4-file-crypt` 顺延到 v0.3.1 | 该工具需要 multipart 上传与二进制流响应，与分发器的 JSON 单通道差异大，单独成版便于独立验收 |
+
+### 6.4 任务清单
+
+#### Phase H —— 服务层
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| H1 | CGO 构建基线 | `Makefile` `backend/go.mod` | `CGO_ENABLED=1` + `CGO_CFLAGS` / `CGO_LDFLAGS` 指向 `/opt/tongsuo`；`make check-tongsuo` 校验库目录存在 | — | ✅ |
+| H2 | 密码学服务层 | `backend/internal/cryptosvc/` | Session 幂等 Close、LIFO 释放、警告累积、重操作信号量 ≤ 2；错误统一映射为 `toolerr` 码 | H1 | ✅ |
+| H3 | 编码服务层 | `backend/internal/codecsvc/` | 编码归一化、PEM/DER 识别；测试覆盖 | H2 | ✅ |
+| H4 | 分发器注入 Session | `backend/internal/api/dispatch.go` | 每请求一个 Session；释放先于写响应；orphan 只记 slug 与耗时 | H2 | ✅ |
+
+#### Phase I —— 工具
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| I1 | `hash-calc` | `backend/internal/tools/crypto/hashcalc.go` `backend/testdata/contract/hash-calc.json` | 多算法摘要；默认十六进制；弱哈希告警 | H3 | ✅ |
+| I2 | `hmac-gen` | `backend/internal/tools/crypto/hmacgen.go` `backend/testdata/contract/hmac-gen.json` | HMAC-SM3 与 SHA 系列；默认十六进制 | H3 | ✅ |
+| I3 | `password-gen` | `backend/internal/tools/crypto/passwordgen.go` `backend/testdata/contract/password-gen.json` | CSPRNG；拒绝采样避免模偏差；熵估算 | H2 | ✅ |
+| I4 | `symmetric-crypt` | `backend/internal/tools/crypto/symmetriccrypt.go` `backend/testdata/contract/symmetric-crypt.json` | SM4 / AES 多模式；GCM 自动 nonce 回传；ECB 与无认证告警 | H2 | ✅ |
+| I5 | `signature` | `backend/internal/tools/crypto/signature.go` `backend/testdata/contract/signature.json` | 5 种算法；验签失败是业务结果；结构预校验 | H2 | ✅ |
+| I6 | `asymmetric-crypt` | `backend/internal/tools/crypto/asymmetriccrypt.go` `backend/testdata/contract/asymmetric-crypt.json` | SM2 自动识别 3 种密文格式；RSA 明文长度校验 | H2 | ✅ |
+| I7 | `ecdh` | `backend/internal/tools/crypto/ecdh.go` `backend/testdata/contract/ecdh.json` | 5 条曲线；可选 HKDF 派生；派生长度上限 1 MB | H2 | ✅ |
+
+#### Phase J —— 前端与治理
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| J1 | 前端工具页 | `frontend/src/tools/crypto/**` `frontend/src/components/tool/KeyInput.vue` | 7 个页面「填入示例 → 运行 → 复制」全链路可用；输入不落浏览器存储 | I1 – I7 | ✅ |
+| J2 | 双语词条 | `frontend/src/locales/*/tools/*.json` | 覆盖十项必备字段；中英 key 集合一致 | J1 | ✅ |
+| J3 | 依赖守卫 | `.golangci.yml` | `no-stdlib-crypto` 拦截 `cryptosvc` 之外的标准库密码学包 | H2 | ✅ |
+| J4 | 上游缺口登记 | `docs/upstream/tongsuo-go-issues.md` | 每条缺口含现象 / 期望 / 验收 / 下游影响 | I1 – I7 | ✅ |
+| J5 | 契约测试执行器 | `backend/internal/api/contract_test.go` | 遍历 `backend/testdata/contract/*.json` 校验状态码、错误码、数据与警告 | I1 – I7 | ✅ |
+| J6 | 文档同步 | `docs/api/tools/crypto.md` `docs/tools.md` `docs/standards/03-crypto.md` `docs/architecture.md` | 与实现逐字段一致；移除未实现算法的承诺 | I1 – I7 | ✅ |
+
+### 6.5 完成标准
+
+1. `go build ./...`、`go vet ./...`、`go test ./... -race` 全部通过；
+2. SM3 / SM4 国标标准向量通过（SM4-ECB 向量对应 `padding: none`）；
+3. SM2 签名 / 验签 / 加解密往返正确；C1C3C2 与 C1C2C3 均可解密；
+4. `Session.Close()` 幂等；`priv.Public()` 不被单独关闭；`-race` 下无泄漏与重复释放；
+5. 重操作信号量（≤ 2）与超时（504）路径有测试；
+6. 7 个工具各有正例 + 反例契约测试，契约执行器全绿；
+7. `make verify`（vet + test + lint + 文档覆盖 + 前端四命令 + 体积预算）一条命令通过；
+8. `make check-docs` 通过，catalog 与文档覆盖一致。
+
+### 6.6 不在本版范围
+
+| 项 | 计划版本 |
+| --- | --- |
+| `sm4-file-crypt`（multipart + 二进制流响应） | §6.7（v0.3.1） |
+| DES / 3DES / ECIES | 上游 issue I-02 / I-05 |
+| PKI 能力（证书 / CSR / CRL / OCSP / PKCS#7 / #12） | §8（v0.5.0）、§9（v0.6.0） |
+| 密钥生成 / 转换 / 解析 | §7（v0.4.0） |
+
+### 6.7 v0.3.1 —— 密码学文件工具
+
+**目标**：交付 `sm4-file-crypt`，让大文件加解密可用。
+
+| 工具 | 备注 |
+| --- | --- |
+| `sm4-file-crypt` | TBFC 容器，分块 GCM，multipart 上传 + 二进制流响应 |
 
 **完成标准**
 
-- SM3 / SM4 国标标准向量全部通过；
-- SM2 签名 / 验签 / 加解密 / `C1C2C3`↔`C1C3C2` 互转往返正确；
-- `Session.Close()` 幂等；`priv.Public()` 不被单独关闭；句柄零泄漏；
-- 重操作信号量（≤2）与超时（504）路径有测试；
-- 8 个工具各有正例 + 反例契约测试。
+- 分块加解密往返一致，容器头与分块 nonce 派生符合 [standards/03-crypto.md](standards/03-crypto.md) §11；
+- 100 MB 上限下内存占用约 2×chunkSize，不落盘；
+- 加密结果可用本工具解密，跨进程一致；
+- 前端页面提供文件拖放与进度提示。
 
 ---
 

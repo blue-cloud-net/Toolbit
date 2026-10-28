@@ -45,6 +45,7 @@
 （IV 长度为 `BlockSize`），并纳入 `sym.Names()`，使 AES 与 SM4 的模式集合对齐。
 
 **验收**
+
 - `sym.Names()` 含 `AES-128-OFB`、`AES-192-CFB` 等条目；
 - 往返测试通过；
 - `-tags tongsuocli` 下与 `openssl enc -aes-128-ofb` / `-aes-256-cfb` 交叉验证一致。
@@ -62,6 +63,7 @@
 与按名分发，`Options.Padding` 支持 `pkcs7` / `zero`。ECB 的安全提示沿用现有注释风格。
 
 **验收**
+
 - `sym.Names()` 含上述四个名字；
 - 与 `openssl enc -des-cbc` / `openssl enc -des-ede3-cbc` 结果一致；
 - 文档注明仅用于兼容既有数据。
@@ -77,6 +79,7 @@
 调用方只能在运行期靠错误反推，无法在请求校验阶段判定。
 
 **期望**　二选一：
+
 - (a) 在 `sym` 包文档中给出完整矩阵表；或
 - (b) 提供静态查询入口，如 `sym.Supports(name string, padding string) (bool, error)`。
 
@@ -113,8 +116,9 @@
 `ecdh` 只做共享密钥派生，库内没有 ECIES（ECDH + KDF + 对称 AEAD 的组合封装）。
 
 **期望**　二选一——
-- (a) 提供 `EncryptECIES` / `DecryptECIES`（建议默认 P-256/384/521 + HKDF-SHA256
-  + AES-256-GCM，并给出自描述的容器头）；
+
+- (a) 提供 `EncryptECIES` / `DecryptECIES`（建议默认 P-256/384/521 搭配
+  HKDF-SHA256 与 AES-256-GCM，并给出自描述的容器头）；
 - (b) 在 README 与 roadmap 中写明「不计划提供 ECIES，请自行组合
   `ecdh` + `kdf` + `sym`」。
 
