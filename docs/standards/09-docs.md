@@ -23,11 +23,11 @@
 
 | 主题 | 唯一来源 | 其他文档的角色 |
 | --- | --- | --- |
-| 工具清单与元数据 | `catalog/tools.yaml` | 文档**引用**，不重复定义 |
-| 错误码 | `internal/toolerr/registry.go` | `docs/api/errors.md` 为镜像 |
-| 内部错误码 | `internal/toolerr/registry.go` | `docs/api/errors.md` 为镜像 |
-| 配置项 | `internal/config` | `docs/deploy.md` 为镜像 |
-| 国际化词条 | `web/src/locales/` | `docs/i18n.md` 描述规则 |
+| 工具清单与元数据 | `backend/catalog/tools.yaml` | 文档**引用**，不重复定义 |
+| 错误码 | `backend/internal/toolerr/registry.go` | `docs/api/errors.md` 为镜像 |
+| 内部错误码 | `backend/internal/toolerr/registry.go` | `docs/api/errors.md` 为镜像 |
+| 配置项 | `backend/internal/config` | `docs/deploy.md` 为镜像 |
+| 国际化词条 | `frontend/src/locales/` | `docs/i18n.md` 描述规则 |
 | 架构决策 | `docs/architecture.md` D1–D10 | 其他文档引用编号 |
 | 隐私口径 | `docs/privacy.md` | README 引用 |
 
@@ -183,9 +183,9 @@ CI **必须**执行：
 
 `scripts/check-docs.mjs` **必须**：
 
-- 以 `catalog/tools.yaml` 为准，校验 `docs/api/tools/*.md` 覆盖全部 70 个工具；
-- 以 `internal/toolerr/registry.go` 为准，校验 `docs/api/errors.md` 覆盖全部错误码；
-- 以 `internal/config` 为准，校验 `docs/deploy.md` 覆盖全部环境变量；
+- 以 `backend/catalog/tools.yaml` 为准，校验 `docs/api/tools/*.md` 覆盖全部 70 个工具；
+- 以 `backend/internal/toolerr/registry.go` 为准，校验 `docs/api/errors.md` 覆盖全部错误码；
+- 以 `backend/internal/config` 为准，校验 `docs/deploy.md` 覆盖全部环境变量；
 - 输出**明确的差异清单**（缺什么），**禁止**只输出「失败」。
 
 ---
@@ -206,9 +206,9 @@ CI **必须**执行：
 
 | 变更类型 | **必须**同步更新的文档 |
 | --- | --- |
-| 新增工具 | `catalog/tools.yaml`、`docs/api/tools/<分类>.md`、`docs/tools.md`、i18n 词条 |
-| 新增错误码 | `internal/toolerr/registry.go`、`docs/api/errors.md`、i18n 词条 |
-| 新增配置项 | `internal/config`、`docs/deploy.md` |
+| 新增工具 | `backend/catalog/tools.yaml`、`docs/api/tools/<分类>.md`、`docs/tools.md`、i18n 词条 |
+| 新增错误码 | `backend/internal/toolerr/registry.go`、`docs/api/errors.md`、i18n 词条 |
+| 新增配置项 | `backend/internal/config`、`docs/deploy.md` |
 | 架构决策变化 | `docs/architecture.md`、受影响的 `docs/standards/*` |
 | 破坏性 API 变化 | `docs/api/*`、`CHANGELOG.md` |
 | 新增依赖 | `docs/architecture.md` 技术栈、`CHANGELOG.md` |

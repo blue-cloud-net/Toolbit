@@ -9,7 +9,7 @@
 | 形态 | 用途 | 说明 |
 | --- | --- | --- |
 | Docker 镜像 | 主力 | 单容器包含前端静态资源 + Go 后端 + Tongsuo 运行库 |
-| 源码构建 | 二次开发 | `make build` 产出 `bin/toolbit` + `web/dist` |
+| 源码构建 | 二次开发 | `make build` 产出 `bin/toolbit` + `frontend/dist` |
 
 **必须**提供 Dockerfile 与 `docker-compose.yml`。
 
@@ -23,7 +23,7 @@
 
 ```text
 builder-base  →  go build（CGO_ENABLED=1, tongsuo headers/libs）
-                →  pnpm build → web/dist
+                →  pnpm build → frontend/dist
 runtime-base  →  拷贝二进制 + dist + tongsuo 运行库 + CA 证书
 ```
 
@@ -54,7 +54,7 @@ runtime-base  →  拷贝二进制 + dist + tongsuo 运行库 + CA 证书
 | 变量 | 类型 | 默认 | 说明 |
 | --- | --- | --- | --- |
 | `TOOLBIT_ADDR` | string | `:8080` | 监听地址 |
-| `TOOLBIT_WEB_ROOT` | string | `./web/dist` | 静态资源目录 |
+| `TOOLBIT_WEB_ROOT` | string | `./frontend/dist` | 静态资源目录 |
 | `TOOLBIT_DB_PATH` | string | `./data/stats.db` | SQLite 路径 |
 | `TOOLBIT_LOG_LEVEL` | string | `info` | `debug`/`info`/`warn`/`error` |
 | `TOOLBIT_LOG_FORMAT` | string | `json` | `json`/`text` |
@@ -68,6 +68,7 @@ runtime-base  →  拷贝二进制 + dist + tongsuo 运行库 + CA 证书
 | `TOOLBIT_REQUEST_TIMEOUT` | duration | `30s` | 全局兜底超时 |
 | `TOOLBIT_MAX_BODY_BYTES` | int | `104857600` | 全局兜底上限（100 MB） |
 | `TOOLBIT_SHUTDOWN_TIMEOUT` | duration | `15s` | 优雅退出超时 |
+| `TOOLBIT_STATS_TOKEN` | string | 空 | 统计详情端点的 Token（未配置则端点 404） |
 
 **必须**
 

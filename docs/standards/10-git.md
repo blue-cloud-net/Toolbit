@@ -114,7 +114,7 @@ Refs #45
 - 真实用户数据；
 - 内部构建产物。
 
-`.gitignore` **必须**覆盖：`*.pem` `*.key` `.env` `*.db` `/data/` `node_modules/` `bin/` `web/dist/`。
+`.gitignore` **必须**覆盖：`*.pem` `*.key` `.env` `*.db` `/data/` `node_modules/` `bin/` `frontend/dist/`。
 
 **必须**在提交前检查：
 

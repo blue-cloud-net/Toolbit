@@ -42,7 +42,7 @@
 
 ## 3. 错误码注册表
 
-错误码**唯一来源**是 `internal/toolerr/registry.go`。
+错误码**唯一来源**是 `backend/internal/toolerr/registry.go`。
 
 ```go
 var Registry = map[Code]Spec{

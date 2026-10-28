@@ -2,7 +2,7 @@
 
 > 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
 
-适用包：`internal/cryptosvc`（以及所有间接使用 Tongsuo 的代码）。
+适用包：`backend/internal/cryptosvc`（以及所有间接使用 Tongsuo 的代码）。
 
 **本文是本项目最容易被违反、后果最严重的一套规范。**
 
@@ -10,7 +10,7 @@
 
 ## 1. 边界
 
-- **必须**：所有 Tongsuo 调用集中在 `internal/cryptosvc`。
+- **必须**：所有 Tongsuo 调用集中在 `backend/internal/cryptosvc`。
 - **禁止**：其他包 `import github.com/blue-cloud-net/tongsuo-go`。
 - 服务层**不得**依赖 `net/http`、Gin、JSON 编解码。
 - 服务层**不得**感知具体工具（不得出现 `toolSlug` 之类的概念）。
@@ -19,7 +19,7 @@
 
 ## 2. Session 模型
 
-每个请求在 `internal/api` 层创建**一个** `cryptosvc.Session`，并在请求结束时 `Close()`。
+每个请求在 `backend/internal/api` 层创建**一个** `cryptosvc.Session`，并在请求结束时 `Close()`。
 
 ```go
 type Session struct {
