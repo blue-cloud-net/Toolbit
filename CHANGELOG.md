@@ -9,6 +9,71 @@
 
 尚无变更。
 
+## [0.6.0] - 2026-10-29
+
+PKI 生成、吊销与容器：能签发证书、处理吊销，并读写 PKCS#12 / PKCS#7 容器。
+**新增 12 个工具**（累计 36 个已实现）。
+
+本版把 `pkisvc` 从「X.509 只读侧」扩展到**写侧**：CSR / 证书 / CRL 签发、
+离线吊销判定、OCSP 请求与响应、PKCS#12 与 PKCS#7 容器。
+
+### Added
+
+- PKI 服务层新增 8 个文件（`backend/internal/pkisvc/`）
+  - `certgen.go`：DN 构造（`TryAdd` 白名单）、随机序列号、
+    **分步构建**的证书签发（`NewCertificate` → `Set*` → `Add*` → `Sign`）
+  - `csrgen.go`：CSR 生成（`NewEmptyCertificateRequest` 分步构建）
+  - `crlgen.go`：CRL 签发与吊销原因码白名单（拒绝保留值 7）
+  - `revocation.go`：`RevocationList` 句柄与 `CheckRevocation`（**先验签后判定**）
+  - `ocsp.go`：OCSP 请求生成与响应解析（含可选验签）
+  - `pkcs12.go`：打包 / 解析 / 改密；口令错误按**操作名**判别
+  - `pkcs7.go`：证书袋打包与提取
+  - `store.go`：信任库句柄（每请求新建）
+- 工具 `csr-gen`：PKCS#10 请求，按证书类型预设 KU / EKU
+- 工具 `cert-gen`：自签或 CA 签发，SKID / AKID 自动补齐
+- 工具 `crl-gen`：CA 签发 CRL，原因码白名单
+- 工具 `revocation-check`：离线吊销判定（未验签时只报 `unverified`）
+- 工具 `ocsp-request` / `ocsp-response`：OCSP 请求与响应（可选 `trustedRoots` 验签）
+- 工具 `pfx-pack` / `pfx-parse` / `pfx-change-password`：PKCS#12 容器
+- 工具 `p7b-pack` / `p7b-extract`：PKCS#7 证书袋
+- 工具 `caa-gen`：CAA 记录生成（纯字符串拼装，不进 `pkisvc`）
+- 前端 12 个工具页与 24 份双语词条；夹具 `frontend/src/tools/certificates/fixtures-v060.ts`
+  （一次性生成的**测试密钥**，非真实密钥）
+- 契约测试数据 12 份；服务层与工具层单元测试各新增一批用例
+- 生成脚本 `scripts/gen-v060-fixtures.sh` / `gen-v060-contracts.py` / `gen-v060-web-fixtures.py`
+
+### Changed
+
+- **契约扩展**（只加**可选**字段）
+  - `revocation-check` 新增 `issuer`（提供时先验签）、`atTime`
+  - `ocsp-response` 新增 `trustedRoots`，响应新增 `signatureVerified`
+- **契约收窄**
+  - `cert-gen.templateCert` **只**复用公钥与有效期，**不**拷贝扩展
+  - `crl-gen.revoked[]` **只**接受证书，去掉「按序列号吊销」选项
+  - `revocation-check` 的 `status` 新增 `unverified` 取值；未验签时**绝不**返回 `good`
+- 新增警告码 `CRL_UNVERIFIED`
+- 路线图：`docs/roadmap.md` §9 全部任务勾选，§9.3 补 M-T9 – M-T12
+
+### Fixed
+
+- 口令错误判别不再依赖 OpenSSL 错误栈文本：该栈在成功调用后不会清空，
+  同进程内前一次失败的条目会覆盖本次原因，导致「容器损坏」被误报成「口令错误」
+
+### Known limitations
+
+- `cert-gen.templateCert` **不拷贝扩展**：上游读证书只能拿到扩展 DER，
+  没有「按 DER 添加扩展」的入口（见 `docs/upstream/tongsuo-go-issues.md` I-19）
+- `crl-gen` **无法按序列号吊销**：上游 `CRLBuilder.Revoke` 只接受证书对象（见 I-20）
+- 上游的便捷签发入口会**立即签名**，签名后 `Add*` 被「已签名锁」拒绝（见 I-21）；
+  Toolbit 因此固定走分步构建
+- `pfx-change-password` **只**支持本库打包的容器：上游 `PKCS12_newpass`
+  无法对外部实现产出的容器改密（见 I-22）
+- `p7b-pack` / `p7b-extract` **只做证书袋**：上游 PKCS#7 尚无签名 / 加密（见 I-11）
+- 序列号上限 8 字节：上游用 `int64` 承载（与 I-18 同源），超出返回 `SERIAL_INVALID`
+- `ocsp-response` 未提供 `trustedRoots` 时**不验签**，只解读响应内容
+
+---
+
 ## [0.5.0] - 2026-10-29
 
 PKI 解析与链验证：能读懂证书，并能判定一条链是否可信。
