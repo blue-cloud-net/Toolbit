@@ -58,3 +58,5 @@ backend/data/
 .lychee_cache/
 .markdownlint-cache/
 node_modules/.cache/
+
+issues/
