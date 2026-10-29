@@ -78,7 +78,6 @@ categories:
     icon: document
 
 tools:
-  # ── 加密 / Cryptography ─────────────────────────────────────────────
   - slug: signature
     category: crypto
     order: 1
@@ -207,7 +206,38 @@ tools:
     wide: false
     i18nKey: tools.hash-calc
 
-  # ── 密钥 / Keys ─────────────────────────────────────────────────────
+  - slug: password-policy
+    category: crypto
+    order: 9
+    name: 口令策略检查
+    nameEn: Password Policy Checker
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.password-policy
+
+  - slug: totp
+    category: crypto
+    order: 10
+    name: 动态口令生成校验
+    nameEn: TOTP Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.totp
+
   - slug: keygen
     category: keys
     order: 1
@@ -304,7 +334,22 @@ tools:
     wide: false
     i18nKey: tools.jwk-xml-convert
 
-  # ── 证书 / Certificates ─────────────────────────────────────────────
+  - slug: ssh-keygen
+    category: keys
+    order: 7
+    name: SSH 密钥生成
+    nameEn: SSH Key Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.ssh-keygen
+
   - slug: cert-parse
     category: certificates
     order: 1
@@ -673,7 +718,22 @@ tools:
     wide: false
     i18nKey: tools.domain-verify
 
-  # ── 编码 / Encoding ─────────────────────────────────────────────────
+  - slug: cert-lifecycle
+    category: certificates
+    order: 24
+    name: 证书生命周期
+    nameEn: Certificate Lifecycle
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.cert-lifecycle
+
   - slug: base64
     category: encoding
     order: 1
@@ -770,7 +830,22 @@ tools:
     wide: false
     i18nKey: tools.gzip-deflate
 
-  # ── 格式化 / Formatting ─────────────────────────────────────────────
+  - slug: html-escape
+    category: encoding
+    order: 7
+    name: HTML 实体编解码
+    nameEn: HTML Entity Codec
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.html-escape
+
   - slug: json-format
     category: formatting
     order: 1
@@ -899,7 +974,22 @@ tools:
     wide: true
     i18nKey: tools.format-convert
 
-  # ── 文本 / Text ─────────────────────────────────────────────────────
+  - slug: color-convert
+    category: formatting
+    order: 9
+    name: 颜色格式转换
+    nameEn: Color Converter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.color-convert
+
   - slug: regex-tester
     category: text
     order: 1
@@ -932,7 +1022,86 @@ tools:
     wide: false
     i18nKey: tools.text-convert
 
-  # ── 数据 / Data ─────────────────────────────────────────────────────
+  - slug: text-diff
+    category: text
+    order: 3
+    name: 文本差异对比
+    nameEn: Text Diff
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.text-diff
+
+  - slug: regex-validate
+    category: text
+    order: 4
+    name: 正则表达式校验
+    nameEn: Regex Validator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.regex-validate
+
+  - slug: regex-build
+    category: text
+    order: 5
+    name: 正则表达式生成
+    nameEn: Regex Builder
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.regex-build
+
+  - slug: data-mask
+    category: text
+    order: 6
+    name: 敏感数据脱敏
+    nameEn: Data Masker
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.data-mask
+
+  - slug: text-stats
+    category: text
+    order: 7
+    name: 文本统计
+    nameEn: Text Statistics
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.text-stats
+
   - slug: timestamp
     category: data
     order: 1
@@ -1029,7 +1198,134 @@ tools:
     wide: false
     i18nKey: tools.qr-code
 
-  # ── 系统 / System ───────────────────────────────────────────────────
+  - slug: id-validator
+    category: data
+    order: 7
+    name: 证件号码校验
+    nameEn: ID Validator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: true
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.id-validator
+
+  - slug: csv-convert
+    category: data
+    order: 8
+    name: CSV 转换
+    nameEn: CSV Converter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.csv-convert
+
+  - slug: json-to-types
+    category: data
+    order: 9
+    name: JSON 转类型定义
+    nameEn: JSON to Types
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.json-to-types
+
+  - slug: mock-data
+    category: data
+    order: 10
+    name: 假数据生成
+    nameEn: Mock Data Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.mock-data
+
+  - slug: archive-inspect
+    category: data
+    order: 11
+    name: 归档内容查看
+    nameEn: Archive Inspector
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.archive-inspect
+
+  - slug: file-analyze
+    category: data
+    order: 12
+    name: 文件类型识别
+    nameEn: File Analyzer
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.file-analyze
+
+  - slug: wifi-qr
+    category: data
+    order: 13
+    name: 访客 WiFi 二维码
+    nameEn: Guest WiFi QR Code
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.wifi-qr
+
+  - slug: id-generator
+    category: data
+    order: 14
+    name: ID 生成
+    nameEn: ID Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.id-generator
+
   - slug: curl-generator
     category: system
     order: 1
@@ -1078,7 +1374,70 @@ tools:
     wide: false
     i18nKey: tools.chmod-calc
 
-  # ── 网络 / Network ──────────────────────────────────────────────────
+  - slug: nginx-config
+    category: system
+    order: 4
+    name: Nginx 配置生成
+    nameEn: Nginx Config Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.nginx-config
+
+  - slug: firewall-rules
+    category: system
+    order: 5
+    name: 防火墙规则生成
+    nameEn: Firewall Rule Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.firewall-rules
+
+  - slug: docker-compose-gen
+    category: system
+    order: 6
+    name: Compose 配置生成
+    nameEn: Docker Compose Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.docker-compose-gen
+
+  - slug: lookup-table
+    category: system
+    order: 7
+    name: 速查表查询
+    nameEn: Lookup Table
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.lookup-table
+
   - slug: cidr-calc
     category: network
     order: 1
@@ -1159,7 +1518,70 @@ tools:
     wide: true
     i18nKey: tools.websocket-test
 
-  # ── 文档 / Documents ────────────────────────────────────────────────
+  - slug: mime-lookup
+    category: network
+    order: 6
+    name: MIME 类型查询
+    nameEn: MIME Type Lookup
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.mime-lookup
+
+  - slug: http-status
+    category: network
+    order: 7
+    name: HTTP 状态码查询
+    nameEn: HTTP Status Code Lookup
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.http-status
+
+  - slug: device-headers
+    category: network
+    order: 8
+    name: 请求头生成与 UA 解析
+    nameEn: Device Headers
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.device-headers
+
+  - slug: ip-range-expand
+    category: network
+    order: 9
+    name: IP 段展开
+    nameEn: IP Range Expander
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.ip-range-expand
+
   - slug: pdf-sign-verify
     category: documents
     order: 1
@@ -1207,3 +1629,19 @@ tools:
     autoRun: false
     wide: false
     i18nKey: tools.eml-parser
+
+  - slug: markdown-convert
+    category: documents
+    order: 4
+    name: Markdown 转换
+    nameEn: Markdown Converter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.markdown-convert

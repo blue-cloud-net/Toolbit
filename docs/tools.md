@@ -2,7 +2,7 @@
 
 > 状态：Stable ｜ 适用版本：v0.7.0 ｜ 最后更新：2026-10-29
 
-本文面向**最终用户**，介绍 70 个工具的用途、输入输出、默认行为与注意事项。
+本文面向**最终用户**，介绍 98 个工具的用途、输入输出、默认行为与注意事项。
 
 工具的技术契约见 [api/](api/)，工具元数据的事实来源是 [`backend/catalog/tools.yaml`](../backend/catalog/tools.yaml)。
 
@@ -12,16 +12,16 @@
 
 | 分类 | 工具数 | 锚点 |
 | --- | --- | --- |
-| [加密](#加密cryptography) | 8 | 数字签名、非对称加解密、对称加解密、ECDH、SM4 文件加解密、HMAC、密码生成、摘要计算 |
-| [密钥](#密钥keys) | 6 | 密钥生成、格式转换、解析、运算、配对检测、JWK/XML 转换 |
-| [证书](#证书certificates) | 23 | 解析、CSR、链、吊销、CRL、OCSP、签发、PKCS#12 / #7、CAA、CT、域名验证 |
-| [编码](#编码encoding) | 6 | Base64、URL、JWT、进制、编码转换、GZip |
-| [格式化](#格式化formatting) | 8 | JSON、JS、SQL、HTML、XML、TOML、YAML、格式转换 |
-| [文本](#文本text) | 2 | 正则测试、文本转换 |
-| [数据](#数据data) | 6 | 时间戳、UUID、日期计算、国家代码、行政区划、二维码 |
-| [系统](#系统system) | 3 | cURL、Crontab、权限计算 |
-| [网络](#网络network) | 5 | CIDR、SSL 检测、DNS 查询、DNS 测试、WebSocket 测试 |
-| [文档](#文档documents) | 3 | PDF 签名校验、Markdown 预览、EML 解析 |
+| [加密](#加密cryptography) | 10 | 数字签名、非对称加解密、对称加解密、ECDH、SM4 文件加解密、HMAC、密码生成、摘要计算、口令策略检查、TOTP |
+| [密钥](#密钥keys) | 7 | 密钥生成、格式转换、解析、运算、配对检测、JWK/XML 转换、SSH 密钥生成 |
+| [证书](#证书certificates) | 24 | 解析、CSR、链、吊销、CRL、OCSP、签发、PKCS#12 / #7、CAA、CT、域名验证、证书生命周期 |
+| [编码](#编码encoding) | 7 | Base64、URL、JWT、进制、编码转换、GZip、HTML 转义 |
+| [格式化](#格式化formatting) | 9 | JSON、JS、SQL、HTML、XML、TOML、YAML、格式转换、颜色转换 |
+| [文本](#文本text) | 7 | 正则测试、文本转换、文本对比、正则校验、正则生成、数据脱敏、文本统计 |
+| [数据](#数据data) | 14 | 时间戳、UUID、日期计算、国家代码、行政区划、二维码、号码校验、CSV 转换、JSON 转类型、模拟数据、归档查看、文件识别、访客 WiFi 二维码、ID 生成 |
+| [系统](#系统system) | 7 | cURL、Crontab、权限计算、Nginx 配置生成、防火墙规则生成、Compose 配置生成、速查表 |
+| [网络](#网络network) | 9 | CIDR、SSL 检测、DNS 查询、DNS 测试、WebSocket 测试、MIME 类型、HTTP 状态码、设备请求头、IP 段展开 |
+| [文档](#文档documents) | 4 | PDF 签名校验、Markdown 预览、EML 解析、Markdown 转换 |
 
 ---
 
@@ -37,6 +37,8 @@
 | HMAC 计算 | `hmac-gen` | 计算消息认证码 | ✅ |
 | 密码生成 | `password-gen` | 生成随机强密码 | ✅ |
 | 摘要计算 | `hash-calc` | 计算 MD5 / SHA / SM3 摘要 | ✅ |
+| 口令策略检查 | `password-policy` | 按策略检查口令合规性 | ✅ |
+| TOTP 生成校验 | `totp` | 生成与校验 TOTP 动态口令 | ✅ |
 
 > **状态**列标注工具是否已上线；未上线的工具在页面显示「即将上线」，
 > 调用端点返回 `501 NOT_IMPLEMENTED`。
@@ -159,6 +161,7 @@
 | 密钥运算 | `key-ops` | 私钥加解密、提取公钥、改口令 |
 | 密钥配对检测 | `key-match` | 判断私钥与公钥 / 证书是否配对 |
 | JWK/XML 转换 | `jwk-xml-convert` | JWK / PEM / XML 互转 |
+| SSH 密钥生成 | `ssh-keygen` | 生成 OpenSSH 格式密钥对与指纹 |
 
 ### 密钥生成（Key Generator）
 
@@ -265,6 +268,7 @@
 | 证书链获取 | `cert-chain-fetch` | 从服务器抓取证书链 |
 | 证书透明度查询 | `ct-search` | 查询 CT 日志 |
 | 域名验证 | `domain-verify` | 验证域名所有权 |
+| 证书生命周期 | `cert-lifecycle` | 证书有效期区间与到期倒计时 |
 
 ### 证书解析（Certificate Parser）
 
@@ -572,6 +576,7 @@
 | 进制转换 | `number-base` | 2–36 进制互转 |
 | 编码转换 | `encoding-convert` | 字符编码互转 |
 | GZip/Deflate | `gzip-deflate` | 压缩与解压 |
+| HTML 转义 | `html-escape` | HTML 实体编解码 |
 
 ### Base64 编解码（Base64 Codec）
 
@@ -660,6 +665,7 @@
 | TOML 格式化 | `toml-format` | 美化 TOML |
 | YAML 格式化 | `yaml-format` | 美化 / 压缩 YAML |
 | 格式转换 | `format-convert` | JSON / YAML / TOML / XML 互转 |
+| 颜色转换 | `color-convert` | 颜色格式转换与对比度检查 |
 
 所有格式化工具都支持 `format`（美化）、`minify`（压缩）、`validate`（校验）三种操作，语法错误会给出**行号与列号**。
 
@@ -767,6 +773,11 @@
 | --- | --- | --- |
 | 正则测试 | `regex-tester` | 匹配与提取 |
 | 文本转换 | `text-convert` | 大小写与命名风格 |
+| 文本对比 | `text-diff` | 文本行级与 JSON 结构化差异对比 |
+| 正则校验 | `regex-validate` | 只校验正则语法，不做匹配 |
+| 正则生成 | `regex-build` | 由结构化选项拼装正则表达式 |
+| 数据脱敏 | `data-mask` | 手机号、证件号、邮箱等敏感数据脱敏 |
+| 文本统计 | `text-stats` | 字数、行数与字符构成统计 |
 
 ### 正则测试（Regex Tester）
 
@@ -806,6 +817,14 @@
 | 国家代码 | `country-code` | ISO 3166 查询 |
 | 中国行政区划 | `cn-regions` | 省市查询 |
 | 二维码生成 | `qr-code` | 生成 / 识别二维码 |
+| 号码校验 | `id-validator` | 身份证、信用代码、手机号、银行卡校验位计算 |
+| CSV 转换 | `csv-convert` | CSV 与 JSON 互转 |
+| JSON 转类型 | `json-to-types` | 由 JSON 样本生成语言类型定义 |
+| 模拟数据 | `mock-data` | 按字段类型生成假数据 |
+| 归档查看 | `archive-inspect` | 查看 ZIP / TAR / GZIP 的条目清单 |
+| 文件识别 | `file-analyze` | 按魔数识别文件类型并给出摘要 |
+| 访客 WiFi 二维码 | `wifi-qr` | 生成访客 WiFi 接入二维码 |
+| ID 生成 | `id-generator` | 生成 UUID / ULID / 雪花 ID / NanoID |
 
 ### 时间戳转换（Timestamp Converter）
 
@@ -888,6 +907,10 @@
 | cURL 命令生成 | `curl-generator` | 生成 cURL 命令 |
 | Crontab 表达式生成 | `crontab-generator` | 生成 / 解释定时表达式 |
 | 权限计算 | `chmod-calc` | 权限数值与符号互转 |
+| Nginx 配置生成 | `nginx-config` | 生成 Nginx 全局与站点配置 |
+| 防火墙规则生成 | `firewall-rules` | 生成 ufw / firewalld / iptables / nftables 规则 |
+| Compose 配置生成 | `docker-compose-gen` | 由服务定义生成 Compose 配置 |
+| 速查表 | `lookup-table` | 查询端口、退出码与时间戳格式 |
 
 ### cURL 命令生成（cURL Generator）
 
@@ -937,6 +960,10 @@
 | DNS 查询 | `dns-lookup` | 查询各类 DNS 记录 |
 | DNS 多记录测试 | `dns-tester` | whois / DNSSEC / PTR 检测 |
 | WebSocket 测试 | `websocket-test` | 浏览器直连测试 |
+| MIME 类型查询 | `mime-lookup` | 扩展名与媒体类型互查 |
+| HTTP 状态码查询 | `http-status` | 查状态码含义与原因短语 |
+| 设备请求头 | `device-headers` | 生成客户端请求头并解析 User-Agent |
+| IP 段展开 | `ip-range-expand` | IP 段与 CIDR 互转及批量展开 |
 
 ### CIDR 计算（CIDR Calculator）
 
@@ -1003,6 +1030,32 @@
 - **Q：为什么连不上但 curl 能连？** A：可能是跨域限制、证书不受信任或服务器要求特定子协议 / 请求头。
 - **Q：服务器日志里看不到我？** A：连接由浏览器发起，来源是你的公网 IP。
 
+### MIME 类型查询（MIME Type Lookup）
+
+- **用途**：按文件扩展名查 MIME 媒体类型，或按媒体类型反查常用扩展名。
+- **输入**：扩展名（`png` / `.png` / `report.png`）或媒体类型（`image/png`）；二者**二选一**。
+- **输出**：规范媒体类型、顶层类型、默认字符集、常用扩展名、历史别名、用途说明。
+- **默认**：媒体类型带参数（`text/plain; charset=utf-8`）时自动去掉参数；未收录时只提示未收录。
+- **安全提示**：纯查表，**不出网**；数据来自内置快照，**不**读取系统 MIME 数据库。
+
+**常见问题**
+
+- **Q：为什么 `.docx` 不是 `application/msword`？** A：Office 2007 起改用 Open XML 格式，`.doc` 才是 `application/msword`。
+- **Q：字符集为什么有时是空的？** A：字符集只对文本类有意义，图片、压缩包等二进制类型没有默认字符集。
+
+### HTTP 状态码查询（HTTP Status Code Lookup）
+
+- **用途**：查状态码的原因短语与含义，或按关键字检索状态码。
+- **输入**：状态码（`100`–`599` 的整数）或关键字（如 `not found`、`重定向`）；二者**二选一**。
+- **输出**：状态码、原因短语、所属类别（1xx–5xx）、中文含义说明；关键字查询列出全部命中条目。
+- **默认**：纯数字的关键字按状态码处理；落在 `100`–`599` 但未收录的码仍给出所属类别。
+- **安全提示**：纯查表，**不出网**。
+
+**常见问题**
+
+- **Q：401 和 403 有什么区别？** A：401 表示缺少有效认证凭据、需要重新认证；403 表示服务端理解请求但拒绝授权。
+- **Q：关键字能查中文吗？** A：可以，同时匹配原因短语、中文说明与类别中文名。
+
 ---
 
 ## 文档（Documents）
@@ -1012,6 +1065,7 @@
 | PDF 签名校验 | `pdf-sign-verify` | 校验 PDF 数字签名 |
 | Markdown 预览 | `markdown-preview` | 渲染 Markdown 并生成目录 |
 | EML 邮件解析 | `eml-parser` | 查看邮件头与附件 |
+| Markdown 转换 | `markdown-convert` | Markdown 与 HTML 互转 |
 
 ### PDF 签名校验（PDF Signature Verifier）
 

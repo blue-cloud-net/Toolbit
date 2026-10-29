@@ -13,7 +13,7 @@ func TestLoadEmbeddedCatalog(t *testing.T) {
 	if c.Version != Version {
 		t.Errorf("目录版本 = %d，期望 %d", c.Version, Version)
 	}
-	if got, want := len(c.Tools), 70; got != want {
+	if got, want := len(c.Tools), 98; got != want {
 		t.Errorf("工具数量 = %d，期望 %d", got, want)
 	}
 	if got, want := len(c.Categories), 10; got != want {

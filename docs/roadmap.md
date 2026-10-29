@@ -76,7 +76,7 @@ RC 是 `1.0.0` 的**预发布标识**，与 `0.x` 是两条独立轨道。
 | `v1.0.0-rc.N` | 发布候选 | 0 | 70 | 待开始 |
 | `v1.0.0` | **正式发布（GA）** | 0 | 70 | 待开始 |
 
-工具总数 **70**，与 [`backend/catalog/tools.yaml`](../backend/catalog/tools.yaml) 一致。
+工具总数 **98**，与 [`backend/catalog/tools.yaml`](../backend/catalog/tools.yaml) 一致。
 
 ### 2.1 依赖顺序
 
@@ -127,7 +127,7 @@ flowchart LR
 
 - catalog、错误码、配置项、契约四者互相一致，并由 `scripts/check-docs.mjs` 校验；
 - `markdownlint-cli2` 零问题；内部链接零断链；
-- 70 个工具的请求 / 响应契约全部落档。
+- 98 个工具的请求 / 响应契约全部落档。
 
 > 本版本**不含任何可运行代码**，`backend/internal/*` 与 `frontend/` 尚未落地。
 
