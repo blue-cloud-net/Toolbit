@@ -98,5 +98,77 @@ func Definitions() []tools.Definition {
 				return tools.Result{Data: result}, nil
 			},
 		},
+		{
+			Slug: "id-validator",
+			NewRequest: func() tools.Request {
+				return &IDValidateRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return IDValidate(ctx, req.(*IDValidateRequest))
+			},
+		},
+		{
+			Slug: "csv-convert",
+			NewRequest: func() tools.Request {
+				return &CSVConvertRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return CSVConvert(ctx, req.(*CSVConvertRequest))
+			},
+		},
+		{
+			Slug: "json-to-types",
+			NewRequest: func() tools.Request {
+				return &JSONToTypesRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return JSONToTypes(ctx, req.(*JSONToTypesRequest))
+			},
+		},
+		{
+			Slug: "mock-data",
+			NewRequest: func() tools.Request {
+				return &MockDataRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return MockData(ctx, req.(*MockDataRequest))
+			},
+		},
+		{
+			Slug: "archive-inspect",
+			NewRequest: func() tools.Request {
+				return &ArchiveInspectRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return ArchiveInspect(ctx, req.(*ArchiveInspectRequest))
+			},
+		},
+		{
+			Slug: "file-analyze",
+			NewRequest: func() tools.Request {
+				return &FileAnalyzeRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return FileAnalyze(ctx, req.(*FileAnalyzeRequest))
+			},
+		},
+		{
+			Slug: "wifi-qr",
+			NewRequest: func() tools.Request {
+				return &WiFiQRRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return WiFiQR(ctx, req.(*WiFiQRRequest))
+			},
+		},
+		{
+			Slug: "id-generator",
+			NewRequest: func() tools.Request {
+				return &IDGeneratorRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return IDGenerator(ctx, req.(*IDGeneratorRequest))
+			},
+		},
 	}
 }

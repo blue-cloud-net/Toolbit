@@ -1,0 +1,55 @@
+{
+  "slug": "json-to-types",
+  "description": "JSON 转类型定义的契约测试数据。",
+  "cases": [
+    {
+      "name": "生成 TypeScript 类型",
+      "request": {
+        "input": "{\"id\":1,\"name\":\"a\",\"tags\":[\"x\"]}",
+        "language": "typescript",
+        "rootName": "User"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "language": "typescript"
+        }
+      }
+    },
+    {
+      "name": "生成 Go 类型",
+      "request": {
+        "input": "{\"id\":1}",
+        "language": "go",
+        "rootName": "Item"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "language": "go"
+        }
+      }
+    },
+    {
+      "name": "不支持的语言",
+      "request": {
+        "input": "{}",
+        "language": "cobol"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "缺少输入",
+      "request": {
+        "language": "go"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

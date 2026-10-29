@@ -1,0 +1,46 @@
+{
+  "slug": "wifi-qr",
+  "description": "访客 WiFi 二维码的契约测试数据。",
+  "cases": [
+    {
+      "name": "生成 WPA 二维码",
+      "request": {
+        "ssid": "Guest-Network",
+        "password": "guest-password",
+        "security": "WPA",
+        "size": 256
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "payload": "WIFI:T:WPA;S:Guest-Network;P:guest-password;"
+        }
+      }
+    },
+    {
+      "name": "开放网络",
+      "request": {
+        "ssid": "Open",
+        "password": "",
+        "security": "nopass"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "payload": "WIFI:T:nopass;S:Open;P:;"
+        }
+      }
+    },
+    {
+      "name": "缺少 SSID",
+      "request": {
+        "password": "x",
+        "security": "WPA"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

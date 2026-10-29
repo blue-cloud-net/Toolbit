@@ -1,0 +1,56 @@
+{
+  "slug": "csv-convert",
+  "description": "CSV / JSON 互转的契约测试数据。",
+  "cases": [
+    {
+      "name": "CSV 转 JSON",
+      "request": {
+        "operation": "csvToJson",
+        "input": "name,age\nalice,30\nbob,25\n",
+        "hasHeader": true
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "rowCount": 2,
+          "columnCount": 2
+        }
+      }
+    },
+    {
+      "name": "JSON 转 CSV",
+      "request": {
+        "operation": "jsonToCsv",
+        "input": "[{\"name\":\"alice\",\"age\":30}]",
+        "hasHeader": true
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "columnCount": 2
+        }
+      }
+    },
+    {
+      "name": "不支持的操作",
+      "request": {
+        "operation": "xmlToJson",
+        "input": "a"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "缺少输入",
+      "request": {
+        "operation": "csvToJson"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

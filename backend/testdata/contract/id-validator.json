@@ -1,0 +1,72 @@
+{
+  "slug": "id-validator",
+  "description": "证件 / 号码校验的契约测试数据。",
+  "cases": [
+    {
+      "name": "合法身份证",
+      "request": {
+        "type": "idCard",
+        "value": "11010519491231002X"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "valid": true,
+          "checkDigit": "X"
+        }
+      }
+    },
+    {
+      "name": "校验位不匹配的身份证",
+      "request": {
+        "type": "idCard",
+        "value": "110105194912310021"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "valid": false
+        }
+      }
+    },
+    {
+      "name": "银行卡 Luhn 校验",
+      "request": {
+        "type": "bankCard",
+        "value": "4111111111111111"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "valid": true
+        }
+      }
+    },
+    {
+      "name": "统一社会信用代码",
+      "request": {
+        "type": "uscc",
+        "value": "91110108MA01ABCD4X"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "type": "uscc"
+        }
+      }
+    },
+    {
+      "name": "手机号",
+      "request": {
+        "type": "phone",
+        "value": "13800138000"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "valid": true
+        }
+      }
+    }
+  ]
+}

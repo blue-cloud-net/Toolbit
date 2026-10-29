@@ -1,0 +1,59 @@
+{
+  "slug": "id-generator",
+  "description": "ID 生成的契约测试数据。",
+  "cases": [
+    {
+      "name": "生成 UUID",
+      "request": {
+        "format": "uuid",
+        "count": 3
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "format": "uuid",
+          "count": 3
+        }
+      }
+    },
+    {
+      "name": "生成 ULID",
+      "request": {
+        "format": "ulid",
+        "count": 1
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "format": "ulid"
+        }
+      }
+    },
+    {
+      "name": "生成 Nano ID",
+      "request": {
+        "format": "nanoid",
+        "count": 1,
+        "length": 10
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "format": "nanoid",
+          "length": 10
+        }
+      }
+    },
+    {
+      "name": "不支持的格式",
+      "request": {
+        "format": "guid",
+        "count": 1
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

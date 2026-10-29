@@ -1,0 +1,30 @@
+{
+  "slug": "file-analyze",
+  "description": "文件类型识别的契约测试数据。",
+  "cases": [
+    {
+      "name": "识别 PNG",
+      "request": {
+        "data": "iVBORw0KGgoAAAANSUhEUg==",
+        "fileName": "a.png",
+        "digestAlgorithm": "SHA256"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "extension": "png"
+        }
+      }
+    },
+    {
+      "name": "缺少文件数据",
+      "request": {
+        "fileName": "a.txt"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

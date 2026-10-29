@@ -1,0 +1,64 @@
+{
+  "slug": "mock-data",
+  "description": "模拟数据生成的契约测试数据。",
+  "cases": [
+    {
+      "name": "生成字符串与整数",
+      "request": {
+        "types": [
+          "string",
+          "int"
+        ],
+        "count": 3
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "count": 3
+        }
+      }
+    },
+    {
+      "name": "英文 locale",
+      "request": {
+        "types": [
+          "email"
+        ],
+        "count": 1,
+        "locale": "en-US"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "locale": "en-US"
+        }
+      }
+    },
+    {
+      "name": "不支持的 locale",
+      "request": {
+        "types": [
+          "string"
+        ],
+        "locale": "fr-FR"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "数量超限",
+      "request": {
+        "types": [
+          "string"
+        ],
+        "count": 100000
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}
