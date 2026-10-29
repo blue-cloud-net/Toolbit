@@ -1,6 +1,6 @@
 # 路线图
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ~ v1.0.0 ｜ 最后更新：2026-10-28
+> 状态：Draft ｜ 适用版本：v0.1.0 ~ v1.0.0 ｜ 最后更新：2026-10-29
 
 本文记录 Toolbit 从 `v0.1.0` 到 `v1.0.0` 的版本计划。
 
@@ -66,7 +66,7 @@ RC 是 `1.0.0` 的**预发布标识**，与 `0.x` 是两条独立轨道。
 | `v0.2.1` | **前端骨架** | 0 | 2 | ✅ 已完成 |
 | `v0.3.0` | 密码学核心 | 7 | 9 | ✅ 已完成 |
 | `v0.3.1` | 密码学文件工具 | 1 | 10 | ✅ 已完成 |
-| `v0.4.0` | 密钥管理 | 6 | 16 | 待开始 |
+| `v0.4.0` | 密钥管理 | 6 | 16 | ✅ 已完成 |
 | `v0.5.0` | PKI 解析与链验证 | 8 | 24 | 待开始 |
 | `v0.6.0` | PKI 生成、吊销与容器 | 12 | 36 | 待开始 |
 | `v0.7.0` | 网络探测 | 8 | 44 | 待开始 |
@@ -480,11 +480,83 @@ flowchart LR
 
 ---
 
+---
+
+## 6.8 v0.4.0 起的跨版本公共基座
+
+**状态**：✅ 已建立（2026-10-29）。
+
+v0.4.0 起，后续三个版本（密钥管理 / PKI 解析 / PKI 生成）共用同一套底座。
+本节把**跨版本**的决策集中登记，各版本章节只写本版特有的内容。
+
+### 6.8.1 服务层拆分：`cryptosvc` 与 `pkisvc`
+
+| 层 | 职责 | 允许依赖 |
+| --- | --- | --- |
+| `backend/internal/cryptosvc/` | 密码学**原语**：摘要 / MAC / 对称加解密 / 非对称运算 / 签名 | `tongsuo-go` |
+| `backend/internal/pkisvc/` | 密钥与 **PKI 领域**：密钥生成与格式、X.509、JWK、PKCS 容器 | `tongsuo-go` `cryptosvc` |
+
+- 两者是**仅有的**两个允许 `import tongsuo-go` 的包（AGENTS.md §4.1）；
+  `.golangci.yml` 的 `depguard` 以双白名单强制。
+- 拆分理由：X.509 / JWK / PKCS#12 的句柄模型与密码学原语模型差异很大，
+  混在一个包里会让两边都臃肿；拆开后 `cryptosvc` 保持「纯运算」，
+  `pkisvc` 保持「纯格式与结构」。
+- **句柄类型互不通用**：`cryptosvc.PrivateKey` 与 `pkisvc.PrivateKey`
+  各自持有原生句柄、都必须显式释放；跨层只传 PEM / DER 等**表示层**数据。
+- `pkisvc` 的**公开签名不出现** `tongsuo-go` 的类型（`asym.*` / `x509.*`），
+  以免 tools 层被迫 import `tongsuo-go` 而破坏边界。
+
+### 6.8.2 工具装配层
+
+`backend/internal/toolset` 汇总各分类的 `Definitions()`，
+进程入口与 API 测试**共用**该装配层；每加一个分类包只改一处。
+`toolset` 的测试守住两条：slug 唯一、实现必须已在 catalog 登记。
+
+### 6.8.3 共享输入类型
+
+`backend/internal/tools` 提供跨分类共享的输入类型：
+
+| 类型 | 用途 | 复用方 |
+| --- | --- | --- |
+| `tools.Bytes` | 字节输入（utf8 / hex / base64 / base64url） | `crypto`、`encoding` |
+| `tools.KeyInput` | 密钥输入（auto / pem / der / base64 / hex） | `crypto`、`keys` |
+
+各工具包用**类型别名**引用既有引用点不变，避免每个包各写一套解析逻辑。
+
+### 6.8.4 catalog 修正：`revocation-check`
+
+`revocation-check` 在 catalog 中原标为 `rateClass: network` + `requiresNetwork: true`，
+但其契约（[api/tools/certificates.md](api/tools/certificates.md)）自 v0.1.0 起
+就是**离线**的「证书 + CRL」判定，且出网防护要到 v0.7.0 才引入。
+v0.4.0 起该工具改为 `rateClass: standard` + `requiresNetwork: false`。
+
+### 6.8.5 契约偏差的处置原则
+
+上游能力边界导致的偏差**不改契约字段**，而是：
+
+1. 在 [upstream/tongsuo-go-issues.md](upstream/tongsuo-go-issues.md) 登记缺口；
+2. 在对应 API 文档标注「暂不支持」；
+3. 实现对越界组合返回 `UNSUPPORTED_FORMAT`（**显式拒绝**，不静默降级）。
+
+v0.4.0 引入的缺口：I-11（PKCS#7 仅证书袋）、I-12（JWK 无 OKP）、
+I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
+
+### 6.8.6 分支与提交约定
+
+- 每个 `0.x` 版本一个分支（`feat/v0.4.0` / `feat/v0.5.0` / `feat/v0.6.0`），从 `dev` 切出；
+- 版本内可多次提交，但**版本收尾时只调用一次** `git-commit` 流程
+  （先跑 `preflight.sh`，再按 backend / frontend / docs 分组）；
+- 合并回 `dev` 用 `--no-ff`；**不动** `main`，**不** `push`。
+
+---
+
 ## 7. v0.4.0 —— 密钥管理
 
 **目标**：密钥全生命周期（生成 → 转换 → 解析 → 运算 → 配对）可用。
 
-### 交付物（6）
+**状态**：✅ 已完成（2026-10-29）。6 个工具，累计 **16** 个可用工具。
+
+### 7.1 交付物（6）
 
 | 工具 | 备注 |
 | --- | --- |
@@ -495,12 +567,102 @@ flowchart LR
 | `key-match` | 私钥 ↔ 公钥 / 证书配对检测 |
 | `jwk-xml-convert` | JWK / PEM / XML 互转 |
 
-**完成标准**
+### 7.2 工程交付物
 
-- 7 种算法：生成 → PEM 往返 → 口令加密 → 解析 全链路通过；
-- RSA 1024–4096 边界、口令错误路径（`PASSPHRASE_INCORRECT`）有测试；
-- JWK / XML / PEM 三向互转结果一致；
-- 私钥材料不落日志、不落磁盘（`grep` 校验日志输出）。
+| 交付物 | 位置 | 说明 |
+| --- | --- | --- |
+| PKI 服务层 | `backend/internal/pkisvc/` | 包文档、错误映射、句柄包装、密钥生成 / 格式 / 解析 / 运算 / 配对 / JWK·XML |
+| 共享输入类型 | `backend/internal/tools/bytes.go` `backend/internal/tools/keyinput.go` | `tools.Bytes` 与 `tools.KeyInput` |
+| 工具装配层 | `backend/internal/toolset/` | 汇总各分类 `Definitions()`；slug 唯一性测试 |
+| 密钥类工具 | `backend/internal/tools/keys/` | `dto.go` `helpers.go` `register.go` + 6 个 handler + 测试 |
+| 依赖守卫 | `.golangci.yml` | `depguard` 改为 `cryptosvc` + `pkisvc` 双白名单；新增 `crypto/x509` 禁令 |
+| 前端页面 | `frontend/src/tools/keys/**` | 6 个工具页 + 共享夹具 `fixtures.ts` |
+| 双语词条 | `frontend/src/locales/*/tools/` | 6 个工具的十项词条字段 |
+| 上游缺口登记 | `docs/upstream/tongsuo-go-issues.md` | I-12 / I-13 / I-14 |
+
+### 7.3 技术决策
+
+| # | 决策 | 理由 |
+| --- | --- | --- |
+| K-T1 | `pkisvc` 自带句柄类型，不与 `cryptosvc` 互通 | `cryptosvc` 的句柄内部字段不可导出，且其公开签名不出现 `asym.*` |
+| K-T2 | `ByteInput` / `KeyInput` 上提到 `tools` 包，子包用别名复用 | 两个工具包共用同一套输入解析，避免第三份实现 |
+| K-T3 | 私钥 → `spki`、公钥 → `pkcs8` / `pkcs1` 一律 `UNSUPPORTED_FORMAT` | 格式语义不成立；显式拒绝优于静默丢材料 |
+| K-T4 | `key-parse` 的 `params` 只在输入是**私钥**时返回 | 私钥参数不得被缓存（响应统一 `no-store`） |
+| K-T5 | `key-match` 支持「私钥 ↔ 证书」：证书先导出 SPKI 再比对指纹 | 上游无 `Match(priv, cert)`，但判定依据本就是公钥 |
+| K-T6 | 加密私钥在转换 / 解析后**保持加密** | 转换动作不应顺手把私钥解密暴露出去 |
+| K-T7 | `keygen` 暂不实现 `count > 1`，返回 `INVALID_FIELD` | 响应结构只能表达一把密钥；批量需新增字段（破坏性契约变更） |
+| K-T8 | 密钥生成走 `Session.Acquire`（重操作信号量 ≤ 2） | RSA 4096 生成耗时可观，需限流 |
+| K-T9 | 公钥指纹算在 **SPKI DER** 上 | 只依赖公钥，私钥与其公钥指纹相同，可直接判定「同一把钥匙」 |
+
+### 7.4 任务清单
+
+#### Phase K-A —— 服务层
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| K1 | PKI 服务层骨架 | `backend/internal/pkisvc/pkisvc.go` `errors.go` `key.go` | 包文档写明与 `cryptosvc` 的分工；错误映射统一到 `toolerr`；句柄 `Close()` 幂等 | — | ✅ |
+| K2 | 密钥生成 | `backend/internal/pkisvc/key.go` | 7 种算法生成 → PKCS#8 PEM 往返一致；RSA 1023 位返回 `KEY_SIZE_MISMATCH`；公钥句柄**独立持有**（可单独释放） | K1 | ✅ |
+| K3 | 格式转换 | `backend/internal/pkisvc/keyformat.go` | PKCS#1 ↔ PKCS#8 ↔ DER ↔ PEM 往返一致；私钥 → `spki` 报 `UNSUPPORTED_FORMAT`；加密私钥缺口令报 `PASSPHRASE_REQUIRED`；`from` 约束不匹配时报错 | K1, K2 | ✅ |
+| K4 | 密钥解析 | `backend/internal/pkisvc/keyinfo.go` `inspect.go` | 7 类算法的 `algorithm` / `bits` / `curve` 正确；`fingerprintSha256` 为 SPKI DER 的 SHA-256；私钥返回 RSA 参数；公钥不返回私钥参数 | K1 | ✅ |
+| K5 | 密钥运算 | `backend/internal/pkisvc/keyops.go` | `encrypt` → `decrypt` 往返一致；`change-passphrase` 后旧口令失效、新口令可用；`extract-public` 不需要口令；错误口令返回 `PASSPHRASE_INCORRECT` | K1 | ✅ |
+| K6 | 密钥配对 | `backend/internal/pkisvc/keymatch.go` | 私钥 ↔ 公钥 / 私钥 ↔ 证书 / 相同私钥 / 不同算法 四种结论正确；无法解析的输入返回 `INVALID_KEY` | K1 | ✅ |
+| K7 | JWK / XML 转换 | `backend/internal/pkisvc/jwkxml.go` | RSA 的 PEM ↔ JWK ↔ XML 三向互转一致；公钥 JWK 不含私钥材料；EC → XML 与 Ed25519 → JWK 返回 `UNSUPPORTED_FORMAT` | K1 | ✅ |
+
+#### Phase K-B —— 工具层
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| K8 | 共享输入类型上提 | `backend/internal/tools/bytes.go` `keyinput.go` `backend/internal/tools/crypto/dto.go` | `crypto` 包既有测试全绿；`keys` 复用同一 `KeyInput`；`KeyInput.Resolve` 能区分 PEM 与 DER | — | ✅ |
+| K9 | 工具装配层 | `backend/internal/toolset/toolset.go` `toolset_test.go` | slug 唯一；实现全部已在 catalog 登记；进程入口与 API 测试共用 | K8 | ✅ |
+| K10 | 六个 handler | `backend/internal/tools/keys/*.go` | 正例 + 反例各一；未知算法 / 未知格式 / 未知动作返回对应错误码 | K2 – K7 | ✅ |
+| K11 | 契约测试数据 | `backend/testdata/contract/{keygen,key-convert,key-parse,key-ops,key-match,jwk-xml-convert}.json` | 契约执行器全绿；每个工具至少 1 正例 + 1 反例 | K10 | ✅ |
+| K12 | 单元测试 | `backend/internal/pkisvc/pkisvc_test.go` `backend/internal/tools/keys/keys_test.go` | 服务层与工具层各有正例 / 反例；边界（RSA 位数、口令、格式互斥）均有覆盖 | K10 | ✅ |
+
+#### Phase K-C —— 前端
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| K13 | 六个工具页 | `frontend/src/tools/keys/**` | 「填入示例 → 运行 → 复制」全链路可用；输入不落浏览器存储；复用 `KeyInput` 与 `ResultPanel` | K10 | ✅ |
+| K14 | 双语词条 | `frontend/src/locales/*/tools/*.json` | 覆盖十项必备字段；中英 key 集合一致（`parity.test.ts` 通过） | K13 | ✅ |
+| K15 | 工具登记与体积 | `frontend/src/tools/index.ts` | 6 个 slug 登记；6 个 chunk 均 < 40 KB（gzip）；初始 JS < 250 KB（gzip） | K13 | ✅ |
+
+#### Phase K-D —— 文档与门禁
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| K16 | 架构与规范同步 | `AGENTS.md` `.golangci.yml` `docs/architecture.md` `docs/standards/03-crypto.md` | §4.1 改为两个密码学层；§2 补 `pkisvc` 与 `toolset`；依赖图含新层 | K9 | ✅ |
+| K17 | 契约与缺口同步 | `docs/api/tools/keys.md` `docs/tools.md` `docs/upstream/tongsuo-go-issues.md` | 请求 / 响应字段与实现逐项一致；I-12 / I-13 / I-14 登记完整 | K10 | ✅ |
+| K18 | 版本收尾 | `docs/roadmap.md` `CHANGELOG.md` | 本节与实现一致且可勾选；CHANGELOG 增 `[0.4.0]`；`make verify` 通过 | K11 – K17 | ✅ |
+
+**关键路径**：`K1` → `K2` → `K3` → `K10` → `K11` → `K13` → `K18`。
+
+### 7.5 完成标准
+
+1. 7 种算法：生成 → PEM 往返 → 口令加密 → 解析 全链路通过；
+2. RSA 1024–4096 边界与 `PASSPHRASE_INCORRECT` 路径有测试；
+3. JWK / XML / PEM 三向互转结果一致，越界能力返回 `UNSUPPORTED_FORMAT` 并登记上游缺口；
+4. 私钥材料不出现在日志（`grep` 校验访问日志字段白名单）；
+5. 6 个工具各有正例 + 反例契约测试；
+6. `make verify` 一条命令通过；前端 6 个 chunk 均 < 40 KB（gzip）。
+
+### 7.6 不在本版范围
+
+| 项 | 计划版本 |
+| --- | --- |
+| 证书 / CSR / CRL 的解析与链验证 | §8（v0.5.0） |
+| 证书签发、吊销与 PKCS 容器 | §9（v0.6.0） |
+| 任何出网能力 | §10（v0.7.0） |
+| 批量生成密钥（`count > 1`） | 契约收敛后（见 §7.7） |
+| JWK 的 OKP 支持 | 上游 I-12 修复后 |
+
+### 7.7 风险
+
+| 风险 | 影响 | 对策 |
+| --- | --- | --- |
+| `keygen.count` 的契约字段与响应结构不一致 | 用户传 `count: 5` 拿不到 5 把钥匙 | 显式返回 `INVALID_FIELD` 并在 CHANGELOG 登记「批量生成待契约收敛」 |
+| RSA 4096 生成在 60 秒超时内是否稳定 | 偶发 504 | 走 `Session.Acquire` 排队；实测各位数耗时，超时不足时下调上限 |
+| `pkisvc` 与 `cryptosvc` 两层并存增加认知负担 | 新人不知道该往哪加能力 | AGENTS.md §4.1 与 §8 给出明确的归属判据；`depguard` 双白名单强制 |
+| 前端夹具内嵌测试私钥 | 有人误以为是真实密钥 | `fixtures.ts` 顶部注释明示「一次性生成的测试密钥」；契约测试同样使用它 |
 
 ---
 
@@ -508,7 +670,9 @@ flowchart LR
 
 **目标**：能读懂证书，并能判定一条链是否可信。
 
-### 交付物（8）
+**状态**：待开始。8 个工具，累计 **24** 个可用工具。
+
+### 8.1 交付物（8）
 
 | 工具 | 备注 |
 | --- | --- |
@@ -521,13 +685,95 @@ flowchart LR
 | `cert-chain-repair` | 补全缺失中间证书（纯本地） |
 | `crl-parse` | 吊销列表解析 |
 
-**完成标准**
+### 8.2 工程交付物
 
-- 自签 CA → 叶证书 场景下，链排序 / 验证 / 域名匹配全部正确；
-- 有效期边界（`expired` / `not_yet_valid`）与自签名判定有测试；
-- 用户输入构造 DN **一律**走 `x509.Name.TryAdd`，非法字段返回 `INVALID_FIELD` 且**不 panic**；
-- 每请求新建 `x509.Store`（`SetTime` 不污染后续验证）；
-- 链上限 64 张、CRL 上限 10000 条，超限返回 `TOO_MANY_ITEMS`。
+| 交付物 | 位置 | 说明 |
+| --- | --- | --- |
+| PKI 服务层（续） | `backend/internal/pkisvc/cert.go` `pemder.go` `asn1.go` `chain.go` `chainverify.go` `chainrepair.go` `crl.go` | 证书 / CSR / 链 / CRL 的解析与验证 |
+| 证书类工具 | `backend/internal/tools/pki/` | 8 个 handler + 测试 |
+| 前端共享组件 | `frontend/src/components/tool/CertTextInput.vue` `CodeEditor.vue` | 证书族输入框；只读树 / hex 视图 |
+| 前端页面 | `frontend/src/tools/certificates/**` | 8 个工具页 |
+| 双语词条 | `frontend/src/locales/*/tools/` | 8 个工具的十项词条字段 |
+
+### 8.3 技术决策
+
+| # | 决策 | 理由 |
+| --- | --- | --- |
+| L-T1 | 本版工具**全部纯本地**，不引入 `netguard` | 出网推迟到 §10（v0.7.0） |
+| L-T2 | DN 构造一律 `x509.Name.TryAdd`，失败 → `INVALID_FIELD` 且**不 panic** | AGENTS.md §4.9 |
+| L-T3 | `cert-chain-verify` 的 `trustedRoots` 为空时，把链内**自签名根**作为隐含信任锚，并在响应中标注该语义 | 无系统根可用；必须让「链内自洽」与「外部可信」两类结论可区分 |
+| L-T4 | 每请求**新建** `x509.Store`；`SetTime` 只作用于本请求 | `SetTime` 会污染同一 store 后续的所有验证 |
+| L-T5 | 链上限 64 张、CRL 上限 10000 条、ASN.1 深度 64 / 节点 10000 | 契约已落档；超限返回 `TOO_MANY_ITEMS` / `TOO_LARGE` |
+| L-T6 | `asn1-view` 用上游 `asn1` 包（纯 Go，cgo-free） | 不自行实现 DER 解析 |
+| L-T7 | `cert-chain-repair` 只从**输入集合**补链（subject/issuer + SKID/AKID 匹配），不下载 | 契约无网络字段 |
+| L-T8 | 所有 pkisvc 句柄登记到本请求 `Session`，按 LIFO 释放 | AGENTS.md §4.7 |
+
+### 8.4 任务清单
+
+#### Phase L-A —— 服务层
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| L1 | 证书加载与解析 | `backend/internal/pkisvc/cert.go` | PEM / DER / base64 / hex 四种输入；字段、扩展、SAN / KU / EKU / BC / SKID / AKID、指纹齐全；`atTime` 边界（`expired` / `not_yet_valid`）各一测 | §6.8 | ⬜ |
+| L2 | PEM / DER 互转与标签识别 | `backend/internal/pkisvc/pemder.go` | 多块 bundle 拆分与重组顺序稳定；`type` 过滤生效；标签不匹配返回 `UNSUPPORTED_FORMAT` | L1 | ⬜ |
+| L3 | ASN.1 视图 | `backend/internal/pkisvc/asn1.go` | 深度 / 节点上限触发对应错误码；`hexDump` 与 `xxd` 输出一致 | §6.8 | ⬜ |
+| L4 | 链排序 | `backend/internal/pkisvc/chain.go` | 乱序输入 → 叶→根；缺根时 `missingRoot: true`；> 64 张返回 `TOO_MANY_ITEMS` | L1 | ⬜ |
+| L5 | 链验证 | `backend/internal/pkisvc/chainverify.go` | 可信根场景 `valid: true`；篡改 / 过期 / 自签根场景 `valid: false` + `errors[].code`；`host` 匹配与不匹配各一；`SetTime` 隔离有测试（同进程连续两次不同 `atTime` 结果不同） | L4 | ⬜ |
+| L6 | 链修复 | `backend/internal/pkisvc/chainrepair.go` | 缺中间证书时 `addedCount > 0` 且 `reachedRoot` 正确；无可用中间证书时 `addedCount: 0` | L4 | ⬜ |
+| L7 | CRL 解析 | `backend/internal/pkisvc/crl.go` | 条目数、时间窗、原因码正确；> 10000 条返回 `TOO_MANY_ITEMS` | §6.8 | ⬜ |
+
+#### Phase L-B —— 工具层
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| L8 | 八个 handler | `backend/internal/tools/pki/*.go` | 正例 + 反例各一；`asn1-view` 在 catalog 中标记 `wide` | L1 – L7 | ⬜ |
+| L9 | 契约测试数据 | `backend/testdata/contract/*.json` | 契约执行器全绿；每个工具至少 1 正例 + 1 反例 | L8 | ⬜ |
+| L10 | 单元测试 | `backend/internal/pkisvc/*_test.go` `backend/internal/tools/pki/*_test.go` | 边界（链 64 / CRL 10000 / ASN.1 深度）均有覆盖 | L8 | ⬜ |
+
+#### Phase L-C —— 前端
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| L11 | 共享组件 | `frontend/src/components/tool/CertTextInput.vue` `CodeEditor.vue` | 两组件各有单测；`CodeEditor` **自渲染**树与 hex，**不引入**编辑器依赖（防击穿 40 KB 预算） | — | ⬜ |
+| L12 | 八个工具页 | `frontend/src/tools/certificates/**` | 「填入示例 → 运行 → 复制」全链路可用；`asn1-view` 在 ≥1280 px 双栏 | L8, L11 | ⬜ |
+| L13 | 双语词条与登记 | `frontend/src/locales/*/tools/*.json` `frontend/src/tools/index.ts` | 中英 key 集合一致；8 个 chunk 均 < 40 KB（gzip） | L12 | ⬜ |
+
+#### Phase L-D —— 文档与门禁
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| L14 | 契约同步 | `docs/api/tools/certificates.md` `docs/tools.md` | 请求 / 响应字段与实现逐项一致 | L8 | ⬜ |
+| L15 | 规范同步 | `docs/standards/03-crypto.md` §8 §9 | PKI 句柄与限额条款与实现一致 | L1 – L7 | ⬜ |
+| L16 | 版本收尾 | `docs/roadmap.md` `CHANGELOG.md` | 本节与实现一致且可勾选；CHANGELOG 增 `[0.5.0]`；`make verify` 通过 | L9 – L15 | ⬜ |
+
+**关键路径**：`L1` → `L4` → `L5` → `L8` → `L9` → `L12` → `L16`。
+
+### 8.5 完成标准
+
+1. 自签 CA → 叶证书场景下，链排序 / 验证 / 域名匹配全部正确；
+2. 有效期边界（`expired` / `not_yet_valid`）与自签名判定有测试；
+3. 用户输入构造 DN **一律**走 `x509.Name.TryAdd`，非法字段返回 `INVALID_FIELD` 且**不 panic**；
+4. 每请求新建 `x509.Store`（`SetTime` 不污染后续验证），有测试覆盖；
+5. 链上限 64 张、CRL 上限 10000 条，超限返回 `TOO_MANY_ITEMS`，有测试覆盖；
+6. `make verify` 一条命令通过。
+
+### 8.6 不在本版范围
+
+| 项 | 计划版本 |
+| --- | --- |
+| 证书 / CSR / CRL 的签发与吊销判定 | §9（v0.6.0） |
+| OCSP 请求 / 响应 | §9（v0.6.0） |
+| PKCS#12 / PKCS#7 容器 | §9（v0.6.0） |
+| 证书链下载、证书透明度查询、域名验证 | §10（v0.7.0） |
+
+### 8.7 风险
+
+| 风险 | 影响 | 对策 |
+| --- | --- | --- |
+| 无系统信任根导致「验证通过」语义含糊 | 用户误以为链已被外部信任 | L-T3：响应区分「链内自洽」与「外部可信」，并在使用说明中明示 |
+| 上游 `asn1` 的深度上限与契约的 64 是否一致 | 行为与文档不符 | L3 实测后按实测值对齐契约与文档 |
+| `CodeEditor` 引入第三方编辑器依赖 | 单工具 chunk 击穿 40 KB 预算 | 自渲染树与 hex 视图，禁止引入编辑器依赖 |
+| 证书正文属敏感内容 | 日志 / 缓存泄露 | 响应统一 `no-store`；访问日志只记 slug 与字节数 |
 
 ---
 
@@ -535,30 +781,110 @@ flowchart LR
 
 **目标**：能签发证书，处理吊销，并读写 PKCS#12 / PKCS#7 容器。
 
-### 交付物（12）
+**状态**：待开始。12 个工具，累计 **36** 个可用工具。
+
+### 9.1 交付物（12）
 
 | 工具 | 备注 |
 | --- | --- |
 | `csr-gen` | PKCS#10 签名请求 |
 | `cert-gen` | 自签 / CA 签发 |
 | `crl-gen` | CRL 签发 |
-| `revocation-check` | CRL 吊销判定 |
+| `revocation-check` | CRL 吊销判定（离线） |
 | `ocsp-request` | OCSP 请求生成 |
 | `ocsp-response` | OCSP 响应解析 |
 | `pfx-pack` | PKCS#12 打包 |
 | `pfx-parse` | PKCS#12 解析 |
 | `pfx-change-password` | PKCS#12 改密 |
-| `p7b-pack` | PKCS#7 打包 |
-| `p7b-extract` | PKCS#7 提取 |
+| `p7b-pack` | PKCS#7 打包（证书袋） |
+| `p7b-extract` | PKCS#7 提取（证书袋） |
 | `caa-gen` | CAA 记录生成 |
 
-**完成标准**
+### 9.2 工程交付物
 
-- 自签 CA → CSR → 叶证书 → CRL → 吊销检查 全链路通过；
-- PKCS#12 打包 / 解析 / 改密往返一致；PKCS#7 打包 / 提取往返一致；
-- `signMode: ca` 时**必须**校验签发者私钥与证书配对，不匹配返回 `KEY_MISMATCH`；
-- 吊销原因码 `7`（保留值）被拒绝；
-- `RevocationCheck` 前**必须**先 `CRL.Verify`，该顺序有测试覆盖。
+| 交付物 | 位置 | 说明 |
+| --- | --- | --- |
+| PKI 服务层（续） | `backend/internal/pkisvc/csr.go` `certgen.go` `crlgen.go` `revocation.go` `ocsp.go` `pkcs12.go` `pkcs7.go` | CSR / 证书 / CRL / OCSP / 容器 |
+| 证书类工具（续） | `backend/internal/tools/pki/` | 12 个 handler + 测试 |
+| 前端页面 | `frontend/src/tools/certificates/**` | 12 个工具页 |
+| 双语词条 | `frontend/src/locales/*/tools/` | 12 个工具的十项词条字段 |
+
+### 9.3 技术决策
+
+| # | 决策 | 理由 |
+| --- | --- | --- |
+| M-T1 | `signMode: ca` 前先校验签发者私钥与证书是否配对，不匹配返回 `KEY_MISMATCH` | 契约要求 |
+| M-T2 | `IssueCertificateFromRequest` 的 `CopyRequestExtensions` **固定 false**，扩展只由 CA 侧显式传入 | 防请求方自选 SAN（上游默认值即如此） |
+| M-T3 | `revocation-check` **先** `CRL.Verify`（签发者 + 有效期）**再** `RevocationCheck`，顺序有专门测试 | 未验签的 CRL 不能作为吊销依据 |
+| M-T4 | `crl-gen` 拒绝原因码 `7`（保留值） | RFC 5280 §5.3.1 |
+| M-T5 | `p7b-*` 只做证书袋；签名 / 加密容器返回 `UNSUPPORTED_FORMAT` 并登记 I-11 | 上游能力边界 |
+| M-T6 | `caa-gen` 是纯字符串拼装，**不进 pkisvc**，直接放 `tools/pki` | 不涉及密码学运算 |
+| M-T7 | `pkcs12.Bundle` 的私钥与证书句柄由 `Session` 释放；`pfx-parse` 响应 `no-store` | AGENTS.md §4.7 / §4.4 |
+| M-T8 | 上游 `x509.CreateCertificate` 只收 `int64` 序列号 → 超长十六进制序列号返回 `SERIAL_INVALID` | 上游未提供大整数序列号入口 |
+
+### 9.4 任务清单
+
+#### Phase M-A —— 服务层
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| M1 | CSR 生成 | `backend/internal/pkisvc/csr.go` | CSR 能被自身 `Verify()` 通过；DN 非法值返回 `INVALID_FIELD` 且不 panic；提供 `existingPrivateKey` 时不返回 `privateKeyPem` | §8.1 | ⬜ |
+| M2 | 证书签发 | `backend/internal/pkisvc/certgen.go` | 自签与 CA 签发各一例；`KEY_MISMATCH` / `NOT_AFTER_BEFORE_NOW` / `SERIAL_INVALID` 三条错误路径；`ca` 模式 `chainPem` 叶→根有序 | M1 | ⬜ |
+| M3 | CRL 生成 | `backend/internal/pkisvc/crlgen.go` | 产物可被 `crl-parse` 读回；原因码 7 被拒；`number` 自动生成且唯一 | §8.7 | ⬜ |
+| M4 | 吊销检查（离线） | `backend/internal/pkisvc/revocation.go` | 「验签失败 → `INVALID_CRL`」**先于**「吊销判定」的顺序测试；`good` / `revoked` / `unknown` 三态 | M3 | ⬜ |
+| M5 | OCSP 请求 / 响应 | `backend/internal/pkisvc/ocsp.go` | `CreateOCSPRequest` 的 SHA1 / SHA256 / SM3 三种；`ParseOCSPResponse` 对篡改响应返回错误；`KEY_MISMATCH` 分支 | M2 | ⬜ |
+| M6 | PKCS#12 打包 / 解析 / 改密 | `backend/internal/pkisvc/pkcs12.go` | Pack → Parse → ChangePassword 往返；错误口令返回 `PASSPHRASE_INCORRECT`；解析后句柄在 `Session.Close` 后释放（`-race` 无泄漏） | M2 | ⬜ |
+| M7 | PKCS#7 证书袋 | `backend/internal/pkisvc/pkcs7.go` | 单 / 多证书往返；非证书袋输入返回 `INVALID_PKCS7`；签名容器输入返回 `UNSUPPORTED_FORMAT` | §8.1 | ⬜ |
+
+#### Phase M-B —— 工具层
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| M8 | 十二个 handler | `backend/internal/tools/pki/*.go` | 正例 + 反例各一；`caa-gen` 校验 provider 枚举与 TTL | M1 – M7 | ⬜ |
+| M9 | 契约测试数据 | `backend/testdata/contract/*.json` | 契约执行器全绿；每个工具至少 1 正例 + 1 反例 | M8 | ⬜ |
+| M10 | 单元测试 | `backend/internal/pkisvc/*_test.go` `backend/internal/tools/pki/*_test.go` | 边界（原因码 7、序列号长度、证书有效期）均有覆盖 | M8 | ⬜ |
+
+#### Phase M-C —— 前端
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| M11 | 十二个工具页 | `frontend/src/tools/certificates/**` | 「填入示例 → 运行 → 复制」全链路可用；`csr-gen` / `cert-gen` 复用 `KeyInput` 与 `CertTextInput`；`pfx-*` 复用 `ResultPanel` 的 base64 下载 | M8 | ⬜ |
+| M12 | 双语词条与登记 | `frontend/src/locales/*/tools/*.json` `frontend/src/tools/index.ts` | 中英 key 集合一致；12 个 chunk 均 < 40 KB（gzip）；初始 JS < 250 KB（gzip） | M11 | ⬜ |
+
+#### Phase M-D —— 文档与门禁
+
+| ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| M13 | 契约与规范同步 | `docs/api/tools/certificates.md` `docs/tools.md` `docs/standards/03-crypto.md` §8 §9 §11 | 请求 / 响应字段与实现逐项一致；I-11 落定 | M8 | ⬜ |
+| M14 | 版本收尾 | `docs/roadmap.md` `CHANGELOG.md` | 本节与实现一致且可勾选；CHANGELOG 增 `[0.6.0]`；`make verify` 通过 | M9 – M13 | ⬜ |
+
+**关键路径**：`M1` → `M2` → `M3` → `M4` → `M8` → `M9` → `M11` → `M14`。
+
+### 9.5 完成标准
+
+1. 自签 CA → CSR → 叶证书 → CRL → 吊销检查 全链路通过；
+2. PKCS#12 打包 / 解析 / 改密往返一致；PKCS#7 打包 / 提取往返一致；
+3. `signMode: ca` 时**必须**校验签发者私钥与证书配对，不匹配返回 `KEY_MISMATCH`；
+4. 吊销原因码 `7`（保留值）被拒绝；
+5. `RevocationCheck` 前**必须**先 `CRL.Verify`，该顺序有测试覆盖；
+6. `make verify` 一条命令通过；36 / 70 工具可用且文档全覆盖。
+
+### 9.6 不在本版范围
+
+| 项 | 计划版本 |
+| --- | --- |
+| 出网类（`cert-chain-fetch` / `ct-search` / `domain-verify`） | §10（v0.7.0） |
+| PDF 签名与文档处理 | §11（v0.8.0） |
+| 统计体系 | §12（v0.9.0） |
+
+### 9.7 风险
+
+| 风险 | 影响 | 对策 |
+| --- | --- | --- |
+| 12 个工具单版量最大 | 前后端在同一提交窗口抢进度 | 版本内分两批提交（后端 + 契约 → 前端），但仍只调用一次 `git-commit` 会话 |
+| `SERIAL_INVALID` 对「20 字节序列号」是能力限制而非用户错误 | 用户误以为是自己写错了 | M-T8：在 API 文档与工具提示中显式说明上限 |
+| `pfx-*` 三个工具共用口令语义 | 错误码不一致会误导用户 | 统一为 `PASSPHRASE_INCORRECT`；三个工具共用同一条校验路径 |
+| CRL / OCSP 的时间语义容易出边界错 | 过期 CRL 仍被采信 | M-T3 的「先验签后判定」顺序测试 + `nextUpdate` 过期即拒绝 |
 
 ---
 
@@ -835,6 +1161,9 @@ RC 期间若发现**设计层面**缺陷（不是实现 bug），**必须**退�
 | 范围扩展到 70 个工具之外 | 0.x 序号膨胀 | 按 `0.10.0+` 规则递增，同步 catalog 与文档 |
 | 版本序列中出现 `v0.2.1` | 版本号不再是纯小数递增，易被误解为补丁版 | 语义上是 `v0.3.0` 的前置版本，本页与 CHANGELOG 均显式说明 |
 | RC 期间发现设计缺陷 | GA 延期 | 退回 `0.x` 修复后重新进 RC，**禁止**在 RC 内绕过 |
+| `cryptosvc` 与 `pkisvc` 两层并存 | 新增能力时归属不清 | AGENTS.md §4.1 与 §8 给出归属判据；`.golangci.yml` 的 `depguard` 双白名单强制 |
+| 单版本工具数过多（v0.6.0 有 12 个） | 前后端在同一提交窗口抢进度 | 版本内分两批提交（后端 + 契约 → 前端），版本收尾只调用一次 `git-commit` |
+| 上游能力边界导致契约字段暂不可用 | 用户按文档预期却拿到 `UNSUPPORTED_FORMAT` | 在 API 文档标注「暂不支持」并登记上游缺口（I-11 ~ I-14），不静默降级 |
 
 ---
 

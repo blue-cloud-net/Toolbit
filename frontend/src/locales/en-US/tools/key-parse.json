@@ -1,0 +1,42 @@
+{
+  "name": "Key Parser",
+  "description": "Inspect a key and show its algorithm, type, size, curve, public key fingerprint and RSA private parameters.",
+  "category": "Keys",
+  "actions": {
+    "parse": "Parse"
+  },
+  "fields": {
+    "key": "Key"
+  },
+  "options": {},
+  "results": {
+    "info": "Key information",
+    "algorithm": "Algorithm",
+    "keyType": "Key type",
+    "format": "Format",
+    "bits": "Bits",
+    "curve": "Curve",
+    "fingerprint": "Public key fingerprint",
+    "params": "This private key carries RSA private parameters (modulus, private exponent and CRT coefficients). Do not share them."
+  },
+  "examples": [
+    {
+      "label": "Inspect an RSA public key: algorithm, size and fingerprint",
+      "value": "SPKI public key"
+    }
+  ],
+  "hints": {
+    "fingerprint": "The fingerprint is the SHA-256 of the public key SPKI, so a private key and its public key share the same fingerprint.",
+    "params": "Private parameters are only returned when a **private** key is parsed explicitly; responses are never cached."
+  },
+  "faq": [
+    {
+      "q": "Can I compare two keys with the fingerprint?",
+      "a": "Yes. A private key and its public key share a fingerprint, so different fingerprints mean different keys."
+    },
+    {
+      "q": "Does parsing decrypt an encrypted private key?",
+      "a": "No. The normalized output stays encrypted, exactly like the input."
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "name": "密钥生成",
+  "description": "生成 RSA / SM2 / EC / Ed25519 / Ed448 / X25519 / X448 密钥对，可选用口令加密私钥。",
+  "category": "密钥",
+  "actions": {
+    "generate": "生成密钥"
+  },
+  "fields": {
+    "algorithm": "密钥算法",
+    "bits": "RSA 位数",
+    "curve": "椭圆曲线",
+    "privateFormat": "私钥格式",
+    "publicFormat": "公钥格式",
+    "encrypt": "用口令加密私钥",
+    "pbeCipher": "加密算法",
+    "passphrase": "口令"
+  },
+  "options": {
+    "algorithms": {
+      "RSA": "RSA",
+      "SM2": "SM2（国密）",
+      "EC": "EC（椭圆曲线）",
+      "Ed25519": "Ed25519",
+      "Ed448": "Ed448",
+      "X25519": "X25519",
+      "X448": "X448"
+    }
+  },
+  "results": {
+    "keys": "生成的密钥",
+    "privateKey": "私钥",
+    "publicKey": "公钥"
+  },
+  "examples": [
+    {
+      "label": "生成 RSA 2048 密钥对",
+      "value": "RSA · 2048"
+    },
+    {
+      "label": "生成 SM2 密钥对",
+      "value": "SM2 · SM2"
+    }
+  ],
+  "hints": {
+    "format": "私钥默认输出 PKCS#8，公钥输出 SPKI；PKCS#1 私钥仅 RSA 可用。",
+    "encrypt": "加密后请务必牢记口令：口令丢失将无法恢复私钥。"
+  },
+  "faq": [
+    {
+      "q": "生成的私钥会保存到服务器吗？",
+      "a": "不会。私钥只在响应中返回，服务端不落盘、不写日志，页面离开后即从浏览器内存清除。"
+    },
+    {
+      "q": "RSA 多少位比较安全？",
+      "a": "当前建议 2048 位及以上；1024 位已被认为不安全，会显著降低安全裕度。"
+    },
+    {
+      "q": "SM2 和 EC 有什么区别？",
+      "a": "SM2 是国密算法，默认配合 SM3 摘要与国密证书体系使用；EC 是通用椭圆曲线算法。"
+    }
+  ]
+}

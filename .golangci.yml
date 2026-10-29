@@ -1,7 +1,8 @@
 # golangci-lint 配置
 #
 # 架构约束由 depguard 强制：
-#   仅 internal/cryptosvc 允许导入 tongsuo-go（见 AGENTS.md §4.1）。
+#   仅 internal/cryptosvc 与 internal/pkisvc 允许导入 tongsuo-go
+#   （见 AGENTS.md §4.1）。
 
 version: "2"
 
@@ -23,12 +24,13 @@ linters:
   settings:
     depguard:
       rules:
-        tongsuo-go-only-in-cryptosvc:
+        tongsuo-go-only-in-crypto-layers:
           files:
             - "!**/internal/cryptosvc/**"
+            - "!**/internal/pkisvc/**"
           deny:
             - pkg: "github.com/blue-cloud-net/tongsuo-go"
-              desc: "tongsuo-go 只允许在 internal/cryptosvc 中导入"
+              desc: "tongsuo-go 只允许在 internal/cryptosvc 与 internal/pkisvc 中导入"
         # AGENTS.md §4.15：密码学运算一律经 cryptosvc 转调 tongsuo-go，
         # 禁止在 Toolbit 内用标准库拼装分组模式、填充、KDF、签名与密钥协商。
         #
@@ -59,6 +61,8 @@ linters:
               desc: "密码学运算一律经 cryptosvc 转调 tongsuo-go"
             - pkg: "crypto/ecdh"
               desc: "密码学运算一律经 cryptosvc 转调 tongsuo-go"
+            - pkg: "crypto/x509"
+              desc: "X.509 处理一律经 pkisvc 转调 tongsuo-go"
     gocritic:
       disabled-checks:
         - ifElseChain

@@ -15,8 +15,7 @@ import (
 	"github.com/blue-cloud-net/Toolbit/backend/internal/catalog"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/config"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
-	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/crypto"
-	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/encoding"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/toolset"
 )
 
 // newTestServer 构造一个带两个工具实现的测试服务器。
@@ -53,7 +52,7 @@ func newTestServerWithLimit(t *testing.T, maxBodyBytes int64) http.Handler {
 		Config:  cfg,
 		Logger:  logger,
 		Catalog: cat,
-		Tools:   tools.NewRegistry(append(encoding.Definitions(), crypto.Definitions()...)),
+		Tools:   tools.NewRegistry(toolset.Definitions()),
 	})
 	return srv.Handler()
 }
@@ -222,8 +221,8 @@ func TestUnknownToolReturns404(t *testing.T) {
 
 func TestUnimplementedToolReturns501(t *testing.T) {
 	h := newTestServer(t)
-	// keygen 在 catalog 中已启用，但尚未实现（v0.4.0 交付）。
-	rec := postJSON(t, h, "/api/v1/tools/keygen", `{}`)
+	// cert-parse 在 catalog 中已启用，但尚未实现（v0.5.0 交付）。
+	rec := postJSON(t, h, "/api/v1/tools/cert-parse", `{}`)
 
 	if rec.Code != http.StatusNotImplemented {
 		t.Fatalf("状态码 = %d，期望 501；body=%s", rec.Code, rec.Body.String())

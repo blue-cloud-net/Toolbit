@@ -70,11 +70,13 @@ Toolbit/
 │       ├── buildinfo/          版本信息（ldflags 注入）
 │       ├── catalog/            目录解析与校验
 │       ├── codecsvc/           编码归一化
-│       ├── cryptosvc/          密码学服务层（唯一可 import tongsuo-go）
+│       ├── cryptosvc/          密码学原语层（可 import tongsuo-go）
+│       ├── pkisvc/             密钥与 PKI 层（可 import tongsuo-go）
 │       ├── httpx/              响应信封、中间件、requestId
 │       ├── netguard/           出网防护
 │       ├── stats/              匿名统计
 │       ├── toolerr/            错误码注册表
+│       ├── toolset/            工具装配层（汇总各分类 Definitions）
 │       ├── tools/              各领域工具实现
 │       └── webui/              静态资源与 SPA 回退
 │
@@ -121,15 +123,19 @@ Toolbit/
 ```mermaid
 flowchart TD
   CMD[backend/cmd/toolbit] --> API[backend/internal/api 分发器]
+  CMD --> TOOLSET[backend/internal/toolset 装配层]
   API --> CAT[backend/internal/catalog]
   API --> TOOLS[backend/internal/tools 领域实现]
   API --> STATS[backend/internal/stats]
   API --> WEBUI[backend/internal/webui]
+  TOOLSET --> TOOLS
   TOOLS --> CRYPTO[backend/internal/cryptosvc]
+  TOOLS --> PKI[backend/internal/pkisvc]
   TOOLS --> CODEC[backend/internal/codecsvc]
   TOOLS --> NG[backend/internal/netguard]
   TOOLS --> ERR[backend/internal/toolerr]
   CRYPTO --> TONG[github.com/blue-cloud-net/tongsuo-go]
+  PKI --> TONG
   CRYPTO --> TONG[NATIVE Tongsuo libcrypto]
   API --> HTTPX[backend/internal/httpx]
   CAT --> YAML[backend/catalog/tools.yaml]
@@ -138,8 +144,14 @@ flowchart TD
 
 **规则**
 
-- 依赖单向向下，`api → tools → cryptosvc → tongsuo-go`。
-- `backend/internal/cryptosvc` 是**唯一**允许 `import tongsuo-go` 的包。
+- 依赖单向向下，`api → tools → {cryptosvc, pkisvc} → tongsuo-go`。
+- `backend/internal/cryptosvc` 与 `backend/internal/pkisvc` 是**仅有的两个**
+  允许 `import tongsuo-go` 的包；前者负责密码学**原语**，
+  后者负责密钥与 **PKI 领域**（生成与格式、X.509、JWK、PKCS 容器）。
+- 两个密码学层的**句柄类型互不通用**：各自持有原生句柄、都必须显式释放；
+  跨层只传 PEM / DER 等表示层数据。
+- `backend/internal/toolset` 是**装配层**：汇总各分类的 `Definitions()`，
+  进程入口与 API 测试共用，避免两处各维护一份清单。
 - `backend/internal/httpx` 不依赖任何领域包，可被任意层使用。
 - `backend/internal/catalog` 只读 YAML，不认识工具实现。
 - 前端与后端之间**只**通过 HTTP 契约耦合，无源码级依赖。
@@ -205,14 +217,14 @@ multipart 形态的请求绑定**流式**的 `multipart.Reader`；
 每个 handler 的职责**只有三件事**：
 
 1. 解码输入（JSON 结构体 / multipart 表单）并做**字段级**校验；
-2. 调用 `cryptosvc` / `codecsvc` / `netguard` 的服务；
+2. 调用 `cryptosvc` / `pkisvc` / `codecsvc` / `netguard` 的服务；
 3. 编码响应（DTO）。
 
 handler **不做**算法实现，**不**直接接触 Tongsuo，**不**自己拼错误码。
 
 ### 4.3 加密服务层（`backend/internal/cryptosvc`）
 
-唯一触碰 Tongsuo 的层。对外暴露按能力划分的**包级函数**：
+密码学**原语**层。对外暴露按能力划分的**包级函数**：
 
 | 能力 | 函数 | 说明 |
 | --- | --- | --- |
@@ -227,7 +239,7 @@ handler **不做**算法实现，**不**直接接触 Tongsuo，**不**自己拼�
 | 文件容器 | `NewTBFCWriter` / `NewTBFCReader` | `TBFC` 分块 GCM 容器（流式） |
 
 > PKI 能力（证书、CSR、CRL、OCSP、PKCS#7 / #12、JWK）在 v0.5.0 – v0.6.0 交付，
-> 届时在同层新增对应函数。
+> 届时在 `pkisvc` 新增对应函数。
 
 **能力缺口**：`tongsuo-go` 尚未提供的算法（DES / 3DES / ECIES 等）**不自研兜底**，
 一律登记到 [upstream/tongsuo-go-issues.md](upstream/tongsuo-go-issues.md) 并跳过。
@@ -259,6 +271,31 @@ flowchart LR
 - cgo 调用**不可中断**：超时后请求返回 `504`，但底层工作仍会跑完；
   此时记录一条 orphan 日志并释放信号量。
 - 流式处理每 1 MB 检查一次 `ctx`。
+
+---
+
+## 4.4 PKI 服务层（`backend/internal/pkisvc`）
+
+密钥与 **PKI 领域**层：密钥生成与格式、X.509、JWK、PKCS 容器。
+
+| 能力 | 函数 | 说明 |
+| --- | --- | --- |
+| 密钥生成 | `Generate` | RSA / SM2 / EC / Ed25519 / Ed448 / X25519 / X448 |
+| 格式转换 | `Convert` | PKCS#1 / PKCS#8 / SPKI / DER / PEM 互转 |
+| 密钥解析 | `Inspect` | 算法、类型、位数、曲线、公钥指纹、RSA 参数 |
+| 密钥运算 | `EncryptPrivateKey` / `DecryptPrivateKey` / `ChangePassphrase` / `ExtractPublicKey` | 口令加解密与改密 |
+| 配对检测 | `Match` | 私钥 ↔ 公钥 / 证书；依据公钥 SPKI 指纹 |
+| JWK / XML | `JWKFromPEM` / `PEMFromJWK` / `XMLFromPEM` / `PEMFromXML` | RFC 7517 与 .NET `RSAKeyValue` |
+
+**与 `cryptosvc` 的边界**
+
+- `cryptosvc` 负责**运算**（摘要 / MAC / 对称 / 非对称 / 签名）；
+  `pkisvc` 负责**结构与格式**（密钥、X.509、容器）。
+- 两层的句柄类型**互不通用**：各自持有原生句柄、都必须显式释放；
+  跨层只传 PEM / DER 等表示层数据。
+- `pkisvc` 的**公开签名不出现** `tongsuo-go` 的类型，
+  以免 tools 层被迫 import `tongsuo-go` 而破坏边界。
+- v0.5.0 / v0.6.0 在本层补齐 X.509、CRL、OCSP 与 PKCS 容器能力。
 
 ---
 

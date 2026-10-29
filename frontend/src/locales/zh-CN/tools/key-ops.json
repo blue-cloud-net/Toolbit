@@ -1,0 +1,45 @@
+{
+  "name": "密钥运算",
+  "description": "对私钥执行加密、解密、提取公钥与修改口令等操作。",
+  "category": "密钥",
+  "actions": {
+    "run": "执行"
+  },
+  "fields": {
+    "key": "私钥",
+    "action": "操作",
+    "passphrase": "口令",
+    "newPassphrase": "新口令",
+    "pbeCipher": "加密算法"
+  },
+  "options": {
+    "actions": {
+      "encrypt": "用口令加密",
+      "decrypt": "解密私钥",
+      "extract-public": "提取公钥",
+      "change-passphrase": "修改口令"
+    }
+  },
+  "results": {
+    "key": "操作结果"
+  },
+  "examples": [
+    {
+      "label": "从私钥提取配对公钥",
+      "value": "extract-public"
+    }
+  ],
+  "hints": {
+    "action": "「提取公钥」不需要口令：口令只保护私钥材料，不影响公钥导出。"
+  },
+  "faq": [
+    {
+      "q": "忘记口令还能恢复私钥吗？",
+      "a": "不能。口令加密是单向保护，服务端不保存任何口令或密钥副本。"
+    },
+    {
+      "q": "DES-EDE3-CBC 还能用吗？",
+      "a": "仅用于兼容既有数据。它是遗留算法，不建议用于新的密钥材料。"
+    }
+  ]
+}

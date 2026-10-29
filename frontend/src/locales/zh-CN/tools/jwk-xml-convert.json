@@ -1,0 +1,37 @@
+{
+  "name": "JWK / XML 转换",
+  "description": "在 JWK（RFC 7517）、PEM 与 .NET RSAKeyValue XML 之间转换密钥。",
+  "category": "密钥",
+  "actions": {
+    "convert": "转换"
+  },
+  "fields": {
+    "inputFormat": "源格式",
+    "inputData": "密钥材料",
+    "to": "目标格式",
+    "keyType": "密钥类型"
+  },
+  "options": {},
+  "results": {
+    "output": "转换结果"
+  },
+  "examples": [
+    {
+      "label": "把 SPKI 公钥转成 JWK",
+      "value": "pem → jwk"
+    }
+  ],
+  "hints": {
+    "support": "JWK 仅支持 RSA 与 EC；XML 仅支持 RSA（.NET RSAKeyValue 本身就是 RSA 专用格式）。"
+  },
+  "faq": [
+    {
+      "q": "JWK 文本本身是加密的吗？",
+      "a": "不是。JWK 只是密钥参数的编码，没有任何加密或完整性保护，不要在公开信道上传输私钥 JWK。"
+    },
+    {
+      "q": "为什么 Ed25519 转 JWK 会报错？",
+      "a": "JWK 对 OKP 类型（Ed25519 / X25519）的支持尚未实现，因此会显式拒绝而不是产出不完整的 JWK。"
+    }
+  ]
+}

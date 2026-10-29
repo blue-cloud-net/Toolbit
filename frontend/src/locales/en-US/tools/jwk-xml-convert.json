@@ -1,0 +1,37 @@
+{
+  "name": "JWK & XML Converter",
+  "description": "Convert keys between JWK (RFC 7517), PEM and .NET RSAKeyValue XML.",
+  "category": "Keys",
+  "actions": {
+    "convert": "Convert"
+  },
+  "fields": {
+    "inputFormat": "Source format",
+    "inputData": "Key material",
+    "to": "Target format",
+    "keyType": "Key type"
+  },
+  "options": {},
+  "results": {
+    "output": "Converted material"
+  },
+  "examples": [
+    {
+      "label": "Convert an SPKI public key to JWK",
+      "value": "pem → jwk"
+    }
+  ],
+  "hints": {
+    "support": "JWK supports RSA and EC only; XML supports RSA only, because .NET RSAKeyValue is an RSA-specific format."
+  },
+  "faq": [
+    {
+      "q": "Is a JWK document encrypted?",
+      "a": "No. A JWK is just an encoding of key parameters with no encryption or integrity protection; never send a private JWK over a public channel."
+    },
+    {
+      "q": "Why does converting Ed25519 to JWK fail?",
+      "a": "JWK support for OKP types (Ed25519 / X25519) is not implemented yet, so the conversion is rejected instead of producing an incomplete JWK."
+    }
+  ]
+}

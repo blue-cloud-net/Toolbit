@@ -1,0 +1,45 @@
+{
+  "name": "Key Operations",
+  "description": "Encrypt, decrypt, extract the public key from, or change the passphrase of a private key.",
+  "category": "Keys",
+  "actions": {
+    "run": "Run"
+  },
+  "fields": {
+    "key": "Private key",
+    "action": "Operation",
+    "passphrase": "Passphrase",
+    "newPassphrase": "New passphrase",
+    "pbeCipher": "Encryption algorithm"
+  },
+  "options": {
+    "actions": {
+      "encrypt": "Encrypt with a passphrase",
+      "decrypt": "Decrypt the private key",
+      "extract-public": "Extract the public key",
+      "change-passphrase": "Change the passphrase"
+    }
+  },
+  "results": {
+    "key": "Result"
+  },
+  "examples": [
+    {
+      "label": "Extract the public key paired with a private key",
+      "value": "extract-public"
+    }
+  ],
+  "hints": {
+    "action": "「Extract the public key」 needs no passphrase: the passphrase protects the private material only."
+  },
+  "faq": [
+    {
+      "q": "Can a forgotten passphrase be recovered?",
+      "a": "No. Passphrase encryption is one-way protection and the server keeps neither passphrases nor key copies."
+    },
+    {
+      "q": "Is DES-EDE3-CBC still acceptable?",
+      "a": "Only for compatibility with existing data. It is a legacy algorithm and should not protect new key material."
+    }
+  ]
+}

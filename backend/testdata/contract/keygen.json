@@ -1,0 +1,143 @@
+{
+  "slug": "keygen",
+  "description": "密钥生成的契约测试数据。",
+  "cases": [
+    {
+      "name": "RSA 2048 默认格式",
+      "request": {
+        "algorithm": "RSA"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "algorithm": "RSA",
+          "bits": 2048
+        }
+      }
+    },
+    {
+      "name": "RSA 4096",
+      "request": {
+        "algorithm": "RSA",
+        "bits": 4096
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "algorithm": "RSA",
+          "bits": 4096
+        }
+      }
+    },
+    {
+      "name": "EC P-256",
+      "request": {
+        "algorithm": "EC",
+        "curve": "P-256"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "algorithm": "EC",
+          "curve": "P-256"
+        }
+      }
+    },
+    {
+      "name": "SM2",
+      "request": {
+        "algorithm": "SM2",
+        "curve": "SM2"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "algorithm": "SM2",
+          "curve": "SM2"
+        }
+      }
+    },
+    {
+      "name": "Ed25519",
+      "request": {
+        "algorithm": "Ed25519"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "algorithm": "Ed25519"
+        }
+      }
+    },
+    {
+      "name": "口令加密输出",
+      "request": {
+        "algorithm": "RSA",
+        "bits": 2048,
+        "encrypt": {
+          "cipher": "AES-256-CBC",
+          "passphrase": "testpass"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "algorithm": "RSA"
+        }
+      }
+    },
+    {
+      "name": "未知算法",
+      "request": {
+        "algorithm": "DSA"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_ALGORITHM"
+      }
+    },
+    {
+      "name": "RSA 位数越界",
+      "request": {
+        "algorithm": "RSA",
+        "bits": 512
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "EC 缺少曲线",
+      "request": {
+        "algorithm": "EC"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "批量生成未实现",
+      "request": {
+        "algorithm": "RSA",
+        "count": 2
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "PKCS#1 公钥不受支持",
+      "request": {
+        "algorithm": "RSA",
+        "publicFormat": "pkcs1"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_FORMAT"
+      }
+    }
+  ]
+}
