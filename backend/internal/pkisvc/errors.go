@@ -83,3 +83,17 @@ func toolerrInvalidCRL(reason string) *toolerr.Error {
 		"reason": reason,
 	})
 }
+
+// toolerrInvalidPKCS12 构造「PKCS#12 容器无效」错误。
+func toolerrInvalidPKCS12(reason string) *toolerr.Error {
+	return toolerr.Newf(toolerr.CodeInvalidPKCS12, map[string]any{
+		"reason": reason,
+	})
+}
+
+// toolerrInvalidPKCS7 构造「PKCS#7 容器无效」错误。
+func toolerrInvalidPKCS7(reason string) *toolerr.Error {
+	return toolerr.Newf(toolerr.CodeInvalidPKCS7, map[string]any{
+		"reason": reason,
+	})
+}
