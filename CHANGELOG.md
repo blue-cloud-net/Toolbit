@@ -7,7 +7,36 @@
 
 ## [未发布]
 
-尚无变更。
+部署产物与容器探活子命令：仓库从「文档声明了部署形态」变为「真的能构建、能跑」。
+
+### Added
+
+- `deployments/Dockerfile`：四阶段构建（`tongsuo` → `frontend` → `backend` → `runtime`）
+  - Tongsuo 8.4.0 在镜像内编译安装到 `/opt/tongsuo`（`--libdir=lib64 shared enable-ntls`），
+    安装路径与 `tongsuo-go` 的 cgo 指令、rpath 严格一致
+  - 源码包先按 sha256 校验再解包；基础镜像固定 digest
+  - 运行镜像基于 `debian:bookworm-slim`，非 root（UID 10001），含 CA 证书与时区数据，
+    只带二进制 + `/app/web` + Tongsuo 运行库，**不**含 Go / Node / 编译工具链
+- `deployments/docker-compose.yml`：单容器编排，命名卷 `toolbit-data`、
+  `cap_drop: ALL`、`no-new-privileges`、内存上限、日志轮转、`STOPSIGNAL SIGTERM`
+- `deployments/.env.example`：16 个 `TOOLBIT_*` 与 6 个编排变量的默认值模板（无任何密钥）
+- `.dockerignore`：排除依赖、构建产物、文档、测试与密钥
+- `toolbit healthcheck` 子命令（`backend/cmd/toolbit/healthcheck.go`）：
+  探 `http://127.0.0.1:<TOOLBIT_ADDR 端口>/readyz`，3 秒超时，非 200 退出 1、未知子命令退出 2，
+  不输出响应体与配置值 —— 兑现 `docs/api/admin.md` §9.1 早已写明的契约
+- Makefile 新增 `docker-build` / `docker-up` / `docker-smoke` / `docker-logs` / `docker-ps` /
+  `docker-shell` / `docker-down` / `docker-clean`
+
+### Changed
+
+- 部署产物目录由文档中的 `deploy/` 统一为 **`deployments/`**（`AGENTS.md`、
+  `docs/architecture.md`、`README.md`、`.gitignore` 同步）
+- 容器内路径口径统一：前端产物 `/app/web`、统计库 `/app/data/toolbit.db`
+  （原先 `deploy.md` 写 `/app/web` + `stats.db`，`architecture.md` 写 `/app/wwwroot` + `toolbit.db`）
+- `docs/standards/08-deploy.md`：阶段表、基础镜像选型、Tongsuo `--libdir=lib64` 约定、
+  digest 固定口径、探针实现方式、compose 位置与禁止清单更新
+- `docs/deploy.md`：Docker 章节改写为 `make docker-up` 为主线，补编排变量表与容器故障排查项
+- `docs/api/admin.md` §9.1：补充探针地址来源、退出码与输出约束
 
 ## [0.7.0] - 2026-10-29
 
