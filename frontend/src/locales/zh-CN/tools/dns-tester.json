@@ -1,0 +1,46 @@
+{
+  "name": "DNS 多记录测试",
+  "description": "综合检测域名的注册信息、DNSSEC 部署情况与反向解析。",
+  "category": "网络",
+  "actions": {
+    "test": "检测"
+  },
+  "fields": {
+    "action": "检测项",
+    "domain": "域名",
+    "ip": "IP 地址",
+    "timeoutMs": "超时（毫秒）"
+  },
+  "options": {
+    "whois": "注册信息（whois / RDAP）",
+    "dnssec": "DNSSEC",
+    "ptr": "反向解析"
+  },
+  "results": {
+    "output": "检测结果"
+  },
+  "examples": [
+    {
+      "label": "查询 DNSSEC 状态",
+      "value": "example.com / dnssec"
+    }
+  ],
+  "hints": {
+    "whois": "优先用 RDAP（HTTPS），失败时回退到 whois 协议（TCP 43）。",
+    "ptr": "反向解析会顺带做一次正向解析，便于发现正反不一致。"
+  },
+  "faq": [
+    {
+      "q": "whois 结果为什么有空字段？",
+      "a": "部分注册局限制查询或对字段脱敏，缺失值以空字符串表示。"
+    },
+    {
+      "q": "`dnssec` 检测的是什么？",
+      "a": "逐级检查 DS 记录并查询 DNSKEY，判断是否具备信任链锚点。"
+    },
+    {
+      "q": "PTR 与域名不一致说明什么？",
+      "a": "说明该地址的反向记录指向的名字并不解析回同一地址，属于配置疏漏。"
+    }
+  ]
+}

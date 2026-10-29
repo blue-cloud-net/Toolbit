@@ -1,0 +1,43 @@
+{
+  "name": "WebSocket Tester",
+  "description": "Connect to a WebSocket endpoint straight from the browser and inspect handshake timing, subprotocol and messages.",
+  "category": "Network",
+  "actions": {
+    "connect": "Connect",
+    "disconnect": "Disconnect"
+  },
+  "fields": {
+    "url": "URL",
+    "protocols": "Subprotocols",
+    "message": "Message"
+  },
+  "options": {},
+  "results": {
+    "output": "Result",
+    "log": "Message log"
+  },
+  "examples": [
+    {
+      "label": "Public echo service",
+      "value": "wss://echo.websocket.org"
+    }
+  ],
+  "hints": {
+    "headers": "Browsers **cannot** set custom headers, use a custom TLS certificate or choose a source port.",
+    "origin": "Cross-origin connections follow the browser same-origin policy, not this server's configuration."
+  },
+  "faq": [
+    {
+      "q": "Why does traffic bypass the backend?",
+      "a": "The page uses the native browser `WebSocket` API, so the server is not involved in the handshake."
+    },
+    {
+      "q": "Are connections counted in the statistics?",
+      "a": "Message content is never recorded; only the fact that the tool was opened is counted."
+    },
+    {
+      "q": "Can I test `ws://`?",
+      "a": "When this site is served over HTTPS the browser blocks mixed content, so use `wss://`."
+    }
+  ]
+}

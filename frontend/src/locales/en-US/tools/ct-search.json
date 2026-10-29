@@ -1,0 +1,44 @@
+{
+  "name": "Certificate Transparency Search",
+  "description": "Search certificate transparency logs for certificates issued to a domain. Not available in this version.",
+  "category": "Certificates",
+  "actions": {
+    "search": "Search"
+  },
+  "fields": {
+    "domain": "Domain",
+    "matchType": "Match type",
+    "limit": "Limit"
+  },
+  "options": {
+    "exact": "Exact",
+    "contains": "Contains",
+    "wildcard": "Wildcard"
+  },
+  "results": {
+    "output": "Certificates"
+  },
+  "examples": [
+    {
+      "label": "Search example.com",
+      "value": "example.com"
+    }
+  ],
+  "hints": {
+    "unavailable": "This version does not integrate a CT log; calls return `NOT_IMPLEMENTED`."
+  },
+  "faq": [
+    {
+      "q": "Why is it unavailable?",
+      "a": "Public CT log search services have no stable SLA, so this version defers integration."
+    },
+    {
+      "q": "Is there an alternative?",
+      "a": "Use the certificate chain fetcher to inspect the chain the host currently serves."
+    },
+    {
+      "q": "Will it come back?",
+      "a": "Yes. The gap is tracked in the roadmap's known limitations."
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "name": "SSL Checker",
+  "description": "Perform a TLS handshake against a host and stream the negotiated parameters, certificate chain and verification result.",
+  "category": "Network",
+  "actions": {
+    "probe": "Run check"
+  },
+  "fields": {
+    "host": "Host",
+    "port": "Port",
+    "sni": "SNI",
+    "depth": "Max chain depth",
+    "versions": "TLS versions",
+    "ciphers": "Cipher suites",
+    "timeoutMs": "Timeout (ms)"
+  },
+  "options": {},
+  "results": {
+    "output": "Result",
+    "progress": "Progress",
+    "chain": "Certificate chain"
+  },
+  "examples": [
+    {
+      "label": "Check a public site",
+      "value": "example.com:443"
+    }
+  ],
+  "hints": {
+    "sni": "When empty, the host name is used as SNI.",
+    "versions": "Empty means the default range (TLS 1.2 and above).",
+    "ciphers": "TLS 1.3 suites cannot be restricted by configuration."
+  },
+  "faq": [
+    {
+      "q": "Why is verification reported as incomplete?",
+      "a": "When no local trust store is available only chain self-consistency can be checked; `verified` is then false and a warning is returned."
+    },
+    {
+      "q": "What happens with an internal address?",
+      "a": "The egress guard blocks private, loopback and link-local addresses with `SSRF_BLOCKED`."
+    },
+    {
+      "q": "Can I open several connections at once?",
+      "a": "No. One streaming connection per source IP is allowed at a time."
+    }
+  ]
+}
