@@ -2,10 +2,11 @@
 /**
  * 分类页：列出某个分类下的全部工具。
  */
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import ToolCard from '@/components/discovery/ToolCard.vue'
+import { setDocumentTitle } from '@/router'
 import { useCatalogStore } from '@/stores/catalog'
 
 const props = defineProps<{
@@ -26,6 +27,17 @@ const title = computed(() => {
   }
   return locale.value === 'en-US' ? cat.nameEn : cat.name
 })
+
+/** 目录数据就绪后同步页面标题。 */
+watch(
+  title,
+  (value) => {
+    if (meta.value) {
+      setDocumentTitle(value)
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>

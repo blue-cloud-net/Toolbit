@@ -6,18 +6,29 @@
  */
 import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 
 import AppFooter from '@/components/layout/AppFooter.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
+import CommandPalette from '@/components/search/CommandPalette.vue'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePrefsStore } from '@/stores/prefs'
 
 const { t } = useI18n()
 const prefs = usePrefsStore()
 const catalog = useCatalogStore()
+const route = useRoute()
 
 const sidebarCollapsed = computed(() => prefs.sidebarCollapsed)
+
+/**
+ * 专注模式。
+ *
+ * 由 URL 查询参数 `?focus=1` 驱动 —— 参数只承载界面状态，
+ * **不承载任何输入内容**（AGENTS.md §4.11）。
+ */
+const focusMode = computed(() => route.query.focus === '1')
 
 onMounted(() => {
   prefs.init()
@@ -26,13 +37,18 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="layout">
+  <div
+    class="layout"
+    :class="{ 'layout--focus': focusMode }"
+  >
     <a
       class="tb-skip-link"
       href="#main-content"
     >{{ t('common.nav.skipToContent') }}</a>
 
     <AppHeader />
+
+    <CommandPalette />
 
     <div class="layout__body">
       <AppSidebar :collapsed="sidebarCollapsed" />
@@ -77,13 +93,23 @@ onMounted(() => {
 .layout__main {
   flex: 1;
   width: 100%;
-  max-width: 1200px;
+  max-width: var(--tb-container-w);
   margin: 0 auto;
   padding: var(--tb-space-6) var(--tb-space-6) var(--tb-space-8);
 }
 
 .layout__main:focus {
   outline: none;
+}
+
+/* 专注模式：隐藏侧栏与页脚，只留输入 / 输出。 */
+.layout--focus :deep(.sidebar),
+.layout--focus :deep(.footer) {
+  display: none;
+}
+
+.layout--focus .layout__main {
+  max-width: none;
 }
 
 @media (max-width: 900px) {

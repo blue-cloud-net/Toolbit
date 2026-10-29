@@ -12,6 +12,7 @@ export type IconName =
   | 'star-filled'
   | 'chevron'
   | 'menu'
+  | 'focus'
   | 'sun'
   | 'moon'
   | 'settings'
@@ -65,6 +66,7 @@ const PATHS: Record<IconName, string[]> = {
   ],
   chevron: ['M9 6l6 6-6 6'],
   menu: ['M4 7h16', 'M4 12h16', 'M4 17h16'],
+  focus: ['M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9', 'M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9', 'M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15', 'M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15'],
   sun: [
     'M12 6.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Z',
     'M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4',

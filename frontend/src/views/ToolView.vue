@@ -9,6 +9,7 @@ import { useI18n } from 'vue-i18n'
 
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import { registerToolMessages, type Locale } from '@/i18n'
+import { setDocumentTitle } from '@/router'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePrefsStore } from '@/stores/prefs'
 import { getToolLoader, isImplemented } from '@/tools'
@@ -38,6 +39,17 @@ const displayName = computed(() => {
 })
 
 const displayNameEn = computed(() => meta.value?.nameEn ?? props.slug)
+
+/** 目录数据就绪后同步页面标题。 */
+watch(
+  displayName,
+  (name) => {
+    if (meta.value) {
+      setDocumentTitle(name)
+    }
+  },
+  { immediate: true },
+)
 
 /** 工具词条的加载器（模块内静态 import 了双语 JSON）。 */
 interface ToolModule {

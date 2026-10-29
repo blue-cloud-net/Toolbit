@@ -10,6 +10,7 @@
   "soon": "即将上线",
   "soonHint": "该工具尚未实现，点击可查看规划。",
   "enabledOnly": "只看已上线",
+  "enabledProgress": "已上线 {done} / {total}",
   "recentEmpty": "还没有使用记录。打开任意工具后会自动出现在这里。",
   "favoritesEmpty": "还没有收藏。在工具页点击星标即可加入收藏。",
   "clearRecent": "清空最近使用",

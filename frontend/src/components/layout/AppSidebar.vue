@@ -3,18 +3,21 @@
  * 侧栏导航。
  *
  * 结构：
- *   1. 三个特殊入口：全部工具 / 最近使用 / 我的收藏；
- *   2. 分类分组：分类可折叠，展开后列出该分类下的工具；
- *   3. 折叠态：收成图标轨道，只保留图标与分类首字。
+ *   1. 过滤框：按工具名即时过滤（窄屏下尤为重要）；
+ *   2. 三个特殊入口：全部工具 / 最近使用 / 我的收藏；
+ *   3. 分类分组：分类可折叠，展开后列出该分类下的工具；
+ *   4. 折叠态：收成图标轨道，只保留图标与分类首字；
+ *   5. 窄屏（≤900px）：转为抽屉，由顶栏按钮开合，分类树**不被隐藏**。
  */
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
-import AppIcon, { type IconName } from '@/components/common/AppIcon.vue'
+import AppIcon from '@/components/common/AppIcon.vue'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePrefsStore } from '@/stores/prefs'
 import { isImplemented } from '@/tools'
+import { categoryIcon } from '@/tools/categories'
 
 const props = defineProps<{
   /** 是否折叠。 */
@@ -33,6 +36,28 @@ const categories = computed(() => [...catalog.categories].sort((a, b) => a.order
 
 /** 已展开的分类 slug。 */
 const expanded = ref<string[]>([])
+
+/** 过滤关键字。 */
+const filterText = ref('')
+
+/** 过滤后仍有工具的分类。 */
+const visibleCategories = computed(() => {
+  return categories.value
+    .map((cat) => ({
+      cat,
+      tools: catalog.getToolsByCategory(cat.slug).filter((tool) => matchFilter(tool)),
+    }))
+    .filter((group) => group.tools.length > 0)
+})
+
+/** 过滤匹配：工具的中英文名任一命中即算匹配。 */
+function matchFilter(tool: { name: string; nameEn: string }): boolean {
+  const q = filterText.value.trim().toLowerCase()
+  if (q === '') {
+    return true
+  }
+  return tool.name.toLowerCase().includes(q) || tool.nameEn.toLowerCase().includes(q)
+}
 
 /** 特殊入口。 */
 const shortcuts = computed(() => [
@@ -63,23 +88,6 @@ function categoryName(slug: string, fallback: string): string {
 }
 
 /** catalog 的 `icon` 字段 → 内联图标名。 */
-const CATEGORY_ICONS: Record<string, IconName> = {
-  lock: 'lock',
-  key: 'key',
-  certificate: 'certificate',
-  code: 'code',
-  indent: 'indent',
-  text: 'text',
-  data: 'data',
-  monitor: 'monitor',
-  connection: 'connection',
-  document: 'document',
-}
-
-function categoryIcon(icon: string): IconName {
-  return CATEGORY_ICONS[icon] ?? 'document'
-}
-
 function toolName(tool: { name: string; nameEn: string }): string {
   return locale.value === 'en-US' ? tool.nameEn : tool.name
 }
@@ -116,15 +124,39 @@ watch(
   },
   { immediate: true },
 )
+
+/** 路由变化时关闭移动端抽屉。 */
+watch(
+  () => route.fullPath,
+  () => {
+    prefs.closeMobileNav()
+  },
+)
 </script>
 
 <template>
   <nav
     class="sidebar"
-    :class="{ 'sidebar--collapsed': isCollapsed }"
+    :class="{
+      'sidebar--collapsed': isCollapsed,
+      'sidebar--mobile-open': prefs.mobileNavOpen,
+    }"
     :aria-label="t('common.nav.sidebar')"
   >
     <div class="sidebar__scroll">
+      <label
+        v-if="!isCollapsed"
+        class="sidebar__filter"
+      >
+        <span class="tb-sr-only">{{ t('common.nav.filterTools') }}</span>
+        <input
+          v-model="filterText"
+          type="search"
+          class="sidebar__filter-input"
+          :placeholder="t('common.nav.filterPlaceholder')"
+        >
+      </label>
+
       <p
         v-if="!isCollapsed"
         class="sidebar__section-label"
@@ -166,28 +198,28 @@ watch(
 
       <ul class="sidebar__categories">
         <li
-          v-for="cat in categories"
-          :key="cat.slug"
+          v-for="group in visibleCategories"
+          :key="group.cat.slug"
           class="sidebar__group"
         >
           <button
             v-if="!isCollapsed"
             type="button"
             class="sidebar__category"
-            :aria-expanded="isExpanded(cat.slug)"
-            @click="toggleCategory(cat.slug)"
+            :aria-expanded="isExpanded(group.cat.slug)"
+            @click="toggleCategory(group.cat.slug)"
           >
             <span class="sidebar__chip sidebar__chip--category">
               <AppIcon
-                :name="categoryIcon(cat.icon)"
+                :name="categoryIcon(group.cat.icon)"
                 :size="16"
               />
             </span>
-            <span class="sidebar__label">{{ categoryName(cat.slug, cat.name) }}</span>
-            <span class="sidebar__count">{{ catalog.getToolsByCategory(cat.slug).length }}</span>
+            <span class="sidebar__label">{{ categoryName(group.cat.slug, group.cat.name) }}</span>
+            <span class="sidebar__count">{{ group.tools.length }}</span>
             <AppIcon
               class="sidebar__chevron"
-              :class="{ 'sidebar__chevron--open': isExpanded(cat.slug) }"
+              :class="{ 'sidebar__chevron--open': isExpanded(group.cat.slug) }"
               name="chevron"
               :size="13"
             />
@@ -196,18 +228,18 @@ watch(
           <RouterLink
             v-else
             class="sidebar__category sidebar__category--rail"
-            :to="{ name: 'category', params: { category: cat.slug } }"
-            :title="categoryName(cat.slug, cat.name)"
+            :to="{ name: 'category', params: { category: group.cat.slug } }"
+            :title="categoryName(group.cat.slug, group.cat.name)"
           >
-            {{ categoryInitial(cat.slug, cat.name) }}
+            {{ categoryInitial(group.cat.slug, group.cat.name) }}
           </RouterLink>
 
           <ul
-            v-if="!isCollapsed && isExpanded(cat.slug)"
+            v-if="!isCollapsed && isExpanded(group.cat.slug)"
             class="sidebar__tools"
           >
             <li
-              v-for="tool in catalog.getToolsByCategory(cat.slug)"
+              v-for="tool in group.tools"
               :key="tool.slug"
             >
               <RouterLink
@@ -229,6 +261,14 @@ watch(
       </ul>
     </div>
   </nav>
+
+  <button
+    v-if="prefs.mobileNavOpen"
+    type="button"
+    class="sidebar__scrim"
+    :aria-label="t('common.actions.close')"
+    @click="prefs.closeMobileNav()"
+  />
 </template>
 
 <style scoped>
@@ -237,8 +277,8 @@ watch(
   flex-direction: column;
   position: sticky;
   top: var(--tb-header-h);
-  flex: 0 0 236px;
-  width: 236px;
+  flex: 0 0 var(--tb-sidebar-w);
+  width: var(--tb-sidebar-w);
   height: calc(100vh - var(--tb-header-h));
   padding: var(--tb-space-3) var(--tb-space-2) var(--tb-space-3) var(--tb-space-3);
   background: var(--tb-bg-elevated);
@@ -262,8 +302,8 @@ watch(
 }
 
 .sidebar--collapsed {
-  flex: 0 0 56px;
-  width: 56px;
+  flex: 0 0 var(--tb-sidebar-rail-w);
+  width: var(--tb-sidebar-rail-w);
   padding-left: var(--tb-space-2);
   overflow-x: hidden;
 }
@@ -280,11 +320,10 @@ watch(
 .sidebar__section-label {
   margin: var(--tb-space-3) 0 var(--tb-space-1);
   padding: 0 var(--tb-space-2);
-  font-size: 11px;
+  font-size: var(--tb-font-xs);
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
   color: var(--tb-text-tertiary);
-  text-transform: uppercase;
 }
 
 .sidebar__scroll > .sidebar__section-label:first-child {
@@ -311,7 +350,7 @@ watch(
 
 .sidebar__shortcut:hover {
   color: var(--tb-text);
-  background: var(--tb-bg-sunken);
+  background: var(--tb-bg-hover);
   text-decoration: none;
 }
 
@@ -384,7 +423,7 @@ watch(
 
 .sidebar__category:hover {
   color: var(--tb-text);
-  background: var(--tb-bg-sunken);
+  background: var(--tb-bg-hover);
   text-decoration: none;
 }
 
@@ -393,7 +432,7 @@ watch(
   width: 34px;
   height: 30px;
   padding: 0;
-  font-size: 11px;
+  font-size: var(--tb-font-2xs);
   color: var(--tb-text-tertiary);
   border: 1px solid var(--tb-border);
 }
@@ -418,7 +457,7 @@ watch(
 .sidebar__count {
   flex: none;
   min-width: 2ch;
-  font-size: 11px;
+  font-size: var(--tb-font-2xs);
   font-weight: 400;
   color: var(--tb-text-tertiary);
   text-align: right;
@@ -428,8 +467,9 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 1px;
-  /* 与分类名对齐：8(行内边距) + 26(图标胶囊) + 10(间距) ≈ 44 */
-  margin: 2px 0 var(--tb-space-2) 33px;
+  /* 与分类名对齐：左侧内边距(12) + 图标胶囊(26) + 间距(10) - 侧栏边框(2) */
+  margin: 2px 0 var(--tb-space-2)
+    calc(var(--tb-space-3) + var(--tb-sidebar-chip) + 10px - 2px);
   padding-left: 10px;
   border-left: 1px solid var(--tb-border);
 }
@@ -447,7 +487,7 @@ watch(
 
 .sidebar__tool:hover {
   color: var(--tb-text);
-  background: var(--tb-bg-sunken);
+  background: var(--tb-bg-hover);
   text-decoration: none;
 }
 
@@ -462,47 +502,102 @@ watch(
 
 .sidebar__badge {
   flex: none;
-  padding: 0 var(--tb-space-1);
-  font-size: 10px;
+  padding: 1px var(--tb-space-2);
+  font-size: var(--tb-font-2xs);
+  line-height: 1.6;
   color: var(--tb-text-tertiary);
   border: 1px solid var(--tb-border);
   border-radius: var(--tb-radius-pill);
 }
 
+/* 过滤框 */
+.sidebar__filter {
+  display: block;
+  margin: var(--tb-space-1) 0 var(--tb-space-2);
+}
+
+.sidebar__filter-input {
+  width: 100%;
+  padding: 5px var(--tb-space-2);
+  font-family: inherit;
+  font-size: var(--tb-font-sm);
+  color: var(--tb-text);
+  background: var(--tb-bg-sunken);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-control);
+  transition:
+    border-color var(--tb-transition),
+    box-shadow var(--tb-transition);
+}
+
+.sidebar__filter-input:focus {
+  border-color: var(--tb-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tb-primary) 22%, transparent);
+}
+
+.sidebar__filter-input::placeholder {
+  color: var(--tb-text-tertiary);
+}
+
 @media (max-width: 900px) {
+  /*
+   * 窄屏：侧栏转为抽屉。
+   * 分类树**不再隐藏**（此前 `display: none` 导致移动端完全无法导航）。
+   */
   .sidebar {
-    position: static;
+    position: fixed;
+    top: var(--tb-header-h);
+    bottom: 0;
+    left: 0;
+    z-index: 40;
     flex: none;
-    width: 100%;
+    width: min(280px, 85vw);
     height: auto;
-    padding: var(--tb-space-2) var(--tb-space-3);
-    border-right: 0;
-    border-bottom: 1px solid var(--tb-border);
+    padding: var(--tb-space-3) var(--tb-space-2) var(--tb-space-3) var(--tb-space-3);
+    border-right: 1px solid var(--tb-border);
+    border-bottom: 0;
+    box-shadow: var(--tb-shadow-lg);
+    transform: translateX(-100%);
+    transition: transform var(--tb-transition);
+  }
+
+  .sidebar--mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar--collapsed {
+    width: min(280px, 85vw);
+    padding-left: var(--tb-space-3);
   }
 
   .sidebar__scroll {
-    overflow: visible;
+    overflow-y: auto;
   }
 
   .sidebar__shortcuts {
-    flex-direction: row;
-    gap: var(--tb-space-1);
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .sidebar__shortcuts::-webkit-scrollbar {
-    width: 0;
-    height: 0;
+    flex-direction: column;
+    gap: 3px;
+    overflow-x: visible;
   }
 
   .sidebar__shortcut {
     white-space: nowrap;
   }
+}
 
-  .sidebar__section-label,
-  .sidebar__categories {
+/* 抽屉遮罩 */
+.sidebar__scrim {
+  position: fixed;
+  inset: var(--tb-header-h) 0 0 0;
+  z-index: 35;
+  background: rgb(11 15 23 / 45%);
+  border: 0;
+  cursor: pointer;
+}
+
+@media (min-width: 901px) {
+  .sidebar__scrim {
     display: none;
   }
 }

@@ -10,6 +10,7 @@
   "soon": "Coming soon",
   "soonHint": "This tool is not implemented yet; open it to see the plan.",
   "enabledOnly": "Implemented only",
+  "enabledProgress": "{done} / {total} implemented",
   "recentEmpty": "No history yet. Tools you open will show up here automatically.",
   "favoritesEmpty": "No favorites yet. Star a tool on its page to add it here.",
   "clearRecent": "Clear history",

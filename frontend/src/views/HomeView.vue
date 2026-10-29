@@ -8,23 +8,35 @@ import { useI18n } from 'vue-i18n'
 import CategoryCard from '@/components/discovery/CategoryCard.vue'
 import ToolCard from '@/components/discovery/ToolCard.vue'
 import { useCatalogStore } from '@/stores/catalog'
+import { isImplemented } from '@/tools'
 
 const { t } = useI18n()
 const catalog = useCatalogStore()
 
 const keyword = ref('')
 
+/** 是否只显示已上线的工具。 */
+const onlyImplemented = ref(false)
+
 const sortedCategories = computed(() => [...catalog.categories].sort((a, b) => a.order - b.order))
+
+/** 已实现的工具数。 */
+const implementedCount = computed(
+  () => catalog.tools.filter((tool) => isImplemented(tool.slug)).length,
+)
 
 /** 按中英文名过滤工具。 */
 const filteredTools = computed(() => {
   const q = keyword.value.trim().toLowerCase()
-  const list = [...catalog.tools].sort((a, b) => {
+  let list = [...catalog.tools].sort((a, b) => {
     if (a.category !== b.category) {
       return a.category.localeCompare(b.category)
     }
     return a.order - b.order
   })
+  if (onlyImplemented.value) {
+    list = list.filter((tool) => isImplemented(tool.slug))
+  }
   if (q === '') {
     return list
   }
@@ -77,6 +89,16 @@ const isSearching = computed(() => keyword.value.trim() !== '')
       <h2 class="home__section-title">
         {{ isSearching ? t('home.toolsTitle') : t('home.toolsTitle') }}
         <span class="home__count">{{ t('home.toolCount', { count: filteredTools.length }) }}</span>
+        <span class="home__progress">
+          {{ t('home.enabledProgress', { done: implementedCount, total: catalog.tools.length }) }}
+        </span>
+        <label class="home__filter">
+          <input
+            v-model="onlyImplemented"
+            type="checkbox"
+          >
+          <span>{{ t('home.enabledOnly') }}</span>
+        </label>
       </h2>
 
       <p
@@ -164,18 +186,47 @@ const isSearching = computed(() => keyword.value.trim() !== '')
 }
 
 .home__section-title {
+  position: sticky;
+  top: var(--tb-header-h);
+  z-index: 5;
   display: flex;
   align-items: baseline;
   gap: var(--tb-space-2);
   margin: 0;
+  padding: var(--tb-space-2) 0;
   font-size: var(--tb-font-lg);
   font-weight: 600;
+  background: var(--tb-bg);
 }
 
 .home__count {
   font-size: var(--tb-font-xs);
   font-weight: 400;
   color: var(--tb-text-tertiary);
+}
+
+.home__progress {
+  font-size: var(--tb-font-xs);
+  font-weight: 400;
+  color: var(--tb-text-tertiary);
+}
+
+.home__filter {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-1);
+  margin-left: auto;
+  font-size: var(--tb-font-sm);
+  font-weight: 400;
+  color: var(--tb-text-secondary);
+  cursor: pointer;
+}
+
+.home__filter input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--tb-primary);
+  cursor: pointer;
 }
 
 .home__categories {
