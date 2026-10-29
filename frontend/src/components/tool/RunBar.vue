@@ -3,12 +3,17 @@
  * 运行栏：运行 / 重置 / 填入示例。
  *
  * 移动端吸底（`position: sticky`），桌面端跟随面板。
+ *
+ * 本组件**统一提供** `Ctrl / ⌘ + Enter` 运行快捷键（左侧提示文案即此键）：
+ * 在 `window` 上以捕获阶段监听并 `stopPropagation()`，因此工具页与 `CodeEditor`
+ * 里遗留的同名实现不会再执行，一次按键只触发一次运行。
  */
 import { ElButton } from 'element-plus/es/components/button/index'
 import 'element-plus/es/components/button/style/css'
+import { onBeforeUnmount, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     /** 是否正在运行。 */
     running?: boolean
@@ -30,6 +35,29 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+
+/** 处理按键：`Ctrl / ⌘ + Enter` 触发运行（焦点在工具页任意控件内均有效）。 */
+function onKeydown(event: KeyboardEvent): void {
+  if (event.key !== 'Enter' || !(event.ctrlKey || event.metaKey)) {
+    return
+  }
+  // 输入法组合中、正在运行或不可运行时都不触发。
+  if (event.isComposing || props.running || props.disabled) {
+    return
+  }
+  // 弹窗（如证书详情）内的按键不触发运行。
+  const target = event.target
+  if (target instanceof HTMLElement && target.closest('[role="dialog"]') !== null) {
+    return
+  }
+  // 抢占该组合键，避免页面内遗留的实现重复运行。
+  event.preventDefault()
+  event.stopPropagation()
+  emit('run')
+}
+
+onMounted(() => window.addEventListener('keydown', onKeydown, true))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown, true))
 </script>
 
 <template>
