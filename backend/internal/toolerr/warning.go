@@ -36,6 +36,10 @@ const (
 	WarnTimezoneAssumed WarningCode = "TIMEZONE_ASSUMED"
 	// WarnCommentsLost 注释被丢弃。
 	WarnCommentsLost WarningCode = "COMMENTS_LOST"
+	// WarnCRLUnverified 未提供签发者证书，CRL 签名未经校验。
+	//
+	// 此时「未被收录」**不**等于「确认有效」。
+	WarnCRLUnverified WarningCode = "CRL_UNVERIFIED"
 )
 
 // WarningSpec 描述一个警告码的语义与本地化 key。
@@ -64,6 +68,7 @@ var Warnings = map[WarningCode]WarningSpec{
 	"REGEX_DIALECT_DIFFERENCE": {Message: "regex dialect differs from target language", I18nKey: "errors.REGEX_DIALECT_DIFFERENCE"},
 	"TIMEZONE_ASSUMED":         {Message: "a timezone was assumed", I18nKey: "errors.TIMEZONE_ASSUMED"},
 	"COMMENTS_LOST":            {Message: "comments were dropped", I18nKey: "errors.COMMENTS_LOST"},
+	"CRL_UNVERIFIED":           {Message: "CRL signature was not verified", I18nKey: "errors.CRL_UNVERIFIED"},
 }
 
 // Warning 是一个具体的警告实例。
