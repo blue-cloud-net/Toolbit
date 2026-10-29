@@ -11,12 +11,16 @@ import {
   FAVORITES_STORAGE_KEY,
   RECENT_LIMIT,
   RECENT_STORAGE_KEY,
+  SIDEBAR_STORAGE_KEY,
+  STORAGE_PREFIX,
   THEME_STORAGE_KEY,
+  clearStoredData,
   usePrefsStore,
 } from '@/stores/prefs'
 
 beforeEach(() => {
   localStorage.clear()
+  sessionStorage.clear()
   setActivePinia(createPinia())
 })
 
@@ -159,5 +163,50 @@ describe('语言', () => {
     await nextTick()
 
     expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('en-US')
+  })
+})
+
+describe('清理缓存', () => {
+  it('只删除 toolbit. 前缀的键', () => {
+    localStorage.setItem('toolbit.theme', 'dark')
+    sessionStorage.setItem('toolbit.split', '0.4')
+    localStorage.setItem('other-app.token', 'keep-me')
+
+    const removed = clearStoredData()
+
+    expect(removed).toEqual(expect.arrayContaining(['toolbit.theme']))
+    expect(localStorage.getItem('toolbit.theme')).toBeNull()
+    expect(sessionStorage.getItem('toolbit.split')).toBeNull()
+    expect(localStorage.getItem('other-app.token')).toBe('keep-me')
+  })
+
+  it('恢复默认配置后存储回到空状态', async () => {
+    const prefs = usePrefsStore()
+    prefs.setLocale('en-US')
+    prefs.setTheme('dark')
+    prefs.setAccent('rose')
+    prefs.toggleFavorite('base64')
+    prefs.recordRecent('base64')
+    prefs.toggleSidebar()
+    await nextTick()
+
+    await prefs.clearLocalData()
+
+    expect(prefs.locale).toBe(DEFAULT_LOCALE)
+    expect(prefs.theme).toBe('system')
+    expect(prefs.accent).toBe('indigo')
+    expect(prefs.favorites).toEqual([])
+    expect(prefs.recent).toEqual([])
+    expect(prefs.sidebarCollapsed).toBe(false)
+
+    const remaining = Object.keys(localStorage).filter((key) => key.startsWith(STORAGE_PREFIX))
+    expect(remaining).toEqual([])
+  })
+
+  it('没有可清理的键时返回空数组', () => {
+    localStorage.setItem(SIDEBAR_STORAGE_KEY, '1')
+
+    expect(clearStoredData()).toContain(SIDEBAR_STORAGE_KEY)
+    expect(clearStoredData()).toEqual([])
   })
 })

@@ -4,8 +4,9 @@
  *
  * 主题与语言都收进这里；顶栏只保留一个齿轮图标。
  * Esc 关闭、点击外部关闭，关闭后焦点回到触发按钮。
+ * 末尾的「清理缓存」用于把全部本地偏好恢复为默认值。
  */
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import AppIcon from '@/components/common/AppIcon.vue'
@@ -19,6 +20,13 @@ const prefs = usePrefsStore()
 const open = ref(false)
 const trigger = ref<HTMLButtonElement | null>(null)
 const panel = ref<HTMLElement | null>(null)
+/** 二次确认区；展开后把焦点移进来，避免键盘用户丢失位置。 */
+const confirmBox = ref<HTMLElement | null>(null)
+
+/** 是否已展开「清理缓存」的二次确认。 */
+const confirmingClear = ref(false)
+/** 清理进行中，避免重复触发。 */
+const clearing = ref(false)
 
 const themeOptions = computed<{ value: ThemeMode; label: string }[]>(() => [
   { value: 'system', label: t('common.theme.system') },
@@ -48,10 +56,14 @@ const currentLocale = computed<Locale>(() => prefs.locale)
 
 function toggle(): void {
   open.value = !open.value
+  if (!open.value) {
+    confirmingClear.value = false
+  }
 }
 
 function close(): void {
   open.value = false
+  confirmingClear.value = false
   trigger.value?.focus()
 }
 
@@ -65,6 +77,43 @@ function chooseAccent(value: AccentKey): void {
 
 function chooseLocale(value: Locale): void {
   prefs.setLocale(value)
+}
+
+/** 展开二次确认：清理会丢掉收藏与最近使用，不能一点就执行。 */
+function askClear(): void {
+  confirmingClear.value = true
+  void nextTick(() => confirmBox.value?.focus())
+}
+
+/** 收起二次确认。 */
+function cancelClear(): void {
+  confirmingClear.value = false
+}
+
+/** 确认清理：重置全部本地偏好后重新加载页面。 */
+async function confirmClear(): Promise<void> {
+  if (clearing.value) {
+    return
+  }
+  clearing.value = true
+  try {
+    await prefs.clearLocalData()
+  } finally {
+    clearing.value = false
+  }
+  reloadPage()
+}
+
+/**
+ * 重新加载页面。
+ *
+ * 页面内还残留工具输入与分栏比例等内存态，只有重载才能一并回到默认。
+ */
+function reloadPage(): void {
+  if (typeof window === 'undefined') {
+    return
+  }
+  window.location.reload()
 }
 
 /** 点击面板外部时关闭。 */
@@ -218,6 +267,54 @@ onBeforeUnmount(() => {
           </button>
         </div>
       </fieldset>
+
+      <fieldset class="settings__group settings__group--last">
+        <legend class="settings__legend">
+          {{ t('common.settings.data') }}
+        </legend>
+        <p class="settings__note">
+          {{ t('common.settings.dataHint') }}
+        </p>
+        <button
+          v-if="!confirmingClear"
+          type="button"
+          class="settings__option settings__option--danger"
+          @click="askClear"
+        >
+          <AppIcon
+            name="refresh"
+            :size="15"
+          />
+          <span>{{ t('common.settings.clearCache') }}</span>
+        </button>
+        <div
+          v-else
+          ref="confirmBox"
+          class="settings__confirm"
+          tabindex="-1"
+        >
+          <p class="settings__note settings__note--warn">
+            {{ t('common.settings.clearConfirm') }}
+          </p>
+          <div class="settings__confirm-actions">
+            <button
+              type="button"
+              class="settings__action"
+              @click="cancelClear"
+            >
+              {{ t('common.settings.clearCancel') }}
+            </button>
+            <button
+              type="button"
+              class="settings__action settings__action--danger"
+              :disabled="clearing"
+              @click="confirmClear"
+            >
+              {{ t('common.settings.clearOk') }}
+            </button>
+          </div>
+        </div>
+      </fieldset>
     </div>
   </div>
 </template>
@@ -320,6 +417,74 @@ onBeforeUnmount(() => {
   color: var(--tb-primary);
   background: var(--tb-primary-soft);
   border-color: color-mix(in srgb, var(--tb-primary) 30%, transparent);
+}
+
+.settings__group--last {
+  margin-bottom: 0;
+  padding-top: var(--tb-space-2);
+  border-top: 1px solid var(--tb-border);
+}
+
+.settings__note {
+  margin: 0 0 var(--tb-space-2);
+  font-size: var(--tb-font-xs);
+  line-height: 1.5;
+  color: var(--tb-text-tertiary);
+}
+
+.settings__note--warn {
+  margin-bottom: var(--tb-space-1);
+  color: var(--tb-danger);
+}
+
+.settings__option--danger {
+  color: var(--tb-danger);
+}
+
+.settings__option--danger:hover {
+  color: var(--tb-danger);
+  background: color-mix(in srgb, var(--tb-danger) 12%, transparent);
+}
+
+.settings__confirm-actions {
+  display: flex;
+  gap: var(--tb-space-2);
+}
+
+.settings__confirm:focus {
+  outline: none;
+}
+
+.settings__action {
+  flex: 1;
+  padding: var(--tb-space-1) var(--tb-space-2);
+  font-family: inherit;
+  font-size: var(--tb-font-sm);
+  color: var(--tb-text-secondary);
+  background: var(--tb-bg-sunken);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-control);
+  cursor: pointer;
+}
+
+.settings__action:hover {
+  color: var(--tb-text);
+}
+
+.settings__action--danger {
+  color: #ffffff;
+  background: var(--tb-danger);
+  border-color: var(--tb-danger);
+}
+
+.settings__action--danger:hover {
+  color: #ffffff;
+  filter: brightness(1.08);
+}
+
+.settings__action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* 主色色块网格：4 列 × 3 行 */

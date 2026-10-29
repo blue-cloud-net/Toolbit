@@ -91,7 +91,13 @@
     "open": "Open settings",
     "theme": "Appearance",
     "accent": "Accent",
-    "locale": "Language"
+    "locale": "Language",
+    "data": "Local data",
+    "dataHint": "Preferences live only in this browser; inputs are never stored.",
+    "clearCache": "Clear cache",
+    "clearConfirm": "This clears language, theme, accent, sidebar, split ratio, favorites and recent tools, then restores the defaults. The page reloads afterwards.",
+    "clearCancel": "Cancel",
+    "clearOk": "Clear and reload"
   },
   "states": {
     "loading": "Loading",

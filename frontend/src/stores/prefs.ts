@@ -5,7 +5,7 @@
  * **禁止**把工具输入写进任何浏览器存储。
  */
 import { defineStore } from 'pinia'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, i18n, isLocale, type Locale } from '@/i18n'
 import { ACCENT_PRESETS, type AccentKey } from '@/config/accents'
@@ -37,6 +37,9 @@ export const RECENT_STORAGE_KEY = 'toolbit.recent'
 /** 最近使用最多保留的条数。 */
 export const RECENT_LIMIT = 12
 
+/** 本应用写入浏览器存储的键前缀；清理缓存只动这个前缀下的键。 */
+export const STORAGE_PREFIX = 'toolbit.'
+
 /** 读取存储的偏好；无值或非法值回退到默认值。 */
 function readStored(key: string): string | null {
   if (typeof localStorage === 'undefined') {
@@ -59,6 +62,61 @@ function readStoredList(key: string): string[] {
     return parsed.filter((item): item is string => typeof item === 'string')
   } catch {
     return []
+  }
+}
+
+/** 删除某个存储中所有以 `toolbit.` 开头的键，返回被删除的键名。 */
+function removeStoredKeys(storage: Storage): string[] {
+  const keys: string[] = []
+  try {
+    for (let i = 0; i < storage.length; i += 1) {
+      const key = storage.key(i)
+      if (key && key.startsWith(STORAGE_PREFIX)) {
+        keys.push(key)
+      }
+    }
+    for (const key of keys) {
+      storage.removeItem(key)
+    }
+  } catch {
+    // 存储被禁用（隐私模式 / 配额满）时忽略：清理失败不应阻断调用方。
+  }
+  return keys
+}
+
+/**
+ * 删除本应用写入的全部本地偏好。
+ *
+ * 只按 `toolbit.` 前缀删除，不碰同域其他应用或浏览器自身的缓存；
+ * 返回被删除的键名，便于调用方判断是否真的清理过。
+ */
+export function clearStoredData(): string[] {
+  const removed: string[] = []
+  if (typeof localStorage !== 'undefined') {
+    removed.push(...removeStoredKeys(localStorage))
+  }
+  if (typeof sessionStorage !== 'undefined') {
+    removed.push(...removeStoredKeys(sessionStorage))
+  }
+  return removed
+}
+
+/**
+ * 清空本源（origin）的 Cache Storage。
+ *
+ * 当前没有注册 Service Worker，正常情况下为空；
+ * 这里做兜底，避免旧版本遗留的离线缓存继续生效。
+ */
+export async function clearBrowserCaches(): Promise<number> {
+  if (typeof caches === 'undefined' || typeof caches.keys !== 'function') {
+    return 0
+  }
+  try {
+    const names = await caches.keys()
+    await Promise.all(names.map((name) => caches.delete(name)))
+    return names.length
+  } catch {
+    return 0
   }
 }
 
@@ -173,6 +231,32 @@ export const usePrefsStore = defineStore('prefs', () => {
     recent.value = []
   }
 
+  /** 把全部偏好恢复为默认值（只改内存态，持久化由 watch 接管）。 */
+  function resetToDefaults(): void {
+    locale.value = DEFAULT_LOCALE
+    theme.value = 'system'
+    accent.value = DEFAULT_ACCENT
+    sidebarCollapsed.value = false
+    favorites.value = []
+    recent.value = []
+  }
+
+  /**
+   * 清理本地缓存并恢复默认配置。
+   *
+   * 顺序：先删存储 → 重置内存态 → 等 watch 把默认值写回 → 再删一次，
+   * 这样清理后浏览器存储回到「空」状态，下次访问等同首次访问。
+   * 完成后调用方应重新加载页面，让分栏比例等页面内状态一并复位。
+   */
+  async function clearLocalData(): Promise<string[]> {
+    const removed = clearStoredData()
+    resetToDefaults()
+    await nextTick()
+    clearStoredData()
+    await clearBrowserCaches()
+    return removed
+  }
+
   /** 监听系统主题变化。 */
   function watchSystemTheme(): void {
     if (typeof window === 'undefined' || !window.matchMedia) {
@@ -255,6 +339,8 @@ export const usePrefsStore = defineStore('prefs', () => {
     toggleFavorite,
     recordRecent,
     clearRecent,
+    resetToDefaults,
+    clearLocalData,
     init,
   }
 })

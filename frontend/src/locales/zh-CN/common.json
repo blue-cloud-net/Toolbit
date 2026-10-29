@@ -91,7 +91,13 @@
     "open": "打开设置",
     "theme": "外观",
     "accent": "主色",
-    "locale": "语言"
+    "locale": "语言",
+    "data": "本地数据",
+    "dataHint": "偏好仅保存在本机浏览器中，输入内容从不存储。",
+    "clearCache": "清理缓存",
+    "clearConfirm": "将清除语言、主题、主色、侧栏、分栏比例、收藏与最近使用，并恢复默认配置。页面随后重新加载。",
+    "clearCancel": "取消",
+    "clearOk": "清理并重载"
   },
   "states": {
     "loading": "加载中",
