@@ -179,6 +179,11 @@ export const usePrefsStore = defineStore('prefs', () => {
     document.documentElement.lang = locale.value
   }
 
+  /** 把当前语言应用到 i18n 实例。 */
+  function applyI18nLocale(): void {
+    ;(i18n.global.locale as unknown as { value: string }).value = locale.value
+  }
+
   /** 切换语言。 */
   function setLocale(next: Locale): void {
     locale.value = next
@@ -271,7 +276,7 @@ export const usePrefsStore = defineStore('prefs', () => {
   }
 
   watch(locale, (next) => {
-    ;(i18n.global.locale as unknown as { value: string }).value = next
+    applyI18nLocale()
     applyLocale()
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(LOCALE_STORAGE_KEY, next)
@@ -314,6 +319,8 @@ export const usePrefsStore = defineStore('prefs', () => {
 
   /** 初始化：应用持久化偏好并监听系统主题。 */
   function init(): void {
+    // 首屏也要把已持久化的语言应用到 i18n，否则刷新后界面语言会回到默认。
+    applyI18nLocale()
     applyLocale()
     applyTheme()
     watchSystemTheme()
