@@ -1,0 +1,60 @@
+{
+  "slug": "domain-verify",
+  "description": "域名验证的契约测试数据。DNS 用例把解析器指向回环地址，由 netguard 拦截并把错误记在 perResolver 里，无需真实外网。",
+  "cases": [
+    {
+      "name": "TXT 验证走回环解析器（解析器级错误）",
+      "request": {
+        "type": "dns-txt",
+        "domain": "example.com",
+        "expected": "toolbit-verify=abc",
+        "resolvers": [
+          "127.0.0.1:53"
+        ]
+      },
+      "expect": {
+        "code": 200,
+        "dataContains": {
+          "type": "dns-txt",
+          "domain": "example.com",
+          "matched": false
+        }
+      }
+    },
+    {
+      "name": "验证方式不支持",
+      "request": {
+        "type": "bogus",
+        "domain": "example.com",
+        "expected": "x"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "http-file 缺少文件路径",
+      "request": {
+        "type": "http-file",
+        "domain": "example.com",
+        "expected": "x"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "缺少期望值",
+      "request": {
+        "type": "dns-txt",
+        "domain": "example.com"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

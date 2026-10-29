@@ -1,0 +1,96 @@
+{
+  "slug": "cidr-calc",
+  "description": "CIDR 计算的契约测试数据（纯计算，不出网）。",
+  "cases": [
+    {
+      "name": "IPv4 /24 网段",
+      "request": {
+        "cidr": "192.168.1.0/24"
+      },
+      "expect": {
+        "code": 200,
+        "dataContains": {
+          "version": 4,
+          "network": "192.168.1.0/24",
+          "prefix": 24,
+          "mask": "255.255.255.0",
+          "firstUsable": "192.168.1.1",
+          "lastUsable": "192.168.1.254",
+          "broadcast": "192.168.1.255",
+          "hostCount": "254",
+          "totalAddresses": "256"
+        }
+      }
+    },
+    {
+      "name": "IPv4 /31 按 RFC 3021 计 2 个可用地址",
+      "request": {
+        "cidr": "10.0.0.0/31"
+      },
+      "expect": {
+        "code": 200,
+        "dataContains": {
+          "hostCount": "2",
+          "totalAddresses": "2"
+        }
+      }
+    },
+    {
+      "name": "地址范围反推 CIDR",
+      "request": {
+        "start": "10.0.0.1",
+        "end": "10.0.0.6"
+      },
+      "expect": {
+        "code": 200,
+        "dataContains": {
+          "version": 4,
+          "network": "10.0.0.0/29",
+          "totalAddresses": "8",
+          "range": [
+            "10.0.0.1/32",
+            "10.0.0.2/31",
+            "10.0.0.4/31",
+            "10.0.0.6/32"
+          ]
+        }
+      }
+    },
+    {
+      "name": "按前缀拆分网段",
+      "request": {
+        "cidr": "10.0.0.0/24",
+        "split": 26
+      },
+      "expect": {
+        "code": 200,
+        "dataContains": {
+          "cidrs": [
+            "10.0.0.0/26",
+            "10.0.0.64/26",
+            "10.0.0.128/26",
+            "10.0.0.192/26"
+          ]
+        }
+      }
+    },
+    {
+      "name": "网段非法",
+      "request": {
+        "cidr": "999.1.1.0/24"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_CIDR"
+      }
+    },
+    {
+      "name": "缺少必填字段",
+      "request": {},
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}
