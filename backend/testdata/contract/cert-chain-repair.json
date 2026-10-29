@@ -1,0 +1,69 @@
+{
+  "slug": "cert-chain-repair",
+  "description": "证书链修复的契约测试数据。",
+  "cases": [
+    {
+      "name": "补全缺失的中间证书与根",
+      "request": {
+        "cert": {
+          "data": "-----BEGIN CERTIFICATE-----\nMIIDzTCCArWgAwIBAgIUbA85LjhezNVJkBzBCm0Ku3kj04wwDQYJKoZIhvcNAQEL\nBQAwSzELMAkGA1UEBhMCQ04xFTATBgNVBAoMDFRvb2xiaXQgVGVzdDElMCMGA1UE\nAwwcVG9vbGJpdCBUZXN0IEludGVybWVkaWF0ZSBDQTAeFw0yNjEwMjkwMTU2MTVa\nFw0yOTAxMzEwMTU2MTVaMD8xCzAJBgNVBAYTAkNOMRUwEwYDVQQKDAxUb29sYml0\nIFRlc3QxGTAXBgNVBAMMEGxlYWYuZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEB\nAQUAA4IBDwAwggEKAoIBAQDBiBQs06vKMyz5nyKFIDPg1Bu6/El5/Lap0vIzEzTp\ngmyRUAgG8J0TXHcf120R4sa3bshSBAGvyT72RNYCqKJpEZTQ1mUgyOdH4TrjfKZu\nyAetHou70KCfgT+MfOLcEQJN3GivZLUbaTM4awh9BGS/Q2VROY+roE4gf5q0ikb0\nwxkjCDLMMWpHIAMbjyqR9YCWHW/H5Q998vwtxxuQDyvQ//F+8gBhuJ+E6E0F1Gxn\nECxwI2eo1vQHRc1U+AcG9Z3ssfYPx7DqBFAOxU9TjLRlBmvP3SqmIJuwkQ0d0QpN\nyjk9q9fsswJAYiWnmCiH5t8jqqfkOTdaQE+hrHmngAg/AgMBAAGjgbQwgbEwDAYD\nVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEG\nCCsGAQUFBwMCMDIGA1UdEQQrMCmCEGxlYWYuZXhhbXBsZS5jb22CD3d3dy5leGFt\ncGxlLmNvbYcEwAACCjAdBgNVHQ4EFgQU6PY9XAOnneAqMLSK8sC+deBFc3gwHwYD\nVR0jBBgwFoAUmISQp6fE0d4HnuETOTGg/fOh2XYwDQYJKoZIhvcNAQELBQADggEB\nAHjTelqGiZS82MmN/8BghKgFOc/6sGwLBbFzXQYlrHLQ1uKf96D/5+xKISch32ku\ntwRMdnhmkJfp2qUvYI9f0XE/lOLdV1mN8J4Qz6cEt9JdBuVuBYZ+ok8oWlnCLUOz\n3sx2dELlOazLJ0o58/33XkJ85k3JXyzJfXq7fYMf56NB1kVyHhapf8eewcBV2HD2\nlfwaK7PVVJW99sh6MCq9lgj5PTDFAtXPZUyVsV7wCpp5ic35ANXNW3occPZP7z1B\nKEQS55P17WwhBYk3WwxMi+KVdBImdj3IoNBDmwdYpgi+d8OWq8J73/49p0FHURTC\nkHleRaAaPAJ+0E094lLZTkk=\n-----END CERTIFICATE-----\n",
+          "format": "pem"
+        },
+        "intermediates": [
+          {
+            "data": "-----BEGIN CERTIFICATE-----\nMIIDfzCCAmegAwIBAgIUUe+Kc952FrdPmB2EEE1CIhV3sPwwDQYJKoZIhvcNAQEL\nBQAwQzELMAkGA1UEBhMCQ04xFTATBgNVBAoMDFRvb2xiaXQgVGVzdDEdMBsGA1UE\nAwwUVG9vbGJpdCBUZXN0IFJvb3QgQ0EwHhcNMjAwMTAxMDAwMDAwWhcNMzYwMTAx\nMDAwMDAwWjBLMQswCQYDVQQGEwJDTjEVMBMGA1UECgwMVG9vbGJpdCBUZXN0MSUw\nIwYDVQQDDBxUb29sYml0IFRlc3QgSW50ZXJtZWRpYXRlIENBMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn2j+tv3jFer+7uBNb6V4hzvK+/xDCupdkGu3\nXja50Ooh+TLT5BIuev5ySdUaCAScILapyIQZtDoA24oBokbM819H99fMYFgbtPoz\ndZzUs2UH4l7/MHdv26vh6rBuBvvwifU6C+q+zPCf3vTvY8b1g36s1XbGZ2LRvhrd\nsWeVXE+wXzf8cujFxWpGvDdZtroFT2hqSgP2pna4IzCF9HuIbMcQmDtyjELfW2W3\ngYKEQ4gANSnnQjee03fiX8DCoIzYUBOpk5RTojWZfL3pnhIRilt2hAflhxHk2reW\nmrQ4MGax8gKQrNr35WPDgEem6QjEYk+rWqRdf4fzswSLSp7yMQIDAQABo2MwYTAP\nBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUmISQp6fE\n0d4HnuETOTGg/fOh2XYwHwYDVR0jBBgwFoAUmNAwDsc80voxerasjJHpFUuMP9Uw\nDQYJKoZIhvcNAQELBQADggEBAAdeWuS0BEKx7P0Y9BSfE65l51Xkzq3Jw1vagzdT\n+EqVqARaLCOVDzPFcn3we/b6agtDvgX/k8HzKe3LPJRK/EONhQynPXrFl4qHi+67\nS83/bxLSVjLmAlNWG91pw4edndakoOIlgw7/hckrN4DV7lro7ZlsSRM75mNPrR/9\nuPSvqXHHOvTvVcwJVMty3UHZtymqPKueR14tRwcmwaSz4ZrzCne3PeAgT19CEVsa\nWpaq2gkcMsC8spdSasY6RSH+j/0gLIToW8hTPBLzzfkm37mVI5T4XztnSJFdE8Sk\nf2Waa/cZlgzRG9JIf57CRuwxLpO/NRdw/qKjW2jjQgbVEk0=\n-----END CERTIFICATE-----\n",
+            "format": "pem"
+          }
+        ],
+        "trustedRoots": [
+          {
+            "data": "-----BEGIN CERTIFICATE-----\nMIIDZzCCAk+gAwIBAgIUL3ASu7cIu4Y3PrUoM7+wuDmxhMQwDQYJKoZIhvcNAQEL\nBQAwQzELMAkGA1UEBhMCQ04xFTATBgNVBAoMDFRvb2xiaXQgVGVzdDEdMBsGA1UE\nAwwUVG9vbGJpdCBUZXN0IFJvb3QgQ0EwHhcNMjAwMTAxMDAwMDAwWhcNMzYwMTAx\nMDAwMDAwWjBDMQswCQYDVQQGEwJDTjEVMBMGA1UECgwMVG9vbGJpdCBUZXN0MR0w\nGwYDVQQDDBRUb29sYml0IFRlc3QgUm9vdCBDQTCCASIwDQYJKoZIhvcNAQEBBQAD\nggEPADCCAQoCggEBALrs7a2LO/IXVEHQG+Ce/sWAXsD5A6iAZYgSRuJG4dt0cZcM\nxIspCRXohszCDFRqd1w0niMLLuX9ho5qm2HXCwNzZ2IrzztDgohdbT/krZaF8u8C\nIOL/5wRB3/5jKdL7OjAABZJm4GhLEFCoRkcyv7LOZ/ja0OzpRgj0I3RcTYvHzZJm\nHcmy4I7DycYxPoilp4qy2y66EqDwXsc99fOy7pjvYd4rc6QJaAhvFZRvFTSP1VhA\no3adgLyHgs2vsCRXKxlcJgJIn2AXD5sIejrJUInPs20YeHtNz9M/pq8oWtegqMUJ\nJog8lPaG+7DUhSlJYRpr3JRg6CX70fS+wKb5knUCAwEAAaNTMFEwHQYDVR0OBBYE\nFJjQMA7HPNL6MXq2rIyR6RVLjD/VMB8GA1UdIwQYMBaAFJjQMA7HPNL6MXq2rIyR\n6RVLjD/VMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBALT+LbtZ\n62EgG2IbdJPakUPGIuvEskRO2ERyt/dYoepCY8XY8dC9RM2t9w08Ful/MUPsvYWh\naLw6Q/Xpz516YOZ0Z6r8hI6XqPXilxTm7MkFlYm4Cl0qp+dJJW3h9mFLCeUZApoM\nonoeBBNE1mrYdVNZ2MWxx7qkpecJbnHhs/f9C8EjFLgaMDpcaoMPSYPBeNHR7Plh\nN57dJFpxr6BZtmx1PeByhZ8J3reJHJFV1s91CkOm1NFgnf2jfQ/pSnD1lrlseusL\nv6vpqG2hQ0HTyzcVcVhVQZvtR+ebZMQ8UrkekKJDz6H08J+/nLoRO3XcqSqTWqT4\n8tZ0Gha9VOJoSis=\n-----END CERTIFICATE-----\n",
+            "format": "pem"
+          }
+        ]
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "addedCount": 2,
+          "reachedRoot": true,
+          "note": "reached_root",
+          "addedFroms": [
+            "intermediates",
+            "trustedRoots"
+          ]
+        }
+      }
+    },
+    {
+      "name": "无候选可补",
+      "request": {
+        "cert": {
+          "data": "-----BEGIN CERTIFICATE-----\nMIIDzTCCArWgAwIBAgIUbA85LjhezNVJkBzBCm0Ku3kj04wwDQYJKoZIhvcNAQEL\nBQAwSzELMAkGA1UEBhMCQ04xFTATBgNVBAoMDFRvb2xiaXQgVGVzdDElMCMGA1UE\nAwwcVG9vbGJpdCBUZXN0IEludGVybWVkaWF0ZSBDQTAeFw0yNjEwMjkwMTU2MTVa\nFw0yOTAxMzEwMTU2MTVaMD8xCzAJBgNVBAYTAkNOMRUwEwYDVQQKDAxUb29sYml0\nIFRlc3QxGTAXBgNVBAMMEGxlYWYuZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEB\nAQUAA4IBDwAwggEKAoIBAQDBiBQs06vKMyz5nyKFIDPg1Bu6/El5/Lap0vIzEzTp\ngmyRUAgG8J0TXHcf120R4sa3bshSBAGvyT72RNYCqKJpEZTQ1mUgyOdH4TrjfKZu\nyAetHou70KCfgT+MfOLcEQJN3GivZLUbaTM4awh9BGS/Q2VROY+roE4gf5q0ikb0\nwxkjCDLMMWpHIAMbjyqR9YCWHW/H5Q998vwtxxuQDyvQ//F+8gBhuJ+E6E0F1Gxn\nECxwI2eo1vQHRc1U+AcG9Z3ssfYPx7DqBFAOxU9TjLRlBmvP3SqmIJuwkQ0d0QpN\nyjk9q9fsswJAYiWnmCiH5t8jqqfkOTdaQE+hrHmngAg/AgMBAAGjgbQwgbEwDAYD\nVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEG\nCCsGAQUFBwMCMDIGA1UdEQQrMCmCEGxlYWYuZXhhbXBsZS5jb22CD3d3dy5leGFt\ncGxlLmNvbYcEwAACCjAdBgNVHQ4EFgQU6PY9XAOnneAqMLSK8sC+deBFc3gwHwYD\nVR0jBBgwFoAUmISQp6fE0d4HnuETOTGg/fOh2XYwDQYJKoZIhvcNAQELBQADggEB\nAHjTelqGiZS82MmN/8BghKgFOc/6sGwLBbFzXQYlrHLQ1uKf96D/5+xKISch32ku\ntwRMdnhmkJfp2qUvYI9f0XE/lOLdV1mN8J4Qz6cEt9JdBuVuBYZ+ok8oWlnCLUOz\n3sx2dELlOazLJ0o58/33XkJ85k3JXyzJfXq7fYMf56NB1kVyHhapf8eewcBV2HD2\nlfwaK7PVVJW99sh6MCq9lgj5PTDFAtXPZUyVsV7wCpp5ic35ANXNW3occPZP7z1B\nKEQS55P17WwhBYk3WwxMi+KVdBImdj3IoNBDmwdYpgi+d8OWq8J73/49p0FHURTC\nkHleRaAaPAJ+0E094lLZTkk=\n-----END CERTIFICATE-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "addedCount": 0,
+          "reachedRoot": false,
+          "note": "already_complete"
+        }
+      }
+    },
+    {
+      "name": "非法叶证书",
+      "request": {
+        "cert": {
+          "data": "not a certificate",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_CERT"
+      }
+    }
+  ]
+}

@@ -48,6 +48,12 @@ backend/data/
 !deploy/**/*.pem.example
 !deploy/**/*.key.example
 
+# ---- 测试夹具 ----
+# 后端 PKI 测试用的证书链 / CSR / CRL：由 openssl **一次性生成**，
+# 只用于本仓库的单元测试，**不是**任何真实系统的材料（见 AGENTS.md §5）。
+!backend/testdata/fixtures/pki/*.pem
+!backend/testdata/fixtures/pki/*.der
+
 # ---- 文档校验缓存 ----
 .lychee_cache/
 .markdownlint-cache/

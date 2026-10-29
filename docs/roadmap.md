@@ -67,7 +67,7 @@ RC 是 `1.0.0` 的**预发布标识**，与 `0.x` 是两条独立轨道。
 | `v0.3.0` | 密码学核心 | 7 | 9 | ✅ 已完成 |
 | `v0.3.1` | 密码学文件工具 | 1 | 10 | ✅ 已完成 |
 | `v0.4.0` | 密钥管理 | 6 | 16 | ✅ 已完成 |
-| `v0.5.0` | PKI 解析与链验证 | 8 | 24 | 待开始 |
+| `v0.5.0` | PKI 解析与链验证 | 8 | 24 | ✅ 已完成 |
 | `v0.6.0` | PKI 生成、吊销与容器 | 12 | 36 | 待开始 |
 | `v0.7.0` | 网络探测 | 8 | 44 | 待开始 |
 | `v0.8.0` | 通用工具与文档处理 | 26 | 70 | 待开始 |
@@ -670,7 +670,7 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 
 **目标**：能读懂证书，并能判定一条链是否可信。
 
-**状态**：待开始。8 个工具，累计 **24** 个可用工具。
+**状态**：✅ 已完成（2026-10-29）。8 个工具，累计 **24** 个可用工具。
 
 ### 8.1 交付物（8）
 
@@ -707,6 +707,9 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 | L-T6 | `asn1-view` 用上游 `asn1` 包（纯 Go，cgo-free） | 不自行实现 DER 解析 |
 | L-T7 | `cert-chain-repair` 只从**输入集合**补链（subject/issuer + SKID/AKID 匹配），不下载 | 契约无网络字段 |
 | L-T8 | 所有 pkisvc 句柄登记到本请求 `Session`，按 LIFO 释放 | AGENTS.md §4.7 |
+| L-T9 | `cert-chain-repair` 新增**可选**字段 `intermediates`；`cert-chain-verify` 新增**可选**字段 `trustedRoots` | 契约扩展：只加**可选**字段，不改已有字段语义 |
+| L-T10 | 指纹支持**全部**算法（`MD5` / `SHA1` / `SHA256` / `SHA384` / `SHA512` / `SM3`），弱算法只附 `WEAK_HASH` 警告；默认只算 `["SHA256"]` | 不拒绝任何算法，把判断权交给调用方 |
+| L-T11 | 链排序不唯一的场景（交叉签名）按 **AKID 优先 + 输入顺序稳定**；`ordered: false` 只表示需要重排，**不是**错误 | 排序歧义不应变成失败 |
 
 ### 8.4 任务清单
 
@@ -714,37 +717,37 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 
 | ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| L1 | 证书加载与解析 | `backend/internal/pkisvc/cert.go` | PEM / DER / base64 / hex 四种输入；字段、扩展、SAN / KU / EKU / BC / SKID / AKID、指纹齐全；`atTime` 边界（`expired` / `not_yet_valid`）各一测 | §6.8 | ⬜ |
-| L2 | PEM / DER 互转与标签识别 | `backend/internal/pkisvc/pemder.go` | 多块 bundle 拆分与重组顺序稳定；`type` 过滤生效；标签不匹配返回 `UNSUPPORTED_FORMAT` | L1 | ⬜ |
-| L3 | ASN.1 视图 | `backend/internal/pkisvc/asn1.go` | 深度 / 节点上限触发对应错误码；`hexDump` 与 `xxd` 输出一致 | §6.8 | ⬜ |
-| L4 | 链排序 | `backend/internal/pkisvc/chain.go` | 乱序输入 → 叶→根；缺根时 `missingRoot: true`；> 64 张返回 `TOO_MANY_ITEMS` | L1 | ⬜ |
-| L5 | 链验证 | `backend/internal/pkisvc/chainverify.go` | 可信根场景 `valid: true`；篡改 / 过期 / 自签根场景 `valid: false` + `errors[].code`；`host` 匹配与不匹配各一；`SetTime` 隔离有测试（同进程连续两次不同 `atTime` 结果不同） | L4 | ⬜ |
-| L6 | 链修复 | `backend/internal/pkisvc/chainrepair.go` | 缺中间证书时 `addedCount > 0` 且 `reachedRoot` 正确；无可用中间证书时 `addedCount: 0` | L4 | ⬜ |
-| L7 | CRL 解析 | `backend/internal/pkisvc/crl.go` | 条目数、时间窗、原因码正确；> 10000 条返回 `TOO_MANY_ITEMS` | §6.8 | ⬜ |
+| L1 | 证书加载与解析 | `backend/internal/pkisvc/cert.go` | PEM / DER / base64 / hex 四种输入；字段、扩展、SAN / KU / EKU / BC / SKID / AKID、指纹齐全；`atTime` 边界（`expired` / `not_yet_valid`）各一测 | §6.8 | ✅ |
+| L2 | PEM / DER 互转与标签识别 | `backend/internal/pkisvc/pemder.go` | 多块 bundle 拆分与重组顺序稳定；`type` 过滤生效；标签不匹配返回 `UNSUPPORTED_FORMAT` | L1 | ✅ |
+| L3 | ASN.1 视图 | `backend/internal/pkisvc/asn1.go` | 深度 / 节点上限触发对应错误码；`hexDump` 与 `xxd` 输出一致 | §6.8 | ✅ |
+| L4 | 链排序 | `backend/internal/pkisvc/chain.go` | 乱序输入 → 叶→根；缺根时 `missingRoot: true`；> 64 张返回 `TOO_MANY_ITEMS` | L1 | ✅ |
+| L5 | 链验证 | `backend/internal/pkisvc/chainverify.go` | 可信根场景 `valid: true`；篡改 / 过期 / 自签根场景 `valid: false` + `errors[].code`；`host` 匹配与不匹配各一；`SetTime` 隔离有测试（同进程连续两次不同 `atTime` 结果不同） | L4 | ✅ |
+| L6 | 链修复 | `backend/internal/pkisvc/chainrepair.go` | 缺中间证书时 `addedCount > 0` 且 `reachedRoot` 正确；无可用中间证书时 `addedCount: 0` | L4 | ✅ |
+| L7 | CRL 解析 | `backend/internal/pkisvc/crl.go` | 条目数、时间窗、原因码正确；> 10000 条返回 `TOO_MANY_ITEMS` | §6.8 | ✅ |
 
 #### Phase L-B —— 工具层
 
 | ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| L8 | 八个 handler | `backend/internal/tools/pki/*.go` | 正例 + 反例各一；`asn1-view` 在 catalog 中标记 `wide` | L1 – L7 | ⬜ |
-| L9 | 契约测试数据 | `backend/testdata/contract/*.json` | 契约执行器全绿；每个工具至少 1 正例 + 1 反例 | L8 | ⬜ |
-| L10 | 单元测试 | `backend/internal/pkisvc/*_test.go` `backend/internal/tools/pki/*_test.go` | 边界（链 64 / CRL 10000 / ASN.1 深度）均有覆盖 | L8 | ⬜ |
+| L8 | 八个 handler | `backend/internal/tools/pki/*.go` | 正例 + 反例各一；`asn1-view` 在 catalog 中标记 `wide` | L1 – L7 | ✅ |
+| L9 | 契约测试数据 | `backend/testdata/contract/*.json` | 契约执行器全绿；每个工具至少 1 正例 + 1 反例 | L8 | ✅ |
+| L10 | 单元测试 | `backend/internal/pkisvc/*_test.go` `backend/internal/tools/pki/*_test.go` | 边界（链 64 / CRL 10000 / ASN.1 深度）均有覆盖 | L8 | ✅ |
 
 #### Phase L-C —— 前端
 
 | ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| L11 | 共享组件 | `frontend/src/components/tool/CertTextInput.vue` `CodeEditor.vue` | 两组件各有单测；`CodeEditor` **自渲染**树与 hex，**不引入**编辑器依赖（防击穿 40 KB 预算） | — | ⬜ |
-| L12 | 八个工具页 | `frontend/src/tools/certificates/**` | 「填入示例 → 运行 → 复制」全链路可用；`asn1-view` 在 ≥1280 px 双栏 | L8, L11 | ⬜ |
-| L13 | 双语词条与登记 | `frontend/src/locales/*/tools/*.json` `frontend/src/tools/index.ts` | 中英 key 集合一致；8 个 chunk 均 < 40 KB（gzip） | L12 | ⬜ |
+| L11 | 共享组件 | `frontend/src/components/tool/CertTextInput.vue` `CodeEditor.vue` | 两组件各有单测；`CodeEditor` **自渲染**树与 hex，**不引入**编辑器依赖（防击穿 40 KB 预算） | — | ✅ |
+| L12 | 八个工具页 | `frontend/src/tools/certificates/**` | 「填入示例 → 运行 → 复制」全链路可用；`asn1-view` 在 ≥1280 px 双栏 | L8, L11 | ✅ |
+| L13 | 双语词条与登记 | `frontend/src/locales/*/tools/*.json` `frontend/src/tools/index.ts` | 中英 key 集合一致；8 个 chunk 均 < 40 KB（gzip） | L12 | ✅ |
 
 #### Phase L-D —— 文档与门禁
 
 | ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| L14 | 契约同步 | `docs/api/tools/certificates.md` `docs/tools.md` | 请求 / 响应字段与实现逐项一致 | L8 | ⬜ |
-| L15 | 规范同步 | `docs/standards/03-crypto.md` §8 §9 | PKI 句柄与限额条款与实现一致 | L1 – L7 | ⬜ |
-| L16 | 版本收尾 | `docs/roadmap.md` `CHANGELOG.md` | 本节与实现一致且可勾选；CHANGELOG 增 `[0.5.0]`；`make verify` 通过 | L9 – L15 | ⬜ |
+| L14 | 契约同步 | `docs/api/tools/certificates.md` `docs/tools.md` | 请求 / 响应字段与实现逐项一致 | L8 | ✅ |
+| L15 | 规范同步 | `docs/standards/03-crypto.md` §8 §9 | PKI 句柄与限额条款与实现一致 | L1 – L7 | ✅ |
+| L16 | 版本收尾 | `docs/roadmap.md` `CHANGELOG.md` | 本节与实现一致且可勾选；CHANGELOG 增 `[0.5.0]`；`make verify` 通过 | L9 – L15 | ✅ |
 
 **关键路径**：`L1` → `L4` → `L5` → `L8` → `L9` → `L12` → `L16`。
 
@@ -770,10 +773,12 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 
 | 风险 | 影响 | 对策 |
 | --- | --- | --- |
-| 无系统信任根导致「验证通过」语义含糊 | 用户误以为链已被外部信任 | L-T3：响应区分「链内自洽」与「外部可信」，并在使用说明中明示 |
-| 上游 `asn1` 的深度上限与契约的 64 是否一致 | 行为与文档不符 | L3 实测后按实测值对齐契约与文档 |
-| `CodeEditor` 引入第三方编辑器依赖 | 单工具 chunk 击穿 40 KB 预算 | 自渲染树与 hex 视图，禁止引入编辑器依赖 |
+| 无系统信任根导致「验证通过」语义含糊 | 用户误以为链已被外部信任 | L-T3：响应区分「链内自洽」与「外部可信」（`implicitTrust` 标志），并在文档与前端提示中明示 |
+| 上游 `asn1` 的深度上限与契约的 64 是否一致 | 行为与文档不符 | 已实测：上游**无**深度 / 节点上限（缺口 I-16），因此在**调用上游之前**由 `pkisvc` 自行测量，超限返回 `TOO_LARGE` |
+| `CodeEditor` 引入第三方编辑器依赖 | 单工具 chunk 击穿 40 KB 预算 | 自渲染树与 hex 视图，禁止引入编辑器依赖（实测 `tool-asn1-view` 仅 3.4 KB gzip） |
 | 证书正文属敏感内容 | 日志 / 缓存泄露 | 响应统一 `no-store`；访问日志只记 slug 与字节数 |
+| CSR 句柄无法显式释放 | 依赖 `finalizer`，与 AGENTS.md §4.7 冲突 | 已登记上游缺口 I-15；上游修复后回头改掉 |
+| CRL 超长序列号被上游折叠为 `-1` | 输出错误序列号 | 输出**空字符串**，不输出溢出的错误值（缺口 I-18） |
 
 ---
 

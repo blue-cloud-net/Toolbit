@@ -1,0 +1,46 @@
+{
+  "name": "Certificate Chain Repairer",
+  "description": "Pick the missing links from the given intermediates and trusted roots to complete a certificate chain.",
+  "category": "Certificates",
+  "actions": {
+    "repair": "Repair"
+  },
+  "fields": {
+    "cert": "Leaf certificate",
+    "intermediates": "Intermediate certificates",
+    "trustedRoots": "Trusted roots"
+  },
+  "options": {},
+  "results": {
+    "chain": "Repaired chain",
+    "addedCount": "Certificates added",
+    "addedFroms": "Sources of the additions",
+    "reachedRoot": "Reached a root",
+    "note": "Verdict"
+  },
+  "examples": [
+    {
+      "label": "Complete a leaf certificate chain with the intermediate CA",
+      "value": "Leaf certificate + intermediate"
+    }
+  ],
+  "hints": {
+    "local": "**Purely local**: it only picks from the collections you supply and never downloads missing certificates.",
+    "order": "Intermediate certificates are used first, trusted roots second.",
+    "limit": "Each input holds up to 64 certificates."
+  },
+  "faq": [
+    {
+      "q": "Does chain repair go online?",
+      "a": "No. It only picks from the intermediates and trusted roots you pass in."
+    },
+    {
+      "q": "What does \"reached a root\" mean?",
+      "a": "The chain ends at a self-signed root or a trusted root, so the chain is complete."
+    },
+    {
+      "q": "What is listed under \"sources of the additions\"?",
+      "a": "Where each added certificate came from: intermediates or trustedRoots."
+    }
+  ]
+}

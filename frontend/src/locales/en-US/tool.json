@@ -70,5 +70,13 @@
     "dropzone": "Drop a file here, or click to choose one",
     "choose": "Choose a file",
     "clear": "Clear the file"
+  },
+  "cert": {
+    "fields": {
+      "material": "Certificate material"
+    },
+    "blocks": "{count} PEM block(s) detected.",
+    "hint": "Accepts PEM text, base64 or hexadecimal DER; multiple PEM blocks are processed in order.",
+    "empty": "Nothing to show"
   }
 }

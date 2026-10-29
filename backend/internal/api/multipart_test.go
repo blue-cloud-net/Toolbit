@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/blue-cloud-net/Toolbit/backend/internal/catalog"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/cryptosvc"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/toolerr"
 )
@@ -334,8 +335,9 @@ func TestSM4FileCryptStoresChunkSize(t *testing.T) {
 // 未实现的工具仍然返回 501。
 func TestMultipartUnimplementedToolReturns501(t *testing.T) {
 	h := newTestServer(t)
-	// cert-chain-fetch 在 catalog 中已启用，但尚未实现（v0.7.0 交付）。
-	rec := postMultipart(t, h, "/api/v1/tools/cert-chain-fetch", multipartBody{
+	// slug 从 catalog 派生：已启用但尚未实现的 multipart 工具。
+	slug := unimplementedSlug(t, catalog.TransportMultipart)
+	rec := postMultipart(t, h, "/api/v1/tools/"+slug, multipartBody{
 		FileName:    "a.txt",
 		FileContent: []byte("x"),
 	})

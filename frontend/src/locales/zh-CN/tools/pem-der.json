@@ -1,0 +1,58 @@
+{
+  "name": "PEM/DER 转换",
+  "description": "在 PEM 文本与 DER 二进制之间转换，并识别输入里的 PEM 标签。",
+  "category": "证书",
+  "actions": {
+    "convert": "转换"
+  },
+  "fields": {
+    "input": "输入材料",
+    "type": "类型过滤",
+    "to": "目标格式"
+  },
+  "options": {
+    "types": {
+      "any": "全部",
+      "cert": "证书",
+      "key": "密钥",
+      "csr": "证书签名请求",
+      "crl": "吊销列表"
+    },
+    "to": {
+      "der": "DER（二进制，base64 承载）",
+      "pem": "PEM（文本）"
+    }
+  },
+  "results": {
+    "output": "转换结果",
+    "format": "输出格式",
+    "encoding": "输出编码",
+    "blockCount": "块数",
+    "labels": "识别到的标签"
+  },
+  "examples": [
+    {
+      "label": "把叶证书的 PEM 转成 DER",
+      "value": "叶证书 PEM"
+    }
+  ],
+  "hints": {
+    "der": "DER 是二进制，输出用 base64 承载以便放进 JSON。",
+    "single": "转成 DER 时只允许**一个**块：DER 装不下多个对象。",
+    "safe": "只做编码转换，不解析也不修改材料内容。"
+  },
+  "faq": [
+    {
+      "q": "PEM 头部的 BEGIN 后面是什么？",
+      "a": "对象类型标识，例如 CERTIFICATE、PRIVATE KEY、PUBLIC KEY、CERTIFICATE REQUEST。"
+    },
+    {
+      "q": "为什么转 DER 只支持一个块？",
+      "a": "DER 是单个对象的二进制编码，无法把多个 PEM 块塞进同一个 DER。"
+    },
+    {
+      "q": "「类型过滤」有什么用？",
+      "a": "输入里混有证书和密钥时，只保留指定类型的块。"
+    }
+  ]
+}

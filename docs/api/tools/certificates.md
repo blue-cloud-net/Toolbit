@@ -1,6 +1,6 @@
 # 证书 API
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Draft ｜ 适用版本：v0.5.0 ｜ 最后更新：2026-10-29
 
 覆盖 **23** 个证书类工具 —— 本项目最大的分类。端点均为 `POST /api/v1/tools/{slug}`，除 `cert-chain-fetch`（multipart + 出网）外均为 JSON。
 
@@ -41,26 +41,49 @@
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `input` | object | 是 | `PemBundle`（自动识别 PEM / DER / base64 / hex） |
-| `atTime` | string | 否 | 以该时刻判断有效性（RFC3339） |
-| `fingerprints` | array | 否 | 需要计算的指纹算法，如 `["SHA256","SHA1"]` |
+| `atTime` | string | 否 | 以该时刻判断有效性（RFC3339）；为空时按当前时间 |
+| `fingerprints` | array | 否 | 需要计算的指纹算法；为空时只算 `["SHA256"]` |
+
+`fingerprints` 的合法取值：`MD5`、`SHA1`、`SHA256`、`SHA384`、`SHA512`、`SM3`（大小写不敏感，输出统一小写算法名）。
+弱算法（`MD5`、`SHA1`）**不拒绝**，只附 `WEAK_HASH` 警告。
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `certificate` | object | 证书主体信息（subject、issuer、serial、validity、extensions、publicKey、signatureAlgorithm…） |
+| `certificate` | object | 证书主体信息（见下表） |
 | `validity` | object | `{ status, daysRemaining }`；`status` ∈ `valid` \| `expired` \| `not_yet_valid` |
 | `fingerprints` | array | `[{ algorithm, value }]` |
 | `selfSigned` | bool | 是否自签名 |
 | `rawDerBase64` | string | 原始 DER（base64） |
 
+`certificate` 的字段：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `version` | int | 版本号（2 表示 v3） |
+| `subject` / `issuer` | array | RDN 条目 `[{ field, value }]`（`field` 短名如 `CN`、`O`） |
+| `subjectText` / `issuerText` | string | OpenSSL 风格单行文本，如 `/C=CN/O=Toolbit Test/CN=leaf.example.com` |
+| `serial` | string | 序列号（大写十六进制） |
+| `notBefore` / `notAfter` | string | 生效 / 过期时间（RFC3339） |
+| `publicKey` | object | `{ algorithm, bits, curve }` |
+| `signatureAlgorithm` / `signatureAlgorithmOid` | string | 签名算法短名 / 点分 OID |
+| `isCa` | bool | 是否为 CA 证书 |
+| `pathLen` | int | 路径长度约束；非 CA 或无该扩展为 `-1` |
+| `san` | array | 主体备用名条目 |
+| `keyUsage` / `extendedKeyUsage` | array | 密钥用途 / 扩展密钥用途 |
+| `subjectKeyId` / `authorityKeyId` | string | 主题 / 签发者密钥标识符（大写十六进制） |
+| `subjectHash` / `issuerHash` | string | 名称的 `X509_NAME_hash` |
+| `extensions` | array | `[{ nid, oid, name, critical, value }]` |
+| `selfSigned` | bool | 是否自签名 |
+
 ### 错误
 
-`INVALID_CERT`、`INVALID_PEM`、`INVALID_DER`、`INVALID_TIME`。
+`INVALID_CERT`、`INVALID_PEM`、`INVALID_DER`、`INVALID_TIME`、`UNSUPPORTED_ALGORITHM`、`TOO_LARGE`。
 
 ### 警告
 
-`EXPIRED_CERT`、`NOT_YET_VALID`、`SELF_SIGNED_CERT`。
+`EXPIRED_CERT`、`NOT_YET_VALID`、`SELF_SIGNED_CERT`、`WEAK_HASH`。
 
 ---
 
@@ -112,16 +135,21 @@
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `subject` | object | 主体 |
-| `sans` | array | 主体备用名 |
+| `subject` | array | 主体 RDN 条目 `[{ field, value }]` |
+| `subjectText` | string | 主体单行文本（OpenSSL 风格） |
+| `sans` | array | 主体备用名条目 |
 | `publicKey` | object | `{ algorithm, bits, curve }` |
-| `signatureAlgorithm` | string | 签名算法 |
-| `extensions` | array | 请求扩展 |
-| `fingerprintSha256` | string | 指纹 |
+| `signatureAlgorithm` / `signatureAlgorithmOid` | string | 签名算法短名 / 点分 OID |
+| `extensions` | array | 请求扩展 `[{ nid, oid, name, critical, value }]` |
+| `fingerprintSha256` | string | CSR 的 SHA-256 指纹 |
+| `challengePasswordPresent` | bool | 是否携带挑战口令（**只报存在性，绝不回显口令值**） |
+| `signatureValid` | bool | CSR 自签名是否校验通过 |
 
 ### 错误
 
 `INVALID_CSR`、`INVALID_PEM`、`INVALID_DER`。
+
+> CSR 的 SAN 由扩展手工解析（上游未暴露 `SAN()` 方法，见上游缺口登记）。
 
 ---
 
@@ -133,21 +161,24 @@ PEM ↔ DER 互转。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 是 | `{ data, format }`；`format` ∈ `pem` \| `der` \| `base64` \| `hex` |
-| `type` | string | 否 | `cert` \| `key` \| `csr` \| `crl` \| `any`（默认） |
+| `input` | object | 是 | `{ data, format }`；`format` ∈ `auto` \| `pem` \| `der` \| `base64` \| `hex` |
+| `type` | string | 否 | `cert` \| `key` \| `csr` \| `crl` \| `any`（默认 `any`） |
 | `to` | string | 是 | `pem` \| `der` |
-| `label` | string | 否 | 输出 PEM 的标签 |
+| `label` | string | 否 | 输出 PEM 的标签；为空时沿用源标签 |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `output` | object | `{ data, format, encoding }` |
-| `labels` | array | 识别到的 PEM 标签列表 |
+| `output` | object | `{ data, format, encoding }`；`data` 在 `to: der` 时是 base64，`encoding` 为 `base64` / `utf8` |
+| `labels` | array | 输入中识别到的 PEM 标签列表 |
+| `blockCount` | int | 输出块数 |
 
 ### 错误
 
-`INVALID_PEM`、`INVALID_DER`、`UNSUPPORTED_FORMAT`。
+`INVALID_PEM`、`INVALID_DER`、`UNSUPPORTED_FORMAT`、`MISSING_FIELD`。
+
+> `to: der` 时**只允许一个块**：DER 装不下多个对象。单个输入的 PEM 块上限 64。
 
 ---
 
@@ -159,22 +190,27 @@ ASN.1 结构树可视化。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 是 | `{ der \| base64 \| pem }` |
-| `maxDepth` | int | 否 | 最大展开深度，默认 32 |
+| `input` | object | 是 | `PemBundle`（PEM 会先剥掉外壳） |
+| `maxDepth` | int | 否 | 最大展开深度；`0` 或省略表示默认 32，上限 64 |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `length` | int | 字节长度 |
-| `tree` | object | `{ nodes: [...] }` |
+| `length` | int | 输入字节长度 |
+| `tree` | object | 根节点（见下表） |
+| `nodeCount` | int | 解析出的节点总数 |
+| `depth` | int | 实际展开到的深度 |
+| `maxDepth` | int | 生效的深度上限 |
 | `hexDump` | string | 十六进制转储 |
+
+`tree` 的节点字段：`offset`（tag 字节的绝对偏移）、`tag`、`class`（0 通用 / 1 应用 / 2 上下文 / 3 私有）、`number`（tag 编号）、`constructed`、`length`、`value`（十六进制）、`truncated`（因超出深度未展开）、`children`（子节点数组）。
 
 ### 错误
 
-`INVALID_DER`、`TOO_LARGE`、`TOO_MANY_ITEMS`。
+`INVALID_DER`、`INVALID_PEM`、`TOO_LARGE`、`TOO_MANY_ITEMS`。
 
-> 解析深度上限 64，节点数上限 10000，超出返回 `TOO_LARGE` / `TOO_MANY_ITEMS`。
+> 限额：请求体 **1 MB**；解析深度上限 64、节点数上限 10000，超出返回 `TOO_LARGE` / `TOO_MANY_ITEMS`。
 
 ---
 
@@ -198,11 +234,15 @@ ASN.1 结构树可视化。
 | `missingRoot` | bool | 是否缺少根证书 |
 | `selfSigned` | bool | 根证书是否自签名 |
 
+`info` 的字段与 [cert-parse](#cert-parse) 的 `certificate` 相同。
+
 ### 错误
 
 `INVALID_CERT`、`INVALID_PEM`、`TOO_MANY_ITEMS`。
 
 > 证书链上限 64 张，超出返回 `TOO_MANY_ITEMS`。
+> 排序优先按 **AKID ↔ SKID** 匹配，退回主体 / 签发者文本；同一层有多个候选时按输入顺序取第一个（稳定排序）。
+> `ordered: false` **只**表示输入需要重排，**不是**错误。
 
 ---
 
@@ -215,29 +255,32 @@ ASN.1 结构树可视化。
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `bundle` | object | 是 | `PemBundle` |
-| `trustedRoots` | array | 否 | 受信任根证书 PEM 列表 |
-| `atTime` | string | 否 | 验证时刻（RFC3339） |
-| `host` | string | 否 | 校验主机名匹配 |
+| `trustedRoots` | array | 否 | 受信任根证书列表（每项一个 `PemBundle`）；为空时用链内的自签名根作隐含信任锚 |
+| `atTime` | string | 否 | 验证时刻（RFC3339）；为空时按当前时间 |
+| `host` | string | 否 | 校验主机名匹配；为空时不做名字匹配 |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `valid` | bool | 整链是否可信 |
-| `errors` | array | `[{ code, message }]` |
-| `details` | array | `[{ subject, valid, reason }]` |
+| `errors` | array | `[{ code, message, depth }]`；`code` 是 `X509_V_ERR_*` 名，`depth` 为出错深度（0 为待验证证书本身） |
+| `details` | array | `[{ subject, issuer, valid, reason }]` |
 | `hostnameMatch` | bool | 主机名是否匹配 |
 | `hostnameError` | string | 主机名不匹配原因 |
+| `implicitTrust` | bool | 是否使用了「链内自签名根」作为隐含信任锚 |
 
 ### 错误
 
-`INVALID_CERT`、`INVALID_TIME`、`TOO_MANY_ITEMS`。
+`INVALID_CERT`、`INVALID_PEM`、`INVALID_TIME`、`TOO_MANY_ITEMS`。
 
 ### 警告
 
 `EXPIRED_CERT`、`NOT_YET_VALID`、`SELF_SIGNED_CERT`、`UNTRUSTED_CHAIN`。
 
 > 验证**不通过**是**业务结果**，返回 `200` + `valid: false`。
+> **没有系统信任库可用**（上游未暴露默认信任库，见上游缺口登记）：`trustedRoots` 为空时把链内的自签名根当作隐含信任锚，此时 `valid: true` **只**说明链内自洽，不代表被外部信任；`implicitTrust` 为 `true` 即表示这种情况。
+> 主机名匹配**只**比对名字，不参与链可信判定。
 
 ---
 
@@ -250,7 +293,8 @@ ASN.1 结构树可视化。
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `cert` | object | 是 | 叶证书 |
-| `trustedRoots` | array | 否 | 受信任根证书 PEM 列表 |
+| `intermediates` | array | 否 | 可用于补链的中间证书列表（每项一个 `PemBundle`）；**v0.5.0 新增的可选字段** |
+| `trustedRoots` | array | 否 | 受信任根证书列表（每项一个 `PemBundle`）；同样参与补链 |
 
 ### 响应
 
@@ -258,13 +302,15 @@ ASN.1 结构树可视化。
 | --- | --- | --- |
 | `chainPem` | array | 补全后的链（叶 → 根） |
 | `addedCount` | int | 补充的证书数 |
-| `addedFroms` | array | 补充来源说明 |
-| `reachedRoot` | bool | 是否到达受信任根 |
-| `note` | string | 备注 |
+| `addedFroms` | array | 每张补充证书的来源（`intermediates` / `trustedRoots`） |
+| `reachedRoot` | bool | 是否到达自签名根或受信任根 |
+| `note` | string | 结论枚举：`reached_root` \| `already_complete` \| `missing_intermediate` |
 
 ### 错误
 
-`INVALID_CERT`、`TOO_MANY_ITEMS`。
+`INVALID_CERT`、`INVALID_PEM`、`TOO_MANY_ITEMS`。
+
+> **纯本地**：只从 `intermediates` 与 `trustedRoots` 里挑，**不**联网下载（出网能力在 v0.7.0 之后）。
 
 ---
 
@@ -310,9 +356,11 @@ ASN.1 结构树可视化。
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `issuer` | object | 签发者 |
-| `thisUpdate` / `nextUpdate` | string | 有效期 |
-| `signatureAlgorithm` | string | 签名算法 |
+| `issuer` | array | 签发者 RDN 条目 `[{ field, value }]` |
+| `issuerText` | string | 签发者单行文本（OpenSSL 风格） |
+| `thisUpdate` / `nextUpdate` | string | 本次 / 下次更新时间（RFC3339）；`nextUpdate` 缺失时为零值 |
+| `signatureAlgorithm` / `signatureAlgorithmOid` | string | 签名算法短名 / 点分 OID |
+| `number` | int | CRL Number 扩展值；无该扩展为 `-1` |
 | `revoked` | array | `[{ serial, revokedAt, reasonCode, reasonText }]` |
 
 ### 错误
@@ -320,6 +368,7 @@ ASN.1 结构树可视化。
 `INVALID_CRL`、`INVALID_PEM`、`TOO_MANY_ITEMS`。
 
 > 吊销条目上限 10000。
+> `serial` 为**空字符串**表示序列号超过 64 位：上游用 64 位整数承载序列号，超长时无法表达（见上游缺口登记），此时**不**输出错误值。
 
 ---
 

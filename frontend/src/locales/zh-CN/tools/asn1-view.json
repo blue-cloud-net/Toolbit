@@ -1,0 +1,46 @@
+{
+  "name": "ASN.1 视图",
+  "description": "把 DER 字节展开成结构树，便于排查证书、密钥与签名问题。",
+  "category": "证书",
+  "actions": {
+    "view": "查看"
+  },
+  "fields": {
+    "input": "输入材料",
+    "maxDepth": "最大展开深度"
+  },
+  "options": {},
+  "results": {
+    "tree": "结构树",
+    "length": "字节长度",
+    "nodeCount": "节点数",
+    "depth": "实际深度",
+    "maxDepth": "展开深度",
+    "empty": "暂无内容"
+  },
+  "examples": [
+    {
+      "label": "查看叶证书的 DER 结构树",
+      "value": "叶证书 PEM"
+    }
+  ],
+  "hints": {
+    "maxDepth": "留空或填 0 表示默认 32 层；上限 64 层。",
+    "limit": "输入上限 1 MB：深层嵌套的 DER 会在解析前先被体积挡住。",
+    "safe": "只读工具：只做结构解析，不校验材料语义。"
+  },
+  "faq": [
+    {
+      "q": "标签前面的 #2 是什么意思？",
+      "a": "是 tag 编号；后面的 universal / context 是 ASN.1 的类别。"
+    },
+    {
+      "q": "为什么有的节点后面写着 truncated？",
+      "a": "它下面的内容超出了设定的展开深度，没有继续展开。"
+    },
+    {
+      "q": "能看懂扩展里的 OID 吗？",
+      "a": "OID 是扩展的点分标识，展开后会连同原始字节一起显示。"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "name": "PEM & DER Converter",
+  "description": "Convert between PEM text and DER binary, and report the PEM labels found in the input.",
+  "category": "Certificates",
+  "actions": {
+    "convert": "Convert"
+  },
+  "fields": {
+    "input": "Input material",
+    "type": "Type filter",
+    "to": "Target format"
+  },
+  "options": {
+    "types": {
+      "any": "Any",
+      "cert": "Certificate",
+      "key": "Key",
+      "csr": "Certificate request",
+      "crl": "Revocation list"
+    },
+    "to": {
+      "der": "DER (binary, carried as base64)",
+      "pem": "PEM (text)"
+    }
+  },
+  "results": {
+    "output": "Conversion result",
+    "format": "Output format",
+    "encoding": "Output encoding",
+    "blockCount": "Block count",
+    "labels": "Detected labels"
+  },
+  "examples": [
+    {
+      "label": "Convert a leaf certificate from PEM to DER",
+      "value": "Leaf certificate PEM"
+    }
+  ],
+  "hints": {
+    "der": "DER is binary, so the output is carried as base64 to fit into JSON.",
+    "single": "Converting to DER accepts a single block only: DER cannot hold several objects.",
+    "safe": "Only the encoding changes; the material is neither parsed nor modified."
+  },
+  "faq": [
+    {
+      "q": "What follows BEGIN in a PEM header?",
+      "a": "The object type identifier, for example CERTIFICATE, PRIVATE KEY, PUBLIC KEY or CERTIFICATE REQUEST."
+    },
+    {
+      "q": "Why does DER output only take one block?",
+      "a": "DER encodes a single object, so several PEM blocks cannot be packed into one DER."
+    },
+    {
+      "q": "What is the type filter for?",
+      "a": "When the input mixes certificates and keys, it keeps only the blocks of the chosen type."
+    }
+  ]
+}

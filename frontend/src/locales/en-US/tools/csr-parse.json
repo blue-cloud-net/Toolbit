@@ -1,0 +1,47 @@
+{
+  "name": "CSR Parser",
+  "description": "Parse a PKCS#10 certificate signing request: subject, public key, extensions and signature.",
+  "category": "Certificates",
+  "actions": {
+    "parse": "Parse"
+  },
+  "fields": {
+    "csr": "CSR"
+  },
+  "options": {},
+  "results": {
+    "info": "CSR details",
+    "subject": "Subject",
+    "sans": "Subject alternative names",
+    "publicKey": "Public key",
+    "signatureAlgorithm": "Signature algorithm",
+    "signatureValid": "Signature valid",
+    "fingerprint": "SHA-256 fingerprint",
+    "challengePassword": "Has challenge password",
+    "extensions": "Requested extensions"
+  },
+  "examples": [
+    {
+      "label": "Parse a CSR's subject, public key and signature",
+      "value": "CSR"
+    }
+  ],
+  "hints": {
+    "challengePassword": "The tool only reports whether a challenge password is present; it never echoes the value.",
+    "safe": "Read-only: the CSR is never modified and never written to disk."
+  },
+  "faq": [
+    {
+      "q": "Will a CA honour the SANs in my CSR?",
+      "a": "Most CAs check them — do not put a domain in the CSR that does not match the subject."
+    },
+    {
+      "q": "Do CSRs expire?",
+      "a": "A CSR has no validity period, but some CAs throttle repeated submissions."
+    },
+    {
+      "q": "What does \"Signature valid\" mean?",
+      "a": "The CSR's own signature verifies against the public key it carries, which means it was not tampered with."
+    }
+  ]
+}

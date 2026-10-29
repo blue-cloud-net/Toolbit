@@ -70,5 +70,13 @@
     "dropzone": "把文件拖到这里，或点击选择",
     "choose": "选择文件",
     "clear": "清除文件"
+  },
+  "cert": {
+    "fields": {
+      "material": "证书材料"
+    },
+    "blocks": "识别到 {count} 个 PEM 块。",
+    "hint": "可粘贴 PEM 文本、base64 或十六进制的 DER；多个 PEM 块会按顺序一起处理。",
+    "empty": "暂无内容"
   }
 }

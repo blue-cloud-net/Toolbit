@@ -1,0 +1,46 @@
+{
+  "name": "CRL Parser",
+  "description": "Inspect a CRL: issuer, validity window, signature algorithm and the revoked certificate serials.",
+  "category": "Certificates",
+  "actions": {
+    "parse": "Parse"
+  },
+  "fields": {
+    "input": "Revocation list"
+  },
+  "options": {},
+  "results": {
+    "info": "Parse result",
+    "issuer": "Issuer",
+    "thisUpdate": "This update",
+    "nextUpdate": "Next update",
+    "signatureAlgorithm": "Signature algorithm",
+    "number": "CRL number",
+    "revoked": "Revoked entries"
+  },
+  "examples": [
+    {
+      "label": "Inspect the issuer and the revoked entries",
+      "value": "CRL in PEM"
+    }
+  ],
+  "hints": {
+    "serial": "The serial may be **empty** for values longer than 64 bits: upstream carries serials in a 64-bit integer and cannot express longer ones (see the registered upstream gap).",
+    "readOnly": "This tool only **parses** a CRL; revocation checking needs the issuer certificate.",
+    "limit": "A CRL may hold up to 10000 revocation entries."
+  },
+  "faq": [
+    {
+      "q": "What is the CRL number?",
+      "a": "The monotonically increasing counter in the CRL Number extension; it tells you whether the list you hold is a newer one."
+    },
+    {
+      "q": "What does an empty \"next update\" mean?",
+      "a": "The CRL carries no nextUpdate, so there is no way to tell when it goes stale."
+    },
+    {
+      "q": "How are revocation reasons shown?",
+      "a": "reasonText holds the reason name, for example keyCompromise (the private key was compromised)."
+    }
+  ]
+}

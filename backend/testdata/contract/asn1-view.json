@@ -1,0 +1,53 @@
+{
+  "slug": "asn1-view",
+  "description": "ASN.1 视图的契约测试数据。",
+  "cases": [
+    {
+      "name": "查看证书 DER 结构",
+      "request": {
+        "input": {
+          "data": "MIIDzTCCArWgAwIBAgIUbA85LjhezNVJkBzBCm0Ku3kj04wwDQYJKoZIhvcNAQELBQAwSzELMAkGA1UEBhMCQ04xFTATBgNVBAoMDFRvb2xiaXQgVGVzdDElMCMGA1UEAwwcVG9vbGJpdCBUZXN0IEludGVybWVkaWF0ZSBDQTAeFw0yNjEwMjkwMTU2MTVaFw0yOTAxMzEwMTU2MTVaMD8xCzAJBgNVBAYTAkNOMRUwEwYDVQQKDAxUb29sYml0IFRlc3QxGTAXBgNVBAMMEGxlYWYuZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDBiBQs06vKMyz5nyKFIDPg1Bu6/El5/Lap0vIzEzTpgmyRUAgG8J0TXHcf120R4sa3bshSBAGvyT72RNYCqKJpEZTQ1mUgyOdH4TrjfKZuyAetHou70KCfgT+MfOLcEQJN3GivZLUbaTM4awh9BGS/Q2VROY+roE4gf5q0ikb0wxkjCDLMMWpHIAMbjyqR9YCWHW/H5Q998vwtxxuQDyvQ//F+8gBhuJ+E6E0F1GxnECxwI2eo1vQHRc1U+AcG9Z3ssfYPx7DqBFAOxU9TjLRlBmvP3SqmIJuwkQ0d0QpNyjk9q9fsswJAYiWnmCiH5t8jqqfkOTdaQE+hrHmngAg/AgMBAAGjgbQwgbEwDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMDIGA1UdEQQrMCmCEGxlYWYuZXhhbXBsZS5jb22CD3d3dy5leGFtcGxlLmNvbYcEwAACCjAdBgNVHQ4EFgQU6PY9XAOnneAqMLSK8sC+deBFc3gwHwYDVR0jBBgwFoAUmISQp6fE0d4HnuETOTGg/fOh2XYwDQYJKoZIhvcNAQELBQADggEBAHjTelqGiZS82MmN/8BghKgFOc/6sGwLBbFzXQYlrHLQ1uKf96D/5+xKISch32kutwRMdnhmkJfp2qUvYI9f0XE/lOLdV1mN8J4Qz6cEt9JdBuVuBYZ+ok8oWlnCLUOz3sx2dELlOazLJ0o58/33XkJ85k3JXyzJfXq7fYMf56NB1kVyHhapf8eewcBV2HD2lfwaK7PVVJW99sh6MCq9lgj5PTDFAtXPZUyVsV7wCpp5ic35ANXNW3occPZP7z1BKEQS55P17WwhBYk3WwxMi+KVdBImdj3IoNBDmwdYpgi+d8OWq8J73/49p0FHURTCkHleRaAaPAJ+0E094lLZTkk=",
+          "format": "der"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "tree": {
+            "number": 16,
+            "constructed": true
+          }
+        }
+      }
+    },
+    {
+      "name": "限制展开深度",
+      "request": {
+        "input": {
+          "data": "MIIDzTCCArWgAwIBAgIUbA85LjhezNVJkBzBCm0Ku3kj04wwDQYJKoZIhvcNAQELBQAwSzELMAkGA1UEBhMCQ04xFTATBgNVBAoMDFRvb2xiaXQgVGVzdDElMCMGA1UEAwwcVG9vbGJpdCBUZXN0IEludGVybWVkaWF0ZSBDQTAeFw0yNjEwMjkwMTU2MTVaFw0yOTAxMzEwMTU2MTVaMD8xCzAJBgNVBAYTAkNOMRUwEwYDVQQKDAxUb29sYml0IFRlc3QxGTAXBgNVBAMMEGxlYWYuZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDBiBQs06vKMyz5nyKFIDPg1Bu6/El5/Lap0vIzEzTpgmyRUAgG8J0TXHcf120R4sa3bshSBAGvyT72RNYCqKJpEZTQ1mUgyOdH4TrjfKZuyAetHou70KCfgT+MfOLcEQJN3GivZLUbaTM4awh9BGS/Q2VROY+roE4gf5q0ikb0wxkjCDLMMWpHIAMbjyqR9YCWHW/H5Q998vwtxxuQDyvQ//F+8gBhuJ+E6E0F1GxnECxwI2eo1vQHRc1U+AcG9Z3ssfYPx7DqBFAOxU9TjLRlBmvP3SqmIJuwkQ0d0QpNyjk9q9fsswJAYiWnmCiH5t8jqqfkOTdaQE+hrHmngAg/AgMBAAGjgbQwgbEwDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMDIGA1UdEQQrMCmCEGxlYWYuZXhhbXBsZS5jb22CD3d3dy5leGFtcGxlLmNvbYcEwAACCjAdBgNVHQ4EFgQU6PY9XAOnneAqMLSK8sC+deBFc3gwHwYDVR0jBBgwFoAUmISQp6fE0d4HnuETOTGg/fOh2XYwDQYJKoZIhvcNAQELBQADggEBAHjTelqGiZS82MmN/8BghKgFOc/6sGwLBbFzXQYlrHLQ1uKf96D/5+xKISch32kutwRMdnhmkJfp2qUvYI9f0XE/lOLdV1mN8J4Qz6cEt9JdBuVuBYZ+ok8oWlnCLUOz3sx2dELlOazLJ0o58/33XkJ85k3JXyzJfXq7fYMf56NB1kVyHhapf8eewcBV2HD2lfwaK7PVVJW99sh6MCq9lgj5PTDFAtXPZUyVsV7wCpp5ic35ANXNW3occPZP7z1BKEQS55P17WwhBYk3WwxMi+KVdBImdj3IoNBDmwdYpgi+d8OWq8J73/49p0FHURTCkHleRaAaPAJ+0E094lLZTkk=",
+          "format": "der"
+        },
+        "maxDepth": 2
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "maxDepth": 2
+        }
+      }
+    },
+    {
+      "name": "非法 DER",
+      "request": {
+        "input": {
+          "data": "MAM=",
+          "format": "base64"
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_DER"
+      }
+    }
+  ]
+}

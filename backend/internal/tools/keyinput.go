@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/blue-cloud-net/Toolbit/backend/internal/codecsvc"
-	"github.com/blue-cloud-net/Toolbit/backend/internal/toolerr"
 )
 
 // 密钥输入格式。
@@ -67,61 +66,7 @@ func (in KeyInput) Resolve() (data []byte, isPEM bool, err error) {
 	if strings.TrimSpace(in.Data) == "" {
 		return nil, false, MissingField("key.data")
 	}
-
-	switch in.Format {
-	case FormatPEM:
-		return []byte(in.Data), true, nil
-	case FormatDER:
-		raw, err := codecsvc.Decode(in.Data, codecsvc.EncodingBase64)
-		if err != nil {
-			return nil, false, err
-		}
-		return raw, false, nil
-	case FormatBase64:
-		raw, err := codecsvc.Decode(in.Data, codecsvc.EncodingBase64)
-		if err != nil {
-			return nil, false, err
-		}
-		return classifyKeyBytes(raw)
-	case FormatHex:
-		raw, err := codecsvc.Decode(in.Data, codecsvc.EncodingHex)
-		if err != nil {
-			return nil, false, err
-		}
-		return classifyKeyBytes(raw)
-	default:
-		if codecsvc.LooksLikePEM(in.Data) {
-			return []byte(in.Data), true, nil
-		}
-		for _, enc := range []string{codecsvc.EncodingBase64, codecsvc.EncodingHex} {
-			raw, err := codecsvc.Decode(in.Data, enc)
-			if err != nil {
-				continue
-			}
-			data, isPEM, err := classifyKeyBytes(raw)
-			if err == nil {
-				return data, isPEM, nil
-			}
-		}
-		return nil, false, toolerr.Newf(toolerr.CodeInvalidPEM, map[string]any{
-			"field":    "key.data",
-			"expected": KeyFormats(),
-		})
-	}
-}
-
-// classifyKeyBytes 判定解码后的字节是 PEM 文本还是 DER 二进制。
-func classifyKeyBytes(raw []byte) ([]byte, bool, error) {
-	if codecsvc.LooksLikeDER(raw) {
-		return raw, false, nil
-	}
-	if codecsvc.LooksLikePEM(string(raw)) {
-		return raw, true, nil
-	}
-	return nil, false, toolerr.Newf(toolerr.CodeInvalidPEM, map[string]any{
-		"field":    "key.data",
-		"expected": KeyFormats(),
-	})
+	return resolveInput(in.Data, in.Format, "key.data")
 }
 
 // PrivateKeyPEM 解析私钥输入，返回 PEM 字节。
