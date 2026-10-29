@@ -1,0 +1,46 @@
+{
+  "slug": "caa-gen",
+  "description": "CAA 记录生成的契约测试数据。",
+  "cases": [
+    {
+      "name": "生成 issue 与 iodef",
+      "request": {
+        "domain": "example.com",
+        "ttl": 3600,
+        "records": [
+          {
+            "tag": "issue",
+            "value": "letsencrypt.org"
+          },
+          {
+            "tag": "iodef",
+            "value": "mailto:security@example.com"
+          }
+        ]
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "domain": "example.com",
+          "count": 2
+        }
+      }
+    },
+    {
+      "name": "未知标签",
+      "request": {
+        "domain": "example.com",
+        "records": [
+          {
+            "tag": "unknown",
+            "value": "x"
+          }
+        ]
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}
