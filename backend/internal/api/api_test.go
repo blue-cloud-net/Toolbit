@@ -14,6 +14,7 @@ import (
 
 	"github.com/blue-cloud-net/Toolbit/backend/internal/catalog"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/config"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/netguard"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/toolset"
 )
@@ -26,6 +27,12 @@ func newTestServer(t *testing.T) http.Handler {
 
 // newTestServerWithLimit 构造一个带指定全局请求体上限的测试服务器。
 func newTestServerWithLimit(t *testing.T, maxBodyBytes int64) http.Handler {
+	t.Helper()
+	return newTestServerWithGuard(t, testGuard(), maxBodyBytes)
+}
+
+// newTestServerWithGuard 用指定出网守卫构造测试服务器。
+func newTestServerWithGuard(t *testing.T, guard *netguard.Guard, maxBodyBytes int64) http.Handler {
 	t.Helper()
 
 	cfg := &config.Config{
@@ -52,7 +59,8 @@ func newTestServerWithLimit(t *testing.T, maxBodyBytes int64) http.Handler {
 		Config:  cfg,
 		Logger:  logger,
 		Catalog: cat,
-		Tools:   tools.NewRegistry(toolset.Definitions()),
+		Tools:   tools.NewRegistry(toolset.Definitions(guard)),
+		Network: guard,
 	})
 	return srv.Handler()
 }
@@ -243,7 +251,7 @@ func unimplementedSlug(t *testing.T, transport catalog.Transport) string {
 	if err != nil {
 		t.Fatalf("加载 catalog 失败：%v", err)
 	}
-	registry := tools.NewRegistry(toolset.Definitions())
+	registry := tools.NewRegistry(toolset.Definitions(testGuard()))
 	for _, tool := range cat.EnabledTools() {
 		if tool.Transport != transport {
 			continue
@@ -419,12 +427,19 @@ func TestInternalEndpointsDisabledByDefault(t *testing.T) {
 func TestContractDataFilesExist(t *testing.T) {
 	// 契约测试数据必须落档：**每个已实现工具**都要有一份契约文件。
 	//
-	// 该清单从 toolset.Definitions() 派生，而不是手写：
+	// 该清单从 toolset.Definitions(testGuard()) 派生，而不是手写：
 	// 手写清单会在新增工具时漏更新（v0.4.0 就漏过一次）。
-	for _, def := range toolset.Definitions() {
+	for _, def := range toolset.Definitions(testGuard()) {
 		path := filepath.Join("..", "..", "testdata", "contract", def.Slug+".json")
 		if _, err := os.Stat(path); err != nil {
 			t.Errorf("契约数据缺失：%s", path)
 		}
 	}
+}
+
+// testGuard 构造一个允许出网的守卫。
+//
+// 测试**不**真的出网：出网类工具的用例只覆盖参数校验与 NETWORK_DISABLED 路径。
+func testGuard() *netguard.Guard {
+	return netguard.New(netguard.Config{Enabled: true})
 }
