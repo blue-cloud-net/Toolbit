@@ -87,6 +87,7 @@ make verify          # 提交前全量校验：vet + test + lint + 前端单测�
 5. **不回显输入内容。** 错误 `message` 不得包含用户输入；可回显字段名与枚举值。
 6. **不写敏感数据到日志。** 只记录 `slug`、状态码、耗时、字节数、错误码、`requestId`。
 7. **原生句柄必须显式释放。** 禁止依赖 `finalizer`；`cryptosvc.Session` 负责 LIFO 释放。
+   唯一例外是 `x509.CertificateRequest`（上游未提供 `Close()`），见 [docs/standards/03-crypto.md](docs/standards/03-crypto.md) §8.6。
 8. **`priv.Public()` 不单独关闭**：它与私钥共享底层句柄。
 9. **用户输入构造 DN 一律用 `x509.Name.TryAdd`**，禁止 `Add`（对非法字段会 panic）。
 10. **国际化的 key 必须成对存在。** `zh-CN` 与 `en-US` 缺一不可，由 CI 校验。
