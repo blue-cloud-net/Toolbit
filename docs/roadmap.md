@@ -1151,6 +1151,7 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 | Markdown | `markdownlint-cli2` 零问题 |
 | 内部链接 | `lychee` 零断链 |
 | E2E | Playwright 覆盖 70 个工具路由 + 关键路径，全绿 |
+| 视觉回归 | Playwright 截图基线：浅色 / 深色 × 首页 / 工具页 / 统计页 |
 | 可访问性 | `axe` 扫描无 serious / critical；预设主色对比度 ≥ 4.5:1 |
 | 性能预算 | 初始 JS < 250 KB（gzip）；单工具 chunk < 40 KB；统计页 chunk < 120 KB |
 | 依赖安全 | `govulncheck`、`pnpm audit`、Trivy 无 high 及以上 |
@@ -1232,6 +1233,34 @@ RC 期间若发现**设计层面**缺陷（不是实现 bug），**必须**退�
 | 批量处理 | 多文件 / 多条输入并行 |
 | SM9 | 基于标识的密码算法 |
 | 链自动下载 | 证书链自动获取（需显式授权） |
+
+### 16.1 候选工具（待排期）
+
+以下能力在 v0.8.0 的评审中被识别，但**均未进入本版**。每一项都是一个独立工具，
+需先在本表确定优先级，再按 [AGENTS.md](../AGENTS.md) §8 的完整流程落地
+（catalog 登记 → 后端实现 → 前端实现 → i18n → 契约测试 → 文档），
+并同步递增工具总数。
+
+| 候选 slug | 能力 | 备注 |
+| --- | --- | --- |
+| `sql-dialect` | SQL 方言转换（MySQL / PostgreSQL / Oracle / SQL Server） | 独立能力，不塞进 `sql-format`；涉及自增、分页、拼接、引用符与类型名差异 |
+| `json-diff` | JSON 与文本差异对比 | 需结构化递归比对（路径标注）与行级 LCS；**必须**在服务端实现 |
+| `totp` | TOTP / HOTP 生成与校验 | 需 RFC 6238 / 4226 ��准向量测试 |
+| `color-convert` | 颜色格式转换（HEX / RGB / HSL / OKLCH） | 纯计算，可做前端辅助但**必须**有服务端端点 |
+| `json-to-types` | JSON 转语言类型定义（TS / Go / Rust 等） | 纯代码生成，注意输出转义 |
+| `lookup-table` | 纯查询类速查表 | 需先确定收录范围与更新机制 |
+| `step-chain` | 步骤链：管道式多步加工 | 需设计中间态的表示与错误定位 |
+| `batch` | 批量处理：多输入并行 | 与 §16 的「批量处理」同源，需先定容量与限流口径 |
+
+### 16.2 明确不支持的容器格式
+
+| 格式 | 原因 |
+| --- | --- |
+| JKS（Java KeyStore） | Java 专有格式，OpenSSL / Tongsuo 不提供读写能力；**不得**自研兜底（AGENTS.md §15） |
+
+当前已覆盖的容器格式互转：`pem-der`（PEM ↔ DER）、`key-convert`
+（PKCS#1 / PKCS#8 / SPKI / PEM / DER）、`pfx-pack` / `pfx-parse` / `pfx-change-password`
+（PKCS#12 打包 / 解析 / 改口令）。
 
 ---
 
