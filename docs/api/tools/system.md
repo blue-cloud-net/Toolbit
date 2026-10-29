@@ -20,20 +20,27 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `method` | string | 是 | `GET` `POST` `PUT` `PATCH` `DELETE` `HEAD` `OPTIONS` |
+| `method` | string | 否 | HTTP 方法；缺省 `GET` |
 | `url` | string | 是 | 目标 URL |
-| `headers` | array | 否 | `[{ name, value }]` |
+| `headers` | array | 否 | `[{ name, value, sensitive? }]`；`sensitive` 为真时值以占位符呈现 |
 | `body` | string | 否 | 请求体 |
-| `bodyType` | string | 否 | `json` \| `form` \| `raw` \| `binary` |
-| `auth` | object | 否 | `{ type, username, password, token, bearer }` |
-| `options` | object | 否 | `{ insecure, followRedirects, timeout, compressed, ipv4, verbose, proxy }` |
-| `shell` | string | 否 | `bash`（默认）\| `cmd` \| `powershell` |
+| `bodyFormat` | string | 否 | `json` \| `form` \| `raw` |
+| `auth` | string | 否 | `none`（默认）\| `basic` \| `bearer` |
+| `username` | string | `basic` 时是 | Basic 认证用户名 |
+| `password` | string | 否 | Basic 认证口令（输出为 `<PASSWORD>`） |
+| `token` | string | `bearer` 时是 | Bearer Token（输出为 `<TOKEN>`） |
+| `insecure` | bool | 否 | 是否跳过 TLS 证书校验 |
+| `followRedirects` | bool | 否 | 是否跟随重定向 |
+| `timeout` | int | 否 | 超时秒数（0–3600） |
+| `shell` | string | 否 | `bash`（默认）\| `sh` \| `powershell` \| `cmd` |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `command` | string | 生成的命令 |
+| `shell` | string | 目标 Shell |
+| `placeholders` | array | 被占位符替代的凭据字段名 |
 
 ### 错误
 
@@ -51,17 +58,23 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `fields` | object | 二选一 | `{ minute, hour, dom, month, dow }` |
-| `preset` | string | 二选一 | 预设名，如 `every-minute` `hourly` `daily` `weekly` `monthly` `yearly` |
-| `timezone` | string | 否 | IANA 时区名 |
+| `preset` | string | 二选一 | 预设名：`every-minute` `every-5-minutes` `hourly` `daily` `weekly` `monthly` `yearly` |
+| `minute` | string | 二选一 | 分钟字段 |
+| `hour` | string | 二选一 | 小时字段 |
+| `dayOfMonth` | string | 二选一 | 日字段 |
+| `month` | string | 二选一 | 月字段 |
+| `dayOfWeek` | string | 二选一 | 星期字段 |
+| `timezone` | string | 否 | IANA 时区名；缺省 UTC |
+| `count` | int | 否 | 预览的触发次数；默认 5（≤ 10） |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `expression` | string | 五段式表达式 |
-| `nextRuns` | array | 未来若干次触发时间（RFC3339） |
 | `description` | string | 人类可读描述 |
+| `occurrences` | array | 未来若干次触发时间 `[{ time }]`（RFC 3339） |
+| `timezone` | string | 使用的时区 |
 
 ### 错误
 
@@ -79,23 +92,24 @@ Unix 权限计算与解释。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `mode` | string | 二选一 | `symbolic`（如 `rwxr-xr-x`）\| `numeric`（如 `755`） |
-| `owner` / `group` / `others` | string | 否 | 直接指定三类权限（`rwx` 组合） |
+| `mode` | string | 二选一 | 权限值：符号形式（`rwxr-xr-x`）、八进制形式（`755`）或长形式（`u=rwx,g=rx,o=rx`） |
+| `user` | array | 否 | 属主权限位（`read` / `write` / `execute`）；给出时按位**设置** |
+| `group` | array | 否 | 属组权限位（`read` / `write` / `execute`） |
+| `other` | array | 否 | 其他人权限位（`read` / `write` / `execute`） |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `numeric` | string | 八进制权限（如 `755`） |
+| `octal` | string | 八进制权限（如 `755`） |
 | `symbolic` | string | 符号权限（如 `rwxr-xr-x`） |
-| `bits` | array | `[{ who, read, write, execute }]` |
-| `meaning` | string | 说明（如「属主可读写执行，属组与其他人可读可执行」） |
+| `classes` | array | `[{ class, read, write, execute, symbol, numeric, meaning }]` |
 
 ### 错误
 
 `INVALID_CHMOD`、`INVALID_FIELD`、`MISSING_FIELD`。
 
-> 只解释**低 9 位**（`rwx`）；`setuid` / `setgid` / `sticky`（`4xxx` / `2xxx` / `1xxx`）**不在**本工具范围内，输入时**必须**返回 `INVALID_CHMOD`。
+> 只解释**低 9 位**（`rwx`）；`setuid` / `setgid` / `sticky`（`4xxx` / `2xxx` / `1xxx`）**不在**本工具范围内，输入时会被**忽略**。
 
 ---
 

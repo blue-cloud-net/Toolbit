@@ -95,6 +95,7 @@ JWT 解码、编码与校验。
 | `signature` | string | 签名（base64url） |
 | `token` | string | `encode` 时返回完整 token |
 | `valid` | bool | `verify` 时返回 |
+| `status` | object | 载荷含 `exp` / `nbf` 时返回 `{ expired, notYetValid }` |
 
 ### 错误
 
@@ -140,16 +141,18 @@ JWT 解码、编码与校验。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 是 | `{ data, encoding }`；`encoding` = `auto` 表示自动探测 |
-| `from` | string | 是 | 源编码 |
-| `to` | string | 是 | 目标编码 |
-| `bom` | bool | 否 | 是否写入 BOM |
+| `input` | object | 是 | `{ data, encoding }`；`encoding` 是**传输编码**（`utf8` \| `hex` \| `base64` \| `base64url`），不是字符集 |
+| `from` | string | 是 | 源字符集；`auto` 表示自动探测 |
+| `to` | string | 是 | 目标字符集（不支持 `auto`） |
+| `bom` | bool | 否 | 是否写入 BOM（默认否） |
+| `outputEncoding` | string | 否 | 输出传输编码，默认 `base64` |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `output` | string | 转换结果（按 `to` 编码的字节，base64 表示） |
+| `output` | string | 转换结果（按 `outputEncoding` 编码的文本） |
+| `encoding` | string | 实际输出编码 |
 | `detected` | string | `from: auto` 时的探测结果 |
 
 ### 错误
@@ -170,8 +173,7 @@ JWT 解码、编码与校验。
 | --- | --- | --- | --- |
 | `operation` | string | 是 | `compress` \| `decompress` |
 | `format` | string | 否 | `gzip`（默认）\| `deflate`（zlib）\| `raw`（无头） |
-| `input` | object | 二选一 | `{ data, encoding }` |
-| `file` | file | 二选一 | 待压缩文件 |
+| `input` | object | 是 | `{ data, encoding }` |
 | `level` | int | 否 | 压缩级别（0–9） |
 | `outputEncoding` | string | 否 | 默认 `base64` |
 
@@ -180,6 +182,7 @@ JWT 解码、编码与校验。
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `output` | string | 压缩 / 解压结果 |
+| `encoding` | string | 实际使用的输出编码 |
 | `ratio` | number | 压缩比 |
 
 ### 错误
