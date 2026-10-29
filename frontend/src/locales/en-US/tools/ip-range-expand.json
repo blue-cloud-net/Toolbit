@@ -1,0 +1,54 @@
+{
+  "name": "IP Range Expander",
+  "description": "Convert between CIDR blocks and address ranges, and expand a block into an address list.",
+  "category": "Network",
+  "actions": {
+    "run": "Convert"
+  },
+  "fields": {
+    "mode": "Mode",
+    "cidr": "CIDR",
+    "start": "Start address",
+    "end": "End address",
+    "limit": "Expand limit"
+  },
+  "options": {
+    "mode": {
+      "toCidr": "Addresses to CIDR",
+      "toRange": "CIDR to addresses",
+      "expand": "Expand addresses"
+    }
+  },
+  "results": {
+    "cidrs": "CIDR blocks",
+    "start": "Start address",
+    "end": "End address",
+    "count": "Total addresses",
+    "addresses": "Address list",
+    "truncated": "Truncated"
+  },
+  "examples": [
+    {
+      "label": "Expand a /30",
+      "value": "{\"mode\":\"expand\",\"cidr\":\"192.168.1.0/30\",\"limit\":16}"
+    },
+    {
+      "label": "Convert a range to CIDRs",
+      "value": "{\"mode\":\"toCidr\",\"start\":\"192.168.1.10\",\"end\":\"192.168.1.20\"}"
+    }
+  ],
+  "hints": {
+    "mode": "Converting addresses to CIDR yields the minimal set of blocks covering the range.",
+    "output": "Expansion enumerates every address, so a large block would exhaust resources; a count limit applies."
+  },
+  "faq": [
+    {
+      "q": "Is IPv6 supported?",
+      "a": "Only IPv4 is supported at the moment."
+    },
+    {
+      "q": "Why is the expansion truncated?",
+      "a": "When the count exceeds the limit the run stops and is flagged as truncated to protect memory and response size."
+    }
+  ]
+}

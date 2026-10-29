@@ -1,0 +1,67 @@
+{
+  "name": "请求头生成与 UA 解析",
+  "description": "按平台生成客户端请求头，或反向解析 User-Agent 串。",
+  "category": "网络",
+  "actions": {
+    "run": "生成"
+  },
+  "fields": {
+    "mode": "模式",
+    "platform": "平台",
+    "version": "版本号",
+    "os": "操作系统",
+    "userAgent": "User-Agent 串",
+    "acceptLanguage": "Accept-Language",
+    "referer": "Referer"
+  },
+  "options": {
+    "mode": {
+      "generate": "生成请求头",
+      "parseUa": "解析 UA"
+    },
+    "platform": {
+      "chrome": "Chrome 桌面版",
+      "firefox": "Firefox 桌面版",
+      "safari": "Safari 桌面版",
+      "edge": "Edge 桌面版",
+      "android": "Android Chrome",
+      "ios": "iOS Safari",
+      "curl": "curl"
+    }
+  },
+  "results": {
+    "headers": "请求头",
+    "userAgent": "User-Agent",
+    "browser": "浏览器",
+    "browserVersion": "浏览器版本",
+    "os": "操作系统",
+    "osVersion": "系统版本",
+    "deviceType": "设备类型",
+    "isBot": "爬虫",
+    "engine": "渲染引擎"
+  },
+  "examples": [
+    {
+      "label": "生成 Chrome 请求头",
+      "value": "{\"mode\":\"generate\",\"platform\":\"chrome\",\"version\":\"120.0.0.0\"}"
+    },
+    {
+      "label": "解析 User-Agent",
+      "value": "{\"mode\":\"parseUa\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\"}"
+    }
+  ],
+  "hints": {
+    "platform": "首版只支持**内置**的常见平台与自定义填写，**不**引入任何在线 UA 查询。",
+    "output": "解析结果会区分桌面、移动、平板与爬虫，并给出渲染引擎。"
+  },
+  "faq": [
+    {
+      "q": "生成的请求头能绕过风控吗？",
+      "a": "不能。它只是常见请求头的模板，用于调试与兼容性测试。"
+    },
+    {
+      "q": "UA 数据库会更新吗？",
+      "a": "不会自动更新。数据是内置快照，随工具版本更新。"
+    }
+  ]
+}

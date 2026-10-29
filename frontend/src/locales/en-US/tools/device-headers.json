@@ -1,0 +1,67 @@
+{
+  "name": "Device Headers",
+  "description": "Generate client request headers for a platform, or parse a User-Agent string.",
+  "category": "Network",
+  "actions": {
+    "run": "Generate"
+  },
+  "fields": {
+    "mode": "Mode",
+    "platform": "Platform",
+    "version": "Version",
+    "os": "Operating system",
+    "userAgent": "User-Agent string",
+    "acceptLanguage": "Accept-Language",
+    "referer": "Referer"
+  },
+  "options": {
+    "mode": {
+      "generate": "Generate headers",
+      "parseUa": "Parse UA"
+    },
+    "platform": {
+      "chrome": "Chrome desktop",
+      "firefox": "Firefox desktop",
+      "safari": "Safari desktop",
+      "edge": "Edge desktop",
+      "android": "Android Chrome",
+      "ios": "iOS Safari",
+      "curl": "curl"
+    }
+  },
+  "results": {
+    "headers": "Headers",
+    "userAgent": "User-Agent",
+    "browser": "Browser",
+    "browserVersion": "Browser version",
+    "os": "Operating system",
+    "osVersion": "OS version",
+    "deviceType": "Device type",
+    "isBot": "Bot",
+    "engine": "Engine"
+  },
+  "examples": [
+    {
+      "label": "Generate Chrome headers",
+      "value": "{\"mode\":\"generate\",\"platform\":\"chrome\",\"version\":\"120.0.0.0\"}"
+    },
+    {
+      "label": "Parse a User-Agent",
+      "value": "{\"mode\":\"parseUa\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\"}"
+    }
+  ],
+  "hints": {
+    "platform": "The first version supports built-in platforms and custom input only; no online UA lookup is used.",
+    "output": "The parse result distinguishes desktop, mobile, tablet and bot, and reports the rendering engine."
+  },
+  "faq": [
+    {
+      "q": "Can these headers bypass risk controls?",
+      "a": "No. It is only a template of common headers for debugging and compatibility testing."
+    },
+    {
+      "q": "Is the UA data kept up to date?",
+      "a": "Not automatically. The data is a built-in snapshot updated with tool releases."
+    }
+  ]
+}

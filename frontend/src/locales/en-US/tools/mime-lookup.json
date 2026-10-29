@@ -1,0 +1,63 @@
+{
+  "name": "MIME Type Lookup",
+  "description": "Find the MIME media type of a file extension, or find the usual extensions of a media type.",
+  "category": "Network",
+  "actions": {
+    "lookup": "Look up"
+  },
+  "fields": {
+    "kind": "Lookup by",
+    "query": "Query"
+  },
+  "options": {
+    "kind": {
+      "extension": "Extension",
+      "mimeType": "Media type"
+    }
+  },
+  "results": {
+    "mimeType": "Media type",
+    "category": "Top-level type",
+    "charset": "Default charset",
+    "extensions": "Common extensions",
+    "aliases": "Aliases and variants",
+    "description": "Description",
+    "dataVersion": "Dataset version",
+    "matched": "Found",
+    "notMatched": "Not found",
+    "none": "Not applicable"
+  },
+  "examples": [
+    {
+      "label": "PNG extension",
+      "value": "png"
+    },
+    {
+      "label": "PDF by file name",
+      "value": "report.pdf"
+    },
+    {
+      "label": "JSON by media type",
+      "value": "application/json"
+    }
+  ],
+  "hints": {
+    "query": "An extension may be written as png, .png or report.pdf; a media type may be written as image/png, and parameters such as text/plain; charset=utf-8 are stripped automatically.",
+    "output": "The result gives the canonical media type, its top-level type, the default charset, the usual extensions and the historical aliases; an unknown query only reports that nothing was found.",
+    "note": "Data comes from a built-in snapshot; the system MIME database is never read and nothing is fetched from the network."
+  },
+  "faq": [
+    {
+      "q": "Why is .docx not application/msword?",
+      "a": "Office 2007 switched to the Open XML format, so .docx is application/vnd.openxmlformats-officedocument.wordprocessingml.document; application/msword describes the older .doc format."
+    },
+    {
+      "q": "Can one extension have several media types?",
+      "a": "Yes: .xml is described both as application/xml and as text/xml. The tool returns the more common one and keeps the other as a separate entry, which is still reachable by looking the media type up directly."
+    },
+    {
+      "q": "Why is the charset sometimes empty?",
+      "a": "A charset only makes sense for textual types. Images, archives and fonts have no default charset, so the field stays empty."
+    }
+  ]
+}

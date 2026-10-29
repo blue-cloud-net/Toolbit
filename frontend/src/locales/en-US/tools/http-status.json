@@ -1,0 +1,71 @@
+{
+  "name": "HTTP Status Code Lookup",
+  "description": "Look up the reason phrase and meaning of a status code, or search status codes by keyword.",
+  "category": "Network",
+  "actions": {
+    "lookup": "Look up"
+  },
+  "fields": {
+    "kind": "Lookup by",
+    "query": "Query"
+  },
+  "options": {
+    "kind": {
+      "code": "Status code",
+      "keyword": "Keyword"
+    },
+    "category": {
+      "informational": "1xx Informational",
+      "success": "2xx Success",
+      "redirect": "3xx Redirection",
+      "clientError": "4xx Client error",
+      "serverError": "5xx Server error"
+    }
+  },
+  "results": {
+    "title": "Status code",
+    "code": "Status code",
+    "reason": "Reason phrase",
+    "category": "Category",
+    "description": "Meaning",
+    "total": "Matches",
+    "dataVersion": "Dataset version",
+    "matched": "Found",
+    "notMatched": "Not found"
+  },
+  "examples": [
+    {
+      "label": "404 Not Found",
+      "value": "404"
+    },
+    {
+      "label": "500 Server error",
+      "value": "500"
+    },
+    {
+      "label": "Redirect by keyword",
+      "value": "redirect"
+    }
+  ],
+  "hints": {
+    "query": "A status code is an integer between 100 and 599; a keyword matches both the reason phrase (case-insensitive) and the Chinese description.",
+    "output": "The result gives the status code, its reason phrase, its category and its meaning; a keyword lookup lists every matching entry.",
+    "validCode": "The status code is within the valid range.",
+    "invalidCode": "A status code must be an integer between {min} and {max}.",
+    "note": "Data comes from a built-in snapshot; nothing is fetched from the network."
+  },
+  "faq": [
+    {
+      "q": "What happens when a status code is not in the table?",
+      "a": "A code between 100 and 599 that has no entry, such as 299, still returns its category so you can tell which class it belongs to; it simply has no standard reason phrase."
+    },
+    {
+      "q": "How do 401 and 403 differ?",
+      "a": "401 means valid authentication credentials are missing and the server expects the client to authenticate again; 403 means the server understood the request but refuses to authorize it, and re-authenticating will not help."
+    },
+    {
+      "q": "Can I search with Chinese keywords?",
+      "a": "Yes. A keyword matches both the reason phrase and the Chinese description, so 「重定向」 lists the 3xx entries."
+    }
+  ]
+}

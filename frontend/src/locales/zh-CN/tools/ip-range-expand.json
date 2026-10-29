@@ -1,0 +1,54 @@
+{
+  "name": "IP 段展开",
+  "description": "在 CIDR 与起止地址之间互转，并可把网段展开成地址列表。",
+  "category": "网络",
+  "actions": {
+    "run": "转换"
+  },
+  "fields": {
+    "mode": "模式",
+    "cidr": "网段",
+    "start": "起始地址",
+    "end": "结束地址",
+    "limit": "展开上限"
+  },
+  "options": {
+    "mode": {
+      "toCidr": "地址转 CIDR",
+      "toRange": "CIDR 转地址",
+      "expand": "展开地址列表"
+    }
+  },
+  "results": {
+    "cidrs": "网段列表",
+    "start": "起始地址",
+    "end": "结束地址",
+    "count": "地址总数",
+    "addresses": "地址列表",
+    "truncated": "已截断"
+  },
+  "examples": [
+    {
+      "label": "展开 /30 网段",
+      "value": "{\"mode\":\"expand\",\"cidr\":\"192.168.1.0/30\",\"limit\":16}"
+    },
+    {
+      "label": "地址区间转 CIDR",
+      "value": "{\"mode\":\"toCidr\",\"start\":\"192.168.1.10\",\"end\":\"192.168.1.20\"}"
+    }
+  ],
+  "hints": {
+    "mode": "地址转 CIDR 会给出覆盖区间的**最简**网段集合。",
+    "output": "展开是逐地址枚举，大网段会耗尽资源，因此有地址数上限。"
+  },
+  "faq": [
+    {
+      "q": "支持 IPv6 吗？",
+      "a": "当前只支持 IPv4。"
+    },
+    {
+      "q": "为什么展开结果会被截断？",
+      "a": "地址数超过上限时会停止并标记 truncated，避免耗尽内存与响应体。"
+    }
+  ]
+}
