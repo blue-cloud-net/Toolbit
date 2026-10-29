@@ -2,13 +2,14 @@
 /**
  * 工具页骨架。
  *
- * 标题行 + 面板 + 结果区；视口 ≥1024 时切换为左右分栏，
- * 中间的分隔条可拖拽调整比例（比例记忆在 `localStorage`）。
+ * 标题行 + 面板 + 结果区；默认单列上下排列，`wide` 工具在视口 ≥1280 时
+ * 切换为左右分栏，中间的分隔条可拖拽调整比例（比例记忆在 `localStorage`）。
  */
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import AppIcon from '@/components/common/AppIcon.vue'
+import { useCatalogStore } from '@/stores/catalog'
 import { usePrefsStore } from '@/stores/prefs'
 import { isImplemented } from '@/tools'
 
@@ -34,9 +35,33 @@ const props = withDefaults(
 
 const { t, locale } = useI18n()
 const prefs = usePrefsStore()
+const catalog = useCatalogStore()
 
 const displayName = computed(() => (locale.value === 'en-US' ? props.nameEn : props.name))
 const implemented = computed(() => isImplemented(props.slug))
+
+/** 面包屑中的分类层级：从目录元信息推导，缺失时只显示首页与工具名。 */
+const category = computed(() => {
+  const meta = catalog.getTool(props.slug)
+  if (!meta) {
+    return null
+  }
+  return catalog.categoryMap.get(meta.category) ?? null
+})
+
+/** 分类名：优先用词条，未登记时用目录里的中文名。 */
+const categoryName = computed(() => {
+  const cat = category.value
+  if (!cat) {
+    return ''
+  }
+  const key = `home.categories.${cat.slug}`
+  const translated = t(key)
+  if (translated !== key) {
+    return translated
+  }
+  return locale.value === 'en-US' ? cat.nameEn : cat.name
+})
 
 const favorite = computed(() => prefs.isFavorite(props.slug))
 const favoriteLabel = computed(() =>
@@ -56,9 +81,9 @@ function i18nOrEmpty(key: string): string {
 
 const description = computed(() => i18nOrEmpty('description'))
 
-/** 使用说明与 FAQ 默认折叠，避免长页面拖慢首屏扫读。 */
-const usageOpen = ref(false)
-const faqOpen = ref(false)
+/** 使用说明与 FAQ 默认展开：折叠按钮改成标题本身，不再占一行独立小胶囊。 */
+const usageOpen = ref(true)
+const faqOpen = ref(true)
 
 // ── 可拖拽分隔条 ──────────────────────────────────────────────
 const grid = ref<HTMLElement | null>(null)
@@ -172,13 +197,19 @@ onBeforeUnmount(() => {
     <header class="tool-page__head">
       <nav
         class="tool-page__breadcrumb"
-        :aria-label="t('common.nav.home')"
+        :aria-label="t('common.nav.breadcrumb')"
       >
         <RouterLink :to="{ name: 'home' }">
           {{ t('common.nav.home') }}
         </RouterLink>
+        <template v-if="category">
+          <span aria-hidden="true">/</span>
+          <RouterLink :to="{ name: 'category', params: { category: category.slug } }">
+            {{ categoryName }}
+          </RouterLink>
+        </template>
         <span aria-hidden="true">/</span>
-        <span>{{ displayName }}</span>
+        <span aria-current="page">{{ displayName }}</span>
       </nav>
 
       <div class="tool-page__title-row">
@@ -202,7 +233,7 @@ onBeforeUnmount(() => {
         >
           <AppIcon
             :name="favorite ? 'star-filled' : 'star'"
-            :size="17"
+            :size="20"
           />
         </button>
       </div>
@@ -263,35 +294,29 @@ onBeforeUnmount(() => {
         v-if="$slots.usage"
         class="tool-page__content"
       >
-        <h2
-          id="tool-usage"
-          class="tool-page__section-title"
-        >
-          {{ t('tool.sections.usage') }}
-        </h2>
-        <div class="tool-page__collapse">
+        <h2 class="tool-page__section-title">
           <button
             type="button"
-            class="tool-page__collapse-toggle"
+            class="tool-page__section-toggle"
             :aria-expanded="usageOpen"
             aria-controls="tool-usage-body"
             @click="usageOpen = !usageOpen"
           >
+            {{ t('tool.sections.usage') }}
             <AppIcon
               name="chevron"
-              :size="14"
-              class="tool-page__collapse-chevron"
-              :class="{ 'tool-page__collapse-chevron--open': usageOpen }"
+              :size="16"
+              class="tool-page__section-chevron"
+              :class="{ 'tool-page__section-chevron--open': usageOpen }"
             />
-            {{ usageOpen ? t('tool.sections.collapse') : t('tool.sections.expand') }}
           </button>
-          <div
-            v-show="usageOpen"
-            id="tool-usage-body"
-            class="tool-page__collapse-body"
-          >
-            <slot name="usage" />
-          </div>
+        </h2>
+        <div
+          v-show="usageOpen"
+          id="tool-usage-body"
+          class="tool-page__section-body"
+        >
+          <slot name="usage" />
         </div>
       </section>
 
@@ -299,35 +324,29 @@ onBeforeUnmount(() => {
         v-if="$slots.faq"
         class="tool-page__content"
       >
-        <h2
-          id="tool-faq"
-          class="tool-page__section-title"
-        >
-          {{ t('tool.sections.faq') }}
-        </h2>
-        <div class="tool-page__collapse">
+        <h2 class="tool-page__section-title">
           <button
             type="button"
-            class="tool-page__collapse-toggle"
+            class="tool-page__section-toggle"
             :aria-expanded="faqOpen"
             aria-controls="tool-faq-body"
             @click="faqOpen = !faqOpen"
           >
+            {{ t('tool.sections.faq') }}
             <AppIcon
               name="chevron"
-              :size="14"
-              class="tool-page__collapse-chevron"
-              :class="{ 'tool-page__collapse-chevron--open': faqOpen }"
+              :size="16"
+              class="tool-page__section-chevron"
+              :class="{ 'tool-page__section-chevron--open': faqOpen }"
             />
-            {{ faqOpen ? t('tool.sections.collapse') : t('tool.sections.expand') }}
           </button>
-          <div
-            v-show="faqOpen"
-            id="tool-faq-body"
-            class="tool-page__collapse-body"
-          >
-            <slot name="faq" />
-          </div>
+        </h2>
+        <div
+          v-show="faqOpen"
+          id="tool-faq-body"
+          class="tool-page__section-body"
+        >
+          <slot name="faq" />
         </div>
       </section>
     </template>
@@ -369,7 +388,8 @@ onBeforeUnmount(() => {
   color: var(--tb-border-strong);
 }
 
-.tool-page__breadcrumb span:last-child {
+/* 当前页加粗，与上级页拉开层次。 */
+.tool-page__breadcrumb span[aria-current='page'] {
   font-weight: 600;
   color: var(--tb-text-secondary);
 }
@@ -383,8 +403,8 @@ onBeforeUnmount(() => {
 .tool-page__favorite {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   color: var(--tb-text-tertiary);
   background: transparent;
   border: 1px solid transparent;
@@ -439,15 +459,25 @@ onBeforeUnmount(() => {
 
 .tool-page__primary,
 .tool-page__secondary {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
-/* 分隔条：仅在双栏时出现。 */
+/* 面板撑满整列，左右两栏的框因此视觉上等长。
+   `flex-basis: auto` 必须保留 —— 写 0 会让列的固有高度归零，面板内容被裁掉。 */
+.tool-page__primary > :deep(*),
+.tool-page__secondary > :deep(*) {
+  flex: 1 0 auto;
+  min-height: 0;
+}
+
+/* 分隔条：仅在双栏时出现，宽度须与列模板里的固定列一致。 */
 .tool-page__handle {
   display: none;
   align-self: stretch;
   width: 10px;
-  margin: 0 calc(var(--tb-space-2) * -1);
+  margin: 0;
   cursor: col-resize;
   touch-action: none;
   background: transparent;
@@ -472,63 +502,59 @@ onBeforeUnmount(() => {
   font-weight: 600;
 }
 
-/* 折叠区块：使用说明与 FAQ。 */
-.tool-page__collapse {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-2);
-}
-
-.tool-page__collapse-toggle {
+/* 分区标题：标题整行可点，点击折叠该分区正文（默认展开）。 */
+.tool-page__section-toggle {
   display: inline-flex;
   align-items: center;
   gap: var(--tb-space-1);
-  align-self: flex-start;
-  padding: var(--tb-space-1) var(--tb-space-2);
-  font-size: var(--tb-font-xs);
-  color: var(--tb-text-secondary);
-  background: var(--tb-bg-sunken);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
   cursor: pointer;
-  transition: color var(--tb-transition), border-color var(--tb-transition);
 }
 
-.tool-page__collapse-toggle:hover {
+.tool-page__section-toggle:hover {
   color: var(--tb-primary);
-  border-color: var(--tb-primary);
 }
 
-.tool-page__collapse-chevron {
+.tool-page__section-toggle:focus-visible {
+  outline: 2px solid var(--tb-primary);
+  outline-offset: 3px;
+  border-radius: var(--tb-radius-control);
+}
+
+.tool-page__section-chevron {
+  color: var(--tb-text-tertiary);
   transition: transform var(--tb-transition);
 }
 
-.tool-page__collapse-chevron--open {
+.tool-page__section-chevron--open {
   transform: rotate(90deg);
 }
 
-.tool-page__collapse-body {
+.tool-page__section-body {
   font-size: var(--tb-font-sm);
   line-height: 1.65;
   color: var(--tb-text-secondary);
 }
 
-@media (min-width: 1024px) {
-  .tool-page__grid {
-    grid-template-columns: var(--tb-split, 1fr) var(--tb-split-rest, 1fr);
+/* 双栏仅对 `wide` 工具生效：列模板必须是「面板 · 分隔条 · 面板」三列，
+   否则分隔条会占掉第二列、结果面板被挤到下一行。
+   两栏等高（`stretch`），且**不**设内部滚动条 —— 内容超出时由页面整体滚动。 */
+@media (min-width: 1280px) {
+  .tool-page--wide .tool-page__grid {
+    grid-template-columns:
+      minmax(0, var(--tb-split, 1fr))
+      10px
+      minmax(0, var(--tb-split-rest, 1fr));
     gap: var(--tb-space-3);
-    align-items: start;
+    align-items: stretch;
   }
 
-  .tool-page__handle {
+  .tool-page--wide .tool-page__handle {
     display: block;
-  }
-
-  .tool-page__primary,
-  .tool-page__secondary {
-    max-height: calc(100vh - var(--tb-header-h) - 96px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
   }
 }
 </style>
