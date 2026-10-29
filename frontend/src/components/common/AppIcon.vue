@@ -12,12 +12,14 @@ export type IconName =
   | 'star-filled'
   | 'chevron'
   | 'menu'
+  | 'search'
   | 'focus'
   | 'sun'
   | 'moon'
   | 'settings'
   | 'close'
   | 'check'
+  | 'alert'
   | 'external'
   | 'lock'
   | 'key'
@@ -66,6 +68,7 @@ const PATHS: Record<IconName, string[]> = {
   ],
   chevron: ['M9 6l6 6-6 6'],
   menu: ['M4 7h16', 'M4 12h16', 'M4 17h16'],
+  search: ['M10.5 4a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13Z', 'M15.4 15.4 20 20'],
   focus: ['M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9', 'M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9', 'M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15', 'M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15'],
   sun: [
     'M12 6.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Z',
@@ -78,6 +81,7 @@ const PATHS: Record<IconName, string[]> = {
   ],
   close: ['M6 6l12 12', 'M18 6L6 18'],
   check: ['M5 12.5l4.5 4.5L19 7'],
+  alert: ['M12 4.5 21 19H3l9-14.5Z', 'M12 10v3.5', 'M12 16.2v.3'],
   external: ['M14 4h6v6', 'M20 4l-9 9', 'M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'],
   lock: [
     'M8 10V7.5a4 4 0 0 1 8 0V10',
