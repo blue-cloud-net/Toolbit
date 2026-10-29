@@ -83,5 +83,113 @@ func Definitions() []tools.Definition {
 				return CRLParse(ctx, req.(*CRLParseRequest))
 			},
 		},
+		{
+			Slug: "csr-gen",
+			NewRequest: func() tools.Request {
+				return &CSRGenRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return CSRGen(ctx, req.(*CSRGenRequest))
+			},
+		},
+		{
+			Slug: "cert-gen",
+			NewRequest: func() tools.Request {
+				return &CertGenRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return CertGen(ctx, req.(*CertGenRequest))
+			},
+		},
+		{
+			Slug: "crl-gen",
+			NewRequest: func() tools.Request {
+				return &CRLGenRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return CRLGen(ctx, req.(*CRLGenRequest))
+			},
+		},
+		{
+			Slug: "revocation-check",
+			NewRequest: func() tools.Request {
+				return &RevocationCheckRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return RevocationCheck(ctx, req.(*RevocationCheckRequest))
+			},
+		},
+		{
+			Slug: "ocsp-request",
+			NewRequest: func() tools.Request {
+				return &OCSPRequestInput{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return OCSPRequest(ctx, req.(*OCSPRequestInput))
+			},
+		},
+		{
+			Slug: "ocsp-response",
+			NewRequest: func() tools.Request {
+				return &OCSPResponseInput{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return OCSPResponse(ctx, req.(*OCSPResponseInput))
+			},
+		},
+		{
+			Slug: "pfx-pack",
+			NewRequest: func() tools.Request {
+				return &PFXPackRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return PFXPack(ctx, req.(*PFXPackRequest))
+			},
+		},
+		{
+			Slug: "pfx-parse",
+			NewRequest: func() tools.Request {
+				return &PFXParseRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return PFXParse(ctx, req.(*PFXParseRequest))
+			},
+		},
+		{
+			Slug: "pfx-change-password",
+			NewRequest: func() tools.Request {
+				return &PFXChangePasswordRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return PFXChangePassword(ctx, req.(*PFXChangePasswordRequest))
+			},
+		},
+		{
+			Slug: "p7b-pack",
+			NewRequest: func() tools.Request {
+				return &P7BPackRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return P7BPack(ctx, req.(*P7BPackRequest))
+			},
+		},
+		{
+			Slug: "p7b-extract",
+			NewRequest: func() tools.Request {
+				return &P7BExtractRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return P7BExtract(ctx, req.(*P7BExtractRequest))
+			},
+		},
+		{
+			Slug: "caa-gen",
+			NewRequest: func() tools.Request {
+				return &CAAGenRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return CAAGen(ctx, req.(*CAAGenRequest))
+			},
+		},
 	}
 }
