@@ -50,5 +50,41 @@ func Definitions() []tools.Definition {
 				return tools.Result{Data: result}, nil
 			},
 		},
+		{
+			Slug: "nginx-config",
+			NewRequest: func() tools.Request {
+				return &NginxConfigRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return NginxConfig(ctx, req.(*NginxConfigRequest))
+			},
+		},
+		{
+			Slug: "firewall-rules",
+			NewRequest: func() tools.Request {
+				return &FirewallRulesRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return FirewallRules(ctx, req.(*FirewallRulesRequest))
+			},
+		},
+		{
+			Slug: "docker-compose-gen",
+			NewRequest: func() tools.Request {
+				return &DockerComposeRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return DockerComposeGen(ctx, req.(*DockerComposeRequest))
+			},
+		},
+		{
+			Slug: "lookup-table",
+			NewRequest: func() tools.Request {
+				return &LookupTableRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return LookupTable(ctx, req.(*LookupTableRequest))
+			},
+		},
 	}
 }

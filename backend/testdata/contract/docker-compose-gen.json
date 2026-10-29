@@ -1,0 +1,37 @@
+{
+  "slug": "docker-compose-gen",
+  "description": "Compose 配置生成的契约测试数据。",
+  "cases": [
+    {
+      "name": "生成单服务配置",
+      "request": {
+        "projectName": "demo",
+        "services": [
+          {
+            "name": "web",
+            "image": "nginx:alpine",
+            "ports": [
+              "8080:80"
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "serviceCount": 1
+        }
+      }
+    },
+    {
+      "name": "缺少项目名",
+      "request": {
+        "services": []
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "slug": "lookup-table",
+  "description": "速查表查询的契约测试数据。",
+  "cases": [
+    {
+      "name": "查询端口",
+      "request": {
+        "kind": "port",
+        "key": "443"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "kind": "port",
+          "matched": true
+        }
+      }
+    },
+    {
+      "name": "模糊检索退出码",
+      "request": {
+        "kind": "exitcode",
+        "key": "not"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "kind": "exitcode"
+        }
+      }
+    },
+    {
+      "name": "缺少查询词",
+      "request": {
+        "kind": "port"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

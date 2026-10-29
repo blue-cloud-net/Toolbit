@@ -1,0 +1,80 @@
+kind,key,label,description,extra
+port,20,FTP,文件传输协议默认端口,udp
+port,21,FTP-Control,文件传输协议控制端口,tcp
+port,22,SSH,安全远程登录与隧道端口,tcp
+port,23,Telnet,明文远程登录端口（不推荐使用）,tcp
+port,25,SMTP,邮件发送端口,tcp;udp
+port,53,DNS,域名解析端口,tcp;udp
+port,67,DHCP-Server,动态地址分配服务端端口,udp
+port,68,DHCP-Client,动态地址分配客户端端口,udp
+port,69,TFTP,简单文件传输协议端口,udp
+port,80,HTTP,超文本传输协议端口,tcp;udp
+port,110,POP3,邮局协议第 3 版（明文）,tcp
+port,123,NTP,网络时间协议端口,udp
+port,143,IMAP,邮局协议第 4 版,tcp
+port,161,SNMP,简单网络管理协议端口,udp
+port,389,LDAP,目录访问协议端口,tcp;udp
+port,443,HTTPS,加密的 HTTP 端口,tcp;udp
+port,445,SMB,Windows 文件共享端口,tcp
+port,465,SMTPS,加密的 SMTP 端口,tcp
+port,514,Syslog,系统日志传输端口,udp
+port,587,SMTP-Submission,邮件提交端口,tcp
+port,636,LDAPS,加密的 LDAP 端口,tcp
+port,873,rsync,增量文件同步端口,tcp
+port,993,IMAPS,加密的 IMAP 端口,tcp
+port,995,POP3S,加密的 POP3 端口,tcp
+port,1080,SOCKS,SOCKS 代理端口,tcp
+port,1433,MSSQL,SQL Server 默认端口,tcp
+port,1521,Oracle,Oracle 数据库默认端口,tcp
+port,2049,NFS,网络文件系统端口,tcp;udp
+port,2375,Docker-API,未加密的 Docker 远程 API 端口,tcp
+port,2376,Docker-API-TLS,加密的 Docker 远程 API 端口,tcp
+port,3000,Grafana,可视化面板默认端口,tcp
+port,3306,MySQL,MySQL 数据库默认端口,tcp
+port,3389,RDP,Windows 远程桌面端口,tcp
+port,5000,Docker-Registry,私有镜像仓库端口,tcp
+port,5432,PostgreSQL,PostgreSQL 数据库默认端口,tcp
+port,5433,PostgreSQL-Alt,PostgreSQL 备用端口,tcp
+port,5672,AMQP,消息队列协议端口,tcp
+port,5900,VNC,远程桌面控制端口,tcp
+port,6379,Redis,Redis 缓存端口,tcp
+port,8000,HTTP-Alt,常用的备用 HTTP 端口,tcp
+port,8080,HTTP-Proxy,常用的代理与备用 HTTP 端口,tcp
+port,8443,HTTPS-Alt,常用的备用 HTTPS 端口,tcp
+port,8888,HTTP-Dev,开发环境常用的 HTTP 端口,tcp
+port,9000,SonarQube,代码质量平台端口,tcp
+port,9090,Prometheus,指标采集端口,tcp
+port,9200,Elasticsearch,搜索引擎默认端口,tcp
+port,11211,Memcached,内存缓存端口,tcp
+port,15672,RabbitMQ,消息队列管理界面端口,tcp
+port,27017,MongoDB,MongoDB 数据库默认端口,tcp
+exitcode,0,成功,命令正常执行完毕,success
+exitcode,1,通用错误,一般性失败或未指定错误,failure
+exitcode,2,用法错误,命令行用法不当,failure
+exitcode,126,命令无法执行,找到命令但无法执行（通常是权限不足）,failure
+exitcode,127,命令未找到,命令不存在或不在 PATH 中,failure
+exitcode,128,无效参数,用于退出码区间的基值,failure
+exitcode,130,被信号中断,进程被 SIGINT 中断（Ctrl+C）,signal
+exitcode,131,被信号终止,进程被 SIGQUIT 终止,signal
+exitcode,134,进程异常终止,进程被 SIGABRT 中止（通常是断言失败或内存错误）,signal
+exitcode,135,总线错误,进程被 SIGBUS 终止,signal
+exitcode,136,浮点异常,进程被 SIGFPE 终止,signal
+exitcode,137,被强制杀死,进程被 SIGKILL 终止（常见于内存不足 OOM）,signal
+exitcode,138,总线错误,进程被 SIGBUS 终止,signal
+exitcode,139,段错误,进程被 SIGSEGV 终止（非法内存访问）,signal
+exitcode,143,被请求终止,进程被 SIGTERM 终止（常见的优雅退出）,signal
+exitcode,149,被强制杀死,进程被 SIGKILL 终止,signal
+exitcode,255,退出状态无效,退出码超出有效范围,failure
+timestamp,unix,Unix 秒级时间戳,以 1970-01-01T00:00:00Z 为纪元的秒数,2026-10-29T12:00:00Z
+timestamp,unix-ms,Unix 毫秒级时间戳,以纪元为起点的毫秒数,1793284800000
+timestamp,unix-us,Unix 微秒级时间戳,以纪元为起点的微秒数,1793284800000000
+timestamp,unix-ns,Unix 纳秒级时间戳,以纪元为起点的纳秒数,1793284800000000000
+timestamp,iso8601,ISO 8601,国际标准化日期时间格式,2026-10-29T12:00:00Z
+timestamp,rfc3339,RFC 3339,带时区偏移的日期时间格式,2026-10-29T12:00:00+08:00
+timestamp,rfc2822,RFC 2822,邮件头使用的日期时间格式,Wed, 29 Oct 2026 12:00:00 +0800
+timestamp,http-date,HTTP 日期,HTTP 协议头使用的日期格式,Wed, 29 Oct 2026 12:00:00 GMT
+timestamp,sql-datetime,SQL 日期时间,数据库常用的日期时间字面量,2026-10-29 12:00:00
+timestamp,excel-serial,Excel 序列号,以 1899-12-30 为起点的天数,46360.5
+timestamp,ticks,Windows 计时,自 0001-01-01 起的 100 纳秒计数,639243648000000000
+timestamp,julian,儒略日,以公元前 4713 年为起点的连续天数,2461294
+timestamp,day-count,日计数,自 1970-01-01 起的整日数,20731
