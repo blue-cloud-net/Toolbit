@@ -46,10 +46,22 @@
       }
     },
     {
-      "name": "非 HS 算法不支持",
+      "name": "非对称验签缺少公钥",
       "request": {
         "operation": "verify",
         "token": "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxIn0.c2ln",
+        "secret": "s3cret"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "不支持的签名算法",
+      "request": {
+        "operation": "verify",
+        "token": "eyJhbGciOiJIUzI1Ni1YLVAifQ.eyJzdWIiOiIxIn0.c2ln",
         "secret": "s3cret"
       },
       "expect": {

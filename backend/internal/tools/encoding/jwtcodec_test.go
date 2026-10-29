@@ -78,9 +78,21 @@ func TestJWTCodecEncodeAndVerify(t *testing.T) {
 	}
 }
 
-func TestJWTCodecVerifyRejectsNonHSAlgorithm(t *testing.T) {
-	// 头部 {"alg":"RS256"}。
+func TestJWTCodecVerifyRequiresPublicKeyForAsymmetricAlgorithm(t *testing.T) {
+	// 头部 {"alg":"RS256"}：非对称算法走公钥验签路径，缺少公钥时直接拒绝。
 	token := "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxIn0.c2ln"
+
+	_, err := JWTCodec(context.Background(), &JWTCodecRequest{
+		Operation: JWTVerify,
+		Token:     token,
+		Secret:    "s3cret",
+	})
+	assertToolErrCode(t, err, toolerr.CodeMissingField)
+}
+
+func TestJWTCodecVerifyRejectsUnknownAlgorithm(t *testing.T) {
+	// 头部 {"alg":"HS1-XLVA"}：未知算法不在受支持列表内。
+	token := "eyJhbGciOiJIUzI1Ni1YLVAifQ.eyJzdWIiOiIxIn0.c2ln"
 
 	_, err := JWTCodec(context.Background(), &JWTCodecRequest{
 		Operation: JWTVerify,

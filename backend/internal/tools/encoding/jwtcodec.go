@@ -30,7 +30,35 @@ const (
 	JWTHS384 = "HS384"
 	// JWTHS512 是 HMAC-SHA512。
 	JWTHS512 = "HS512"
+	// JWTRS256 是 RSA-PKCS1-v1_5 + SHA-256。
+	JWTRS256 = "RS256"
+	// JWTRS384 是 RSA-PKCS1-v1_5 + SHA-384。
+	JWTRS384 = "RS384"
+	// JWTRS512 是 RSA-PKCS1-v1_5 + SHA-512。
+	JWTRS512 = "RS512"
+	// JWTPS256 是 RSA-PSS + SHA-256。
+	JWTPS256 = "PS256"
+	// JWTPS384 是 RSA-PSS + SHA-384。
+	JWTPS384 = "PS384"
+	// JWTPS512 是 RSA-PSS + SHA-512。
+	JWTPS512 = "PS512"
+	// JWTES256 是 ECDSA + SHA-256。
+	JWTES256 = "ES256"
+	// JWTES384 是 ECDSA + SHA-384。
+	//
+	// 当前**不支持**：cryptosvc 的 ECDSA 摘要固定为 SHA-256。
+	JWTES384 = "ES384"
 )
+
+// JWTAlgorithm 返回受支持的签名算法（顺序稳定）。
+func JWTAlgorithm() []string {
+	return []string{
+		JWTHS256, JWTHS384, JWTHS512,
+		JWTRS256, JWTRS384, JWTRS512,
+		JWTPS256, JWTPS384, JWTPS512,
+		JWTES256,
+	}
+}
 
 // JWTCodecRequest 是 jwt-codec 工具的请求。
 type JWTCodecRequest struct {
@@ -44,6 +72,8 @@ type JWTCodecRequest struct {
 	Payload map[string]any `json:"payload"`
 	// Secret 是 HMAC 密钥；encode 与 verify 时必填。
 	Secret string `json:"secret"`
+	// PublicKey 是公钥 PEM；非对称验签时必填。
+	PublicKey string `json:"publicKey"`
 	// Algorithm 是签名算法；默认 HS256。
 	Algorithm string `json:"algorithm"`
 }
@@ -74,9 +104,9 @@ type JWTCodecResult struct {
 
 // JWTCodec 执行 JWT 的解析、生成与校验。
 //
-// **只**支持 HS 系列签名：RS / ES 系列的签名真实性校验不在本工具范围内，
-// 遇到非 HS 算法一律返回 UNSUPPORTED_ALGORITHM，而不是「假装校验通过」。
-func JWTCodec(_ context.Context, req *JWTCodecRequest) (tools.Result, error) {
+// **只**支持 HS 系列令牌的**生成**；**校验**额外支持 RS / PS / ES 系列，
+// 它们复用 signature 工具的 RSA / ECDSA 能力（不重复实现验签）。
+func JWTCodec(ctx context.Context, req *JWTCodecRequest) (tools.Result, error) {
 	if err := req.Validate(); err != nil {
 		return tools.Result{}, err
 	}
@@ -87,7 +117,7 @@ func JWTCodec(_ context.Context, req *JWTCodecRequest) (tools.Result, error) {
 	case JWTEncode:
 		return jwtEncode(req)
 	case JWTVerify:
-		return jwtVerify(req)
+		return jwtVerify(ctx, req)
 	default:
 		return tools.Result{}, tools.InvalidField("operation",
 			[]string{JWTDecode, JWTEncode, JWTVerify}, req.Operation)
@@ -104,10 +134,12 @@ func (r *JWTCodecRequest) Validate() error {
 	}
 
 	switch r.Algorithm {
-	case "", JWTHS256, JWTHS384, JWTHS512:
+	case "", JWTHS256, JWTHS384, JWTHS512,
+		JWTRS256, JWTRS384, JWTRS512,
+		JWTPS256, JWTPS384, JWTPS512,
+		JWTES256:
 	default:
-		return tools.UnsupportedAlgorithm(r.Algorithm,
-			[]string{JWTHS256, JWTHS384, JWTHS512})
+		return tools.UnsupportedAlgorithm(r.Algorithm, JWTAlgorithm())
 	}
 
 	switch r.Operation {
@@ -129,7 +161,9 @@ func (r *JWTCodecRequest) Validate() error {
 		if strings.TrimSpace(r.Token) == "" {
 			return tools.MissingField("token")
 		}
-		if r.Secret == "" {
+		// HS 系列用 Secret，RS / PS / ES 系列用公钥；
+		// 实际用哪个由令牌头部的 alg 决定，此处两者都不强制。
+		if r.Secret == "" && r.PublicKey == "" {
 			return tools.MissingField("secret")
 		}
 	}
@@ -200,8 +234,11 @@ func jwtEncode(req *JWTCodecRequest) (tools.Result, error) {
 	}}, nil
 }
 
-// jwtVerify 校验 HS 系列令牌的签名。
-func jwtVerify(req *JWTCodecRequest) (tools.Result, error) {
+// jwtVerify 校验令牌的签名。
+//
+// HS 系列用共享密钥，RS / PS / ES 系列用公钥；后者复用
+// cryptosvc 的 Verify（**不**重复实现验签）。
+func jwtVerify(ctx context.Context, req *JWTCodecRequest) (tools.Result, error) {
 	header, payload, signature, err := splitJWT(req.Token)
 	if err != nil {
 		return tools.Result{}, err
@@ -213,9 +250,9 @@ func jwtVerify(req *JWTCodecRequest) (tools.Result, error) {
 			"reason": "missing alg header",
 		})
 	}
-	if !isHSAlgorithm(declared) {
-		return tools.Result{}, tools.UnsupportedAlgorithm(declared,
-			[]string{JWTHS256, JWTHS384, JWTHS512})
+	declared = strings.ToUpper(declared)
+	if !isHSAlgorithm(declared) && !isAsymmetricAlgorithm(declared) {
+		return tools.Result{}, tools.UnsupportedAlgorithm(declared, JWTAlgorithm())
 	}
 	// 显式指定的算法必须与头部一致：否则等于允许算法混淆。
 	if req.Algorithm != "" && !strings.EqualFold(req.Algorithm, declared) {
@@ -230,12 +267,25 @@ func jwtVerify(req *JWTCodecRequest) (tools.Result, error) {
 		})
 	}
 
-	expected, err := signJWT(declared, req.Secret, parts[0]+"."+parts[1])
-	if err != nil {
-		return tools.Result{}, err
+	var valid bool
+	if isHSAlgorithm(declared) {
+		if req.Secret == "" {
+			return tools.Result{}, tools.MissingField("secret")
+		}
+		expected, err := signJWT(declared, req.Secret, parts[0]+"."+parts[1])
+		if err != nil {
+			return tools.Result{}, err
+		}
+		valid = cryptosvc.MACEqual(expected, signature)
+	} else {
+		if req.PublicKey == "" {
+			return tools.Result{}, tools.MissingField("publicKey")
+		}
+		valid, err = verifyAsymmetricJWT(ctx, declared, req.PublicKey, parts[0]+"."+parts[1], signature)
+		if err != nil {
+			return tools.Result{}, err
+		}
 	}
-
-	valid := cryptosvc.MACEqual(expected, signature)
 
 	return tools.Result{Data: JWTCodecResult{
 		Header:    header,
@@ -244,6 +294,24 @@ func jwtVerify(req *JWTCodecRequest) (tools.Result, error) {
 		Valid:     &valid,
 		Status:    jwtStatus(payload),
 	}}, nil
+}
+
+// verifyAsymmetricJWT 校验非对称签名的令牌。
+func verifyAsymmetricJWT(ctx context.Context, algorithm, publicKeyPEM, signingInput string, signature []byte) (bool, error) {
+	pub, err := cryptosvc.LoadPublicKey([]byte(publicKeyPEM))
+	if err != nil {
+		return false, err
+	}
+	// 公钥句柄由 cryptosvc 内部管理，这里**不**单独关闭：
+	// 公钥与私钥共享底层句柄（AGENTS §8）。
+
+	signAlgorithm, hash, padding, ok := jwtAsymmetricMapping(algorithm)
+	if !ok {
+		return false, tools.UnsupportedAlgorithm(algorithm, JWTAlgorithm())
+	}
+
+	return cryptosvc.Verify(signAlgorithm, hash, padding, pub,
+		[]byte(signingInput), signature, "")
 }
 
 // algorithm 返回归一化后的签名算法；缺省为 HS256。
@@ -261,6 +329,46 @@ func isHSAlgorithm(alg string) bool {
 		return true
 	default:
 		return false
+	}
+}
+
+// isAsymmetricAlgorithm 报告算法是否属于受支持的非对称签名族。
+func isAsymmetricAlgorithm(alg string) bool {
+	switch strings.ToUpper(alg) {
+	case JWTRS256, JWTRS384, JWTRS512,
+		JWTPS256, JWTPS384, JWTPS512,
+		JWTES256:
+		return true
+	default:
+		return false
+	}
+}
+
+// jwtAsymmetricMapping 把 JWT 算法名映射到 cryptosvc 的签名参数。
+//
+// 返回值依次是：签名算法、摘要算法、填充方式、是否受支持。
+//
+// ES384 **不支持**：cryptosvc 的 ECDSA 摘要固定为 SHA-256，
+// 用 SHA-384 验签会与其它实现不互通；按 AGENTS §15 该缺口走上游，
+// 不自行实现变通。
+func jwtAsymmetricMapping(algorithm string) (string, string, string, bool) {
+	switch strings.ToUpper(algorithm) {
+	case JWTRS256:
+		return cryptosvc.SignRSA, cryptosvc.HashSHA256, cryptosvc.RSAPaddingPKCS1, true
+	case JWTRS384:
+		return cryptosvc.SignRSA, cryptosvc.HashSHA384, cryptosvc.RSAPaddingPKCS1, true
+	case JWTRS512:
+		return cryptosvc.SignRSA, cryptosvc.HashSHA512, cryptosvc.RSAPaddingPKCS1, true
+	case JWTPS256:
+		return cryptosvc.SignRSA, cryptosvc.HashSHA256, cryptosvc.RSAPaddingPSS, true
+	case JWTPS384:
+		return cryptosvc.SignRSA, cryptosvc.HashSHA384, cryptosvc.RSAPaddingPSS, true
+	case JWTPS512:
+		return cryptosvc.SignRSA, cryptosvc.HashSHA512, cryptosvc.RSAPaddingPSS, true
+	case JWTES256:
+		return cryptosvc.SignECDSA, cryptosvc.HashSHA256, "", true
+	default:
+		return "", "", "", false
 	}
 }
 
