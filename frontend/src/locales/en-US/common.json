@@ -12,7 +12,10 @@
     "download": "Download",
     "search": "Search",
     "close": "Close",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "exitFocus": "Exit focus mode",
+    "enterFocus": "Enter focus mode",
+    "copyField": "Copy {name}"
   },
   "nav": {
     "home": "Home",
@@ -24,7 +27,11 @@
     "about": "About",
     "sidebar": "Sidebar navigation",
     "toggleSidebar": "Expand or collapse the sidebar",
-    "skipToContent": "Skip to main content"
+    "skipToContent": "Skip to main content",
+    "breadcrumb": "Breadcrumb",
+    "filterTools": "Filter tools",
+    "filterPlaceholder": "Filter…",
+    "openSidebar": "Open navigation"
   },
   "theme": {
     "label": "Theme",
@@ -34,6 +41,32 @@
     "toDark": "Switch to the dark theme",
     "toLight": "Switch to the light theme"
   },
+  "accent": {
+    "label": "Accent",
+    "indigo": "Indigo",
+    "blue": "Blue",
+    "gitlab-blue": "GitLab Blue",
+    "sky": "Sky",
+    "teal": "Teal",
+    "green": "Green",
+    "lime": "Lime",
+    "amber": "Amber",
+    "orange": "Orange",
+    "rose": "Rose",
+    "violet": "Violet",
+    "slate": "Slate"
+  },
+  "search": {
+    "placeholder": "Search tools…",
+    "hint": "Type to search tools and categories",
+    "empty": "No matching tools.",
+    "categories": "Categories",
+    "tools": "Tools",
+    "pages": "Pages",
+    "unimplemented": "Coming soon",
+    "navigate": "Select",
+    "open": "Open"
+  },
   "locale": {
     "label": "Language"
   },
@@ -41,6 +74,7 @@
     "title": "Settings",
     "open": "Open settings",
     "theme": "Appearance",
+    "accent": "Accent",
     "locale": "Language"
   },
   "states": {

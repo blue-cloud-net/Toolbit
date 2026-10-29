@@ -9,6 +9,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import AppIcon from '@/components/common/AppIcon.vue'
+import { ACCENT_PRESETS, type AccentKey } from '@/config/accents'
 import { SUPPORTED_LOCALES, type Locale } from '@/i18n'
 import { usePrefsStore, type ThemeMode } from '@/stores/prefs'
 
@@ -25,6 +26,15 @@ const themeOptions = computed<{ value: ThemeMode; label: string }[]>(() => [
   { value: 'dark', label: t('common.theme.dark') },
 ])
 
+/** 主色选项：色块网格，色值与 tokens.css 一致。 */
+const accentOptions = computed(() =>
+  ACCENT_PRESETS.map((preset) => ({
+    value: preset.key,
+    label: t(`common.accent.${preset.key}`),
+    swatch: preset.swatch,
+  })),
+)
+
 const LOCALE_LABELS: Record<Locale, string> = {
   'zh-CN': '简体中文',
   'en-US': 'English',
@@ -33,6 +43,7 @@ const LOCALE_LABELS: Record<Locale, string> = {
 const localeOptions = SUPPORTED_LOCALES.map((value) => ({ value, label: LOCALE_LABELS[value] }))
 
 const currentTheme = computed<ThemeMode>(() => prefs.theme)
+const currentAccent = computed<AccentKey>(() => prefs.accent)
 const currentLocale = computed<Locale>(() => prefs.locale)
 
 function toggle(): void {
@@ -46,6 +57,10 @@ function close(): void {
 
 function chooseTheme(value: ThemeMode): void {
   prefs.setTheme(value)
+}
+
+function chooseAccent(value: AccentKey): void {
+  prefs.setAccent(value)
 }
 
 function chooseLocale(value: Locale): void {
@@ -156,6 +171,32 @@ onBeforeUnmount(() => {
 
       <fieldset class="settings__group">
         <legend class="settings__legend">
+          {{ t('common.settings.accent') }}
+        </legend>
+        <div class="settings__swatches">
+          <button
+            v-for="opt in accentOptions"
+            :key="opt.value"
+            type="button"
+            class="settings__swatch"
+            :class="{ 'settings__swatch--active': currentAccent === opt.value }"
+            :style="{ '--swatch': opt.swatch }"
+            :aria-pressed="currentAccent === opt.value"
+            :title="opt.label"
+            @click="chooseAccent(opt.value)"
+          >
+            <AppIcon
+              v-if="currentAccent === opt.value"
+              name="check"
+              :size="14"
+            />
+            <span class="tb-sr-only">{{ opt.label }}</span>
+          </button>
+        </div>
+      </fieldset>
+
+      <fieldset class="settings__group">
+        <legend class="settings__legend">
           {{ t('common.settings.locale') }}
         </legend>
         <div class="settings__options">
@@ -211,12 +252,12 @@ onBeforeUnmount(() => {
   top: calc(100% + var(--tb-space-2));
   right: 0;
   z-index: 30;
-  width: 240px;
+  width: 260px;
   padding: var(--tb-space-3);
   background: var(--tb-bg-elevated);
   border: 1px solid var(--tb-border);
   border-radius: var(--tb-radius-card);
-  box-shadow: 0 12px 32px rgb(0 0 0 / 12%);
+  box-shadow: var(--tb-shadow-lg);
 }
 
 .settings__head {
@@ -279,5 +320,40 @@ onBeforeUnmount(() => {
   color: var(--tb-primary);
   background: var(--tb-primary-soft);
   border-color: color-mix(in srgb, var(--tb-primary) 30%, transparent);
+}
+
+/* 主色色块网格：4 列 × 3 行 */
+.settings__swatches {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--tb-space-2);
+}
+
+.settings__swatch {
+  display: grid;
+  place-items: center;
+  height: 34px;
+  color: #ffffff;
+  background: var(--swatch);
+  border: 2px solid transparent;
+  border-radius: var(--tb-radius-control);
+  cursor: pointer;
+  transition:
+    border-color var(--tb-transition),
+    transform var(--tb-transition);
+}
+
+.settings__swatch:hover {
+  transform: translateY(-1px);
+}
+
+.settings__swatch--active {
+  border-color: var(--tb-text);
+  box-shadow: inset 0 0 0 2px var(--tb-bg-elevated);
+}
+
+.settings__swatch:focus-visible {
+  outline: 3px solid var(--tb-primary);
+  outline-offset: 2px;
 }
 </style>

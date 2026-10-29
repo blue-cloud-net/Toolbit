@@ -5,10 +5,13 @@ import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
 import { beforeEach, describe, expect, it } from 'vitest'
 
+import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY } from '@/i18n'
 import {
+  ACCENT_STORAGE_KEY,
   FAVORITES_STORAGE_KEY,
   RECENT_LIMIT,
   RECENT_STORAGE_KEY,
+  THEME_STORAGE_KEY,
   usePrefsStore,
 } from '@/stores/prefs'
 
@@ -82,5 +85,79 @@ describe('最近使用', () => {
     setActivePinia(createPinia())
 
     expect(usePrefsStore().recent).toEqual([])
+  })
+})
+
+describe('主色', () => {
+  it('默认使用靛蓝', () => {
+    expect(usePrefsStore().accent).toBe('indigo')
+  })
+
+  it('切换后写入 localStorage', async () => {
+    const prefs = usePrefsStore()
+
+    prefs.setAccent('teal')
+    await nextTick()
+
+    expect(prefs.accent).toBe('teal')
+    expect(localStorage.getItem(ACCENT_STORAGE_KEY)).toBe('teal')
+  })
+
+  it('非法存储值回退到默认', () => {
+    localStorage.setItem(ACCENT_STORAGE_KEY, 'not-a-color')
+    setActivePinia(createPinia())
+
+    expect(usePrefsStore().accent).toBe('indigo')
+  })
+
+  it('同步到 html 的 data-accent', async () => {
+    const prefs = usePrefsStore()
+
+    prefs.setAccent('rose')
+    await nextTick()
+
+    expect(document.documentElement.dataset.accent).toBe('rose')
+  })
+})
+
+describe('主题', () => {
+  it('默认跟随系统', () => {
+    expect(usePrefsStore().theme).toBe('system')
+  })
+
+  it('切换后写入 localStorage 并同步 data-theme', async () => {
+    const prefs = usePrefsStore()
+
+    prefs.setTheme('dark')
+    await nextTick()
+
+    expect(prefs.resolvedTheme).toBe('dark')
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark')
+    expect(document.documentElement.dataset.theme).toBe('dark')
+  })
+
+  it('非法存储值回退到 system', () => {
+    localStorage.setItem(THEME_STORAGE_KEY, 'neon')
+    setActivePinia(createPinia())
+
+    expect(usePrefsStore().theme).toBe('system')
+  })
+})
+
+describe('语言', () => {
+  it('非法存储值回退到默认语言', () => {
+    localStorage.setItem(LOCALE_STORAGE_KEY, 'fr-FR')
+    setActivePinia(createPinia())
+
+    expect(usePrefsStore().locale).toBe(DEFAULT_LOCALE)
+  })
+
+  it('切换后写入 localStorage', async () => {
+    const prefs = usePrefsStore()
+
+    prefs.setLocale('en-US')
+    await nextTick()
+
+    expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('en-US')
   })
 })

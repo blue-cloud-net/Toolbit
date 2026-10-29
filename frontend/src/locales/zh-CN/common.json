@@ -12,7 +12,10 @@
     "download": "下载",
     "search": "搜索",
     "close": "关闭",
-    "backHome": "返回首页"
+    "backHome": "返回首页",
+    "exitFocus": "退出专注模式",
+    "enterFocus": "进入专注模式",
+    "copyField": "复制 {name}"
   },
   "nav": {
     "home": "首页",
@@ -24,7 +27,11 @@
     "about": "关于",
     "sidebar": "侧栏导航",
     "toggleSidebar": "展开或收起侧栏",
-    "skipToContent": "跳到主内容"
+    "skipToContent": "跳到主内容",
+    "breadcrumb": "面包屑",
+    "filterTools": "过滤工具",
+    "filterPlaceholder": "过滤…",
+    "openSidebar": "打开导航"
   },
   "theme": {
     "label": "主题",
@@ -34,6 +41,32 @@
     "toDark": "切换到深色主题",
     "toLight": "切换到浅色主题"
   },
+  "accent": {
+    "label": "主色",
+    "indigo": "靛蓝",
+    "blue": "蓝",
+    "gitlab-blue": "GitLab 蓝",
+    "sky": "天蓝",
+    "teal": "青绿",
+    "green": "绿",
+    "lime": "黄绿",
+    "amber": "琥珀",
+    "orange": "橙",
+    "rose": "玫红",
+    "violet": "紫",
+    "slate": "石墨"
+  },
+  "search": {
+    "placeholder": "搜索工具…",
+    "hint": "输入关键字搜索工具与分类",
+    "empty": "没有匹配的工具。",
+    "categories": "分类",
+    "tools": "工具",
+    "pages": "页面",
+    "unimplemented": "即将上线",
+    "navigate": "选择",
+    "open": "打开"
+  },
   "locale": {
     "label": "语言"
   },
@@ -41,6 +74,7 @@
     "title": "设置",
     "open": "打开设置",
     "theme": "外观",
+    "accent": "主色",
     "locale": "语言"
   },
   "states": {

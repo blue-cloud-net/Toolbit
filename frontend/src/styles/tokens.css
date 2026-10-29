@@ -3,19 +3,26 @@
  *
  * 所有颜色、间距、圆角、字号都来自这里的 CSS 变量，
  * 组件内**禁止**写死十六进制颜色。
+ *
+ * 主题与主色是**两条正交的轴**：
+ *   - `data-theme`  → light / dark，由 `prefs.theme` 驱动；
+ *   - `data-accent` → 12 组预设主色，由 `prefs.accent` 驱动。
+ * 两者可任意组合，因此主色值按「明暗 × 12 色」分别定义。
  */
 
 :root {
-  /* 主色 */
+  color-scheme: light;
+
+  /* 主色（默认靛蓝；其余 11 组见下方 [data-accent] 规则） */
   --tb-primary: #4f46e5;
-  --tb-primary-hover: #4338ca;
-  --tb-primary-active: #3730a3;
-  --tb-primary-soft: #eef2ff;
+  --tb-primary-hover: #463eca;
+  --tb-primary-active: #3c35ae;
+  --tb-primary-soft: #edecfc;
   --tb-primary-contrast: #ffffff;
 
   /*
    * 品牌标识（Toolbit 徽标）：**固定靛蓝，不随主色切换**。
-   * 徽标是品牌锚点，在任意主色与明暗主题下都保持同一识别度。
+   * 徽标是品牌锚点，12 组主色任意组合下都保持同一识别度。
    */
   --tb-brand-from: #6366f1;
   --tb-brand-to: #4338ca;
@@ -25,6 +32,9 @@
   --tb-bg: #f7f8fa;
   --tb-bg-elevated: #ffffff;
   --tb-bg-sunken: #eef0f4;
+  /* 交互态背景：hover 更亮、active 更深，深色模式下方向相反 */
+  --tb-bg-hover: #eef0f4;
+  --tb-bg-active: #e5e7eb;
 
   /* 边框 */
   --tb-border: #e5e7eb;
@@ -35,7 +45,7 @@
   --tb-text-secondary: #4b5563;
   --tb-text-tertiary: #9ca3af;
 
-  /* 语义 */
+  /* 语义（固定，不随主色变化 —— 见 standards/01-frontend.md §8.3） */
   --tb-success: #16a34a;
   --tb-warning: #d97706;
   --tb-danger: #dc2626;
@@ -58,10 +68,11 @@
   --tb-radius-panel: 14px;
   --tb-radius-pill: 999px;
 
-  /* 字号 */
-  --tb-font-xs: 12px;
-  --tb-font-sm: 13px;
-  --tb-font-base: 14px;
+  /* 字号：11 / 13 / 14 / 15 / 16 / 18 / 20 / 24 / 30，基准 15 */
+  --tb-font-2xs: 11px;
+  --tb-font-xs: 13px;
+  --tb-font-sm: 14px;
+  --tb-font-base: 15px;
   --tb-font-md: 16px;
   --tb-font-lg: 18px;
   --tb-font-xl: 20px;
@@ -71,8 +82,36 @@
   /* 动效 */
   --tb-transition: 180ms ease-out;
 
+  /* 阴影：三级，用于卡片、浮层、面板 */
+  --tb-shadow-sm: 0 1px 2px rgb(16 24 40 / 6%), 0 1px 3px rgb(16 24 40 / 8%);
+  --tb-shadow-md: 0 4px 8px -2px rgb(16 24 40 / 8%), 0 2px 4px -2px rgb(16 24 40 / 6%);
+  --tb-shadow-lg: 0 12px 24px -4px rgb(16 24 40 / 12%), 0 4px 8px -4px rgb(16 24 40 / 8%);
+
+  /* 滚动条 */
+  --tb-scrollbar-thumb: #cbd5e1;
+  --tb-scrollbar-thumb-hover: #94a3b8;
+  --tb-scrollbar-track: transparent;
+
   /* 布局：页头高度，侧栏粘位与满高计算都依赖它 */
-  --tb-header-h: 52px;
+  --tb-header-h: 60px;
+
+  /* 容器宽度：顶栏、正文、页脚共用，保证左边缘对齐 */
+  --tb-container-w: 1280px;
+
+  /* 侧栏 */
+  --tb-sidebar-w: 260px;
+  --tb-sidebar-rail-w: 56px;
+  --tb-sidebar-chip: 26px;
+
+  /*
+   * 响应式断点约定：
+   *   640px  单列以下：侧栏转抽屉
+   *   768px  平板竖屏
+   *   1024px 平板横屏 / 工具页转双栏
+   *   1280px 宽屏，容器最大宽
+   *   1536px 超宽屏
+   * 注：CSS 变量不能用在 @media 条件里，此处仅作约定记录。
+   */
 
   /* 字体 */
   --tb-font-sans:
@@ -81,19 +120,124 @@
   --tb-font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
 }
 
+/* ══ 浅色主色板（12 组）══════════════════════════════════════════════ */
+
+:root[data-accent='indigo'] {
+  --tb-primary: #4f46e5;
+  --tb-primary-hover: #463eca;
+  --tb-primary-active: #3c35ae;
+  --tb-primary-soft: #edecfc;
+  --tb-primary-contrast: #ffffff;
+}
+
+:root[data-accent='blue'] {
+  --tb-primary: #2563eb;
+  --tb-primary-hover: #2157cf;
+  --tb-primary-active: #1c4bb3;
+  --tb-primary-soft: #e9effd;
+  --tb-primary-contrast: #ffffff;
+}
+
+:root[data-accent='gitlab-blue'] {
+  --tb-primary: #1f75cb;
+  --tb-primary-hover: #1b67b3;
+  --tb-primary-active: #18599a;
+  --tb-primary-soft: #e9f1fa;
+  --tb-primary-contrast: #ffffff;
+}
+
+:root[data-accent='sky'] {
+  --tb-primary: #0369a1;
+  --tb-primary-hover: #035c8e;
+  --tb-primary-active: #02507a;
+  --tb-primary-soft: #e8f2f8;
+  --tb-primary-contrast: #ffffff;
+}
+
+:root[data-accent='teal'] {
+  --tb-primary: #0f766e;
+  --tb-primary-hover: #0d6861;
+  --tb-primary-active: #0b5a54;
+  --tb-primary-soft: #e7f4f3;
+  --tb-primary-contrast: #ffffff;
+}
+
+:root[data-accent='green'] {
+  --tb-primary: #15803d;
+  --tb-primary-hover: #127136;
+  --tb-primary-active: #10612e;
+  --tb-primary-soft: #e8f3ec;
+  --tb-primary-contrast: #ffffff;
+}
+
+:root[data-accent='lime'] {
+  --tb-primary: #4d7c0f;
+  --tb-primary-hover: #446d0d;
+  --tb-primary-active: #3b5e0b;
+  --tb-primary-soft: #eff4e3;
+  --tb-primary-contrast: #ffffff;
+}
+
+:root[data-accent='amber'] {
+  --tb-primary: #b45309;
+  --tb-primary-hover: #9e4908;
+  --tb-primary-active: #893f07;
+  --tb-primary-soft: #f7eee3;
+  --tb-primary-contrast: #ffffff;
+}
+
+:root[data-accent='orange'] {
+  --tb-primary: #c2410c;
+  --tb-primary-hover: #ab390b;
+  --tb-primary-active: #933109;
+  --tb-primary-soft: #f9ece4;
+  --tb-primary-contrast: #ffffff;
+}
+
+:root[data-accent='rose'] {
+  --tb-primary: #e11d48;
+  --tb-primary-hover: #c61a3f;
+  --tb-primary-active: #ab1637;
+  --tb-primary-soft: #fdebef;
+  --tb-primary-contrast: #ffffff;
+}
+
+:root[data-accent='violet'] {
+  --tb-primary: #7c3aed;
+  --tb-primary-hover: #6d33d1;
+  --tb-primary-active: #5e2cb4;
+  --tb-primary-soft: #f0ebfd;
+  --tb-primary-contrast: #ffffff;
+}
+
+:root[data-accent='slate'] {
+  --tb-primary: #475569;
+  --tb-primary-hover: #3e4b5c;
+  --tb-primary-active: #364150;
+  --tb-primary-soft: #edf0f3;
+  --tb-primary-contrast: #ffffff;
+}
+
+/* ══ 深色 ══════════════════════════════════════════════════════════ */
+
 :root[data-theme='dark'] {
-  --tb-primary: #818cf8;
-  --tb-primary-hover: #a5b4fc;
-  --tb-primary-active: #c7d2fe;
-  --tb-primary-soft: #1e1b4b;
+  color-scheme: dark;
+
+  --tb-primary: #a5b4fc;
+  --tb-primary-hover: #b0bdfc;
+  --tb-primary-active: #bbc6fd;
+  --tb-primary-soft: #24293c;
   --tb-primary-contrast: #0b0f17;
 
   --tb-bg: #0b0f17;
   --tb-bg-elevated: #111827;
   --tb-bg-sunken: #0f1520;
+  /* 深色下 hover 应"提亮"而非"凹陷" */
+  --tb-bg-hover: #1a2333;
+  --tb-bg-active: #212c3d;
 
   --tb-border: #1f2937;
-  --tb-border-strong: #374151;
+  --tb-border-strong: #334155;
 
   --tb-text: #e5e7eb;
   --tb-text-secondary: #9ca3af;
@@ -103,4 +247,110 @@
   --tb-warning: #fbbf24;
   --tb-danger: #f87171;
   --tb-info: #60a5fa;
+
+  /* 深色专用阴影：纯黑 + 更低透明度，避免灰蒙 */
+  --tb-shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+  --tb-shadow-md: 0 4px 10px rgb(0 0 0 / 45%);
+  --tb-shadow-lg: 0 16px 32px rgb(0 0 0 / 55%);
+
+  --tb-scrollbar-thumb: #334155;
+  --tb-scrollbar-thumb-hover: #475569;
+}
+
+/* ══ 深色主色板（12 组）══════════════════════════════════════════════ */
+
+:root[data-theme='dark'][data-accent='indigo'] {
+  --tb-primary: #a5b4fc;
+  --tb-primary-hover: #b0bdfc;
+  --tb-primary-active: #bbc6fd;
+  --tb-primary-soft: #24293c;
+  --tb-primary-contrast: #0b0f17;
+}
+
+:root[data-theme='dark'][data-accent='blue'] {
+  --tb-primary: #60a5fa;
+  --tb-primary-hover: #73b0fb;
+  --tb-primary-active: #86bbfb;
+  --tb-primary-soft: #1b2740;
+  --tb-primary-contrast: #0b0f17;
+}
+
+:root[data-theme='dark'][data-accent='gitlab-blue'] {
+  --tb-primary: #7eb6f5;
+  --tb-primary-hover: #8dbff6;
+  --tb-primary-active: #9dc8f7;
+  --tb-primary-soft: #1c2a40;
+  --tb-primary-contrast: #0b0f17;
+}
+
+:root[data-theme='dark'][data-accent='sky'] {
+  --tb-primary: #38bdf8;
+  --tb-primary-hover: #50c5f9;
+  --tb-primary-active: #68cdfa;
+  --tb-primary-soft: #142a3a;
+  --tb-primary-contrast: #0b0f17;
+}
+
+:root[data-theme='dark'][data-accent='teal'] {
+  --tb-primary: #2dd4bf;
+  --tb-primary-hover: #46d9c7;
+  --tb-primary-active: #5fdece;
+  --tb-primary-soft: #11302e;
+  --tb-primary-contrast: #0b0f17;
+}
+
+:root[data-theme='dark'][data-accent='green'] {
+  --tb-primary: #4ade80;
+  --tb-primary-hover: #60e28f;
+  --tb-primary-active: #75e69e;
+  --tb-primary-soft: #16301f;
+  --tb-primary-contrast: #0b0f17;
+}
+
+:root[data-theme='dark'][data-accent='lime'] {
+  --tb-primary: #a3e635;
+  --tb-primary-hover: #aee94d;
+  --tb-primary-active: #b9ec65;
+  --tb-primary-soft: #26321a;
+  --tb-primary-contrast: #0b0f17;
+}
+
+:root[data-theme='dark'][data-accent='amber'] {
+  --tb-primary: #fbbf24;
+  --tb-primary-hover: #fbc73e;
+  --tb-primary-active: #fcce59;
+  --tb-primary-soft: #33280f;
+  --tb-primary-contrast: #0b0f17;
+}
+
+:root[data-theme='dark'][data-accent='orange'] {
+  --tb-primary: #fb923c;
+  --tb-primary-hover: #fb9f53;
+  --tb-primary-active: #fcac6b;
+  --tb-primary-soft: #33200f;
+  --tb-primary-contrast: #0b0f17;
+}
+
+:root[data-theme='dark'][data-accent='rose'] {
+  --tb-primary: #fb7185;
+  --tb-primary-hover: #fb8294;
+  --tb-primary-active: #fc93a2;
+  --tb-primary-soft: #331620;
+  --tb-primary-contrast: #0b0f17;
+}
+
+:root[data-theme='dark'][data-accent='violet'] {
+  --tb-primary: #a78bfa;
+  --tb-primary-hover: #b299fb;
+  --tb-primary-active: #bca7fb;
+  --tb-primary-soft: #271f3d;
+  --tb-primary-contrast: #0b0f17;
+}
+
+:root[data-theme='dark'][data-accent='slate'] {
+  --tb-primary: #94a3b8;
+  --tb-primary-hover: #a1aec1;
+  --tb-primary-active: #aeb9c9;
+  --tb-primary-soft: #232b36;
+  --tb-primary-contrast: #0b0f17;
 }

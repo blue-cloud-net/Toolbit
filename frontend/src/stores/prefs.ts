@@ -1,19 +1,29 @@
 /**
  * 偏好设置。
  *
- * 只存「语言 / 主题 / 侧栏折叠」这类非敏感偏好；
+ * 只存「语言 / 主题 / 主色 / 侧栏折叠」这类非敏感偏好；
  * **禁止**把工具输入写进任何浏览器存储。
  */
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 
 import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, i18n, isLocale, type Locale } from '@/i18n'
+import { ACCENT_PRESETS, type AccentKey } from '@/config/accents'
 
 /** 主题模式。 */
 export type ThemeMode = 'system' | 'light' | 'dark'
 
+/** 全部可选主色（顺序即选择器展示顺序）。 */
+export const ACCENT_KEYS: readonly AccentKey[] = ACCENT_PRESETS.map((item) => item.key)
+
+/** 默认主色。 */
+export const DEFAULT_ACCENT: AccentKey = 'indigo'
+
 /** 主题在 localStorage 中的键。 */
 export const THEME_STORAGE_KEY = 'toolbit.theme'
+
+/** 主色在 localStorage 中的键。 */
+export const ACCENT_STORAGE_KEY = 'toolbit.accent'
 
 /** 侧栏折叠状态在 localStorage 中的键。 */
 export const SIDEBAR_STORAGE_KEY = 'toolbit.sidebar'
@@ -57,6 +67,11 @@ export function isThemeMode(value: unknown): value is ThemeMode {
   return value === 'system' || value === 'light' || value === 'dark'
 }
 
+/** 判断是否为主色标识。 */
+export function isAccent(value: unknown): value is AccentKey {
+  return typeof value === 'string' && (ACCENT_KEYS as readonly string[]).includes(value)
+}
+
 export const usePrefsStore = defineStore('prefs', () => {
   const storedLocale = readStored(LOCALE_STORAGE_KEY)
   const locale = ref<Locale>(isLocale(storedLocale) ? storedLocale : DEFAULT_LOCALE)
@@ -64,7 +79,13 @@ export const usePrefsStore = defineStore('prefs', () => {
   const storedTheme = readStored(THEME_STORAGE_KEY)
   const theme = ref<ThemeMode>(isThemeMode(storedTheme) ? storedTheme : 'system')
 
+  const storedAccent = readStored(ACCENT_STORAGE_KEY)
+  const accent = ref<AccentKey>(isAccent(storedAccent) ? storedAccent : DEFAULT_ACCENT)
+
   const sidebarCollapsed = ref(readStored(SIDEBAR_STORAGE_KEY) === '1')
+
+  /** 移动端导航抽屉是否打开（仅窄屏有效，不持久化）。 */
+  const mobileNavOpen = ref(false)
 
   /** 收藏的工具 slug（有序，最近收藏在前）。 */
   const favorites = ref<string[]>(readStoredList(FAVORITES_STORAGE_KEY))
@@ -89,6 +110,7 @@ export const usePrefsStore = defineStore('prefs', () => {
       return
     }
     document.documentElement.dataset.theme = resolvedTheme.value
+    document.documentElement.dataset.accent = accent.value
   }
 
   /** 同步 `<html lang>`。 */
@@ -109,9 +131,24 @@ export const usePrefsStore = defineStore('prefs', () => {
     theme.value = next
   }
 
+  /** 切换主色。 */
+  function setAccent(next: AccentKey): void {
+    accent.value = next
+  }
+
   /** 折叠或展开侧栏。 */
   function toggleSidebar(): void {
     sidebarCollapsed.value = !sidebarCollapsed.value
+  }
+
+  /** 打开 / 关闭移动端导航抽屉。 */
+  function toggleMobileNav(): void {
+    mobileNavOpen.value = !mobileNavOpen.value
+  }
+
+  /** 关闭移动端导航抽屉。 */
+  function closeMobileNav(): void {
+    mobileNavOpen.value = false
   }
 
   /** 判断工具是否已收藏。 */
@@ -164,6 +201,13 @@ export const usePrefsStore = defineStore('prefs', () => {
     }
   })
 
+  watch(accent, (next) => {
+    applyTheme()
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(ACCENT_STORAGE_KEY, next)
+    }
+  })
+
   watch(sidebarCollapsed, (next) => {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(SIDEBAR_STORAGE_KEY, next ? '1' : '0')
@@ -195,13 +239,18 @@ export const usePrefsStore = defineStore('prefs', () => {
     locale,
     theme,
     resolvedTheme,
+    accent,
     sidebarCollapsed,
+    mobileNavOpen,
     systemPrefersDark,
     favorites,
     recent,
     setLocale,
     setTheme,
+    setAccent,
     toggleSidebar,
+    toggleMobileNav,
+    closeMobileNav,
     isFavorite,
     toggleFavorite,
     recordRecent,

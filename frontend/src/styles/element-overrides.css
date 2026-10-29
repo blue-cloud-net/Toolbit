@@ -2,16 +2,19 @@
  * Element Plus 覆盖。
  *
  * 只覆盖配色与圆角，不改组件结构。
+ *
+ * 主色梯度从 `--tb-primary` 现场派生（`color-mix`），
+ * 比例固定，因此 12 组主色下按钮的层次表现一致。
  */
 
 :root {
   --el-color-primary: var(--tb-primary);
-  --el-color-primary-light-3: var(--tb-primary-hover);
-  --el-color-primary-light-5: var(--tb-primary-hover);
-  --el-color-primary-light-7: var(--tb-primary-soft);
-  --el-color-primary-light-8: var(--tb-primary-soft);
-  --el-color-primary-light-9: var(--tb-primary-soft);
-  --el-color-primary-dark-2: var(--tb-primary-active);
+  --el-color-primary-light-3: color-mix(in srgb, var(--tb-primary) 70%, #ffffff);
+  --el-color-primary-light-5: color-mix(in srgb, var(--tb-primary) 50%, #ffffff);
+  --el-color-primary-light-7: color-mix(in srgb, var(--tb-primary) 30%, #ffffff);
+  --el-color-primary-light-8: color-mix(in srgb, var(--tb-primary) 20%, #ffffff);
+  --el-color-primary-light-9: color-mix(in srgb, var(--tb-primary) 10%, #ffffff);
+  --el-color-primary-dark-2: color-mix(in srgb, var(--tb-primary) 80%, #000000);
 
   --el-color-success: var(--tb-success);
   --el-color-warning: var(--tb-warning);
@@ -28,6 +31,7 @@
   --el-border-color-light: var(--tb-border);
   --el-border-color-lighter: var(--tb-border);
   --el-border-color-extra-light: var(--tb-border);
+  --el-border-color-hover: var(--tb-border-strong);
 
   --el-bg-color: var(--tb-bg-elevated);
   --el-bg-color-page: var(--tb-bg);
@@ -35,17 +39,32 @@
   --el-fill-color-blank: var(--tb-bg-elevated);
   --el-fill-color-light: var(--tb-bg-sunken);
   --el-fill-color-lighter: var(--tb-bg-sunken);
+  --el-fill-color-dark: var(--tb-bg-hover);
+  --el-fill-color-darker: var(--tb-bg-active);
+
+  --el-disabled-bg-color: var(--tb-bg-sunken);
+  --el-disabled-text-color: var(--tb-text-tertiary);
+  --el-disabled-border-color: var(--tb-border);
 
   --el-border-radius-base: var(--tb-radius-control);
   --el-font-family: var(--tb-font-sans);
   --el-font-size-base: var(--tb-font-base);
+
+  /* 阴影：与全站 --tb-shadow-* 统一 */
+  --el-box-shadow-light: var(--tb-shadow-sm);
+  --el-box-shadow: var(--tb-shadow-md);
+  --el-box-shadow-lighter: var(--tb-shadow-sm);
+  --el-box-shadow-dark: var(--tb-shadow-lg);
+
+  /* 浮层遮罩 */
+  --el-mask-color: rgb(17 24 39 / 45%);
 }
 
 :root[data-theme='dark'] {
-  --el-color-primary-light-3: var(--tb-primary-active);
-  --el-color-primary-light-5: var(--tb-primary-active);
-  --el-color-primary-light-7: var(--tb-primary-soft);
-  --el-color-primary-light-8: var(--tb-primary-soft);
-  --el-color-primary-light-9: var(--tb-primary-soft);
-  --el-mask-color: rgba(11, 15, 23, 0.8);
+  --el-color-primary-light-3: color-mix(in srgb, var(--tb-primary) 70%, #000000);
+  --el-color-primary-light-5: color-mix(in srgb, var(--tb-primary) 50%, #000000);
+  --el-color-primary-light-7: color-mix(in srgb, var(--tb-primary) 30%, #000000);
+  --el-color-primary-light-8: color-mix(in srgb, var(--tb-primary) 20%, #000000);
+  --el-color-primary-light-9: color-mix(in srgb, var(--tb-primary) 10%, #000000);
+  --el-mask-color: rgb(0 0 0 / 60%);
 }

@@ -6,6 +6,32 @@
   box-sizing: border-box;
 }
 
+/* 全局细滚动条：深色模式下默认滚动条是刺眼亮白，必须令牌化 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tb-scrollbar-thumb) var(--tb-scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--tb-scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--tb-scrollbar-thumb);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: var(--tb-radius-pill);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--tb-scrollbar-thumb-hover);
+}
+
 html,
 body {
   margin: 0;
@@ -16,7 +42,7 @@ body {
 body {
   font-family: var(--tb-font-sans);
   font-size: var(--tb-font-base);
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--tb-text);
   background-color: var(--tb-bg);
   -webkit-font-smoothing: antialiased;
@@ -35,9 +61,54 @@ a:hover {
   text-decoration: underline;
 }
 
+/* 选中文字跟随主色 */
+::selection {
+  color: var(--tb-primary-contrast);
+  background: var(--tb-primary);
+}
+
+::-moz-selection {
+  color: var(--tb-primary-contrast);
+  background: var(--tb-primary);
+}
+
 :focus-visible {
-  outline: 2px solid var(--tb-primary);
+  outline: 3px solid var(--tb-primary);
   outline-offset: 2px;
+}
+
+/* 锚点跳转时为目标预留顶栏高度，避免被 sticky 顶栏遮挡 */
+:target,
+[id] {
+  scroll-margin-top: calc(var(--tb-header-h) + var(--tb-space-2));
+}
+
+/* 等宽区域保持 1.6，避免行高过大导致可读行数变少 */
+.tb-mono,
+.field__textarea,
+.code-editor__area {
+  line-height: 1.6;
+}
+
+/* noscript 兜底 */
+.tb-noscript {
+  max-width: 640px;
+  margin: 80px auto;
+  padding: 0 var(--tb-space-6);
+  font-family: var(--tb-font-sans);
+  color: var(--tb-text);
+}
+
+.tb-noscript__title {
+  margin: 0 0 var(--tb-space-3);
+  font-size: var(--tb-font-xl);
+  font-weight: 700;
+}
+
+.tb-noscript__text {
+  margin: 0;
+  color: var(--tb-text-secondary);
+  line-height: 1.7;
 }
 
 .tb-mono {

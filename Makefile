@@ -99,8 +99,12 @@ lint-md: ## Markdown 风格检查
 check-docs: ## 文档一致性检查（catalog / 错误码 / 配置项 / 状态行 / 禁词）
 	$(NODE) scripts/check-docs.mjs
 
+.PHONY: check-accent
+check-accent: ## 主色对比度校验（12 组主色 × 明暗，阈值 4.5:1）
+	$(NODE) scripts/check-accent.mjs
+
 .PHONY: lint
-lint: lint-go lint-md check-docs lint-web ## 全部静态检查
+lint: lint-go lint-md check-docs check-accent lint-web ## 全部静态检查
 
 .PHONY: lint-web
 lint-web: ## 前端 ESLint 与类型检查
