@@ -631,9 +631,9 @@ tools:
     name: 证书链获取
     nameEn: Certificate Chain Fetcher
     enabled: true
-    transport: multipart
+    transport: json
     rateClass: network
-    maxBodyBytes: 8388608
+    maxBodyBytes: 1048576
     timeoutMs: 60000
     sensitive: false
     requiresNetwork: true
@@ -1101,7 +1101,7 @@ tools:
     name: SSL 证书检测
     nameEn: SSL Checker
     enabled: true
-    transport: json
+    transport: websocket
     rateClass: network
     maxBodyBytes: 1048576
     timeoutMs: 30000
@@ -1149,7 +1149,7 @@ tools:
     name: WebSocket 测试
     nameEn: WebSocket Tester
     enabled: true
-    transport: websocket
+    transport: client
     rateClass: network
     maxBodyBytes: 65536
     timeoutMs: 120000
