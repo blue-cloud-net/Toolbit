@@ -1,0 +1,53 @@
+{
+  "name": "Color Converter",
+  "description": "Convert colours between HEX, RGB, HSL and OKLCH, and compute contrast ratios.",
+  "category": "Formatting",
+  "actions": {
+    "run": "Convert"
+  },
+  "fields": {
+    "input": "Colour value",
+    "inputFormat": "Input format"
+  },
+  "options": {
+    "inputFormat": {
+      "hex": "HEX",
+      "rgb": "RGB",
+      "hsl": "HSL",
+      "oklch": "OKLCH"
+    }
+  },
+  "results": {
+    "hex": "HEX",
+    "rgb": "RGB",
+    "hsl": "HSL",
+    "oklch": "OKLCH",
+    "contrastOnWhite": "Contrast on white",
+    "contrastOnBlack": "Contrast on black",
+    "isDark": "Dark"
+  },
+  "examples": [
+    {
+      "label": "Convert hex to all formats",
+      "value": "{\"input\":\"#3B82F6\",\"inputFormat\":\"hex\",\"outputFormats\":[\"hex\",\"rgb\",\"hsl\",\"oklch\"]}"
+    },
+    {
+      "label": "Convert an RGB string",
+      "value": "{\"input\":\"rgb(59, 130, 246)\",\"inputFormat\":\"rgb\"}"
+    }
+  ],
+  "hints": {
+    "input": "HEX accepts 3-digit and 6-digit forms, optionally with 8-digit alpha.",
+    "output": "Contrast follows the WCAG 2.1 relative luminance formula; higher values are more readable."
+  },
+  "faq": [
+    {
+      "q": "Is the OKLCH conversion accurate?",
+      "a": "It is accurate within the sRGB gamut; out-of-gamut colours are clipped per channel."
+    },
+    {
+      "q": "What contrast ratio is acceptable?",
+      "a": "WCAG AA requires at least 4.5:1 for body text and 3:1 for large text."
+    }
+  ]
+}

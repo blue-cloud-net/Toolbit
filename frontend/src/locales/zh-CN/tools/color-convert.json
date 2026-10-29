@@ -1,0 +1,53 @@
+{
+  "name": "颜色格式转换",
+  "description": "在 HEX、RGB、HSL 与 OKLCH 之间转换颜色，并计算对比度。",
+  "category": "格式化",
+  "actions": {
+    "run": "转换"
+  },
+  "fields": {
+    "input": "颜色值",
+    "inputFormat": "输入格式"
+  },
+  "options": {
+    "inputFormat": {
+      "hex": "HEX",
+      "rgb": "RGB",
+      "hsl": "HSL",
+      "oklch": "OKLCH"
+    }
+  },
+  "results": {
+    "hex": "HEX 表示",
+    "rgb": "RGB 表示",
+    "hsl": "HSL 表示",
+    "oklch": "OKLCH 表示",
+    "contrastOnWhite": "与白色对比度",
+    "contrastOnBlack": "与黑色对比度",
+    "isDark": "深色"
+  },
+  "examples": [
+    {
+      "label": "十六进制转多格式",
+      "value": "{\"input\":\"#3B82F6\",\"inputFormat\":\"hex\",\"outputFormats\":[\"hex\",\"rgb\",\"hsl\",\"oklch\"]}"
+    },
+    {
+      "label": "RGB 字符串输入",
+      "value": "{\"input\":\"rgb(59, 130, 246)\",\"inputFormat\":\"rgb\"}"
+    }
+  ],
+  "hints": {
+    "input": "HEX 支持 3 位与 6 位写法，也可带 8 位透明度。",
+    "output": "对比度按 WCAG 2.1 的相对亮度公式计算，数值越高越易读。"
+  },
+  "faq": [
+    {
+      "q": "OKLCH 转出来的颜色准确吗？",
+      "a": "对 sRGB 色域内的颜色准确；超出色域的颜色按通道截断处理。"
+    },
+    {
+      "q": "对比度多少算合格？",
+      "a": "WCAG AA 要求正文至少 4.5:1，大字号至少 3:1。"
+    }
+  ]
+}

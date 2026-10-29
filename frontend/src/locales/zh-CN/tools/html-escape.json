@@ -1,0 +1,46 @@
+{
+  "name": "HTML 实体编解码",
+  "description": "在文本与 HTML 实体之间转换，支持命名实体与数字实体。",
+  "category": "编码",
+  "actions": {
+    "run": "转换"
+  },
+  "fields": {
+    "mode": "模式",
+    "input": "输入内容"
+  },
+  "options": {
+    "mode": {
+      "encode": "转义为实体",
+      "decode": "还原为字符"
+    }
+  },
+  "results": {
+    "output": "转换结果",
+    "changedCount": "替换字符数"
+  },
+  "examples": [
+    {
+      "label": "转义 HTML 标签",
+      "value": "{\"mode\":\"encode\",\"input\":\"<b>hi</b> & \\\"x\\\"\"}"
+    },
+    {
+      "label": "反转义 HTML 实体",
+      "value": "{\"mode\":\"decode\",\"input\":\"&lt;b&gt;hi&lt;/b&gt;\"}"
+    }
+  ],
+  "hints": {
+    "input": "转义会处理 & < > \" 与单引号五个字符。",
+    "output": "解码支持命名实体、&#NN; 与 &#xHH; 三种写法。"
+  },
+  "faq": [
+    {
+      "q": "和 HTML 格式化有什么区别？",
+      "a": "格式化工具处理整份 HTML 文档；本工具只做实体层面的编解码。"
+    },
+    {
+      "q": "能防止 XSS 吗？",
+      "a": "不能。转义只是其中一层，仍需配合上下文正确的输出与净化。"
+    }
+  ]
+}

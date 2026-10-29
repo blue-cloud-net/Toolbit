@@ -1,0 +1,50 @@
+{
+  "name": "Markdown 转换",
+  "description": "在 Markdown 与 HTML 之间互转，并统计标题、链接与代码块数量。",
+  "category": "文档",
+  "actions": {
+    "run": "转换"
+  },
+  "fields": {
+    "mode": "转换方向",
+    "input": "输入内容",
+    "gfm": "启用 GFM 扩展"
+  },
+  "options": {
+    "mode": {
+      "toHtml": "Markdown 转 HTML",
+      "toMarkdown": "HTML 转 Markdown"
+    }
+  },
+  "results": {
+    "output": "转换结果",
+    "headingCount": "标题数",
+    "linkCount": "链接数",
+    "codeBlockCount": "代码块数",
+    "wordCount": "字数"
+  },
+  "examples": [
+    {
+      "label": "Markdown 转 HTML",
+      "value": "{\"mode\":\"toHtml\",\"input\":\"# Title\\n\\nSome **bold** text.\",\"gfm\":true}"
+    },
+    {
+      "label": "HTML 转 Markdown",
+      "value": "{\"mode\":\"toMarkdown\",\"input\":\"<h1>Title</h1><p>Body</p>\"}"
+    }
+  ],
+  "hints": {
+    "input": "Markdown 解析复用 goldmark；HTML 解析使用标准解析器。",
+    "output": "HTML 转 Markdown 会把常见标签映射为等价语法，脚本与样式内容会被跳过。"
+  },
+  "faq": [
+    {
+      "q": "转换后的 HTML 安全吗？",
+      "a": "不一定。生成的 HTML **未**净化，直接嵌入页面前请先做净化处理。"
+    },
+    {
+      "q": "支持表格吗？",
+      "a": "支持，开启 GFM 扩展后 Markdown 表格会正确解析并转成 HTML 表格。"
+    }
+  ]
+}

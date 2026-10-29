@@ -1,0 +1,50 @@
+{
+  "name": "Markdown Converter",
+  "description": "Convert between Markdown and HTML and count headings, links and code blocks.",
+  "category": "Documents",
+  "actions": {
+    "run": "Convert"
+  },
+  "fields": {
+    "mode": "Direction",
+    "input": "Input",
+    "gfm": "Enable GFM extensions"
+  },
+  "options": {
+    "mode": {
+      "toHtml": "Markdown to HTML",
+      "toMarkdown": "HTML to Markdown"
+    }
+  },
+  "results": {
+    "output": "Converted output",
+    "headingCount": "Headings",
+    "linkCount": "Links",
+    "codeBlockCount": "Code blocks",
+    "wordCount": "Word count"
+  },
+  "examples": [
+    {
+      "label": "Markdown to HTML",
+      "value": "{\"mode\":\"toHtml\",\"input\":\"# Title\\n\\nSome **bold** text.\",\"gfm\":true}"
+    },
+    {
+      "label": "HTML to Markdown",
+      "value": "{\"mode\":\"toMarkdown\",\"input\":\"<h1>Title</h1><p>Body</p>\"}"
+    }
+  ],
+  "hints": {
+    "input": "Markdown parsing reuses goldmark and HTML parsing uses a standard parser.",
+    "output": "HTML to Markdown maps common tags to equivalent syntax and skips script and style content."
+  },
+  "faq": [
+    {
+      "q": "Is the converted HTML safe?",
+      "a": "Not necessarily. The generated HTML is not sanitised; sanitise it before embedding."
+    },
+    {
+      "q": "Are tables supported?",
+      "a": "Yes, with GFM enabled Markdown tables are parsed and converted into HTML tables."
+    }
+  ]
+}

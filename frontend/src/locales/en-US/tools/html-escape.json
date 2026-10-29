@@ -1,0 +1,46 @@
+{
+  "name": "HTML Entity Codec",
+  "description": "Convert between text and HTML entities, covering named and numeric forms.",
+  "category": "Encoding",
+  "actions": {
+    "run": "Convert"
+  },
+  "fields": {
+    "mode": "Mode",
+    "input": "Input"
+  },
+  "options": {
+    "mode": {
+      "encode": "Escape to entities",
+      "decode": "Decode to characters"
+    }
+  },
+  "results": {
+    "output": "Converted output",
+    "changedCount": "Replaced characters"
+  },
+  "examples": [
+    {
+      "label": "Escape HTML tags",
+      "value": "{\"mode\":\"encode\",\"input\":\"<b>hi</b> & \\\"x\\\"\"}"
+    },
+    {
+      "label": "Unescape HTML entities",
+      "value": "{\"mode\":\"decode\",\"input\":\"&lt;b&gt;hi&lt;/b&gt;\"}"
+    }
+  ],
+  "hints": {
+    "input": "Escaping handles the five characters & < > \" and the single quote.",
+    "output": "Decoding understands named entities, &#NN; and &#xHH;."
+  },
+  "faq": [
+    {
+      "q": "How does this differ from the HTML formatter?",
+      "a": "The formatter handles whole HTML documents; this tool only deals with the entity layer."
+    },
+    {
+      "q": "Does it prevent XSS?",
+      "a": "No. Escaping is only one layer; pair it with context-aware output and sanitisation."
+    }
+  ]
+}
