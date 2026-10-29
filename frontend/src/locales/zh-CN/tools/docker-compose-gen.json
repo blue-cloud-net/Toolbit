@@ -1,0 +1,39 @@
+{
+  "name": "Compose 配置生成",
+  "description": "由服务定义生成 Docker Compose 配置，包含端口、环境变量、卷与依赖。",
+  "category": "系统",
+  "actions": {
+    "run": "生成"
+  },
+  "fields": {
+    "projectName": "项目名",
+    "services": "服务定义",
+    "networkName": "网络名"
+  },
+  "options": {},
+  "results": {
+    "compose": "配置内容",
+    "serviceCount": "服务数量",
+    "warnings": "提示"
+  },
+  "examples": [
+    {
+      "label": "生成单服务 Compose",
+      "value": "{\"projectName\":\"demo\",\"services\":[{\"name\":\"web\",\"image\":\"nginx:alpine\",\"ports\":[\"8080:80\"]}]}"
+    }
+  ],
+  "hints": {
+    "services": "按格式填写：镜像必填，端口与卷用 宿主机:容器 形式。",
+    "output": "生成的是配置文本，不连接任何守护进程，也不拉取镜像。"
+  },
+  "faq": [
+    {
+      "q": "会校验 YAML 吗？",
+      "a": "不校验，只做模板拼装。落地前请用 docker compose config 检查。"
+    },
+    {
+      "q": "支持健康检查与资源限制吗？",
+      "a": "暂不支持，首版聚焦端口、环境变量、卷与依赖。"
+    }
+  ]
+}

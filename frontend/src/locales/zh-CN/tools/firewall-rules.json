@@ -1,0 +1,65 @@
+{
+  "name": "防火墙规则生成",
+  "description": "按场景生成 ufw、firewalld、iptables 与 nftables 的放行规则。",
+  "category": "系统",
+  "actions": {
+    "run": "生成"
+  },
+  "fields": {
+    "tool": "防火墙工具",
+    "scenario": "使用场景",
+    "ports": "自定义端口",
+    "protocol": "协议",
+    "source": "来源地址"
+  },
+  "options": {
+    "tool": {
+      "ufw": "ufw",
+      "firewalld": "firewalld",
+      "iptables": "iptables",
+      "nftables": "nftables"
+    },
+    "scenario": {
+      "http": "放行 HTTP",
+      "https": "放行 HTTPS",
+      "ssh": "放行 SSH",
+      "database": "放行数据库",
+      "denyAll": "默认拒绝入站",
+      "allowAll": "允许全部入站"
+    },
+    "protocol": {
+      "tcp": "TCP",
+      "udp": "UDP",
+      "any": "任意"
+    }
+  },
+  "results": {
+    "rules": "规则列表",
+    "commands": "可执行命令",
+    "notes": "使用提示"
+  },
+  "examples": [
+    {
+      "label": "生成 HTTPS 放行规则",
+      "value": "{\"tool\":\"ufw\",\"scenario\":\"https\",\"protocol\":\"tcp\"}"
+    },
+    {
+      "label": "生成 iptables 的 SSH 规则",
+      "value": "{\"tool\":\"iptables\",\"scenario\":\"ssh\",\"protocol\":\"tcp\"}"
+    }
+  ],
+  "hints": {
+    "commands": "生成的是**命令文本**，只会在你自己的机器上执行；工具不会触碰宿主机防火墙。",
+    "output": "SSH 场景会提示先确认当前会话已放行，避免把自己锁在门外。"
+  },
+  "faq": [
+    {
+      "q": "会直接执行命令吗？",
+      "a": "不会，只输出文本，由你自行决定何时执行。"
+    },
+    {
+      "q": "默认拒绝场景安全吗？",
+      "a": "务必先放行 SSH 再启用，否则会失去远程访问能力。"
+    }
+  ]
+}

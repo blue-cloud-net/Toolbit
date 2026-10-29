@@ -1,0 +1,50 @@
+{
+  "name": "Lookup Table",
+  "description": "Look up common ports, Linux exit codes and timestamp formats.",
+  "category": "System",
+  "actions": {
+    "run": "Look up"
+  },
+  "fields": {
+    "kind": "Table",
+    "key": "Query"
+  },
+  "options": {
+    "kind": {
+      "port": "Ports",
+      "exitcode": "Exit codes",
+      "timestamp": "Timestamp formats"
+    }
+  },
+  "results": {
+    "matched": "Found",
+    "notMatched": "Not found",
+    "entry": "Entry",
+    "candidates": "Candidates",
+    "dataVersion": "Dataset version"
+  },
+  "examples": [
+    {
+      "label": "Look up port 443",
+      "value": "{\"kind\":\"port\",\"key\":\"443\"}"
+    },
+    {
+      "label": "Search exit codes",
+      "value": "{\"kind\":\"exitcode\",\"key\":\"错误\"}"
+    }
+  ],
+  "hints": {
+    "key": "Ports accept a number such as 443 or a name such as https; exit codes take a number; timestamp formats take a name such as unix-ms.",
+    "output": "The data comes from a built-in snapshot; nothing is fetched and no system service list is read."
+  },
+  "faq": [
+    {
+      "q": "Does an unknown query raise an error?",
+      "a": "No. When there is no exact match, a list of fuzzy candidates is returned."
+    },
+    {
+      "q": "Is the port list authoritative?",
+      "a": "It is a snapshot of common ports; a given service may differ, so follow your actual deployment."
+    }
+  ]
+}

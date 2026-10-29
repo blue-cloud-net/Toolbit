@@ -1,0 +1,61 @@
+{
+  "name": "Nginx Config Generator",
+  "description": "Generate Nginx configuration snippets for sites or globals, covering proxying, load balancing, SSL, gzip and CORS.",
+  "category": "System",
+  "actions": {
+    "run": "Generate"
+  },
+  "fields": {
+    "mode": "Mode",
+    "serverName": "Server name",
+    "listenPort": "Listen port",
+    "root": "Document root",
+    "enableSsl": "Enable HTTPS",
+    "sslCertificate": "Certificate path",
+    "sslPrivateKey": "Private key path",
+    "enableProxy": "Enable reverse proxy",
+    "proxyPass": "Proxy target",
+    "proxyPath": "Proxy path",
+    "enableGzip": "Enable gzip",
+    "enableCors": "Enable CORS",
+    "allowOrigin": "Allowed origin",
+    "enableWebSocket": "Enable WebSocket",
+    "enableLoadBalance": "Enable load balancing",
+    "upstreams": "Upstream servers"
+  },
+  "options": {
+    "mode": {
+      "global": "Global",
+      "site": "Site"
+    }
+  },
+  "results": {
+    "config": "Configuration",
+    "sections": "Sections",
+    "warnings": "Warnings"
+  },
+  "examples": [
+    {
+      "label": "Generate a site config",
+      "value": "{\"mode\":\"site\",\"serverName\":\"example.com\",\"listenPort\":80,\"root\":\"/var/www/html\"}"
+    },
+    {
+      "label": "Generate a global config",
+      "value": "{\"mode\":\"global\",\"workerProcesses\":4}"
+    }
+  ],
+  "hints": {
+    "config": "The output is a configuration snippet; adjust the paths and domain names before using it.",
+    "output": "Enabling load balancing adds a hint to point proxy_pass at the upstream name."
+  },
+  "faq": [
+    {
+      "q": "Does it validate the configuration?",
+      "a": "No, it only assembles the template. Run nginx -t before deploying."
+    },
+    {
+      "q": "Does it obtain certificates?",
+      "a": "No. You supply the certificate and key paths; the tool neither accesses the network nor touches a certificate service."
+    }
+  ]
+}

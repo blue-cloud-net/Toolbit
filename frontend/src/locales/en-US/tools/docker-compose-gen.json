@@ -1,0 +1,39 @@
+{
+  "name": "Docker Compose Generator",
+  "description": "Generate a Docker Compose configuration from service definitions, with ports, environment, volumes and dependencies.",
+  "category": "System",
+  "actions": {
+    "run": "Generate"
+  },
+  "fields": {
+    "projectName": "Project name",
+    "services": "Services",
+    "networkName": "Network name"
+  },
+  "options": {},
+  "results": {
+    "compose": "Configuration",
+    "serviceCount": "Service count",
+    "warnings": "Warnings"
+  },
+  "examples": [
+    {
+      "label": "Generate a single-service Compose",
+      "value": "{\"projectName\":\"demo\",\"services\":[{\"name\":\"web\",\"image\":\"nginx:alpine\",\"ports\":[\"8080:80\"]}]}"
+    }
+  ],
+  "hints": {
+    "services": "Fill in the fields: the image is required and ports and volumes use the host:container form.",
+    "output": "The output is configuration text; nothing connects to a daemon and no image is pulled."
+  },
+  "faq": [
+    {
+      "q": "Does it validate the YAML?",
+      "a": "No, it only assembles the template. Run docker compose config before deploying."
+    },
+    {
+      "q": "Are health checks and resource limits supported?",
+      "a": "Not yet; the first version focuses on ports, environment, volumes and dependencies."
+    }
+  ]
+}

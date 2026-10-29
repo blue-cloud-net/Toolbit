@@ -1,0 +1,65 @@
+{
+  "name": "Firewall Rule Generator",
+  "description": "Generate allow rules for ufw, firewalld, iptables and nftables from common scenarios.",
+  "category": "System",
+  "actions": {
+    "run": "Generate"
+  },
+  "fields": {
+    "tool": "Firewall tool",
+    "scenario": "Scenario",
+    "ports": "Custom ports",
+    "protocol": "Protocol",
+    "source": "Source address"
+  },
+  "options": {
+    "tool": {
+      "ufw": "ufw",
+      "firewalld": "firewalld",
+      "iptables": "iptables",
+      "nftables": "nftables"
+    },
+    "scenario": {
+      "http": "Allow HTTP",
+      "https": "Allow HTTPS",
+      "ssh": "Allow SSH",
+      "database": "Allow databases",
+      "denyAll": "Deny all inbound",
+      "allowAll": "Allow all inbound"
+    },
+    "protocol": {
+      "tcp": "TCP",
+      "udp": "UDP",
+      "any": "Any"
+    }
+  },
+  "results": {
+    "rules": "Rules",
+    "commands": "Commands",
+    "notes": "Notes"
+  },
+  "examples": [
+    {
+      "label": "Allow HTTPS",
+      "value": "{\"tool\":\"ufw\",\"scenario\":\"https\",\"protocol\":\"tcp\"}"
+    },
+    {
+      "label": "Allow SSH with iptables",
+      "value": "{\"tool\":\"iptables\",\"scenario\":\"ssh\",\"protocol\":\"tcp\"}"
+    }
+  ],
+  "hints": {
+    "commands": "The output is command text that runs only on your own machine; the tool never touches the host firewall.",
+    "output": "The SSH scenario reminds you to keep the current session open so you do not lock yourself out."
+  },
+  "faq": [
+    {
+      "q": "Does it run the commands?",
+      "a": "No. It only prints the text and you decide when to run it."
+    },
+    {
+      "q": "Is the deny-all scenario safe?",
+      "a": "Always allow SSH first, otherwise you lose remote access."
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "name": "Nginx 配置生成",
+  "description": "按站点或全局模式生成 Nginx 配置片段，覆盖反向代理、负载均衡、SSL、Gzip 与 CORS。",
+  "category": "系统",
+  "actions": {
+    "run": "生成"
+  },
+  "fields": {
+    "mode": "配置模式",
+    "serverName": "站点域名",
+    "listenPort": "监听端口",
+    "root": "站点根目录",
+    "enableSsl": "启用 HTTPS",
+    "sslCertificate": "证书路径",
+    "sslPrivateKey": "私钥路径",
+    "enableProxy": "启用反向代理",
+    "proxyPass": "代理目标",
+    "proxyPath": "代理路径",
+    "enableGzip": "启用 Gzip",
+    "enableCors": "启用跨域",
+    "allowOrigin": "允许来源",
+    "enableWebSocket": "启用 WebSocket",
+    "enableLoadBalance": "启用负载均衡",
+    "upstreams": "后端服务器"
+  },
+  "options": {
+    "mode": {
+      "global": "全局配置",
+      "site": "站点配置"
+    }
+  },
+  "results": {
+    "config": "配置文本",
+    "sections": "配置段",
+    "warnings": "提示"
+  },
+  "examples": [
+    {
+      "label": "生成站点配置",
+      "value": "{\"mode\":\"site\",\"serverName\":\"example.com\",\"listenPort\":80,\"root\":\"/var/www/html\"}"
+    },
+    {
+      "label": "生成全局配置",
+      "value": "{\"mode\":\"global\",\"workerProcesses\":4}"
+    }
+  ],
+  "hints": {
+    "config": "生成的是**配置片段**，请按实际路径与域名调整后再使用。",
+    "output": "启用负载均衡时会额外提示把 proxy_pass 指向 upstream 名称。"
+  },
+  "faq": [
+    {
+      "q": "会校验配置语法吗？",
+      "a": "不校验，只做模板拼装。落地前请用 nginx -t 检查。"
+    },
+    {
+      "q": "会自动申请证书吗？",
+      "a": "不会。证书与私钥路径由你填写，工具不联网也不触碰证书服务。"
+    }
+  ]
+}
