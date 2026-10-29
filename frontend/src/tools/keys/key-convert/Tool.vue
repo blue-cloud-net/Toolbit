@@ -5,6 +5,8 @@
  * 密钥内容只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -122,34 +124,34 @@ function fillExample(): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.key-convert.fields.from') }}</span>
-              <select
+              <ElSelect
                 v-model="from"
                 class="field__select"
+                :aria-label="t('tools.key-convert.fields.from')"
               >
-                <option
+                <ElOption
                   v-for="name in FROM_FORMATS"
                   :key="name"
+                  :label="String(name)"
                   :value="name"
-                >
-                  {{ name }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.key-convert.fields.to') }}</span>
-              <select
+              <ElSelect
                 v-model="to"
                 class="field__select"
+                :aria-label="t('tools.key-convert.fields.to')"
               >
-                <option
+                <ElOption
                   v-for="name in TO_FORMATS"
                   :key="name"
+                  :label="String(name)"
                   :value="name"
-                >
-                  {{ name }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
           </div>
 

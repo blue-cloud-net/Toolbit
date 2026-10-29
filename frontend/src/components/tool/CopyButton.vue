@@ -4,6 +4,8 @@
  *
  * 优先使用 `navigator.clipboard`，不可用时回退到隐藏 textarea + `execCommand`。
  */
+import { ElButton } from 'element-plus/es/components/button/index'
+import 'element-plus/es/components/button/style/css'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -79,10 +81,9 @@ async function copy(): Promise<void> {
 </script>
 
 <template>
-  <button
-    type="button"
+  <ElButton
     class="copy-button"
-    :class="{ 'copy-button--small': size === 'small' }"
+    :size="size === 'small' ? 'small' : 'default'"
     :aria-label="label ?? t('common.actions.copy')"
     :disabled="text === ''"
     @click="copy"
@@ -93,37 +94,10 @@ async function copy(): Promise<void> {
     >{{ t('common.actions.copied') }}</span>
     <span v-else-if="failed">{{ t('tool.copy.failed') }}</span>
     <span v-else>{{ t('common.actions.copy') }}</span>
-  </button>
+  </ElButton>
 </template>
 
 <style scoped>
-.copy-button {
-  padding: var(--tb-space-1) var(--tb-space-2);
-  font-family: inherit;
-  font-size: var(--tb-font-xs);
-  color: var(--tb-text-secondary);
-  background: transparent;
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  cursor: pointer;
-  transition: border-color var(--tb-transition), color var(--tb-transition);
-}
-
-.copy-button:hover:not(:disabled) {
-  color: var(--tb-text);
-  border-color: var(--tb-border-strong);
-}
-
-.copy-button--small {
-  padding: 0 var(--tb-space-1);
-  font-size: var(--tb-font-2xs);
-}
-
-.copy-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
 .copy-button--ok {
   color: var(--tb-success);
 }

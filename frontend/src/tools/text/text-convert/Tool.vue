@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -161,21 +165,22 @@ function fillExample(index: number): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.text-convert.fields.style') }}</span>
-              <select
+              <ElSelect
                 v-model="style"
                 class="field__select"
+                :aria-label="t('tools.text-convert.fields.style')"
               >
-                <option
+                <ElOption
                   v-for="item in STYLES"
                   :key="item"
+                  :label="styleLabel(item)"
                   :value="item"
-                >
-                  {{ styleLabel(item) }}
-                </option>
-                <option value="">
-                  {{ styleLabel('') }}
-                </option>
-              </select>
+                />
+                <ElOption
+                  :label="styleLabel('')"
+                  value=""
+                />
+              </ElSelect>
             </label>
 
             <label
@@ -183,13 +188,12 @@ function fillExample(index: number): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.text-convert.fields.separator') }}</span>
-              <input
+              <ElInput
                 v-model="separator"
-                type="text"
                 class="field__input tb-mono"
                 autocomplete="off"
                 :aria-label="t('tools.text-convert.fields.separator')"
-              >
+              />
             </label>
           </div>
 

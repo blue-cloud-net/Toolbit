@@ -4,6 +4,12 @@
  *
  * 纯文本拼装，不涉及任何密码学运算。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -84,52 +90,49 @@ function fillExample(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.caa-gen.fields.domain') }}</span>
-            <input
+            <ElInput
               v-model="domain"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.caa-gen.fields.tag') }}</span>
-            <select
+            <ElSelect
               v-model="tag"
               class="field__select"
+              :aria-label="t('tools.caa-gen.fields.tag')"
             >
-              <option
+              <ElOption
                 v-for="name in TAGS"
                 :key="name"
+                :label="String(name)"
                 :value="name"
-              >
-                {{ name }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.caa-gen.fields.value') }}</span>
-            <input
+            <ElInput
               v-model="value"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
         </template>
 
         <template #options>
           <label class="field">
             <span class="field__label">{{ t('tools.caa-gen.fields.ttl') }}</span>
-            <input
-              v-model.number="ttl"
-              type="number"
+            <ElInputNumber
+              v-model="ttl"
               class="field__input"
-              min="0"
-            >
+              :min="0"
+            />
           </label>
         </template>
 

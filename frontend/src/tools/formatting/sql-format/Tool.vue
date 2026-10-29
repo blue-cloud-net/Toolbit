@@ -4,6 +4,8 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -145,55 +147,88 @@ function fillExample(index: number): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.sql-format.fields.action') }}</span>
-              <select
+              <ElSelect
                 v-model="action"
                 class="field__select"
+                :aria-label="t('tools.sql-format.fields.action')"
               >
-                <option value="format">{{ t('tools.sql-format.options.action.format') }}</option>
-                <option value="minify">{{ t('tools.sql-format.options.action.minify') }}</option>
-                <option value="validate">{{ t('tools.sql-format.options.action.validate') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.sql-format.options.action.format')"
+                  value="format"
+                />
+                <ElOption
+                  :label="t('tools.sql-format.options.action.minify')"
+                  value="minify"
+                />
+                <ElOption
+                  :label="t('tools.sql-format.options.action.validate')"
+                  value="validate"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.sql-format.fields.indent') }}</span>
-              <select
-                v-model.number="indent"
+              <ElSelect
+                v-model="indent"
                 class="field__select"
+                :aria-label="t('tools.sql-format.fields.indent')"
               >
-                <option
+                <ElOption
                   v-for="size in INDENT_OPTIONS"
                   :key="size"
+                  :label="String(size)"
                   :value="size"
-                >
-                  {{ size }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.sql-format.fields.dialect') }}</span>
-              <select
+              <ElSelect
                 v-model="dialect"
                 class="field__select"
+                :aria-label="t('tools.sql-format.fields.dialect')"
               >
-                <option value="standard">{{ t('tools.sql-format.options.dialect.standard') }}</option>
-                <option value="mysql">{{ t('tools.sql-format.options.dialect.mysql') }}</option>
-                <option value="pg">{{ t('tools.sql-format.options.dialect.pg') }}</option>
-                <option value="sqlite">{{ t('tools.sql-format.options.dialect.sqlite') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.sql-format.options.dialect.standard')"
+                  value="standard"
+                />
+                <ElOption
+                  :label="t('tools.sql-format.options.dialect.mysql')"
+                  value="mysql"
+                />
+                <ElOption
+                  :label="t('tools.sql-format.options.dialect.pg')"
+                  value="pg"
+                />
+                <ElOption
+                  :label="t('tools.sql-format.options.dialect.sqlite')"
+                  value="sqlite"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.sql-format.fields.keywordCase') }}</span>
-              <select
+              <ElSelect
                 v-model="keywordCase"
                 class="field__select"
+                :aria-label="t('tools.sql-format.fields.keywordCase')"
               >
-                <option value="keep">{{ t('tools.sql-format.options.keywordCase.keep') }}</option>
-                <option value="upper">{{ t('tools.sql-format.options.keywordCase.upper') }}</option>
-                <option value="lower">{{ t('tools.sql-format.options.keywordCase.lower') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.sql-format.options.keywordCase.keep')"
+                  value="keep"
+                />
+                <ElOption
+                  :label="t('tools.sql-format.options.keywordCase.upper')"
+                  value="upper"
+                />
+                <ElOption
+                  :label="t('tools.sql-format.options.keywordCase.lower')"
+                  value="lower"
+                />
+              </ElSelect>
             </label>
           </div>
         </template>

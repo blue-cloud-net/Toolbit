@@ -4,6 +4,8 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -121,28 +123,26 @@ function fillExample(index: number): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.cn-regions.fields.query') }}</span>
-            <input
+            <ElInput
               v-model="query"
-              type="text"
               class="field__input tb-mono"
               autocomplete="off"
               placeholder="杭州"
               :aria-label="t('tools.cn-regions.fields.query')"
               @keydown.enter.prevent="run"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.cn-regions.fields.province') }}</span>
-            <input
+            <ElInput
               v-model="province"
-              type="text"
               class="field__input tb-mono"
               autocomplete="off"
               placeholder="浙江省"
               :aria-label="t('tools.cn-regions.fields.province')"
               @keydown.enter.prevent="run"
-            >
+            />
           </label>
 
           <p class="field__hint">

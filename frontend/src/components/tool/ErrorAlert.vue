@@ -5,6 +5,10 @@
  * 展示错误码 chip + 本地化文案 + 请求标识 + 重试按钮；
  * **禁止**只用弹窗。
  */
+import { ElAlert } from 'element-plus/es/components/alert/index'
+import 'element-plus/es/components/alert/style/css'
+import { ElButton } from 'element-plus/es/components/button/index'
+import 'element-plus/es/components/button/style/css'
 import { useI18n } from 'vue-i18n'
 
 import type { LocalizedError } from '@/i18n/errors'
@@ -28,15 +32,17 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div
+  <ElAlert
     v-if="error"
     class="error-alert"
-    role="alert"
+    type="error"
+    :closable="false"
+    show-icon
   >
-    <div class="error-alert__head">
-      <strong class="error-alert__title">{{ t('tool.error.title') }}</strong>
+    <template #title>
+      <span class="error-alert__title">{{ t('tool.error.title') }}</span>
       <code class="error-alert__code">{{ error.code }}</code>
-    </div>
+    </template>
 
     <p class="error-alert__text">
       {{ error.text }}
@@ -49,41 +55,25 @@ const { t } = useI18n()
       >
         {{ t('tool.error.requestId') }}: <code>{{ error.requestId }}</code>
       </span>
-      <button
+      <ElButton
         v-if="retryable"
-        type="button"
-        class="error-alert__retry"
+        size="small"
         @click="emit('retry')"
       >
         {{ t('tool.error.retry') }}
-      </button>
+      </ElButton>
     </div>
-  </div>
+  </ElAlert>
 </template>
 
 <style scoped>
-.error-alert {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-2);
-  padding: var(--tb-space-3) var(--tb-space-4);
-  background: color-mix(in srgb, var(--tb-danger) 8%, var(--tb-bg-elevated));
-  border: 1px solid color-mix(in srgb, var(--tb-danger) 40%, var(--tb-border));
-  border-radius: var(--tb-radius-card);
-}
-
-.error-alert__head {
-  display: flex;
-  align-items: center;
-  gap: var(--tb-space-2);
-}
-
 .error-alert__title {
   font-size: var(--tb-font-sm);
-  color: var(--tb-danger);
+  font-weight: 600;
 }
 
 .error-alert__code {
+  margin-left: var(--tb-space-2);
   padding: 0 var(--tb-space-1);
   font-family: var(--tb-font-mono);
   font-size: 11px;
@@ -103,25 +93,11 @@ const { t } = useI18n()
   align-items: center;
   justify-content: space-between;
   gap: var(--tb-space-2);
+  margin-top: var(--tb-space-2);
 }
 
 .error-alert__request-id {
   font-size: 11px;
   color: var(--tb-text-tertiary);
-}
-
-.error-alert__retry {
-  padding: var(--tb-space-1) var(--tb-space-3);
-  font-family: inherit;
-  font-size: var(--tb-font-xs);
-  color: var(--tb-text);
-  background: var(--tb-bg-elevated);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  cursor: pointer;
-}
-
-.error-alert__retry:hover {
-  border-color: var(--tb-danger);
 }
 </style>

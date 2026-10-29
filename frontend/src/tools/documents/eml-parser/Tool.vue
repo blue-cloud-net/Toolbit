@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -192,39 +196,44 @@ function fillExample(index: number): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.eml-parser.fields.encoding') }}</span>
-              <select
+              <ElSelect
                 v-model="encoding"
                 class="field__select"
+                :aria-label="t('tools.eml-parser.fields.encoding')"
               >
-                <option value="utf-8">
-                  {{ t('tools.eml-parser.options.encoding.utf-8') }}
-                </option>
-                <option value="gbk">
-                  {{ t('tools.eml-parser.options.encoding.gbk') }}
-                </option>
-                <option value="gb2312">
-                  {{ t('tools.eml-parser.options.encoding.gb2312') }}
-                </option>
-                <option value="big5">
-                  {{ t('tools.eml-parser.options.encoding.big5') }}
-                </option>
-                <option value="iso-8859-1">
-                  {{ t('tools.eml-parser.options.encoding.iso-8859-1') }}
-                </option>
-              </select>
+                <ElOption
+                  :label="t('tools.eml-parser.options.encoding.utf-8')"
+                  value="utf-8"
+                />
+                <ElOption
+                  :label="t('tools.eml-parser.options.encoding.gbk')"
+                  value="gbk"
+                />
+                <ElOption
+                  :label="t('tools.eml-parser.options.encoding.gb2312')"
+                  value="gb2312"
+                />
+                <ElOption
+                  :label="t('tools.eml-parser.options.encoding.big5')"
+                  value="big5"
+                />
+                <ElOption
+                  :label="t('tools.eml-parser.options.encoding.iso-8859-1')"
+                  value="iso-8859-1"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.eml-parser.fields.maxAttachmentBytes') }}</span>
-              <input
-                v-model.number="maxAttachmentBytes"
-                type="number"
+              <ElInputNumber
+                v-model="maxAttachmentBytes"
                 class="field__input tb-mono"
-                min="0"
-                max="52428800"
-                step="1"
+                :min="0"
+                :max="52428800"
+                :step="1"
                 :aria-label="t('tools.eml-parser.fields.maxAttachmentBytes')"
-              >
+              />
             </label>
           </div>
 

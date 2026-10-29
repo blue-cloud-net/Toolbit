@@ -5,6 +5,10 @@
  * 密钥内容只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -115,19 +119,19 @@ function fillExample(): void {
         <template #options>
           <label class="field">
             <span class="field__label">{{ t('tools.key-ops.fields.action') }}</span>
-            <select
+            <ElSelect
               v-model="action"
               class="field__select"
+              :aria-label="t('tools.key-ops.fields.action')"
               @change="resetRun()"
             >
-              <option
+              <ElOption
                 v-for="name in ACTIONS"
                 :key="name"
+                :label="t(`tools.key-ops.options.actions.${name}`)"
                 :value="name"
-              >
-                {{ t(`tools.key-ops.options.actions.${name}`) }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
 
           <label
@@ -135,13 +139,13 @@ function fillExample(): void {
             class="field"
           >
             <span class="field__label">{{ t('tools.key-ops.fields.passphrase') }}</span>
-            <input
+            <ElInput
               v-model="passphrase"
               type="password"
               class="field__input"
               autocomplete="off"
               :aria-label="t('tools.key-ops.fields.passphrase')"
-            >
+            />
           </label>
 
           <label
@@ -149,29 +153,29 @@ function fillExample(): void {
             class="field"
           >
             <span class="field__label">{{ t('tools.key-ops.fields.newPassphrase') }}</span>
-            <input
+            <ElInput
               v-model="newPassphrase"
               type="password"
               class="field__input"
               autocomplete="off"
               :aria-label="t('tools.key-ops.fields.newPassphrase')"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.key-ops.fields.pbeCipher') }}</span>
-            <select
+            <ElSelect
               v-model="pbeCipher"
               class="field__select"
+              :aria-label="t('tools.key-ops.fields.pbeCipher')"
             >
-              <option
+              <ElOption
                 v-for="name in PBE_CIPHERS"
                 :key="name"
+                :label="String(name)"
                 :value="name"
-              >
-                {{ name }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
 
           <p class="field__hint">

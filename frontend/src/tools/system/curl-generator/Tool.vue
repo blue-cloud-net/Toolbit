@@ -4,6 +4,16 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElButton } from 'element-plus/es/components/button/index'
+import 'element-plus/es/components/button/style/css'
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -190,30 +200,29 @@ function fillExample(index: number): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.curl-generator.fields.method') }}</span>
-              <select
+              <ElSelect
                 v-model="method"
                 class="field__select"
+                :aria-label="t('tools.curl-generator.fields.method')"
               >
-                <option
+                <ElOption
                   v-for="item in METHODS"
                   :key="item"
+                  :label="String(item)"
                   :value="item"
-                >
-                  {{ item }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.curl-generator.fields.url') }}</span>
-              <input
+              <ElInput
                 v-model="url"
-                type="text"
                 class="field__input tb-mono"
                 autocomplete="off"
                 placeholder="https://api.example.com/v1/items"
                 :aria-label="t('tools.curl-generator.fields.url')"
-              >
+              />
             </label>
           </div>
 
@@ -243,44 +252,40 @@ function fillExample(index: number): void {
               :key="index"
               class="header"
             >
-              <input
+              <ElInput
                 v-model="header.name"
-                type="text"
                 class="field__input tb-mono"
                 autocomplete="off"
                 :aria-label="t('tools.curl-generator.fields.headerName')"
-              >
-              <input
+              />
+              <ElInput
                 v-model="header.value"
-                type="text"
                 class="field__input tb-mono"
                 autocomplete="off"
                 :aria-label="t('tools.curl-generator.fields.headerValue')"
+              />
+              <ElCheckbox
+                v-model="header.sensitive"
+                class="field__checkbox"
               >
-              <label class="field field--inline">
-                <input
-                  v-model="header.sensitive"
-                  type="checkbox"
-                  class="field__checkbox"
-                >
-                <span>{{ t('tools.curl-generator.fields.headerSensitive') }}</span>
-              </label>
-              <button
-                type="button"
+                {{ t('tools.curl-generator.fields.headerSensitive') }}
+              </ElCheckbox>
+              <ElButton
+                size="small"
                 class="header__remove"
                 @click="removeHeader(index)"
               >
                 {{ t('tools.curl-generator.actions.removeHeader') }}
-              </button>
+              </ElButton>
             </div>
 
-            <button
-              type="button"
+            <ElButton
+              size="small"
               class="header__add"
               @click="addHeader"
             >
               {{ t('tools.curl-generator.actions.addHeader') }}
-            </button>
+            </ElButton>
           </fieldset>
           <p class="field__hint">
             {{ t('tools.curl-generator.hints.headers') }}
@@ -289,62 +294,61 @@ function fillExample(index: number): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.curl-generator.fields.bodyFormat') }}</span>
-              <select
+              <ElSelect
                 v-model="bodyFormat"
                 class="field__select"
+                :aria-label="t('tools.curl-generator.fields.bodyFormat')"
               >
-                <option
+                <ElOption
                   v-for="item in BODY_FORMATS"
                   :key="item"
+                  :label="t(`tools.curl-generator.options.bodyFormat.${item}`)"
                   :value="item"
-                >
-                  {{ t(`tools.curl-generator.options.bodyFormat.${item}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.curl-generator.fields.auth') }}</span>
-              <select
+              <ElSelect
                 v-model="auth"
                 class="field__select"
+                :aria-label="t('tools.curl-generator.fields.auth')"
               >
-                <option
+                <ElOption
                   v-for="item in AUTH_TYPES"
                   :key="item"
+                  :label="t(`tools.curl-generator.options.auth.${item}`)"
                   :value="item"
-                >
-                  {{ t(`tools.curl-generator.options.auth.${item}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.curl-generator.fields.shell') }}</span>
-              <select
+              <ElSelect
                 v-model="shell"
                 class="field__select"
+                :aria-label="t('tools.curl-generator.fields.shell')"
               >
-                <option
+                <ElOption
                   v-for="item in SHELLS"
                   :key="item"
+                  :label="t(`tools.curl-generator.options.shell.${item}`)"
                   :value="item"
-                >
-                  {{ t(`tools.curl-generator.options.shell.${item}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.curl-generator.fields.timeout') }}</span>
-              <input
-                v-model.number="timeout"
-                type="number"
+              <ElInputNumber
+                v-model="timeout"
                 class="field__input"
-                min="0"
+                :min="0"
                 :max="MAX_TIMEOUT"
                 :aria-label="t('tools.curl-generator.fields.timeout')"
-              >
+              />
             </label>
           </div>
 
@@ -352,24 +356,23 @@ function fillExample(index: number): void {
             <div class="field-row">
               <label class="field">
                 <span class="field__label">{{ t('tools.curl-generator.fields.username') }}</span>
-                <input
+                <ElInput
                   v-model="username"
-                  type="text"
                   class="field__input"
                   autocomplete="off"
                   :aria-label="t('tools.curl-generator.fields.username')"
-                >
+                />
               </label>
 
               <label class="field">
                 <span class="field__label">{{ t('tools.curl-generator.fields.password') }}</span>
-                <input
+                <ElInput
                   v-model="password"
                   type="password"
                   class="field__input"
                   autocomplete="off"
                   :aria-label="t('tools.curl-generator.fields.password')"
-                >
+                />
               </label>
             </div>
           </template>
@@ -377,13 +380,13 @@ function fillExample(index: number): void {
           <template v-else-if="auth === 'bearer'">
             <label class="field">
               <span class="field__label">{{ t('tools.curl-generator.fields.token') }}</span>
-              <input
+              <ElInput
                 v-model="token"
                 type="password"
                 class="field__input"
                 autocomplete="off"
                 :aria-label="t('tools.curl-generator.fields.token')"
-              >
+              />
             </label>
           </template>
 
@@ -391,23 +394,19 @@ function fillExample(index: number): void {
             {{ t('tools.curl-generator.hints.auth') }}
           </p>
 
-          <label class="field field--inline">
-            <input
-              v-model="followRedirects"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.curl-generator.fields.followRedirects') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="followRedirects"
+            class="field__checkbox"
+          >
+            {{ t('tools.curl-generator.fields.followRedirects') }}
+          </ElCheckbox>
 
-          <label class="field field--inline">
-            <input
-              v-model="insecure"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.curl-generator.fields.insecure') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="insecure"
+            class="field__checkbox"
+          >
+            {{ t('tools.curl-generator.fields.insecure') }}
+          </ElCheckbox>
           <p class="field__hint">
             {{ t('tools.curl-generator.hints.insecure') }}
           </p>
@@ -500,20 +499,13 @@ function fillExample(index: number): void {
 
 .header__add,
 .header__remove {
-  padding: var(--tb-space-1) var(--tb-space-3);
-  font-family: inherit;
   font-size: var(--tb-font-xs);
   color: var(--tb-text-secondary);
-  cursor: pointer;
-  background: var(--tb-bg-sunken);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
 }
 
 .header__add:hover,
 .header__remove:hover {
   color: var(--tb-text);
-  border-color: var(--tb-text-tertiary);
 }
 
 .header__remove {

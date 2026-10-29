@@ -5,6 +5,8 @@
  * 支持拖放 / 选择文件，把文本内容读入输入框。
  * 内容只存在于组件局部状态，**不写**任何浏览器存储。
  */
+import { ElUpload, type UploadFile } from 'element-plus/es/components/upload/index'
+import 'element-plus/es/components/upload/style/css'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -25,7 +27,6 @@ const props = withDefaults(
 const { t } = useI18n()
 
 const error = ref('')
-const dragging = ref(false)
 
 /** 读取文件内容。 */
 async function readFile(file: File): Promise<void> {
@@ -41,43 +42,27 @@ async function readFile(file: File): Promise<void> {
   }
 }
 
-/** 选择文件。 */
-function onChange(event: Event): void {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  if (file) {
-    void readFile(file)
-  }
-}
-
-/** 拖放文件。 */
-function onDrop(event: DragEvent): void {
-  dragging.value = false
-  const file = event.dataTransfer?.files?.[0]
-  if (file) {
-    void readFile(file)
+/** `ElUpload` 选中文件后读取文本。 */
+function onChange(upload: UploadFile): void {
+  if (upload.raw) {
+    void readFile(upload.raw)
   }
 }
 </script>
 
 <template>
-  <div
-    class="file-text"
-    :class="{ 'file-text--dragging': dragging }"
-    @dragover.prevent="dragging = true"
-    @dragleave.prevent="dragging = false"
-    @drop.prevent="onDrop"
-  >
-    <label class="file-text__picker">
-      <span class="tb-sr-only">{{ label ?? t('common.actions.search') }}</span>
-      <input
-        type="file"
-        class="file-text__input"
-        :accept="accept"
-        @change="onChange"
-      >
+  <div class="file-text">
+    <ElUpload
+      class="file-text__picker"
+      drag
+      action="#"
+      :auto-upload="false"
+      :show-file-list="false"
+      :accept="accept"
+      :on-change="onChange"
+    >
       <span class="file-text__hint">{{ t('tool.file.dropHint') }}</span>
-    </label>
+    </ElUpload>
 
     <p
       v-if="error"
@@ -96,35 +81,9 @@ function onDrop(event: DragEvent): void {
   gap: var(--tb-space-1);
 }
 
-.file-text--dragging {
-  outline: 2px dashed var(--tb-primary);
-  outline-offset: 2px;
-  border-radius: var(--tb-radius-control);
-}
-
-.file-text__picker {
-  display: block;
-  padding: var(--tb-space-3);
+.file-text__hint {
   font-size: var(--tb-font-xs);
   color: var(--tb-text-tertiary);
-  text-align: center;
-  background: var(--tb-bg-sunken);
-  border: 1px dashed var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  cursor: pointer;
-  transition: border-color var(--tb-transition);
-}
-
-.file-text__picker:hover {
-  border-color: var(--tb-primary);
-}
-
-.file-text__input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
 }
 
 .file-text__error {

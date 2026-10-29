@@ -5,6 +5,12 @@
  * 私钥与主体信息只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -161,97 +167,93 @@ function fillExample(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.csr-gen.fields.type') }}</span>
-            <select
+            <ElSelect
               v-model="certType"
               class="field__select"
+              :aria-label="t('tools.csr-gen.fields.type')"
             >
-              <option
+              <ElOption
                 v-for="name in TYPES"
                 :key="name"
+                :label="t(`tools.csr-gen.options.types.${name}`)"
                 :value="name"
-              >
-                {{ t(`tools.csr-gen.options.types.${name}`) }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.csr-gen.fields.cn') }}</span>
-            <input
+            <ElInput
               v-model="cn"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.csr-gen.fields.org') }}</span>
-            <input
+            <ElInput
               v-model="org"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.csr-gen.fields.country') }}</span>
-            <input
+            <ElInput
               v-model="country"
-              type="text"
               class="field__input"
               maxlength="2"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.csr-gen.fields.sans') }}</span>
-            <textarea
+            <ElInput
               v-model="sans"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="3"
+              :rows="3"
               spellcheck="false"
             />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.csr-gen.fields.challengePassword') }}</span>
-            <input
+            <ElInput
               v-model="challengePassword"
-              type="text"
               class="field__input"
               autocomplete="off"
-            >
+            />
           </label>
 
-          <label class="field field--inline">
-            <input
-              v-model="useExisting"
-              type="checkbox"
-            >
-            <span>{{ t('tools.csr-gen.fields.useExisting') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="useExisting"
+            class="field__checkbox"
+          >
+            {{ t('tools.csr-gen.fields.useExisting') }}
+          </ElCheckbox>
 
           <template v-if="!useExisting">
             <label class="field">
               <span class="field__label">{{ t('tools.csr-gen.fields.algorithm') }}</span>
-              <select
+              <ElSelect
                 v-model="keyType"
                 class="field__select"
+                :aria-label="t('tools.csr-gen.fields.algorithm')"
               >
-                <option
+                <ElOption
                   v-for="name in ALGORITHMS"
                   :key="name"
+                  :label="String(name)"
                   :value="name"
-                >
-                  {{ name }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label
@@ -259,18 +261,18 @@ function fillExample(): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.csr-gen.fields.curve') }}</span>
-              <select
+              <ElSelect
                 v-model="keyCurve"
                 class="field__select"
+                :aria-label="t('tools.csr-gen.fields.curve')"
               >
-                <option
+                <ElOption
                   v-for="name in CURVES"
                   :key="name"
+                  :label="String(name)"
                   :value="name"
-                >
-                  {{ name }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label
@@ -278,18 +280,18 @@ function fillExample(): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.csr-gen.fields.bits') }}</span>
-              <select
-                v-model.number="keyBits"
+              <ElSelect
+                v-model="keyBits"
                 class="field__select"
+                :aria-label="t('tools.csr-gen.fields.bits')"
               >
-                <option
+                <ElOption
                   v-for="bits in RSA_BITS"
                   :key="bits"
+                  :label="String(bits)"
                   :value="bits"
-                >
-                  {{ bits }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
           </template>
 

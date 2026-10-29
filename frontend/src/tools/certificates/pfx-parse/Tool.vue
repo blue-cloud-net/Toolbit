@@ -4,6 +4,8 @@
  *
  * 容器与口令只存在于组件局部状态；离开页面即丢弃，**不写**浏览器存储。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -109,12 +111,12 @@ function fillExample(): void {
         <template #options>
           <label class="field">
             <span class="field__label">{{ t('tools.pfx-parse.fields.passphrase') }}</span>
-            <input
+            <ElInput
               v-model="passphrase"
               type="password"
               class="field__input"
               autocomplete="off"
-            >
+            />
           </label>
         </template>
 

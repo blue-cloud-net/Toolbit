@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -113,15 +117,14 @@ function onKeydown(event: KeyboardEvent): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.timestamp.fields.value') }}</span>
-            <input
+            <ElInput
               v-model="value"
-              type="text"
               class="field__input tb-mono"
               autocomplete="off"
               placeholder="1700000000"
               :aria-label="t('tools.timestamp.fields.value')"
-              @keydown="onKeydown"
-            >
+              @keydown="(event) => onKeydown(event as KeyboardEvent)"
+            />
           </label>
 
           <p class="field__hint">
@@ -133,54 +136,62 @@ function onKeydown(event: KeyboardEvent): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.timestamp.fields.operation') }}</span>
-              <select
+              <ElSelect
                 v-model="operation"
                 class="field__select"
+                :aria-label="t('tools.timestamp.fields.operation')"
               >
-                <option value="toDate">
-                  {{ t('tools.timestamp.options.operation.toDate') }}
-                </option>
-                <option value="toTimestamp">
-                  {{ t('tools.timestamp.options.operation.toTimestamp') }}
-                </option>
-              </select>
+                <ElOption
+                  :label="t('tools.timestamp.options.operation.toDate')"
+                  value="toDate"
+                />
+                <ElOption
+                  :label="t('tools.timestamp.options.operation.toTimestamp')"
+                  value="toTimestamp"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.timestamp.fields.unit') }}</span>
-              <select
+              <ElSelect
                 v-model="unit"
                 class="field__select"
+                :aria-label="t('tools.timestamp.fields.unit')"
               >
-                <option value="">
-                  {{ t('tools.timestamp.options.unit.auto') }}
-                </option>
-                <option value="s">
-                  {{ t('tools.timestamp.options.unit.s') }}
-                </option>
-                <option value="ms">
-                  {{ t('tools.timestamp.options.unit.ms') }}
-                </option>
-                <option value="us">
-                  {{ t('tools.timestamp.options.unit.us') }}
-                </option>
-                <option value="ns">
-                  {{ t('tools.timestamp.options.unit.ns') }}
-                </option>
-              </select>
+                <ElOption
+                  :label="t('tools.timestamp.options.unit.auto')"
+                  value=""
+                />
+                <ElOption
+                  :label="t('tools.timestamp.options.unit.s')"
+                  value="s"
+                />
+                <ElOption
+                  :label="t('tools.timestamp.options.unit.ms')"
+                  value="ms"
+                />
+                <ElOption
+                  :label="t('tools.timestamp.options.unit.us')"
+                  value="us"
+                />
+                <ElOption
+                  :label="t('tools.timestamp.options.unit.ns')"
+                  value="ns"
+                />
+              </ElSelect>
             </label>
           </div>
 
           <label class="field">
             <span class="field__label">{{ t('tools.timestamp.fields.timezone') }}</span>
-            <input
+            <ElInput
               v-model="timezone"
-              type="text"
               class="field__input tb-mono"
               autocomplete="off"
               placeholder="Asia/Shanghai"
               :aria-label="t('tools.timestamp.fields.timezone')"
-            >
+            />
           </label>
           <p class="field__hint">
             {{ t('tools.timestamp.hints.timezone') }}

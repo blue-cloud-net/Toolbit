@@ -4,6 +4,12 @@
  *
  * 纯本地计算，结果由后端返回后按行渲染，便于复制。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -124,17 +130,20 @@ function reset(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.cidr-calc.fields.mode') }}</span>
-            <select
+            <ElSelect
               v-model="mode"
               class="field__select"
+              :aria-label="t('tools.cidr-calc.fields.mode')"
             >
-              <option value="cidr">
-                {{ t('tools.cidr-calc.options.modeCidr') }}
-              </option>
-              <option value="range">
-                {{ t('tools.cidr-calc.options.modeRange') }}
-              </option>
-            </select>
+              <ElOption
+                :label="t('tools.cidr-calc.options.modeCidr')"
+                value="cidr"
+              />
+              <ElOption
+                :label="t('tools.cidr-calc.options.modeRange')"
+                value="range"
+              />
+            </ElSelect>
           </label>
 
           <label
@@ -142,35 +151,32 @@ function reset(): void {
             class="field"
           >
             <span class="field__label">{{ t('tools.cidr-calc.fields.cidr') }}</span>
-            <input
+            <ElInput
               v-model="cidr"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <template v-else>
             <label class="field">
               <span class="field__label">{{ t('tools.cidr-calc.fields.start') }}</span>
-              <input
+              <ElInput
                 v-model="start"
-                type="text"
                 class="field__input"
                 spellcheck="false"
                 autocomplete="off"
-              >
+              />
             </label>
             <label class="field">
               <span class="field__label">{{ t('tools.cidr-calc.fields.end') }}</span>
-              <input
+              <ElInput
                 v-model="end"
-                type="text"
                 class="field__input"
                 spellcheck="false"
                 autocomplete="off"
-              >
+              />
             </label>
           </template>
         </template>
@@ -181,13 +187,12 @@ function reset(): void {
             class="field"
           >
             <span class="field__label">{{ t('tools.cidr-calc.fields.split') }}</span>
-            <input
-              v-model.number="split"
-              type="number"
+            <ElInputNumber
+              v-model="split"
               class="field__input"
-              min="0"
-              max="128"
-            >
+              :min="0"
+              :max="128"
+            />
           </label>
         </template>
 

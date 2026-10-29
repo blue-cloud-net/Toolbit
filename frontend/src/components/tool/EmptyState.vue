@@ -4,6 +4,8 @@
  *
  * 结果区 / 列表区在没有数据时的占位：图标 + 标题 + 提示。
  */
+import { ElEmpty } from 'element-plus/es/components/empty/index'
+import 'element-plus/es/components/empty/style/css'
 import { useI18n } from 'vue-i18n'
 
 import AppIcon from '@/components/common/AppIcon.vue'
@@ -24,40 +26,40 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="empty-state">
-    <span
-      class="empty-state__icon"
-      aria-hidden="true"
-    >
-      <AppIcon
-        :name="icon"
-        :size="24"
-      />
-    </span>
-    <p class="empty-state__title">
-      {{ title }}
-    </p>
-    <p
-      v-if="hint"
-      class="empty-state__hint"
-    >
-      {{ hint }}
-    </p>
+  <ElEmpty
+    class="empty-state"
+    :image-size="44"
+  >
+    <template #image>
+      <span
+        class="empty-state__icon"
+        aria-hidden="true"
+      >
+        <AppIcon
+          :name="icon"
+          :size="24"
+        />
+      </span>
+    </template>
+
+    <template #description>
+      <p class="empty-state__title">
+        {{ title }}
+      </p>
+      <p
+        v-if="hint"
+        class="empty-state__hint"
+      >
+        {{ hint }}
+      </p>
+    </template>
+
     <slot />
     <span class="tb-sr-only">{{ t('common.states.empty') }}</span>
-  </div>
+  </ElEmpty>
 </template>
 
 <style scoped>
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--tb-space-2);
-  padding: var(--tb-space-6) var(--tb-space-4);
-  text-align: center;
-}
-
 .empty-state__icon {
   display: grid;
   place-items: center;

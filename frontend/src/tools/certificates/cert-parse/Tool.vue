@@ -5,6 +5,10 @@
  * 证书内容只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -207,32 +211,30 @@ function fillExample(): void {
         <template #options>
           <label class="field">
             <span class="field__label">{{ t('tools.cert-parse.fields.fingerprints') }}</span>
-            <select
+            <ElSelect
               v-model="fingerprints"
               class="field__select"
               multiple
-              size="3"
+              :aria-label="t('tools.cert-parse.fields.fingerprints')"
             >
-              <option
+              <ElOption
                 v-for="alg in FINGERPRINT_ALGORITHMS"
                 :key="alg"
+                :label="String(alg)"
                 :value="alg"
-              >
-                {{ alg }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.cert-parse.fields.atTime') }}</span>
-            <input
+            <ElInput
               v-model="atTime"
-              type="text"
               class="field__input"
               placeholder="2026-01-01T00:00:00Z"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
         </template>
 

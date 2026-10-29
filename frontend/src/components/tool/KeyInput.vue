@@ -5,6 +5,10 @@
  * 密钥内容只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { useI18n } from 'vue-i18n'
 
 import SensitiveInput from '@/components/tool/SensitiveInput.vue'
@@ -57,10 +61,11 @@ function formatLabel(value: string): string {
   <div class="key-input">
     <label class="field">
       <span class="field__label">{{ label ?? t('tool.key.fields.key') }}</span>
-      <textarea
+      <ElInput
         v-model="value"
-        class="field__textarea tb-mono"
-        rows="5"
+        type="textarea"
+        class="tb-mono"
+        :rows="5"
         spellcheck="false"
         autocomplete="off"
         :aria-label="label ?? t('tool.key.fields.key')"
@@ -70,19 +75,19 @@ function formatLabel(value: string): string {
 
     <label class="field">
       <span class="field__label">{{ t('tool.key.fields.format') }}</span>
-      <select
+      <ElSelect
         v-model="format"
-        class="field__select"
+        class="key-input__format"
+        :aria-label="t('tool.key.fields.format')"
         :disabled="props.disabled"
       >
-        <option
+        <ElOption
           v-for="f in props.formats"
           :key="f"
+          :label="formatLabel(f)"
           :value="f"
-        >
-          {{ formatLabel(f) }}
-        </option>
-      </select>
+        />
+      </ElSelect>
     </label>
 
     <label
@@ -107,5 +112,10 @@ function formatLabel(value: string): string {
   display: flex;
   flex-direction: column;
   gap: var(--tb-space-2);
+}
+
+.key-input__format {
+  width: 100%;
+  max-width: 220px;
 }
 </style>

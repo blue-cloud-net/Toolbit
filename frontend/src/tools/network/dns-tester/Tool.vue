@@ -4,6 +4,10 @@
  *
  * 三个检测项：whois（RDAP / whois）、dnssec、ptr。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -85,43 +89,45 @@ function reset(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.dns-tester.fields.action') }}</span>
-            <select
+            <ElSelect
               v-model="action"
               class="field__select"
+              :aria-label="t('tools.dns-tester.fields.action')"
             >
-              <option value="whois">
-                {{ t('tools.dns-tester.options.whois') }}
-              </option>
-              <option value="dnssec">
-                {{ t('tools.dns-tester.options.dnssec') }}
-              </option>
-              <option value="ptr">
-                {{ t('tools.dns-tester.options.ptr') }}
-              </option>
-            </select>
+              <ElOption
+                :label="t('tools.dns-tester.options.whois')"
+                value="whois"
+              />
+              <ElOption
+                :label="t('tools.dns-tester.options.dnssec')"
+                value="dnssec"
+              />
+              <ElOption
+                :label="t('tools.dns-tester.options.ptr')"
+                value="ptr"
+              />
+            </ElSelect>
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.dns-tester.fields.domain') }}</span>
-            <input
+            <ElInput
               v-model="domain"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.dns-tester.fields.ip') }}</span>
-            <input
+            <ElInput
               v-model="ip"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
               placeholder="8.8.8.8"
-            >
+            />
           </label>
         </template>
 

@@ -4,6 +4,12 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -149,26 +155,24 @@ function fillExample(index: number): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.date-calc.fields.dateA') }}</span>
-            <input
+            <ElInput
               v-model="dateA"
-              type="text"
               class="field__input tb-mono"
               autocomplete="off"
               placeholder="2024-01-01"
               :aria-label="t('tools.date-calc.fields.dateA')"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.date-calc.fields.dateB') }}</span>
-            <input
+            <ElInput
               v-model="dateB"
-              type="text"
               class="field__input tb-mono"
               autocomplete="off"
               placeholder="2024-01-31"
               :aria-label="t('tools.date-calc.fields.dateB')"
-            >
+            />
           </label>
 
           <p class="field__hint">
@@ -180,23 +184,28 @@ function fillExample(index: number): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.date-calc.fields.operation') }}</span>
-              <select
+              <ElSelect
                 v-model="operation"
                 class="field__select"
+                :aria-label="t('tools.date-calc.fields.operation')"
               >
-                <option value="diff">
-                  {{ t('tools.date-calc.options.operation.diff') }}
-                </option>
-                <option value="add">
-                  {{ t('tools.date-calc.options.operation.add') }}
-                </option>
-                <option value="sub">
-                  {{ t('tools.date-calc.options.operation.sub') }}
-                </option>
-                <option value="workdays">
-                  {{ t('tools.date-calc.options.operation.workdays') }}
-                </option>
-              </select>
+                <ElOption
+                  :label="t('tools.date-calc.options.operation.diff')"
+                  value="diff"
+                />
+                <ElOption
+                  :label="t('tools.date-calc.options.operation.add')"
+                  value="add"
+                />
+                <ElOption
+                  :label="t('tools.date-calc.options.operation.sub')"
+                  value="sub"
+                />
+                <ElOption
+                  :label="t('tools.date-calc.options.operation.workdays')"
+                  value="workdays"
+                />
+              </ElSelect>
             </label>
 
             <label
@@ -204,13 +213,12 @@ function fillExample(index: number): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.date-calc.fields.days') }}</span>
-              <input
-                v-model.number="days"
-                type="number"
+              <ElInputNumber
+                v-model="days"
                 class="field__input tb-mono"
-                step="1"
+                :step="1"
                 :aria-label="t('tools.date-calc.fields.days')"
-              >
+              />
             </label>
 
             <label
@@ -218,23 +226,28 @@ function fillExample(index: number): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.date-calc.fields.unit') }}</span>
-              <select
+              <ElSelect
                 v-model="unit"
                 class="field__select"
+                :aria-label="t('tools.date-calc.fields.unit')"
               >
-                <option value="day">
-                  {{ t('tools.date-calc.options.unit.day') }}
-                </option>
-                <option value="week">
-                  {{ t('tools.date-calc.options.unit.week') }}
-                </option>
-                <option value="month">
-                  {{ t('tools.date-calc.options.unit.month') }}
-                </option>
-                <option value="year">
-                  {{ t('tools.date-calc.options.unit.year') }}
-                </option>
-              </select>
+                <ElOption
+                  :label="t('tools.date-calc.options.unit.day')"
+                  value="day"
+                />
+                <ElOption
+                  :label="t('tools.date-calc.options.unit.week')"
+                  value="week"
+                />
+                <ElOption
+                  :label="t('tools.date-calc.options.unit.month')"
+                  value="month"
+                />
+                <ElOption
+                  :label="t('tools.date-calc.options.unit.year')"
+                  value="year"
+                />
+              </ElSelect>
             </label>
           </div>
 
@@ -250,10 +263,11 @@ function fillExample(index: number): void {
             class="field"
           >
             <span class="field__label">{{ t('tools.date-calc.fields.holidays') }}</span>
-            <textarea
+            <ElInput
               v-model="holidays"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="3"
+              :rows="3"
               spellcheck="false"
               placeholder="2024-01-01"
               :aria-label="t('tools.date-calc.fields.holidays')"

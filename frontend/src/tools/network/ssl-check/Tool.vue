@@ -5,6 +5,10 @@
  * 走 WebSocket 流式端点：服务端按阶段推送 `progress`，
  * 结束后推 `result` 或 `error`。因此**不能**复用 `useToolRun`。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
 import { computed, onScopeDispose, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -262,37 +266,34 @@ function reset(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.ssl-check.fields.host') }}</span>
-            <input
+            <ElInput
               v-model="host"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.ssl-check.fields.port') }}</span>
-            <input
-              v-model.number="port"
-              type="number"
+            <ElInputNumber
+              v-model="port"
               class="field__input"
-              min="1"
-              max="65535"
-            >
+              :min="1"
+              :max="65535"
+            />
           </label>
         </template>
 
         <template #options>
           <label class="field">
             <span class="field__label">{{ t('tools.ssl-check.fields.sni') }}</span>
-            <input
+            <ElInput
               v-model="sni"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <p

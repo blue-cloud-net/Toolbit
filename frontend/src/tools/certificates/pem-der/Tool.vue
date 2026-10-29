@@ -5,6 +5,8 @@
  * 材料内容只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -122,29 +124,36 @@ function fillExample(): void {
         <template #options>
           <label class="field">
             <span class="field__label">{{ t('tools.pem-der.fields.type') }}</span>
-            <select
+            <ElSelect
               v-model="type"
               class="field__select"
+              :aria-label="t('tools.pem-der.fields.type')"
             >
-              <option
+              <ElOption
                 v-for="name in TYPES"
                 :key="name"
+                :label="t(`tools.pem-der.options.types.${name}`)"
                 :value="name"
-              >
-                {{ t(`tools.pem-der.options.types.${name}`) }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.pem-der.fields.to') }}</span>
-            <select
+            <ElSelect
               v-model="to"
               class="field__select"
+              :aria-label="t('tools.pem-der.fields.to')"
             >
-              <option value="der">{{ t('tools.pem-der.options.to.der') }}</option>
-              <option value="pem">{{ t('tools.pem-der.options.to.pem') }}</option>
-            </select>
+              <ElOption
+                :label="t('tools.pem-der.options.to.der')"
+                value="der"
+              />
+              <ElOption
+                :label="t('tools.pem-der.options.to.pem')"
+                value="pem"
+              />
+            </ElSelect>
           </label>
         </template>
 

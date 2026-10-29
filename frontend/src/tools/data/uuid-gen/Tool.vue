@@ -4,6 +4,12 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -107,33 +113,36 @@ function fillExample(index: number): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.uuid-gen.fields.version') }}</span>
-              <select
+              <ElSelect
                 v-model="version"
                 class="field__select"
+                :aria-label="t('tools.uuid-gen.fields.version')"
               >
-                <option :value="1">
-                  {{ t('tools.uuid-gen.options.version.1') }}
-                </option>
-                <option :value="4">
-                  {{ t('tools.uuid-gen.options.version.4') }}
-                </option>
-                <option :value="7">
-                  {{ t('tools.uuid-gen.options.version.7') }}
-                </option>
-              </select>
+                <ElOption
+                  :label="t('tools.uuid-gen.options.version.1')"
+                  :value="1"
+                />
+                <ElOption
+                  :label="t('tools.uuid-gen.options.version.4')"
+                  :value="4"
+                />
+                <ElOption
+                  :label="t('tools.uuid-gen.options.version.7')"
+                  :value="7"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.uuid-gen.fields.count') }}</span>
-              <input
-                v-model.number="count"
-                type="number"
+              <ElInputNumber
+                v-model="count"
                 class="field__input tb-mono"
-                min="1"
+                :min="1"
                 :max="MAX_COUNT"
-                step="1"
+                :step="1"
                 :aria-label="t('tools.uuid-gen.fields.count')"
-              >
+              />
             </label>
           </div>
 
@@ -143,32 +152,26 @@ function fillExample(index: number): void {
         </template>
 
         <template #options>
-          <label class="field field--inline">
-            <input
-              v-model="uppercase"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.uuid-gen.fields.uppercase') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="uppercase"
+            class="field__checkbox"
+          >
+            {{ t('tools.uuid-gen.fields.uppercase') }}
+          </ElCheckbox>
 
-          <label class="field field--inline">
-            <input
-              v-model="hyphens"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.uuid-gen.fields.hyphens') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="hyphens"
+            class="field__checkbox"
+          >
+            {{ t('tools.uuid-gen.fields.hyphens') }}
+          </ElCheckbox>
 
-          <label class="field field--inline">
-            <input
-              v-model="braces"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.uuid-gen.fields.braces') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="braces"
+            class="field__checkbox"
+          >
+            {{ t('tools.uuid-gen.fields.braces') }}
+          </ElCheckbox>
           <p class="field__hint">
             {{ t('tools.uuid-gen.hints.format') }}
           </p>

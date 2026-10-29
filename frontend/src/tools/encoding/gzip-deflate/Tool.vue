@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -136,13 +140,14 @@ function onKeydown(event: KeyboardEvent): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.gzip-deflate.fields.input') }}</span>
-            <textarea
+            <ElInput
               v-model="input"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="6"
+              :rows="6"
               spellcheck="false"
               :aria-label="t('tools.gzip-deflate.fields.input')"
-              @keydown="onKeydown"
+              @keydown="(event) => onKeydown(event as KeyboardEvent)"
             />
           </label>
 
@@ -165,25 +170,42 @@ function onKeydown(event: KeyboardEvent): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.gzip-deflate.fields.operation') }}</span>
-              <select
+              <ElSelect
                 v-model="operation"
                 class="field__select"
+                :aria-label="t('tools.gzip-deflate.fields.operation')"
               >
-                <option value="compress">{{ t('tools.gzip-deflate.options.operation.compress') }}</option>
-                <option value="decompress">{{ t('tools.gzip-deflate.options.operation.decompress') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.gzip-deflate.options.operation.compress')"
+                  value="compress"
+                />
+                <ElOption
+                  :label="t('tools.gzip-deflate.options.operation.decompress')"
+                  value="decompress"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.gzip-deflate.fields.format') }}</span>
-              <select
+              <ElSelect
                 v-model="format"
                 class="field__select"
+                :aria-label="t('tools.gzip-deflate.fields.format')"
               >
-                <option value="gzip">{{ t('tools.gzip-deflate.options.format.gzip') }}</option>
-                <option value="deflate">{{ t('tools.gzip-deflate.options.format.deflate') }}</option>
-                <option value="raw">{{ t('tools.gzip-deflate.options.format.raw') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.gzip-deflate.options.format.gzip')"
+                  value="gzip"
+                />
+                <ElOption
+                  :label="t('tools.gzip-deflate.options.format.deflate')"
+                  value="deflate"
+                />
+                <ElOption
+                  :label="t('tools.gzip-deflate.options.format.raw')"
+                  value="raw"
+                />
+              </ElSelect>
             </label>
 
             <label
@@ -191,18 +213,18 @@ function onKeydown(event: KeyboardEvent): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.gzip-deflate.fields.level') }}</span>
-              <select
-                v-model.number="level"
+              <ElSelect
+                v-model="level"
                 class="field__select"
+                :aria-label="t('tools.gzip-deflate.fields.level')"
               >
-                <option
+                <ElOption
                   v-for="item in LEVEL_OPTIONS"
                   :key="item"
+                  :label="String(item)"
                   :value="item"
-                >
-                  {{ item }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">

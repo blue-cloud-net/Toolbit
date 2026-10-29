@@ -5,6 +5,12 @@
  * 本版**未**接入 CT 日志：后端不注册该 slug，调用返回 `NOT_IMPLEMENTED`。
  * 页面保留参数区以便展示预期契约，但运行按钮禁用并给出明确说明。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -63,44 +69,46 @@ function reset(): void {
 
           <label class="field">
             <span class="field__label">{{ t('tools.ct-search.fields.domain') }}</span>
-            <input
+            <ElInput
               v-model="domain"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.ct-search.fields.matchType') }}</span>
-            <select
+            <ElSelect
               v-model="matchType"
               class="field__select"
+              :aria-label="t('tools.ct-search.fields.matchType')"
             >
-              <option value="exact">
-                {{ t('tools.ct-search.options.exact') }}
-              </option>
-              <option value="contains">
-                {{ t('tools.ct-search.options.contains') }}
-              </option>
-              <option value="wildcard">
-                {{ t('tools.ct-search.options.wildcard') }}
-              </option>
-            </select>
+              <ElOption
+                :label="t('tools.ct-search.options.exact')"
+                value="exact"
+              />
+              <ElOption
+                :label="t('tools.ct-search.options.contains')"
+                value="contains"
+              />
+              <ElOption
+                :label="t('tools.ct-search.options.wildcard')"
+                value="wildcard"
+              />
+            </ElSelect>
           </label>
         </template>
 
         <template #options>
           <label class="field">
             <span class="field__label">{{ t('tools.ct-search.fields.limit') }}</span>
-            <input
-              v-model.number="limit"
-              type="number"
+            <ElInputNumber
+              v-model="limit"
               class="field__input"
-              min="1"
-              max="100"
-            >
+              :min="1"
+              :max="100"
+            />
           </label>
         </template>
 

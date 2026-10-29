@@ -24,69 +24,16 @@
   color: var(--tb-text-secondary);
 }
 
-.field__textarea {
-  width: 100%;
-  padding: var(--tb-space-2) var(--tb-space-3);
-  font-family: var(--tb-font-mono);
-  font-size: var(--tb-font-sm);
-  line-height: 1.6;
-  color: var(--tb-text);
-  background: var(--tb-bg-sunken);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  resize: vertical;
-  transition:
-    border-color var(--tb-transition),
-    box-shadow var(--tb-transition);
-}
-
-.field__input {
-  width: 100%;
-  padding: var(--tb-space-2) var(--tb-space-3);
-  font-family: inherit;
-  font-size: var(--tb-font-sm);
-  color: var(--tb-text);
-  background: var(--tb-bg-elevated);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  transition:
-    border-color var(--tb-transition),
-    box-shadow var(--tb-transition);
-}
-
+/*
+ * 表单控件统一由 Element Plus 渲染（`ElInput` / `ElSelect` / `ElCheckbox` …），
+ * 配色、圆角、焦点环由 `element-overrides.css` 从 `--tb-primary` 现场派生。
+ * 这里只约定「占满一行」的布局，**不要**再往这些类上加 padding / border / background，
+ * 否则会与 Element 组件自身的边框叠加成双层。
+ */
+.field__input,
+.field__textarea,
 .field__select {
-  padding: var(--tb-space-1) var(--tb-space-2);
-  font-family: inherit;
-  font-size: var(--tb-font-sm);
-  color: var(--tb-text);
-  background: var(--tb-bg-elevated);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  cursor: pointer;
-  transition:
-    border-color var(--tb-transition),
-    box-shadow var(--tb-transition);
-}
-
-/* 统一的 focus 环：主色描边 + 淡光晕（深色模式下同样可辨） */
-.field__textarea:focus,
-.field__input:focus,
-.field__select:focus {
-  border-color: var(--tb-primary);
-  outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tb-primary) 22%, transparent);
-}
-
-/* 原生下拉与选项跟随主题（配合 color-scheme） */
-.field__select option {
-  color: var(--tb-text);
-  background: var(--tb-bg-elevated);
-}
-
-.field__checkbox {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--tb-primary);
+  width: 100%;
 }
 
 .field__hint {

@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -145,52 +149,67 @@ function fillExample(index: number): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.js-format.fields.action') }}</span>
-              <select
+              <ElSelect
                 v-model="action"
                 class="field__select"
+                :aria-label="t('tools.js-format.fields.action')"
               >
-                <option value="format">{{ t('tools.js-format.options.action.format') }}</option>
-                <option value="minify">{{ t('tools.js-format.options.action.minify') }}</option>
-                <option value="validate">{{ t('tools.js-format.options.action.validate') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.js-format.options.action.format')"
+                  value="format"
+                />
+                <ElOption
+                  :label="t('tools.js-format.options.action.minify')"
+                  value="minify"
+                />
+                <ElOption
+                  :label="t('tools.js-format.options.action.validate')"
+                  value="validate"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.js-format.fields.indent') }}</span>
-              <select
-                v-model.number="indent"
+              <ElSelect
+                v-model="indent"
                 class="field__select"
+                :aria-label="t('tools.js-format.fields.indent')"
               >
-                <option
+                <ElOption
                   v-for="size in INDENT_OPTIONS"
                   :key="size"
+                  :label="String(size)"
                   :value="size"
-                >
-                  {{ size }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.js-format.fields.quotes') }}</span>
-              <select
+              <ElSelect
                 v-model="quotes"
                 class="field__select"
+                :aria-label="t('tools.js-format.fields.quotes')"
               >
-                <option value="double">{{ t('tools.js-format.options.quotes.double') }}</option>
-                <option value="single">{{ t('tools.js-format.options.quotes.single') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.js-format.options.quotes.double')"
+                  value="double"
+                />
+                <ElOption
+                  :label="t('tools.js-format.options.quotes.single')"
+                  value="single"
+                />
+              </ElSelect>
             </label>
           </div>
 
-          <label class="field field--inline">
-            <input
-              v-model="semi"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.js-format.fields.semi') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="semi"
+            class="field__checkbox"
+          >
+            {{ t('tools.js-format.fields.semi') }}
+          </ElCheckbox>
           <p class="field__hint">
             {{ t('tools.js-format.hints.semi') }}
           </p>

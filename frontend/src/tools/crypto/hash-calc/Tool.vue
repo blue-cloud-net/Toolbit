@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -129,13 +133,14 @@ function onKeydown(event: KeyboardEvent): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.hash-calc.fields.input') }}</span>
-            <textarea
+            <ElInput
               v-model="input"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="6"
+              :rows="6"
               spellcheck="false"
               :aria-label="t('tools.hash-calc.fields.input')"
-              @keydown="onKeydown"
+              @keydown="(evt: Event | KeyboardEvent) => onKeydown(evt as KeyboardEvent)"
             />
           </label>
 
@@ -168,19 +173,15 @@ function onKeydown(event: KeyboardEvent): void {
               {{ t('tools.hash-calc.fields.algorithms') }}
             </legend>
             <div class="algorithm-list">
-              <label
+              <ElCheckbox
                 v-for="name in ALGORITHMS"
                 :key="name"
-                class="field field--inline"
+                class="field__checkbox"
+                :model-value="algorithms.includes(name)"
+                @change="toggleAlgorithm(name)"
               >
-                <input
-                  type="checkbox"
-                  class="field__checkbox"
-                  :checked="algorithms.includes(name)"
-                  @change="toggleAlgorithm(name)"
-                >
-                <span>{{ t(`tools.hash-calc.options.algorithms.${name}`) }}</span>
-              </label>
+                {{ t(`tools.hash-calc.options.algorithms.${name}`) }}
+              </ElCheckbox>
             </div>
           </fieldset>
           <p class="field__hint">

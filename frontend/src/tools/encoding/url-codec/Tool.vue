@@ -4,6 +4,12 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -130,13 +136,14 @@ function onKeydown(event: KeyboardEvent): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.url-codec.fields.input') }}</span>
-            <textarea
+            <ElInput
               v-model="input"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="5"
+              :rows="5"
               spellcheck="false"
               :aria-label="t('tools.url-codec.fields.input')"
-              @keydown="onKeydown"
+              @keydown="(event) => onKeydown(event as KeyboardEvent)"
             />
           </label>
 
@@ -149,41 +156,60 @@ function onKeydown(event: KeyboardEvent): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.url-codec.fields.operation') }}</span>
-              <select
+              <ElSelect
                 v-model="operation"
                 class="field__select"
+                :aria-label="t('tools.url-codec.fields.operation')"
               >
-                <option value="encode">{{ t('tools.url-codec.options.operation.encode') }}</option>
-                <option value="decode">{{ t('tools.url-codec.options.operation.decode') }}</option>
-                <option value="parse">{{ t('tools.url-codec.options.operation.parse') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.url-codec.options.operation.encode')"
+                  value="encode"
+                />
+                <ElOption
+                  :label="t('tools.url-codec.options.operation.decode')"
+                  value="decode"
+                />
+                <ElOption
+                  :label="t('tools.url-codec.options.operation.parse')"
+                  value="parse"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.url-codec.fields.component') }}</span>
-              <select
+              <ElSelect
                 v-model="component"
                 class="field__select"
+                :aria-label="t('tools.url-codec.fields.component')"
               >
-                <option value="full">{{ t('tools.url-codec.options.component.full') }}</option>
-                <option value="path">{{ t('tools.url-codec.options.component.path') }}</option>
-                <option value="query">{{ t('tools.url-codec.options.component.query') }}</option>
-                <option value="fragment">{{ t('tools.url-codec.options.component.fragment') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.url-codec.options.component.full')"
+                  value="full"
+                />
+                <ElOption
+                  :label="t('tools.url-codec.options.component.path')"
+                  value="path"
+                />
+                <ElOption
+                  :label="t('tools.url-codec.options.component.query')"
+                  value="query"
+                />
+                <ElOption
+                  :label="t('tools.url-codec.options.component.fragment')"
+                  value="fragment"
+                />
+              </ElSelect>
             </label>
           </div>
 
-          <label
+          <ElCheckbox
             v-if="operation === 'decode'"
-            class="field field--inline"
+            v-model="plusAsSpace"
+            class="field__checkbox"
           >
-            <input
-              v-model="plusAsSpace"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.url-codec.fields.plusAsSpace') }}</span>
-          </label>
+            {{ t('tools.url-codec.fields.plusAsSpace') }}
+          </ElCheckbox>
           <p
             v-if="operation === 'decode'"
             class="field__hint"

@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -130,10 +134,11 @@ function fillExample(): void {
 
           <label class="field">
             <span class="field__label">{{ t('tools.asymmetric-crypt.fields.input') }}</span>
-            <textarea
+            <ElInput
               v-model="input"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="5"
+              :rows="5"
               spellcheck="false"
               :aria-label="t('tools.asymmetric-crypt.fields.input')"
             />
@@ -144,24 +149,38 @@ function fillExample(): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.asymmetric-crypt.fields.algorithm') }}</span>
-              <select
+              <ElSelect
                 v-model="algorithm"
                 class="field__select"
+                :aria-label="t('tools.asymmetric-crypt.fields.algorithm')"
               >
-                <option value="SM2">{{ t('tools.asymmetric-crypt.options.algorithm.SM2') }}</option>
-                <option value="RSA">{{ t('tools.asymmetric-crypt.options.algorithm.RSA') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.asymmetric-crypt.options.algorithm.SM2')"
+                  value="SM2"
+                />
+                <ElOption
+                  :label="t('tools.asymmetric-crypt.options.algorithm.RSA')"
+                  value="RSA"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.asymmetric-crypt.fields.operation') }}</span>
-              <select
+              <ElSelect
                 v-model="operation"
                 class="field__select"
+                :aria-label="t('tools.asymmetric-crypt.fields.operation')"
               >
-                <option value="encrypt">{{ t('tools.asymmetric-crypt.options.operation.encrypt') }}</option>
-                <option value="decrypt">{{ t('tools.asymmetric-crypt.options.operation.decrypt') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.asymmetric-crypt.options.operation.encrypt')"
+                  value="encrypt"
+                />
+                <ElOption
+                  :label="t('tools.asymmetric-crypt.options.operation.decrypt')"
+                  value="decrypt"
+                />
+              </ElSelect>
             </label>
 
             <label
@@ -169,13 +188,20 @@ function fillExample(): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.asymmetric-crypt.fields.rsaPadding') }}</span>
-              <select
+              <ElSelect
                 v-model="rsaPadding"
                 class="field__select"
+                :aria-label="t('tools.asymmetric-crypt.fields.rsaPadding')"
               >
-                <option value="oaep">{{ t('tools.asymmetric-crypt.options.rsaPadding.oaep') }}</option>
-                <option value="pkcs1">{{ t('tools.asymmetric-crypt.options.rsaPadding.pkcs1') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.asymmetric-crypt.options.rsaPadding.oaep')"
+                  value="oaep"
+                />
+                <ElOption
+                  :label="t('tools.asymmetric-crypt.options.rsaPadding.pkcs1')"
+                  value="pkcs1"
+                />
+              </ElSelect>
             </label>
 
             <label
@@ -183,14 +209,24 @@ function fillExample(): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.asymmetric-crypt.fields.oaepHash') }}</span>
-              <select
+              <ElSelect
                 v-model="oaepHash"
                 class="field__select"
+                :aria-label="t('tools.asymmetric-crypt.fields.oaepHash')"
               >
-                <option value="SHA256">{{ t('tools.asymmetric-crypt.options.oaepHash.SHA256') }}</option>
-                <option value="SHA384">{{ t('tools.asymmetric-crypt.options.oaepHash.SHA384') }}</option>
-                <option value="SHA512">{{ t('tools.asymmetric-crypt.options.oaepHash.SHA512') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.asymmetric-crypt.options.oaepHash.SHA256')"
+                  value="SHA256"
+                />
+                <ElOption
+                  :label="t('tools.asymmetric-crypt.options.oaepHash.SHA384')"
+                  value="SHA384"
+                />
+                <ElOption
+                  :label="t('tools.asymmetric-crypt.options.oaepHash.SHA512')"
+                  value="SHA512"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">

@@ -4,6 +4,12 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -177,21 +183,22 @@ function fillExample(index: number): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.crontab-generator.fields.preset') }}</span>
-            <select
+            <ElSelect
               v-model="preset"
               class="field__select"
+              :aria-label="t('tools.crontab-generator.fields.preset')"
             >
-              <option
+              <ElOption
                 v-for="item in PRESETS"
                 :key="item"
+                :label="presetLabel(item)"
                 :value="item"
-              >
-                {{ presetLabel(item) }}
-              </option>
-              <option value="">
-                {{ presetLabel('') }}
-              </option>
-            </select>
+              />
+              <ElOption
+                :label="presetLabel('')"
+                value=""
+              />
+            </ElSelect>
           </label>
 
           <p class="field__hint">
@@ -211,57 +218,52 @@ function fillExample(index: number): void {
             <div class="field-row">
               <label class="field">
                 <span class="field__label">{{ t('tools.crontab-generator.fields.minute') }}</span>
-                <input
+                <ElInput
                   v-model="minute"
-                  type="text"
                   class="field__input tb-mono"
                   autocomplete="off"
                   :aria-label="t('tools.crontab-generator.fields.minute')"
-                >
+                />
               </label>
 
               <label class="field">
                 <span class="field__label">{{ t('tools.crontab-generator.fields.hour') }}</span>
-                <input
+                <ElInput
                   v-model="hour"
-                  type="text"
                   class="field__input tb-mono"
                   autocomplete="off"
                   :aria-label="t('tools.crontab-generator.fields.hour')"
-                >
+                />
               </label>
 
               <label class="field">
                 <span class="field__label">{{ t('tools.crontab-generator.fields.dayOfMonth') }}</span>
-                <input
+                <ElInput
                   v-model="dayOfMonth"
-                  type="text"
                   class="field__input tb-mono"
                   autocomplete="off"
                   :aria-label="t('tools.crontab-generator.fields.dayOfMonth')"
-                >
+                />
               </label>
 
               <label class="field">
                 <span class="field__label">{{ t('tools.crontab-generator.fields.month') }}</span>
-                <input
+                <ElInput
                   v-model="month"
-                  type="text"
                   class="field__input tb-mono"
                   autocomplete="off"
                   :aria-label="t('tools.crontab-generator.fields.month')"
-                >
+                />
               </label>
 
               <label class="field">
                 <span class="field__label">{{ t('tools.crontab-generator.fields.dayOfWeek') }}</span>
-                <input
+                <ElInput
                   v-model="dayOfWeek"
-                  type="text"
                   class="field__input tb-mono"
                   autocomplete="off"
                   :aria-label="t('tools.crontab-generator.fields.dayOfWeek')"
-                >
+                />
               </label>
             </div>
           </fieldset>
@@ -272,26 +274,24 @@ function fillExample(index: number): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.crontab-generator.fields.timezone') }}</span>
-              <input
+              <ElInput
                 v-model="timezone"
-                type="text"
                 class="field__input tb-mono"
                 autocomplete="off"
                 placeholder="UTC"
                 :aria-label="t('tools.crontab-generator.fields.timezone')"
-              >
+              />
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.crontab-generator.fields.count') }}</span>
-              <input
-                v-model.number="count"
-                type="number"
+              <ElInputNumber
+                v-model="count"
                 class="field__input"
-                min="1"
+                :min="1"
                 :max="MAX_COUNT"
                 :aria-label="t('tools.crontab-generator.fields.count')"
-              >
+              />
             </label>
           </div>
 

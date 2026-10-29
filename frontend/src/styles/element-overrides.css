@@ -5,9 +5,13 @@
  *
  * 主色梯度从 `--tb-primary` 现场派生（`color-mix`），
  * 比例固定，因此 12 组主色下按钮的层次表现一致。
+ *
+ * ⚠️ 选择器写作 `:root:root` 而不是 `:root`：
+ * 组件的 `style/css` 是随组件模块按需引入的，加载时机在 `main.ts` 之后，
+ * 同特异度的 `:root` 会被 Element 自带的主题变量盖掉。
  */
 
-:root {
+:root:root {
   --el-color-primary: var(--tb-primary);
   --el-color-primary-light-3: color-mix(in srgb, var(--tb-primary) 70%, #ffffff);
   --el-color-primary-light-5: color-mix(in srgb, var(--tb-primary) 50%, #ffffff);
@@ -60,7 +64,7 @@
   --el-mask-color: rgb(17 24 39 / 45%);
 }
 
-:root[data-theme='dark'] {
+:root:root[data-theme='dark'] {
   --el-color-primary-light-3: color-mix(in srgb, var(--tb-primary) 70%, #000000);
   --el-color-primary-light-5: color-mix(in srgb, var(--tb-primary) 50%, #000000);
   --el-color-primary-light-7: color-mix(in srgb, var(--tb-primary) 30%, #000000);
@@ -68,3 +72,28 @@
   --el-color-primary-light-9: color-mix(in srgb, var(--tb-primary) 10%, #000000);
   --el-mask-color: rgb(0 0 0 / 60%);
 }
+
+/* ── 工具表单控件的排版对齐 ─────────────────────────────────────────
+ *
+ * 工具页的 `field__*` 类只负责布局（见 `forms.css`），字号与等宽字体
+ * 需要落到 Element Plus 的内部输入元素上，否则会沿用 15px 基准字号。
+ */
+.field__input .el-input__inner,
+.field__textarea .el-textarea__inner,
+.field__select .el-select__wrapper {
+  font-size: var(--tb-font-sm);
+}
+
+/* `tb-mono` 作用在控件根元素上时，等宽字体要传递给内部输入框 */
+.tb-mono .el-input__inner,
+.tb-mono .el-textarea__inner,
+.tb-mono .el-select__selected-item,
+.tb-mono .el-select__placeholder {
+  font-family: var(--tb-font-mono);
+}
+
+/* 多行输入的最小高度与旧版 textarea 保持一致 */
+.field__textarea .el-textarea__inner {
+  line-height: 1.6;
+}
+

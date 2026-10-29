@@ -7,6 +7,9 @@
  *
  * 纯前端交互，不发起网络请求，不写任何存储。
  */
+import { ElButton } from 'element-plus/es/components/button/index'
+import 'element-plus/es/components/button/style/css'
+
 withDefaults(
   defineProps<{
     /** 面板标题。 */
@@ -31,17 +34,16 @@ withDefaults(
         :key="item.value"
         class="quick-ref__row"
       >
-        <button
-          type="button"
+        <ElButton
           class="quick-ref__item"
-          :class="{ 'quick-ref__item--static': !insert }"
+          text
           :disabled="!insert"
           :title="item.hint"
           @click="insert?.(item.value)"
         >
           <code class="quick-ref__value">{{ item.value }}</code>
           <span class="quick-ref__label">{{ item.label }}</span>
-        </button>
+        </ElButton>
       </li>
     </ul>
   </aside>
@@ -79,28 +81,12 @@ withDefaults(
   align-items: baseline;
   gap: var(--tb-space-2);
   width: 100%;
+  height: auto;
   padding: var(--tb-space-1) var(--tb-space-2);
   font-size: var(--tb-font-xs);
   color: var(--tb-text-secondary);
   text-align: left;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--tb-radius-control);
-  cursor: pointer;
-  transition:
-    color var(--tb-transition),
-    background var(--tb-transition),
-    border-color var(--tb-transition);
-}
-
-.quick-ref__item:hover:not(:disabled) {
-  color: var(--tb-primary);
-  background: var(--tb-bg-elevated);
-  border-color: var(--tb-primary);
-}
-
-.quick-ref__item--static {
-  cursor: default;
+  justify-content: flex-start;
 }
 
 .quick-ref__value {

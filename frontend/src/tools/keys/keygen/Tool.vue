@@ -5,6 +5,12 @@
  * 生成的私钥只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -134,19 +140,19 @@ function fillExample(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.keygen.fields.algorithm') }}</span>
-            <select
+            <ElSelect
               v-model="algorithm"
               class="field__select"
+              :aria-label="t('tools.keygen.fields.algorithm')"
               @change="resetRun()"
             >
-              <option
+              <ElOption
                 v-for="name in ALGORITHMS"
                 :key="name"
+                :label="t(`tools.keygen.options.algorithms.${name}`)"
                 :value="name"
-              >
-                {{ t(`tools.keygen.options.algorithms.${name}`) }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
 
           <div class="field-row">
@@ -155,18 +161,18 @@ function fillExample(): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.keygen.fields.bits') }}</span>
-              <select
+              <ElSelect
                 v-model="bits"
                 class="field__select"
+                :aria-label="t('tools.keygen.fields.bits')"
               >
-                <option
+                <ElOption
                   v-for="n in BITS"
                   :key="n"
+                  :label="String(n)"
                   :value="n"
-                >
-                  {{ n }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label
@@ -174,52 +180,52 @@ function fillExample(): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.keygen.fields.curve') }}</span>
-              <select
+              <ElSelect
                 v-model="curve"
                 class="field__select"
+                :aria-label="t('tools.keygen.fields.curve')"
               >
-                <option
+                <ElOption
                   v-for="name in CURVES"
                   :key="name"
+                  :label="String(name)"
                   :value="name"
-                >
-                  {{ name }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
           </div>
 
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.keygen.fields.privateFormat') }}</span>
-              <select
+              <ElSelect
                 v-model="privateFormat"
                 class="field__select"
+                :aria-label="t('tools.keygen.fields.privateFormat')"
               >
-                <option
+                <ElOption
                   v-for="name in PRIVATE_FORMATS"
                   :key="name"
+                  :label="String(name)"
                   :value="name"
-                >
-                  {{ name }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.keygen.fields.publicFormat') }}</span>
-              <select
+              <ElSelect
                 v-model="publicFormat"
                 class="field__select"
+                :aria-label="t('tools.keygen.fields.publicFormat')"
               >
-                <option
+                <ElOption
                   v-for="name in PUBLIC_FORMATS"
                   :key="name"
+                  :label="String(name)"
                   :value="name"
-                >
-                  {{ name }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
           </div>
 
@@ -229,41 +235,39 @@ function fillExample(): void {
         </template>
 
         <template #options>
-          <label class="field field--inline">
-            <input
-              v-model="encrypt"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.keygen.fields.encrypt') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="encrypt"
+            class="field__checkbox"
+          >
+            {{ t('tools.keygen.fields.encrypt') }}
+          </ElCheckbox>
 
           <template v-if="encrypt">
             <label class="field">
               <span class="field__label">{{ t('tools.keygen.fields.pbeCipher') }}</span>
-              <select
+              <ElSelect
                 v-model="pbeCipher"
                 class="field__select"
+                :aria-label="t('tools.keygen.fields.pbeCipher')"
               >
-                <option
+                <ElOption
                   v-for="name in PBE_CIPHERS"
                   :key="name"
+                  :label="String(name)"
                   :value="name"
-                >
-                  {{ name }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.keygen.fields.passphrase') }}</span>
-              <input
+              <ElInput
                 v-model="passphrase"
                 type="password"
                 class="field__input"
                 autocomplete="off"
                 :aria-label="t('tools.keygen.fields.passphrase')"
-              >
+              />
             </label>
           </template>
 

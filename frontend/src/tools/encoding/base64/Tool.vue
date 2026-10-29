@@ -4,6 +4,12 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -135,13 +141,14 @@ function onKeydown(event: KeyboardEvent): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.base64.fields.input') }}</span>
-            <textarea
+            <ElInput
               v-model="input"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="6"
+              :rows="6"
               spellcheck="false"
               :aria-label="t('tools.base64.fields.input')"
-              @keydown="onKeydown"
+              @keydown="(event) => onKeydown(event as KeyboardEvent)"
             />
             <ValidationHint :validation="validation" />
           </label>
@@ -165,24 +172,38 @@ function onKeydown(event: KeyboardEvent): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.base64.fields.operation') }}</span>
-              <select
+              <ElSelect
                 v-model="operation"
                 class="field__select"
+                :aria-label="t('tools.base64.fields.operation')"
               >
-                <option value="encode">{{ t('tools.base64.options.operation.encode') }}</option>
-                <option value="decode">{{ t('tools.base64.options.operation.decode') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.base64.options.operation.encode')"
+                  value="encode"
+                />
+                <ElOption
+                  :label="t('tools.base64.options.operation.decode')"
+                  value="decode"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.base64.fields.variant') }}</span>
-              <select
+              <ElSelect
                 v-model="variant"
                 class="field__select"
+                :aria-label="t('tools.base64.fields.variant')"
               >
-                <option value="standard">{{ t('tools.base64.options.variant.standard') }}</option>
-                <option value="url">{{ t('tools.base64.options.variant.url') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.base64.options.variant.standard')"
+                  value="standard"
+                />
+                <ElOption
+                  :label="t('tools.base64.options.variant.url')"
+                  value="url"
+                />
+              </ElSelect>
             </label>
 
             <label
@@ -190,29 +211,27 @@ function onKeydown(event: KeyboardEvent): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.base64.fields.outputEncoding') }}</span>
-              <select
+              <ElSelect
                 v-model="outputEncoding"
                 class="field__select"
+                :aria-label="t('tools.base64.fields.outputEncoding')"
               >
-                <option
+                <ElOption
                   v-for="enc in outputEncodings"
                   :key="enc"
+                  :label="t(`tools.base64.options.outputEncoding.${enc}`)"
                   :value="enc"
-                >
-                  {{ t(`tools.base64.options.outputEncoding.${enc}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
           </div>
 
-          <label class="field field--inline">
-            <input
-              v-model="padding"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.base64.fields.padding') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="padding"
+            class="field__checkbox"
+          >
+            {{ t('tools.base64.fields.padding') }}
+          </ElCheckbox>
           <p class="field__hint">
             {{ t('tools.base64.hints.padding') }}
           </p>
@@ -285,32 +304,10 @@ function onKeydown(event: KeyboardEvent): void {
 
 .field__textarea {
   width: 100%;
-  padding: var(--tb-space-2) var(--tb-space-3);
-  font-family: var(--tb-font-mono);
-  font-size: var(--tb-font-sm);
-  line-height: 1.6;
-  color: var(--tb-text);
-  background: var(--tb-bg-sunken);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  resize: vertical;
 }
 
 .field__select {
-  padding: var(--tb-space-1) var(--tb-space-2);
-  font-family: inherit;
-  font-size: var(--tb-font-sm);
-  color: var(--tb-text);
-  background: var(--tb-bg-elevated);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  cursor: pointer;
-}
-
-.field__checkbox {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--tb-primary);
+  width: 100%;
 }
 
 .field__hint {

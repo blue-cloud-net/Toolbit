@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -172,14 +176,13 @@ function fillExample(index: number): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.chmod-calc.fields.mode') }}</span>
-            <input
+            <ElInput
               v-model="mode"
-              type="text"
               class="field__input tb-mono"
               autocomplete="off"
               placeholder="755"
               :aria-label="t('tools.chmod-calc.fields.mode')"
-            >
+            />
           </label>
 
           <p class="field__hint">
@@ -197,19 +200,15 @@ function fillExample(index: number): void {
               {{ classLabel(item) }}
             </legend>
             <div class="bit-list">
-              <label
+              <ElCheckbox
                 v-for="bit in BITS"
                 :key="bit"
-                class="field field--inline"
+                class="field__checkbox"
+                :model-value="bitsFor(item).includes(bit)"
+                @change="toggleBit(item, bit)"
               >
-                <input
-                  type="checkbox"
-                  class="field__checkbox"
-                  :checked="bitsFor(item).includes(bit)"
-                  @change="toggleBit(item, bit)"
-                >
-                <span>{{ t(`tools.chmod-calc.options.bit.${bit}`) }}</span>
-              </label>
+                {{ t(`tools.chmod-calc.options.bit.${bit}`) }}
+              </ElCheckbox>
             </div>
           </fieldset>
 

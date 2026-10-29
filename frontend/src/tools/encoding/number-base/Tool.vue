@@ -2,6 +2,12 @@
 /**
  * 进制转换工具页。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -130,14 +136,13 @@ function onKeydown(event: KeyboardEvent): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.number-base.fields.value') }}</span>
-            <input
+            <ElInput
               v-model="value"
-              type="text"
               class="field__input"
               spellcheck="false"
               :aria-label="t('tools.number-base.fields.value')"
-              @keydown="onKeydown"
-            >
+              @keydown="(event) => onKeydown(event as KeyboardEvent)"
+            />
           </label>
           <p class="field__hint">
             {{ t('tools.number-base.hints.value') }}
@@ -148,45 +153,43 @@ function onKeydown(event: KeyboardEvent): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.number-base.fields.from') }}</span>
-              <select
-                v-model.number="from"
+              <ElSelect
+                v-model="from"
                 class="field__select"
+                :aria-label="t('tools.number-base.fields.from')"
               >
-                <option
+                <ElOption
                   v-for="base in BASE_OPTIONS"
                   :key="`f-${base}`"
+                  :label="t(`tools.number-base.options.base.${base}`)"
                   :value="base"
-                >
-                  {{ t(`tools.number-base.options.base.${base}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.number-base.fields.to') }}</span>
-              <select
-                v-model.number="to"
+              <ElSelect
+                v-model="to"
                 class="field__select"
+                :aria-label="t('tools.number-base.fields.to')"
               >
-                <option
+                <ElOption
                   v-for="base in BASE_OPTIONS"
                   :key="`t-${base}`"
+                  :label="t(`tools.number-base.options.base.${base}`)"
                   :value="base"
-                >
-                  {{ t(`tools.number-base.options.base.${base}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
           </div>
 
-          <label class="field field--inline">
-            <input
-              v-model="prefix"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.number-base.fields.prefix') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="prefix"
+            class="field__checkbox"
+          >
+            {{ t('tools.number-base.fields.prefix') }}
+          </ElCheckbox>
           <p class="field__hint">
             {{ t('tools.number-base.hints.prefix') }}
           </p>
@@ -267,30 +270,10 @@ function onKeydown(event: KeyboardEvent): void {
 
 .field__input {
   width: 100%;
-  padding: var(--tb-space-2) var(--tb-space-3);
-  font-family: var(--tb-font-mono);
-  font-size: var(--tb-font-sm);
-  color: var(--tb-text);
-  background: var(--tb-bg-sunken);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
 }
 
 .field__select {
-  padding: var(--tb-space-1) var(--tb-space-2);
-  font-family: inherit;
-  font-size: var(--tb-font-sm);
-  color: var(--tb-text);
-  background: var(--tb-bg-elevated);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  cursor: pointer;
-}
-
-.field__checkbox {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--tb-primary);
+  width: 100%;
 }
 
 .field__hint {

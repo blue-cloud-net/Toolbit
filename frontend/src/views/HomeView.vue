@@ -2,6 +2,10 @@
 /**
  * 首页：搜索 + 分类 + 全部工具。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInput, type InputInstance } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -15,11 +19,11 @@ const { t } = useI18n()
 const catalog = useCatalogStore()
 
 const keyword = ref('')
-const searchInput = ref<HTMLInputElement | null>(null)
+const searchInput = ref<InputInstance | null>(null)
 
 /** `/` 聚焦首页搜索框。 */
 useGlobalHotkeys({
-  focusSearch: () => searchInput.value,
+  focusSearch: () => searchInput.value?.input ?? null,
 })
 
 /** 是否只显示已上线的工具。 */
@@ -67,13 +71,14 @@ const isSearching = computed(() => keyword.value.trim() !== '')
 
       <label class="home__search">
         <span class="tb-sr-only">{{ t('common.actions.search') }}</span>
-        <input
+        <ElInput
           ref="searchInput"
           v-model="keyword"
-          type="search"
           class="home__search-input"
           :placeholder="t('home.searchPlaceholder')"
-        >
+          :aria-label="t('common.actions.search')"
+          clearable
+        />
       </label>
     </section>
 
@@ -100,13 +105,12 @@ const isSearching = computed(() => keyword.value.trim() !== '')
         <span class="home__progress">
           {{ t('home.enabledProgress', { done: implementedCount, total: catalog.tools.length }) }}
         </span>
-        <label class="home__filter">
-          <input
-            v-model="onlyImplemented"
-            type="checkbox"
-          >
-          <span>{{ t('home.enabledOnly') }}</span>
-        </label>
+        <ElCheckbox
+          v-model="onlyImplemented"
+          class="home__filter"
+        >
+          {{ t('home.enabledOnly') }}
+        </ElCheckbox>
       </h2>
 
       <p
@@ -174,17 +178,6 @@ const isSearching = computed(() => keyword.value.trim() !== '')
 
 .home__search-input {
   width: 100%;
-  padding: var(--tb-space-2) var(--tb-space-3);
-  font-family: inherit;
-  font-size: var(--tb-font-base);
-  color: var(--tb-text);
-  background: var(--tb-bg-elevated);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-}
-
-.home__search-input:focus-visible {
-  border-color: var(--tb-primary);
 }
 
 .home__section {
@@ -220,21 +213,10 @@ const isSearching = computed(() => keyword.value.trim() !== '')
 }
 
 .home__filter {
-  display: flex;
-  align-items: center;
-  gap: var(--tb-space-1);
   margin-left: auto;
   font-size: var(--tb-font-sm);
   font-weight: 400;
   color: var(--tb-text-secondary);
-  cursor: pointer;
-}
-
-.home__filter input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--tb-primary);
-  cursor: pointer;
 }
 
 .home__categories {

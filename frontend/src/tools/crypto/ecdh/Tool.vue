@@ -4,6 +4,14 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -151,18 +159,18 @@ function fillExample(): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.ecdh.fields.curve') }}</span>
-              <select
+              <ElSelect
                 v-model="curve"
                 class="field__select"
+                :aria-label="t('tools.ecdh.fields.curve')"
               >
-                <option
+                <ElOption
                   v-for="c in CURVES"
                   :key="c"
+                  :label="t(`tools.ecdh.options.curve.${c}`)"
                   :value="c"
-                >
-                  {{ t(`tools.ecdh.options.curve.${c}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
@@ -174,14 +182,12 @@ function fillExample(): void {
             </label>
           </div>
 
-          <label class="field field--inline">
-            <input
-              v-model="useKDF"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.ecdh.fields.useKDF') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="useKDF"
+            class="field__checkbox"
+          >
+            {{ t('tools.ecdh.fields.useKDF') }}
+          </ElCheckbox>
 
           <div
             v-if="useKDF"
@@ -189,52 +195,49 @@ function fillExample(): void {
           >
             <label class="field">
               <span class="field__label">{{ t('tools.ecdh.fields.kdfHash') }}</span>
-              <select
+              <ElSelect
                 v-model="hash"
                 class="field__select"
+                :aria-label="t('tools.ecdh.fields.kdfHash')"
               >
-                <option
+                <ElOption
                   v-for="h in HASHES"
                   :key="h"
+                  :label="t(`tools.ecdh.options.kdfHash.${h}`)"
                   :value="h"
-                >
-                  {{ t(`tools.ecdh.options.kdfHash.${h}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.ecdh.fields.kdfLength') }}</span>
-              <input
-                v-model.number="length"
-                type="number"
+              <ElInputNumber
+                v-model="length"
                 class="field__input"
-                min="1"
-                max="1048576"
+                :min="1"
+                :max="1048576"
                 :aria-label="t('tools.ecdh.fields.kdfLength')"
-              >
+              />
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.ecdh.fields.salt') }}</span>
-              <input
+              <ElInput
                 v-model="salt"
-                type="text"
                 class="field__input tb-mono"
                 autocomplete="off"
                 :aria-label="t('tools.ecdh.fields.salt')"
-              >
+              />
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.ecdh.fields.info') }}</span>
-              <input
+              <ElInput
                 v-model="info"
-                type="text"
                 class="field__input tb-mono"
                 autocomplete="off"
                 :aria-label="t('tools.ecdh.fields.info')"
-              >
+              />
             </label>
           </div>
 

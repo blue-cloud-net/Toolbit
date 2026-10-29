@@ -4,6 +4,12 @@
  *
  * 四态齐备；成功时滚动到视野内并通过 `aria-live` 播报。
  */
+import { ElAlert } from 'element-plus/es/components/alert/index'
+import 'element-plus/es/components/alert/style/css'
+import { ElButton } from 'element-plus/es/components/button/index'
+import 'element-plus/es/components/button/style/css'
+import { ElTabPane, ElTabs } from 'element-plus/es/components/tabs/index'
+import 'element-plus/es/components/tabs/style/css'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -49,6 +55,11 @@ const currentView = computed(() => {
 /** 选中视图。 */
 function selectView(id: string): void {
   activeView.value = id
+}
+
+/** `ElTabs` 页签切换。 */
+function onTabChange(name: string | number): void {
+  selectView(String(name))
 }
 
 /** 结论级别 → 图标名。 */
@@ -168,15 +179,14 @@ watch(
           :content="text"
           :mime="downloadMime"
         />
-        <button
+        <ElButton
           v-if="useAsInput && state === 'success' && text !== ''"
-          type="button"
-          class="result__reuse"
+          size="small"
           :title="t('tool.result.useAsInput')"
           @click="onUseAsInput"
         >
           {{ t('tool.result.useAsInput') }}
-        </button>
+        </ElButton>
         <CopyButton
           v-if="state === 'success' && text !== ''"
           :text="text"
@@ -231,43 +241,41 @@ watch(
     />
 
     <template v-else>
-      <ul
+      <ElAlert
         v-if="showWarnings && warnings.length > 0"
-        class="result__warnings"
+        type="warning"
+        :closable="false"
+        show-icon
       >
-        <li
-          v-for="(w, i) in warnings"
-          :key="i"
-          class="result__warning"
-        >
-          {{ w }}
-        </li>
-      </ul>
+        <ul class="result__warnings">
+          <li
+            v-for="(w, i) in warnings"
+            :key="i"
+          >
+            {{ w }}
+          </li>
+        </ul>
+      </ElAlert>
 
-      <div
+      <ElTabs
         v-if="views.length > 0"
         class="result__tabs"
-        role="tablist"
+        :model-value="currentView"
+        @tab-change="onTabChange"
       >
-        <button
+        <ElTabPane
           v-for="view in views"
           :key="view.id"
-          type="button"
-          role="tab"
-          class="result__tab"
-          :class="{ 'result__tab--active': view.id === currentView }"
-          :aria-selected="view.id === currentView"
-          @click="selectView(view.id)"
+          :label="view.label"
+          :name="view.id"
         >
-          {{ view.label }}
-        </button>
-      </div>
-
-      <slot
-        v-if="views.length > 0"
-        name="view"
-        :view-id="currentView"
-      />
+          <slot
+            v-if="view.id === currentView"
+            name="view"
+            :view-id="view.id"
+          />
+        </ElTabPane>
+      </ElTabs>
 
       <template v-else>
         <pre
@@ -324,24 +332,6 @@ watch(
   color: var(--tb-text-tertiary);
 }
 
-.result__reuse {
-  padding: 0 var(--tb-space-2);
-  font-size: var(--tb-font-xs);
-  color: var(--tb-text-secondary);
-  background: var(--tb-bg-sunken);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  cursor: pointer;
-  transition:
-    color var(--tb-transition),
-    border-color var(--tb-transition);
-}
-
-.result__reuse:hover {
-  color: var(--tb-primary);
-  border-color: var(--tb-primary);
-}
-
 .result__placeholder {
   display: flex;
   flex-direction: column;
@@ -358,18 +348,8 @@ watch(
 }
 
 .result__warnings {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
   margin: 0;
-  padding: var(--tb-space-2) var(--tb-space-3);
-  list-style: none;
-  background: color-mix(in srgb, var(--tb-warning) 10%, var(--tb-bg-elevated));
-  border: 1px solid color-mix(in srgb, var(--tb-warning) 35%, var(--tb-border));
-  border-radius: var(--tb-radius-control);
-}
-
-.result__warning {
+  padding-left: var(--tb-space-4);
   font-size: var(--tb-font-xs);
   color: var(--tb-text-secondary);
 }
@@ -440,32 +420,8 @@ watch(
   border-radius: var(--tb-radius-control);
 }
 
-/* 多视图页签。 */
+/* 多视图页签：间距交给 ElTabs，这里只保留外层间距。 */
 .result__tabs {
-  display: flex;
-  gap: var(--tb-space-1);
-  border-bottom: 1px solid var(--tb-border);
-}
-
-.result__tab {
-  padding: var(--tb-space-1) var(--tb-space-3);
-  font-size: var(--tb-font-xs);
-  color: var(--tb-text-secondary);
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  transition:
-    color var(--tb-transition),
-    border-color var(--tb-transition);
-}
-
-.result__tab:hover {
-  color: var(--tb-text);
-}
-
-.result__tab--active {
-  color: var(--tb-primary);
-  border-bottom-color: var(--tb-primary);
+  margin-top: var(--tb-space-1);
 }
 </style>

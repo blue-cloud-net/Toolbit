@@ -5,6 +5,12 @@
  * 生成结果只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -114,38 +120,35 @@ function fillExample(): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.password-gen.fields.length') }}</span>
-              <input
-                v-model.number="length"
-                type="number"
+              <ElInputNumber
+                v-model="length"
                 class="field__input"
-                min="4"
-                max="128"
+                :min="4"
+                :max="128"
                 :aria-label="t('tools.password-gen.fields.length')"
-              >
+              />
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.password-gen.fields.count') }}</span>
-              <input
-                v-model.number="count"
-                type="number"
+              <ElInputNumber
+                v-model="count"
                 class="field__input"
-                min="1"
-                max="100"
+                :min="1"
+                :max="100"
                 :aria-label="t('tools.password-gen.fields.count')"
-              >
+              />
             </label>
           </div>
 
           <label class="field">
             <span class="field__label">{{ t('tools.password-gen.fields.customCharset') }}</span>
-            <input
+            <ElInput
               v-model="customCharset"
-              type="text"
               class="field__input tb-mono"
               autocomplete="off"
               :aria-label="t('tools.password-gen.fields.customCharset')"
-            >
+            />
           </label>
           <p class="field__hint">
             {{ t('tools.password-gen.hints.customCharset') }}
@@ -161,39 +164,31 @@ function fillExample(): void {
               {{ t('tools.password-gen.fields.charsets') }}
             </legend>
             <div class="charset-list">
-              <label
+              <ElCheckbox
                 v-for="name in CHARSETS"
                 :key="name"
-                class="field field--inline"
+                class="field__checkbox"
+                :model-value="charsets.includes(name)"
+                @change="toggleCharset(name)"
               >
-                <input
-                  type="checkbox"
-                  class="field__checkbox"
-                  :checked="charsets.includes(name)"
-                  @change="toggleCharset(name)"
-                >
-                <span>{{ t(`tools.password-gen.options.charsets.${name}`) }}</span>
-              </label>
+                {{ t(`tools.password-gen.options.charsets.${name}`) }}
+              </ElCheckbox>
             </div>
           </fieldset>
 
-          <label class="field field--inline">
-            <input
-              v-model="excludeAmbiguous"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.password-gen.fields.excludeAmbiguous') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="excludeAmbiguous"
+            class="field__checkbox"
+          >
+            {{ t('tools.password-gen.fields.excludeAmbiguous') }}
+          </ElCheckbox>
 
-          <label class="field field--inline">
-            <input
-              v-model="requireEachClass"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.password-gen.fields.requireEachClass') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="requireEachClass"
+            class="field__checkbox"
+          >
+            {{ t('tools.password-gen.fields.requireEachClass') }}
+          </ElCheckbox>
           <p class="field__hint">
             {{ t('tools.password-gen.hints.requireEachClass') }}
           </p>

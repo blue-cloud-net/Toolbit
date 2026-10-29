@@ -5,6 +5,8 @@
  * 把文本内容作为文件下载。下载在浏览器端完成，
  * 内容不经过服务端、不写任何浏览器存储。
  */
+import { ElButton } from 'element-plus/es/components/button/index'
+import 'element-plus/es/components/button/style/css'
 import { useI18n } from 'vue-i18n'
 
 const props = withDefaults(
@@ -41,39 +43,12 @@ function download(): void {
 </script>
 
 <template>
-  <button
-    type="button"
+  <ElButton
     class="download-button"
     :aria-label="label ?? t('common.actions.download')"
     :disabled="content === ''"
     @click="download"
   >
     {{ label ?? t('common.actions.download') }}
-  </button>
+  </ElButton>
 </template>
-
-<style scoped>
-.download-button {
-  padding: var(--tb-space-1) var(--tb-space-2);
-  font-family: inherit;
-  font-size: var(--tb-font-xs);
-  color: var(--tb-text-secondary);
-  background: transparent;
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  cursor: pointer;
-  transition:
-    color var(--tb-transition),
-    border-color var(--tb-transition);
-}
-
-.download-button:hover:not(:disabled) {
-  color: var(--tb-primary);
-  border-color: var(--tb-primary);
-}
-
-.download-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-</style>

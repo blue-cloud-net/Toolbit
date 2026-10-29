@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -141,41 +145,49 @@ function fillExample(index: number): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.xml-format.fields.action') }}</span>
-              <select
+              <ElSelect
                 v-model="action"
                 class="field__select"
+                :aria-label="t('tools.xml-format.fields.action')"
               >
-                <option value="format">{{ t('tools.xml-format.options.action.format') }}</option>
-                <option value="minify">{{ t('tools.xml-format.options.action.minify') }}</option>
-                <option value="validate">{{ t('tools.xml-format.options.action.validate') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.xml-format.options.action.format')"
+                  value="format"
+                />
+                <ElOption
+                  :label="t('tools.xml-format.options.action.minify')"
+                  value="minify"
+                />
+                <ElOption
+                  :label="t('tools.xml-format.options.action.validate')"
+                  value="validate"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.xml-format.fields.indent') }}</span>
-              <select
-                v-model.number="indent"
+              <ElSelect
+                v-model="indent"
                 class="field__select"
+                :aria-label="t('tools.xml-format.fields.indent')"
               >
-                <option
+                <ElOption
                   v-for="size in INDENT_OPTIONS"
                   :key="size"
+                  :label="String(size)"
                   :value="size"
-                >
-                  {{ size }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
           </div>
 
-          <label class="field field--inline">
-            <input
-              v-model="keepComments"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.xml-format.fields.keepComments') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="keepComments"
+            class="field__checkbox"
+          >
+            {{ t('tools.xml-format.fields.keepComments') }}
+          </ElCheckbox>
           <p class="field__hint">
             {{ t('tools.xml-format.hints.keepComments') }}
           </p>

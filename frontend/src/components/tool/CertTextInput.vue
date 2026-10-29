@@ -8,6 +8,10 @@
  * 材料内容只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -74,9 +78,10 @@ const hint = computed(() => {
   <div class="cert-input">
     <label class="field">
       <span class="field__label">{{ label ?? t('tool.cert.fields.material') }}</span>
-      <textarea
+      <ElInput
         v-model="value"
-        class="field__textarea tb-mono"
+        type="textarea"
+        class="tb-mono"
         :rows="props.rows"
         spellcheck="false"
         autocomplete="off"
@@ -87,19 +92,19 @@ const hint = computed(() => {
 
     <label class="field">
       <span class="field__label">{{ t('tool.key.fields.format') }}</span>
-      <select
+      <ElSelect
         v-model="format"
-        class="field__select"
+        class="cert-input__format"
+        :aria-label="t('tool.key.fields.format')"
         :disabled="props.disabled"
       >
-        <option
+        <ElOption
           v-for="f in props.formats"
           :key="f"
+          :label="formatLabel(f)"
           :value="f"
-        >
-          {{ formatLabel(f) }}
-        </option>
-      </select>
+        />
+      </ElSelect>
     </label>
 
     <p class="field__hint">
@@ -113,5 +118,10 @@ const hint = computed(() => {
   display: flex;
   flex-direction: column;
   gap: var(--tb-space-2);
+}
+
+.cert-input__format {
+  width: 100%;
+  max-width: 220px;
 }
 </style>

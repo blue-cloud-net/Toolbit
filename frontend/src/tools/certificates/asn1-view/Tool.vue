@@ -5,6 +5,8 @@
  * 材料内容只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -166,13 +168,12 @@ function fillExample(): void {
         <template #options>
           <label class="field">
             <span class="field__label">{{ t('tools.asn1-view.fields.maxDepth') }}</span>
-            <input
-              v-model.number="maxDepth"
-              type="number"
+            <ElInputNumber
+              v-model="maxDepth"
               class="field__input"
-              min="0"
-              max="64"
-            >
+              :min="0"
+              :max="64"
+            />
           </label>
         </template>
 

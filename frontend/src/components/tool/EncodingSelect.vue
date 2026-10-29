@@ -4,12 +4,15 @@
  *
  * 选项由调用方给出，因为不同工具支持的编码集合不同。
  */
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { useI18n } from 'vue-i18n'
+
+/** 当前值。 */
+const model = defineModel<string>({ required: true })
 
 withDefaults(
   defineProps<{
-    /** 当前值。 */
-    modelValue: string
     /** 可选编码。 */
     options?: readonly string[]
     /** 无障碍标签。 */
@@ -19,11 +22,6 @@ withDefaults(
   }>(),
   { options: () => ['utf8', 'hex', 'base64', 'base64url'], label: undefined, disabled: false },
 )
-
-const emit = defineEmits<{
-  /** 值变更。 */
-  'update:modelValue': [value: string]
-}>()
 
 const { t } = useI18n()
 
@@ -46,37 +44,23 @@ function optionLabel(value: string): string {
 </script>
 
 <template>
-  <select
+  <ElSelect
+    v-model="model"
     class="encoding-select"
     :aria-label="label ?? t('tool.fields.encoding')"
-    :value="modelValue"
     :disabled="disabled"
-    @change="emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
   >
-    <option
+    <ElOption
       v-for="opt in options"
       :key="opt"
+      :label="optionLabel(opt)"
       :value="opt"
-    >
-      {{ optionLabel(opt) }}
-    </option>
-  </select>
+    />
+  </ElSelect>
 </template>
 
 <style scoped>
 .encoding-select {
-  padding: var(--tb-space-1) var(--tb-space-2);
-  font-family: inherit;
-  font-size: var(--tb-font-sm);
-  color: var(--tb-text);
-  background: var(--tb-bg-elevated);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  cursor: pointer;
-}
-
-.encoding-select:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+  min-width: 120px;
 }
 </style>

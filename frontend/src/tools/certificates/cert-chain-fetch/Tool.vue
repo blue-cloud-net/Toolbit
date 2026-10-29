@@ -4,6 +4,10 @@
  *
  * 只读取 TLS 握手中服务端发来的证书，不做补链。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -114,37 +118,34 @@ function reset(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.cert-chain-fetch.fields.host') }}</span>
-            <input
+            <ElInput
               v-model="host"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.cert-chain-fetch.fields.port') }}</span>
-            <input
-              v-model.number="port"
-              type="number"
+            <ElInputNumber
+              v-model="port"
               class="field__input"
-              min="1"
-              max="65535"
-            >
+              :min="1"
+              :max="65535"
+            />
           </label>
         </template>
 
         <template #options>
           <label class="field">
             <span class="field__label">{{ t('tools.cert-chain-fetch.fields.serverName') }}</span>
-            <input
+            <ElInput
               v-model="serverName"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
         </template>
 

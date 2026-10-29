@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -121,26 +125,28 @@ function onKeydown(event: KeyboardEvent): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.hmac-gen.fields.key') }}</span>
-            <textarea
+            <ElInput
               v-model="key"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="3"
+              :rows="3"
               spellcheck="false"
               autocomplete="off"
               :aria-label="t('tools.hmac-gen.fields.key')"
-              @keydown="onKeydown"
+              @keydown="(evt: Event | KeyboardEvent) => onKeydown(evt as KeyboardEvent)"
             />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.hmac-gen.fields.message') }}</span>
-            <textarea
+            <ElInput
               v-model="message"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="6"
+              :rows="6"
               spellcheck="false"
               :aria-label="t('tools.hmac-gen.fields.message')"
-              @keydown="onKeydown"
+              @keydown="(evt: Event | KeyboardEvent) => onKeydown(evt as KeyboardEvent)"
             />
           </label>
 
@@ -167,18 +173,18 @@ function onKeydown(event: KeyboardEvent): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.hmac-gen.fields.algorithm') }}</span>
-              <select
+              <ElSelect
                 v-model="algorithm"
                 class="field__select"
+                :aria-label="t('tools.hmac-gen.fields.algorithm')"
               >
-                <option
+                <ElOption
                   v-for="name in ALGORITHMS"
                   :key="name"
+                  :label="t(`tools.hmac-gen.options.algorithm.${name}`)"
                   :value="name"
-                >
-                  {{ t(`tools.hmac-gen.options.algorithm.${name}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">

@@ -5,6 +5,10 @@
  * 密钥内容只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -97,26 +101,27 @@ function fillExample(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.jwk-xml-convert.fields.inputFormat') }}</span>
-            <select
+            <ElSelect
               v-model="inputFormat"
               class="field__select"
+              :aria-label="t('tools.jwk-xml-convert.fields.inputFormat')"
             >
-              <option
+              <ElOption
                 v-for="name in FORMATS"
                 :key="name"
+                :label="String(name)"
                 :value="name"
-              >
-                {{ name }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.jwk-xml-convert.fields.inputData') }}</span>
-            <textarea
+            <ElInput
               v-model="inputData"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="10"
+              :rows="10"
               spellcheck="false"
               autocomplete="off"
               :aria-label="t('tools.jwk-xml-convert.fields.inputData')"
@@ -128,34 +133,34 @@ function fillExample(): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.jwk-xml-convert.fields.to') }}</span>
-              <select
+              <ElSelect
                 v-model="to"
                 class="field__select"
+                :aria-label="t('tools.jwk-xml-convert.fields.to')"
               >
-                <option
+                <ElOption
                   v-for="name in FORMATS"
                   :key="name"
+                  :label="String(name)"
                   :value="name"
-                >
-                  {{ name }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.jwk-xml-convert.fields.keyType') }}</span>
-              <select
+              <ElSelect
                 v-model="keyType"
                 class="field__select"
+                :aria-label="t('tools.jwk-xml-convert.fields.keyType')"
               >
-                <option
+                <ElOption
                   v-for="name in KEY_TYPES"
                   :key="name"
+                  :label="String(name)"
                   :value="name"
-                >
-                  {{ name }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
           </div>
 

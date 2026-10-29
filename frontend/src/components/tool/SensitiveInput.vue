@@ -6,10 +6,12 @@
  * 提供「显示 / 隐藏」切换。输入内容只存在于组件局部状态，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElButton } from 'element-plus/es/components/button/index'
+import 'element-plus/es/components/button/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-
-import AppIcon from '@/components/common/AppIcon.vue'
 
 const model = defineModel<string>({ required: true })
 
@@ -35,11 +37,14 @@ const visible = computed(() => !props.toggleable || revealed.value)
 </script>
 
 <template>
-  <div class="sensitive-input">
-    <textarea
-      v-if="rows > 1"
+  <!-- 多行：Element Plus 的 textarea 不支持遮蔽，改为「只读 + 显式切换编辑」。 -->
+  <div
+    v-if="rows > 1"
+    class="sensitive-input"
+  >
+    <ElInput
       v-model="model"
-      class="sensitive-input__area tb-mono"
+      type="textarea"
       :rows="rows"
       :readonly="!visible"
       :aria-label="label"
@@ -47,81 +52,37 @@ const visible = computed(() => !props.toggleable || revealed.value)
       spellcheck="false"
       autocomplete="off"
     />
-    <input
-      v-else
-      v-model="model"
-      class="sensitive-input__field tb-mono"
-      :type="visible ? 'text' : 'password'"
-      :aria-label="label"
-      :placeholder="placeholder"
-      spellcheck="false"
-      autocomplete="off"
-    >
-
-    <button
+    <ElButton
       v-if="toggleable"
-      type="button"
       class="sensitive-input__toggle"
-      :aria-label="visible ? t('common.actions.hideSecret') : t('common.actions.showSecret')"
       :aria-pressed="revealed"
       :title="visible ? t('common.actions.hideSecret') : t('common.actions.showSecret')"
       @click="revealed = !revealed"
     >
-      <AppIcon
-        :name="visible ? 'lock' : 'external'"
-        :size="15"
-      />
-    </button>
+      {{ visible ? t('common.actions.hideSecret') : t('common.actions.showSecret') }}
+    </ElButton>
   </div>
+
+  <!-- 单行：直接用 Element Plus 的「显示 / 隐藏密码」。 -->
+  <ElInput
+    v-else
+    v-model="model"
+    class="sensitive-input"
+    :type="toggleable ? 'password' : 'text'"
+    :show-password="toggleable"
+    :aria-label="label"
+    :placeholder="placeholder"
+    spellcheck="false"
+    autocomplete="off"
+  />
 </template>
 
 <style scoped>
 .sensitive-input {
-  display: flex;
-  align-items: stretch;
-  gap: var(--tb-space-1);
-}
-
-.sensitive-input__field,
-.sensitive-input__area {
-  flex: 1;
-  min-width: 0;
-  padding: var(--tb-space-2) var(--tb-space-3);
-  font-size: var(--tb-font-sm);
-  color: var(--tb-text);
-  background: var(--tb-bg-sunken);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  outline: none;
-  transition:
-    border-color var(--tb-transition),
-    box-shadow var(--tb-transition);
-}
-
-.sensitive-input__area {
-  resize: vertical;
-}
-
-.sensitive-input__field:focus,
-.sensitive-input__area:focus {
-  border-color: var(--tb-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tb-primary) 22%, transparent);
+  font-family: var(--tb-font-mono);
 }
 
 .sensitive-input__toggle {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 36px;
-  color: var(--tb-text-tertiary);
-  background: var(--tb-bg-sunken);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  cursor: pointer;
-  transition: color var(--tb-transition);
-}
-
-.sensitive-input__toggle:hover {
-  color: var(--tb-primary);
+  align-self: flex-start;
 }
 </style>

@@ -5,6 +5,10 @@
  * **纯前端**：用浏览器原生 `WebSocket` 直连目标服务，后端不参与握手，
  * 因此本页不调用任何 `/api` 端点。
  */
+import { ElButton } from 'element-plus/es/components/button/index'
+import 'element-plus/es/components/button/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
 import { computed, onScopeDispose, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -170,39 +174,36 @@ function reset(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.websocket-test.fields.url') }}</span>
-            <input
+            <ElInput
               v-model="url"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
               placeholder="wss://echo.websocket.org"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.websocket-test.fields.message') }}</span>
-            <input
+            <ElInput
               v-model="message"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
         </template>
 
         <template #options>
           <label class="field">
             <span class="field__label">{{ t('tools.websocket-test.fields.protocols') }}</span>
-            <input
+            <ElInput
               v-model="protocols"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
               placeholder="chat, superchat"
-            >
+            />
           </label>
 
           <p class="prose">
@@ -218,14 +219,13 @@ function reset(): void {
             @reset="reset"
             @example="reset"
           />
-          <button
+          <ElButton
             v-if="phase === 'open'"
-            type="button"
             class="field__input"
             @click="disconnect"
           >
             {{ t('tools.websocket-test.actions.disconnect') }}
-          </button>
+          </ElButton>
         </template>
       </ToolPanel>
     </template>

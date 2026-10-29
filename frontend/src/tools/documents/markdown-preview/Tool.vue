@@ -7,6 +7,10 @@
  * 渲染结果**不**注入页面：仓库禁止 `v-html`，
  * 因此只把净化后的 HTML 当作文本展示，目录以列表呈现。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -130,40 +134,39 @@ function fillExample(index: number): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.markdown-preview.fields.flavor') }}</span>
-              <select
+              <ElSelect
                 v-model="flavor"
                 class="field__select"
+                :aria-label="t('tools.markdown-preview.fields.flavor')"
               >
-                <option value="gfm">
-                  {{ t('tools.markdown-preview.options.flavor.gfm') }}
-                </option>
-                <option value="commonmark">
-                  {{ t('tools.markdown-preview.options.flavor.commonmark') }}
-                </option>
-              </select>
+                <ElOption
+                  :label="t('tools.markdown-preview.options.flavor.gfm')"
+                  value="gfm"
+                />
+                <ElOption
+                  :label="t('tools.markdown-preview.options.flavor.commonmark')"
+                  value="commonmark"
+                />
+              </ElSelect>
             </label>
           </div>
 
-          <label class="field field--inline">
-            <input
-              v-model="allowHtml"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.markdown-preview.fields.allowHtml') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="allowHtml"
+            class="field__checkbox"
+          >
+            {{ t('tools.markdown-preview.fields.allowHtml') }}
+          </ElCheckbox>
           <p class="field__hint">
             {{ t('tools.markdown-preview.hints.allowHtml') }}
           </p>
 
-          <label class="field field--inline">
-            <input
-              v-model="breaks"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.markdown-preview.fields.breaks') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="breaks"
+            class="field__checkbox"
+          >
+            {{ t('tools.markdown-preview.fields.breaks') }}
+          </ElCheckbox>
           <p class="field__hint">
             {{ t('tools.markdown-preview.hints.breaks') }}
           </p>

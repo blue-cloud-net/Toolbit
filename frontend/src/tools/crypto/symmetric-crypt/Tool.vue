@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -193,10 +197,11 @@ function fillExample(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.symmetric-crypt.fields.key') }}</span>
-            <textarea
+            <ElInput
               v-model="key"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="2"
+              :rows="2"
               spellcheck="false"
               autocomplete="off"
               :aria-label="t('tools.symmetric-crypt.fields.key')"
@@ -208,13 +213,12 @@ function fillExample(): void {
             class="field"
           >
             <span class="field__label">{{ t('tools.symmetric-crypt.fields.iv') }}</span>
-            <input
+            <ElInput
               v-model="iv"
-              type="text"
               class="field__input tb-mono"
               autocomplete="off"
               :aria-label="t('tools.symmetric-crypt.fields.iv')"
-            >
+            />
           </label>
 
           <label
@@ -222,13 +226,12 @@ function fillExample(): void {
             class="field"
           >
             <span class="field__label">{{ t('tools.symmetric-crypt.fields.aad') }}</span>
-            <input
+            <ElInput
               v-model="aad"
-              type="text"
               class="field__input tb-mono"
               autocomplete="off"
               :aria-label="t('tools.symmetric-crypt.fields.aad')"
-            >
+            />
           </label>
 
           <label
@@ -236,21 +239,21 @@ function fillExample(): void {
             class="field"
           >
             <span class="field__label">{{ t('tools.symmetric-crypt.fields.tag') }}</span>
-            <input
+            <ElInput
               v-model="tag"
-              type="text"
               class="field__input tb-mono"
               autocomplete="off"
               :aria-label="t('tools.symmetric-crypt.fields.tag')"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.symmetric-crypt.fields.input') }}</span>
-            <textarea
+            <ElInput
               v-model="input"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="5"
+              :rows="5"
               spellcheck="false"
               :aria-label="t('tools.symmetric-crypt.fields.input')"
             />
@@ -261,58 +264,72 @@ function fillExample(): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.symmetric-crypt.fields.algorithm') }}</span>
-              <select
+              <ElSelect
                 v-model="algorithm"
                 class="field__select"
+                :aria-label="t('tools.symmetric-crypt.fields.algorithm')"
                 @change="onAlgorithmChange"
               >
-                <option value="SM4">{{ t('tools.symmetric-crypt.options.algorithm.SM4') }}</option>
-                <option value="AES">{{ t('tools.symmetric-crypt.options.algorithm.AES') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.symmetric-crypt.options.algorithm.SM4')"
+                  value="SM4"
+                />
+                <ElOption
+                  :label="t('tools.symmetric-crypt.options.algorithm.AES')"
+                  value="AES"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.symmetric-crypt.fields.operation') }}</span>
-              <select
+              <ElSelect
                 v-model="operation"
                 class="field__select"
+                :aria-label="t('tools.symmetric-crypt.fields.operation')"
               >
-                <option value="encrypt">{{ t('tools.symmetric-crypt.options.operation.encrypt') }}</option>
-                <option value="decrypt">{{ t('tools.symmetric-crypt.options.operation.decrypt') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.symmetric-crypt.options.operation.encrypt')"
+                  value="encrypt"
+                />
+                <ElOption
+                  :label="t('tools.symmetric-crypt.options.operation.decrypt')"
+                  value="decrypt"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.symmetric-crypt.fields.mode') }}</span>
-              <select
+              <ElSelect
                 v-model="mode"
                 class="field__select"
+                :aria-label="t('tools.symmetric-crypt.fields.mode')"
                 @change="onAlgorithmChange"
               >
-                <option
+                <ElOption
                   v-for="m in availableModes"
                   :key="m"
+                  :label="t(`tools.symmetric-crypt.options.mode.${m}`)"
                   :value="m"
-                >
-                  {{ t(`tools.symmetric-crypt.options.mode.${m}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.symmetric-crypt.fields.padding') }}</span>
-              <select
+              <ElSelect
                 v-model="padding"
                 class="field__select"
+                :aria-label="t('tools.symmetric-crypt.fields.padding')"
               >
-                <option
+                <ElOption
                   v-for="p in availablePaddings"
                   :key="p"
+                  :label="t(`tools.symmetric-crypt.options.padding.${p}`)"
                   :value="p"
-                >
-                  {{ t(`tools.symmetric-crypt.options.padding.${p}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
           </div>
 

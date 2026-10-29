@@ -4,6 +4,12 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -161,13 +167,14 @@ function onKeydown(event: KeyboardEvent): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.encoding-convert.fields.input') }}</span>
-            <textarea
+            <ElInput
               v-model="input"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="6"
+              :rows="6"
               spellcheck="false"
               :aria-label="t('tools.encoding-convert.fields.input')"
-              @keydown="onKeydown"
+              @keydown="(event) => onKeydown(event as KeyboardEvent)"
             />
             <ValidationHint :validation="validation" />
           </label>
@@ -191,34 +198,34 @@ function onKeydown(event: KeyboardEvent): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.encoding-convert.fields.from') }}</span>
-              <select
+              <ElSelect
                 v-model="from"
                 class="field__select"
+                :aria-label="t('tools.encoding-convert.fields.from')"
               >
-                <option
+                <ElOption
                   v-for="charset in SOURCE_CHARSETS"
                   :key="charset"
+                  :label="t(`tools.encoding-convert.options.charset.${charset}`)"
                   :value="charset"
-                >
-                  {{ t(`tools.encoding-convert.options.charset.${charset}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.encoding-convert.fields.to') }}</span>
-              <select
+              <ElSelect
                 v-model="to"
                 class="field__select"
+                :aria-label="t('tools.encoding-convert.fields.to')"
               >
-                <option
+                <ElOption
                   v-for="charset in TARGET_CHARSETS"
                   :key="charset"
+                  :label="t(`tools.encoding-convert.options.charset.${charset}`)"
                   :value="charset"
-                >
-                  {{ t(`tools.encoding-convert.options.charset.${charset}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
@@ -230,14 +237,12 @@ function onKeydown(event: KeyboardEvent): void {
             </label>
           </div>
 
-          <label class="field field--inline">
-            <input
-              v-model="bom"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.encoding-convert.fields.bom') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="bom"
+            class="field__checkbox"
+          >
+            {{ t('tools.encoding-convert.fields.bom') }}
+          </ElCheckbox>
           <p class="field__hint">
             {{ t('tools.encoding-convert.hints.bom') }}
           </p>

@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -168,13 +172,14 @@ function onKeydown(event: KeyboardEvent): void {
             class="field"
           >
             <span class="field__label">{{ t('tools.jwt-codec.fields.token') }}</span>
-            <textarea
+            <ElInput
               v-model="token"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="3"
+              :rows="3"
               spellcheck="false"
               :aria-label="t('tools.jwt-codec.fields.token')"
-              @keydown="onKeydown"
+              @keydown="(event) => onKeydown(event as KeyboardEvent)"
             />
           </label>
 
@@ -220,14 +225,24 @@ function onKeydown(event: KeyboardEvent): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.jwt-codec.fields.operation') }}</span>
-              <select
+              <ElSelect
                 v-model="operation"
                 class="field__select"
+                :aria-label="t('tools.jwt-codec.fields.operation')"
               >
-                <option value="decode">{{ t('tools.jwt-codec.options.operation.decode') }}</option>
-                <option value="encode">{{ t('tools.jwt-codec.options.operation.encode') }}</option>
-                <option value="verify">{{ t('tools.jwt-codec.options.operation.verify') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.jwt-codec.options.operation.decode')"
+                  value="decode"
+                />
+                <ElOption
+                  :label="t('tools.jwt-codec.options.operation.encode')"
+                  value="encode"
+                />
+                <ElOption
+                  :label="t('tools.jwt-codec.options.operation.verify')"
+                  value="verify"
+                />
+              </ElSelect>
             </label>
 
             <label
@@ -235,14 +250,24 @@ function onKeydown(event: KeyboardEvent): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.jwt-codec.fields.algorithm') }}</span>
-              <select
+              <ElSelect
                 v-model="algorithm"
                 class="field__select"
+                :aria-label="t('tools.jwt-codec.fields.algorithm')"
               >
-                <option value="HS256">HS256</option>
-                <option value="HS384">HS384</option>
-                <option value="HS512">HS512</option>
-              </select>
+                <ElOption
+                  label="HS256"
+                  value="HS256"
+                />
+                <ElOption
+                  label="HS384"
+                  value="HS384"
+                />
+                <ElOption
+                  label="HS512"
+                  value="HS512"
+                />
+              </ElSelect>
             </label>
           </div>
 
@@ -251,13 +276,13 @@ function onKeydown(event: KeyboardEvent): void {
             class="field"
           >
             <span class="field__label">{{ t('tools.jwt-codec.fields.secret') }}</span>
-            <input
+            <ElInput
               v-model="secret"
               type="password"
               class="field__input"
               autocomplete="off"
               spellcheck="false"
-            >
+            />
           </label>
           <p
             v-if="operation !== 'decode'"

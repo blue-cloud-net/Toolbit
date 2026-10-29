@@ -2,9 +2,12 @@
 /**
  * 加载骨架。
  *
- * 结果区 / 列表区加载中的占位：若干条 shimmering 灰块，
+ * 结果区 / 列表区加载中的占位：用 Element Plus 的骨架屏，
  * 避免纯文字「加载中」造成的布局跳动。
  */
+import { ElSkeleton } from 'element-plus/es/components/skeleton/index'
+import 'element-plus/es/components/skeleton/style/css'
+
 withDefaults(
   defineProps<{
     /** 骨架行数。 */
@@ -23,11 +26,9 @@ withDefaults(
     role="status"
     aria-busy="true"
   >
-    <span
-      v-for="n in rows"
-      :key="n"
-      class="loading-skeleton__row"
-      :style="{ width: `${100 - (n - 1) * 12}%` }"
+    <ElSkeleton
+      :rows="rows"
+      animated
     />
     <span class="tb-sr-only">…</span>
   </div>
@@ -35,37 +36,15 @@ withDefaults(
 
 <style scoped>
 .loading-skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-2);
   padding: var(--tb-space-4) 0;
 }
 
-.loading-skeleton__row {
-  display: block;
-  height: 12px;
-  background: var(--tb-bg-hover);
-  border-radius: var(--tb-radius-control);
-  animation: loading-skeleton-pulse 1.4s ease-in-out infinite;
-}
-
-.loading-skeleton--block .loading-skeleton__row {
+.loading-skeleton--block :deep(.el-skeleton__p) {
   height: 56px;
 }
 
-@keyframes loading-skeleton-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.45;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .loading-skeleton__row {
+  .loading-skeleton :deep(.el-skeleton__item) {
     animation: none;
   }
 }

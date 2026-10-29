@@ -6,6 +6,12 @@
  * 文件只存在于组件局部状态，离开页面即丢弃，
  * **不写**任何浏览器存储。
  */
+import { ElButton } from 'element-plus/es/components/button/index'
+import 'element-plus/es/components/button/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -152,73 +158,91 @@ function fillExample(): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.sm4-file-crypt.fields.operation') }}</span>
-              <select
+              <ElSelect
                 v-model="operation"
                 class="field__select"
+                :aria-label="t('tools.sm4-file-crypt.fields.operation')"
               >
-                <option value="encrypt">{{ t('tools.sm4-file-crypt.options.operation.encrypt') }}</option>
-                <option value="decrypt">{{ t('tools.sm4-file-crypt.options.operation.decrypt') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.sm4-file-crypt.options.operation.encrypt')"
+                  value="encrypt"
+                />
+                <ElOption
+                  :label="t('tools.sm4-file-crypt.options.operation.decrypt')"
+                  value="decrypt"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.sm4-file-crypt.fields.keyEncoding') }}</span>
-              <select
+              <ElSelect
                 v-model="keyEncoding"
                 class="field__select"
+                :aria-label="t('tools.sm4-file-crypt.fields.keyEncoding')"
               >
-                <option value="hex">{{ t('tool.encoding.hex') }}</option>
-                <option value="base64">{{ t('tool.encoding.base64') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tool.encoding.hex')"
+                  value="hex"
+                />
+                <ElOption
+                  :label="t('tool.encoding.base64')"
+                  value="base64"
+                />
+              </ElSelect>
             </label>
           </div>
 
           <label class="field">
             <span class="field__label">{{ t('tools.sm4-file-crypt.fields.key') }}</span>
-            <input
+            <ElInput
               v-model="key"
-              type="text"
               class="field__input tb-mono"
               autocomplete="off"
               :aria-label="t('tools.sm4-file-crypt.fields.key')"
-            >
+            />
           </label>
 
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.sm4-file-crypt.fields.nonceEncoding') }}</span>
-              <select
+              <ElSelect
                 v-model="nonceEncoding"
                 class="field__select"
+                :aria-label="t('tools.sm4-file-crypt.fields.nonceEncoding')"
               >
-                <option value="hex">{{ t('tool.encoding.hex') }}</option>
-                <option value="base64">{{ t('tool.encoding.base64') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tool.encoding.hex')"
+                  value="hex"
+                />
+                <ElOption
+                  :label="t('tool.encoding.base64')"
+                  value="base64"
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.sm4-file-crypt.fields.chunkSize') }}</span>
-              <input
+              <ElInput
                 v-model="chunkSize"
-                type="text"
                 class="field__input tb-mono"
                 inputmode="numeric"
                 autocomplete="off"
                 :placeholder="t('tools.sm4-file-crypt.options.chunkSize.default')"
                 :aria-label="t('tools.sm4-file-crypt.fields.chunkSize')"
-              >
+              />
             </label>
           </div>
 
           <label class="field">
             <span class="field__label">{{ t('tools.sm4-file-crypt.fields.nonce') }}</span>
-            <input
+            <ElInput
               v-model="nonce"
-              type="text"
               class="field__input tb-mono"
               autocomplete="off"
               :aria-label="t('tools.sm4-file-crypt.fields.nonce')"
-            >
+            />
           </label>
 
           <p class="field__hint">
@@ -295,13 +319,12 @@ function fillExample(): void {
             <p class="result__filesize">
               {{ resultSize }}
             </p>
-            <button
+            <ElButton
               class="result__download"
-              type="button"
               @click="download"
             >
               {{ t('tools.sm4-file-crypt.results.download') }}
-            </button>
+            </ElButton>
           </div>
         </template>
       </section>

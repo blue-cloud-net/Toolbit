@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -177,10 +181,11 @@ function fillExample(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.signature.fields.message') }}</span>
-            <textarea
+            <ElInput
               v-model="message"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="5"
+              :rows="5"
               spellcheck="false"
               :aria-label="t('tools.signature.fields.message')"
             />
@@ -205,10 +210,11 @@ function fillExample(): void {
 
             <label class="field">
               <span class="field__label">{{ t('tools.signature.fields.signature') }}</span>
-              <textarea
+              <ElInput
                 v-model="signature"
+                type="textarea"
                 class="field__textarea tb-mono"
-                rows="3"
+                :rows="3"
                 spellcheck="false"
                 :aria-label="t('tools.signature.fields.signature')"
               />
@@ -220,29 +226,36 @@ function fillExample(): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.signature.fields.algorithm') }}</span>
-              <select
+              <ElSelect
                 v-model="algorithm"
                 class="field__select"
+                :aria-label="t('tools.signature.fields.algorithm')"
               >
-                <option
+                <ElOption
                   v-for="name in ALGORITHMS"
                   :key="name"
+                  :label="t(`tools.signature.options.algorithm.${name}`)"
                   :value="name"
-                >
-                  {{ t(`tools.signature.options.algorithm.${name}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.signature.fields.operation') }}</span>
-              <select
+              <ElSelect
                 v-model="operation"
                 class="field__select"
+                :aria-label="t('tools.signature.fields.operation')"
               >
-                <option value="sign">{{ t('tools.signature.options.operation.sign') }}</option>
-                <option value="verify">{{ t('tools.signature.options.operation.verify') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.signature.options.operation.sign')"
+                  value="sign"
+                />
+                <ElOption
+                  :label="t('tools.signature.options.operation.verify')"
+                  value="verify"
+                />
+              </ElSelect>
             </label>
 
             <label
@@ -250,18 +263,18 @@ function fillExample(): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.signature.fields.hash') }}</span>
-              <select
+              <ElSelect
                 v-model="hash"
                 class="field__select"
+                :aria-label="t('tools.signature.fields.hash')"
               >
-                <option
+                <ElOption
                   v-for="h in availableHashes"
                   :key="h"
+                  :label="t(`tools.signature.options.hash.${h}`)"
                   :value="h"
-                >
-                  {{ t(`tools.signature.options.hash.${h}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label
@@ -269,13 +282,20 @@ function fillExample(): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.signature.fields.rsaPadding') }}</span>
-              <select
+              <ElSelect
                 v-model="rsaPadding"
                 class="field__select"
+                :aria-label="t('tools.signature.fields.rsaPadding')"
               >
-                <option value="pss">{{ t('tools.signature.options.rsaPadding.pss') }}</option>
-                <option value="pkcs1">{{ t('tools.signature.options.rsaPadding.pkcs1') }}</option>
-              </select>
+                <ElOption
+                  :label="t('tools.signature.options.rsaPadding.pss')"
+                  value="pss"
+                />
+                <ElOption
+                  :label="t('tools.signature.options.rsaPadding.pkcs1')"
+                  value="pkcs1"
+                />
+              </ElSelect>
             </label>
 
             <label
@@ -283,13 +303,12 @@ function fillExample(): void {
               class="field"
             >
               <span class="field__label">{{ t('tools.signature.fields.sm2UserId') }}</span>
-              <input
+              <ElInput
                 v-model="sm2UserId"
-                type="text"
                 class="field__input tb-mono"
                 autocomplete="off"
                 :aria-label="t('tools.signature.fields.sm2UserId')"
-              >
+              />
             </label>
 
             <label class="field">

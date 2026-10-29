@@ -4,6 +4,10 @@
  *
  * 逐台服务器展示解析结果与耗时；单台失败不影响整体。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -143,59 +147,57 @@ function reset(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.dns-lookup.fields.host') }}</span>
-            <input
+            <ElInput
               v-model="host"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.dns-lookup.fields.type') }}</span>
-            <select
+            <ElSelect
               v-model="type"
               class="field__select"
+              :aria-label="t('tools.dns-lookup.fields.type')"
             >
-              <option
+              <ElOption
                 v-for="name in RECORD_TYPES"
                 :key="name"
+                :label="String(name)"
                 :value="name"
-              >
-                {{ name }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
         </template>
 
         <template #options>
           <label class="field">
             <span class="field__label">{{ t('tools.dns-lookup.fields.proto') }}</span>
-            <select
+            <ElSelect
               v-model="proto"
               class="field__select"
+              :aria-label="t('tools.dns-lookup.fields.proto')"
             >
-              <option
+              <ElOption
                 v-for="name in PROTOS"
                 :key="name"
+                :label="String(name)"
                 :value="name"
-              >
-                {{ name }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.dns-lookup.fields.addr') }}</span>
-            <input
+            <ElInput
               v-model="addr"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
               placeholder="1.1.1.1:53"
-            >
+            />
           </label>
         </template>
 

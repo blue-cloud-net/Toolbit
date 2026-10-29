@@ -5,6 +5,14 @@
  * 私钥与证书材料只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -178,18 +186,18 @@ function fillExample(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.cert-gen.fields.signMode') }}</span>
-            <select
+            <ElSelect
               v-model="signMode"
               class="field__select"
+              :aria-label="t('tools.cert-gen.fields.signMode')"
             >
-              <option
+              <ElOption
                 v-for="mode in MODES"
                 :key="mode"
+                :label="t(`tools.cert-gen.options.modes.${mode}`)"
                 :value="mode"
-              >
-                {{ t(`tools.cert-gen.options.modes.${mode}`) }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
 
           <template v-if="signMode === 'ca'">
@@ -211,92 +219,87 @@ function fillExample(): void {
 
           <label class="field">
             <span class="field__label">{{ t('tools.cert-gen.fields.cn') }}</span>
-            <input
+            <ElInput
               v-model="cn"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.cert-gen.fields.org') }}</span>
-            <input
+            <ElInput
               v-model="org"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.cert-gen.fields.country') }}</span>
-            <input
+            <ElInput
               v-model="country"
-              type="text"
               class="field__input"
               maxlength="2"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.cert-gen.fields.sans') }}</span>
-            <textarea
+            <ElInput
               v-model="sans"
+              type="textarea"
               class="field__textarea tb-mono"
-              rows="3"
+              :rows="3"
               spellcheck="false"
             />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.cert-gen.fields.notAfterDays') }}</span>
-            <input
-              v-model.number="notAfterDays"
-              type="number"
+            <ElInputNumber
+              v-model="notAfterDays"
               class="field__input"
-              min="1"
-              max="3650"
-            >
+              :min="1"
+              :max="3650"
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.cert-gen.fields.serial') }}</span>
-            <input
+            <ElInput
               v-model="serialHex"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
-          <label class="field field--inline">
-            <input
-              v-model="isCa"
-              type="checkbox"
-            >
-            <span>{{ t('tools.cert-gen.fields.isCa') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="isCa"
+            class="field__checkbox"
+          >
+            {{ t('tools.cert-gen.fields.isCa') }}
+          </ElCheckbox>
 
           <label class="field">
             <span class="field__label">{{ t('tools.cert-gen.fields.algorithm') }}</span>
-            <select
+            <ElSelect
               v-model="keyType"
               class="field__select"
+              :aria-label="t('tools.cert-gen.fields.algorithm')"
             >
-              <option
+              <ElOption
                 v-for="name in ALGORITHMS"
                 :key="name"
+                :label="String(name)"
                 :value="name"
-              >
-                {{ name }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
 
           <label
@@ -304,18 +307,18 @@ function fillExample(): void {
             class="field"
           >
             <span class="field__label">{{ t('tools.cert-gen.fields.curve') }}</span>
-            <select
+            <ElSelect
               v-model="keyCurve"
               class="field__select"
+              :aria-label="t('tools.cert-gen.fields.curve')"
             >
-              <option
+              <ElOption
                 v-for="name in CURVES"
                 :key="name"
+                :label="String(name)"
                 :value="name"
-              >
-                {{ name }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
 
           <label
@@ -323,18 +326,18 @@ function fillExample(): void {
             class="field"
           >
             <span class="field__label">{{ t('tools.cert-gen.fields.bits') }}</span>
-            <select
-              v-model.number="keyBits"
+            <ElSelect
+              v-model="keyBits"
               class="field__select"
+              :aria-label="t('tools.cert-gen.fields.bits')"
             >
-              <option
+              <ElOption
                 v-for="bits in RSA_BITS"
                 :key="bits"
+                :label="String(bits)"
                 :value="bits"
-              >
-                {{ bits }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
         </template>
 

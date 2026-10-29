@@ -4,6 +4,10 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -143,61 +147,59 @@ function fillExample(index: number): void {
           <div class="field-row">
             <label class="field">
               <span class="field__label">{{ t('tools.format-convert.fields.from') }}</span>
-              <select
+              <ElSelect
                 v-model="from"
                 class="field__select"
+                :aria-label="t('tools.format-convert.fields.from')"
               >
-                <option
+                <ElOption
                   v-for="format in DATA_FORMATS"
                   :key="`from-${format}`"
+                  :label="t(`tools.format-convert.options.format.${format}`)"
                   :value="format"
-                >
-                  {{ t(`tools.format-convert.options.format.${format}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.format-convert.fields.to') }}</span>
-              <select
+              <ElSelect
                 v-model="to"
                 class="field__select"
+                :aria-label="t('tools.format-convert.fields.to')"
               >
-                <option
+                <ElOption
                   v-for="format in DATA_FORMATS"
                   :key="`to-${format}`"
+                  :label="t(`tools.format-convert.options.format.${format}`)"
                   :value="format"
-                >
-                  {{ t(`tools.format-convert.options.format.${format}`) }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
 
             <label class="field">
               <span class="field__label">{{ t('tools.format-convert.fields.indent') }}</span>
-              <select
-                v-model.number="indent"
+              <ElSelect
+                v-model="indent"
                 class="field__select"
+                :aria-label="t('tools.format-convert.fields.indent')"
               >
-                <option
+                <ElOption
                   v-for="size in INDENT_OPTIONS"
                   :key="size"
+                  :label="String(size)"
                   :value="size"
-                >
-                  {{ size }}
-                </option>
-              </select>
+                />
+              </ElSelect>
             </label>
           </div>
 
-          <label class="field field--inline">
-            <input
-              v-model="pretty"
-              type="checkbox"
-              class="field__checkbox"
-            >
-            <span>{{ t('tools.format-convert.fields.pretty') }}</span>
-          </label>
+          <ElCheckbox
+            v-model="pretty"
+            class="field__checkbox"
+          >
+            {{ t('tools.format-convert.fields.pretty') }}
+          </ElCheckbox>
           <p class="field__hint">
             {{ t('tools.format-convert.hints.pretty') }}
           </p>

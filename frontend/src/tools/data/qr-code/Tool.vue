@@ -4,6 +4,12 @@
  *
  * 图片只在浏览器内存中转成 base64 后提交，**不写**任何浏览器存储。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -163,26 +169,30 @@ function fillExample(index: number): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.qr-code.fields.operation') }}</span>
-            <select
+            <ElSelect
               v-model="operation"
               class="field__select"
+              :aria-label="t('tools.qr-code.fields.operation')"
             >
-              <option value="generate">
-                {{ t('tools.qr-code.options.operation.generate') }}
-              </option>
-              <option value="decode">
-                {{ t('tools.qr-code.options.operation.decode') }}
-              </option>
-            </select>
+              <ElOption
+                :label="t('tools.qr-code.options.operation.generate')"
+                value="generate"
+              />
+              <ElOption
+                :label="t('tools.qr-code.options.operation.decode')"
+                value="decode"
+              />
+            </ElSelect>
           </label>
 
           <template v-if="operation === 'generate'">
             <label class="field">
               <span class="field__label">{{ t('tools.qr-code.fields.text') }}</span>
-              <textarea
+              <ElInput
                 v-model="text"
+                type="textarea"
                 class="field__textarea tb-mono"
-                rows="4"
+                :rows="4"
                 spellcheck="false"
                 placeholder="https://example.com"
                 :aria-label="t('tools.qr-code.fields.text')"
@@ -228,75 +238,76 @@ function fillExample(index: number): void {
             <div class="field-row">
               <label class="field">
                 <span class="field__label">{{ t('tools.qr-code.fields.size') }}</span>
-                <input
-                  v-model.number="size"
-                  type="number"
+                <ElInputNumber
+                  v-model="size"
                   class="field__input tb-mono"
-                  min="1"
-                  max="40"
-                  step="1"
+                  :min="1"
+                  :max="40"
+                  :step="1"
                   :aria-label="t('tools.qr-code.fields.size')"
-                >
+                />
               </label>
 
               <label class="field">
                 <span class="field__label">{{ t('tools.qr-code.fields.margin') }}</span>
-                <input
-                  v-model.number="margin"
-                  type="number"
+                <ElInputNumber
+                  v-model="margin"
                   class="field__input tb-mono"
-                  min="0"
-                  max="16"
-                  step="1"
+                  :min="0"
+                  :max="16"
+                  :step="1"
                   :aria-label="t('tools.qr-code.fields.margin')"
-                >
+                />
               </label>
 
               <label class="field">
                 <span class="field__label">{{ t('tools.qr-code.fields.ecLevel') }}</span>
-                <select
+                <ElSelect
                   v-model="ecLevel"
                   class="field__select"
+                  :aria-label="t('tools.qr-code.fields.ecLevel')"
                 >
-                  <option value="L">
-                    {{ t('tools.qr-code.options.ecLevel.L') }}
-                  </option>
-                  <option value="M">
-                    {{ t('tools.qr-code.options.ecLevel.M') }}
-                  </option>
-                  <option value="Q">
-                    {{ t('tools.qr-code.options.ecLevel.Q') }}
-                  </option>
-                  <option value="H">
-                    {{ t('tools.qr-code.options.ecLevel.H') }}
-                  </option>
-                </select>
+                  <ElOption
+                    :label="t('tools.qr-code.options.ecLevel.L')"
+                    value="L"
+                  />
+                  <ElOption
+                    :label="t('tools.qr-code.options.ecLevel.M')"
+                    value="M"
+                  />
+                  <ElOption
+                    :label="t('tools.qr-code.options.ecLevel.Q')"
+                    value="Q"
+                  />
+                  <ElOption
+                    :label="t('tools.qr-code.options.ecLevel.H')"
+                    value="H"
+                  />
+                </ElSelect>
               </label>
             </div>
 
             <div class="field-row">
               <label class="field">
                 <span class="field__label">{{ t('tools.qr-code.fields.fg') }}</span>
-                <input
+                <ElInput
                   v-model="fg"
-                  type="text"
                   class="field__input tb-mono"
                   autocomplete="off"
                   placeholder="#000000"
                   :aria-label="t('tools.qr-code.fields.fg')"
-                >
+                />
               </label>
 
               <label class="field">
                 <span class="field__label">{{ t('tools.qr-code.fields.bg') }}</span>
-                <input
+                <ElInput
                   v-model="bg"
-                  type="text"
                   class="field__input tb-mono"
                   autocomplete="off"
                   placeholder="#FFFFFF"
                   :aria-label="t('tools.qr-code.fields.bg')"
-                >
+                />
               </label>
             </div>
             <p class="field__hint">

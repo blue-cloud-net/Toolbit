@@ -5,8 +5,9 @@
  * 读入文件并转成 base64；文件**不**落任何浏览器存储，
  * 离开页面即丢弃（AGENTS.md §4.11）。
  */
+import { ElUpload, type UploadFile } from 'element-plus/es/components/upload/index'
+import 'element-plus/es/components/upload/style/css'
 import { useI18n } from 'vue-i18n'
-import { ref } from 'vue'
 
 /** 读入结果。 */
 export interface LoadedFile {
@@ -41,37 +42,14 @@ const props = withDefaults(
 
 const { t } = useI18n()
 
-const dragging = ref(false)
-const input = ref<HTMLInputElement | null>(null)
-
-/** 打开文件选择器。 */
-function pick(): void {
-  if (!props.disabled) {
-    input.value?.click()
-  }
-}
-
-/** 处理拖放事件。 */
-function onDrop(event: DragEvent): void {
-  dragging.value = false
+/** `ElUpload` 选中文件后读取。 */
+function onChange(upload: UploadFile): void {
   if (props.disabled) {
     return
   }
-  const file = event.dataTransfer?.files?.[0]
-  if (file) {
-    void readFile(file)
+  if (upload.raw) {
+    void readFile(upload.raw)
   }
-}
-
-/** 处理文件选择。 */
-function onChange(event: Event): void {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (file) {
-    void readFile(file)
-  }
-  // 重置以便再次选择同一文件。
-  target.value = ''
 }
 
 /** 读入文件并转 base64。 */
@@ -104,64 +82,23 @@ async function readFile(file: File): Promise<void> {
 </script>
 
 <template>
-  <div
+  <ElUpload
     class="dropzone"
-    :class="{ 'dropzone--active': dragging, 'dropzone--disabled': disabled }"
-    role="button"
-    tabindex="0"
-    :aria-disabled="disabled"
-    @click="pick"
-    @keydown.enter="pick"
-    @keydown.space.prevent="pick"
-    @dragover.prevent="dragging = true"
-    @dragleave.prevent="dragging = false"
-    @drop.prevent="onDrop"
+    drag
+    action="#"
+    :auto-upload="false"
+    :show-file-list="false"
+    :accept="accept"
+    :disabled="disabled"
+    :on-change="onChange"
   >
-    <input
-      ref="input"
-      type="file"
-      class="dropzone__input"
-      :accept="accept"
-      :disabled="disabled"
-      @change="onChange"
-    >
     <span class="dropzone__text">{{ t('tool.dropzone.hint') }}</span>
-  </div>
+  </ElUpload>
 </template>
 
 <style scoped>
-.dropzone {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 72px;
-  padding: var(--tb-space-3);
+.dropzone__text {
   font-size: var(--tb-font-sm);
   color: var(--tb-text-secondary);
-  text-align: center;
-  background: var(--tb-bg-sunken);
-  border: 1px dashed var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  cursor: pointer;
-  transition: border-color var(--tb-transition), background var(--tb-transition);
-}
-
-.dropzone:hover,
-.dropzone--active {
-  border-color: var(--tb-primary);
-  background: var(--tb-primary-soft);
-}
-
-.dropzone--disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.dropzone__input {
-  display: none;
-}
-
-.dropzone__text {
-  pointer-events: none;
 }
 </style>

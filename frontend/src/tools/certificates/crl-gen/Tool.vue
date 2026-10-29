@@ -5,6 +5,10 @@
  * 证书与私钥只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  */
+import { ElInputNumber } from 'element-plus/es/components/input-number/index'
+import 'element-plus/es/components/input-number/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -171,29 +175,28 @@ function fillExample(): void {
         <template #options>
           <label class="field">
             <span class="field__label">{{ t('tools.crl-gen.fields.reasonCode') }}</span>
-            <select
-              v-model.number="reasonCode"
+            <ElSelect
+              v-model="reasonCode"
               class="field__select"
+              :aria-label="t('tools.crl-gen.fields.reasonCode')"
             >
-              <option
+              <ElOption
                 v-for="reason in REASONS"
                 :key="reason.code"
+                :label="`${reason.code} · ${t(`tools.crl-gen.options.reasons.${reason.key}`)}`"
                 :value="reason.code"
-              >
-                {{ reason.code }} · {{ t(`tools.crl-gen.options.reasons.${reason.key}`) }}
-              </option>
-            </select>
+              />
+            </ElSelect>
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.crl-gen.fields.nextUpdateDays') }}</span>
-            <input
-              v-model.number="nextUpdateDays"
-              type="number"
+            <ElInputNumber
+              v-model="nextUpdateDays"
               class="field__input"
-              min="1"
-              max="3650"
-            >
+              :min="1"
+              :max="3650"
+            />
           </label>
         </template>
 

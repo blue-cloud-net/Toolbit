@@ -4,6 +4,10 @@
  *
  * 三种方式：DNS TXT、DNS CNAME、站点文件。
  */
+import { ElInput } from 'element-plus/es/components/input/index'
+import 'element-plus/es/components/input/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -137,42 +141,44 @@ function reset(): void {
         <template #input>
           <label class="field">
             <span class="field__label">{{ t('tools.domain-verify.fields.type') }}</span>
-            <select
+            <ElSelect
               v-model="type"
               class="field__select"
+              :aria-label="t('tools.domain-verify.fields.type')"
             >
-              <option value="dns-txt">
-                {{ t('tools.domain-verify.options.dnsTxt') }}
-              </option>
-              <option value="dns-cname">
-                {{ t('tools.domain-verify.options.dnsCname') }}
-              </option>
-              <option value="http-file">
-                {{ t('tools.domain-verify.options.httpFile') }}
-              </option>
-            </select>
+              <ElOption
+                :label="t('tools.domain-verify.options.dnsTxt')"
+                value="dns-txt"
+              />
+              <ElOption
+                :label="t('tools.domain-verify.options.dnsCname')"
+                value="dns-cname"
+              />
+              <ElOption
+                :label="t('tools.domain-verify.options.httpFile')"
+                value="http-file"
+              />
+            </ElSelect>
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.domain-verify.fields.domain') }}</span>
-            <input
+            <ElInput
               v-model="domain"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
 
           <label class="field">
             <span class="field__label">{{ t('tools.domain-verify.fields.expected') }}</span>
-            <input
+            <ElInput
               v-model="expected"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
         </template>
 
@@ -182,13 +188,12 @@ function reset(): void {
             class="field"
           >
             <span class="field__label">{{ t('tools.domain-verify.fields.filePath') }}</span>
-            <input
+            <ElInput
               v-model="filePath"
-              type="text"
               class="field__input"
               spellcheck="false"
               autocomplete="off"
-            >
+            />
           </label>
         </template>
 
