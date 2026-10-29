@@ -1,0 +1,47 @@
+{
+  "name": "证书生命周期",
+  "description": "计算证书的有效期区间、到期倒计时与续期建议。",
+  "category": "证书",
+  "actions": {
+    "run": "计算"
+  },
+  "fields": {
+    "certificate": "证书内容",
+    "isPem": "是 PEM 文本",
+    "warningDays": "警告期天数"
+  },
+  "options": {},
+  "results": {
+    "notBefore": "生效时间",
+    "notAfter": "过期时间",
+    "validDays": "有效天数",
+    "daysRemaining": "剩余天数",
+    "hoursRemaining": "剩余小时",
+    "status": "状态",
+    "isSelfSigned": "自签名",
+    "isCa": "CA 证书",
+    "keyAlgorithm": "公钥算法",
+    "san": "主体备用名",
+    "recommendations": "续期建议"
+  },
+  "examples": [
+    {
+      "label": "查看证书有效期",
+      "value": "{\"warningDays\":30}"
+    }
+  ],
+  "hints": {
+    "certificate": "粘贴 PEM 文本即可；证书解析走 pkisvc，与仓库其他证书工具口径一致。",
+    "output": "状态分为有效、即将过期、已过期与尚未生效四种。"
+  },
+  "faq": [
+    {
+      "q": "能检查证书链吗？",
+      "a": "不能，只看单张证书。链验证请用证书链验证工具。"
+    },
+    {
+      "q": "自签名证书需要注意什么？",
+      "a": "自签名证书需要客户端单独信任该 CA，不适合公开环境。"
+    }
+  ]
+}

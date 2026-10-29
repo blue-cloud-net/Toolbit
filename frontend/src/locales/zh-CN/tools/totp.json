@@ -1,0 +1,61 @@
+{
+  "name": "动态口令生成校验",
+  "description": "生成与校验 TOTP 动态口令，支持 SHA1、SHA256 与 SHA512。",
+  "category": "加密",
+  "actions": {
+    "run": "生成"
+  },
+  "fields": {
+    "operation": "操作",
+    "secret": "Base32 密钥",
+    "algorithm": "摘要算法",
+    "digits": "验证码位数",
+    "period": "时间步长",
+    "timestamp": "时间戳",
+    "code": "待校验验证码",
+    "window": "允许的时间步"
+  },
+  "options": {
+    "operation": {
+      "generate": "生成验证码",
+      "verify": "校验验证码"
+    },
+    "algorithm": {
+      "SHA1": "SHA1",
+      "SHA256": "SHA256",
+      "SHA512": "SHA512"
+    }
+  },
+  "results": {
+    "code": "验证码",
+    "valid": "校验结论",
+    "counter": "时间步计数器",
+    "validFrom": "生效时间",
+    "validUntil": "失效时间",
+    "remainingSeconds": "剩余秒数"
+  },
+  "examples": [
+    {
+      "label": "生成验证码",
+      "value": "{\"operation\":\"generate\",\"secret\":\"JBSWY3DPEHPK3PXP\",\"algorithm\":\"SHA1\",\"digits\":6,\"period\":30}"
+    },
+    {
+      "label": "校验验证码",
+      "value": "{\"operation\":\"verify\",\"secret\":\"JBSWY3DPEHPK3PXP\",\"algorithm\":\"SHA1\",\"digits\":6,\"timestamp\":59,\"code\":\"94287082\"}"
+    }
+  ],
+  "hints": {
+    "secret": "密钥是 Base32 文本；空格与连字符会自动忽略。",
+    "output": "HMAC 计算经 cryptosvc 转调 Tongsuo，本工具不自行实现 HMAC。"
+  },
+  "faq": [
+    {
+      "q": "和常见验证器兼容吗？",
+      "a": "兼容。标准参数下结果与主流验证器一致。"
+    },
+    {
+      "q": "为什么默认用 SHA1？",
+      "a": "SHA1 是兼容面最广的默认算法；安全性更高的场景请选 SHA256 或 SHA512。"
+    }
+  ]
+}

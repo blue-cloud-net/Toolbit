@@ -1,0 +1,61 @@
+{
+  "name": "TOTP Generator",
+  "description": "Generate and verify TOTP codes with SHA1, SHA256 and SHA512.",
+  "category": "Cryptography",
+  "actions": {
+    "run": "Generate"
+  },
+  "fields": {
+    "operation": "Operation",
+    "secret": "Base32 secret",
+    "algorithm": "Digest algorithm",
+    "digits": "Code digits",
+    "period": "Period",
+    "timestamp": "Timestamp",
+    "code": "Code to verify",
+    "window": "Allowed steps"
+  },
+  "options": {
+    "operation": {
+      "generate": "Generate code",
+      "verify": "Verify code"
+    },
+    "algorithm": {
+      "SHA1": "SHA1",
+      "SHA256": "SHA256",
+      "SHA512": "SHA512"
+    }
+  },
+  "results": {
+    "code": "Code",
+    "valid": "Valid",
+    "counter": "Counter",
+    "validFrom": "Valid from",
+    "validUntil": "Valid until",
+    "remainingSeconds": "Seconds remaining"
+  },
+  "examples": [
+    {
+      "label": "Generate a code",
+      "value": "{\"operation\":\"generate\",\"secret\":\"JBSWY3DPEHPK3PXP\",\"algorithm\":\"SHA1\",\"digits\":6,\"period\":30}"
+    },
+    {
+      "label": "Verify a code",
+      "value": "{\"operation\":\"verify\",\"secret\":\"JBSWY3DPEHPK3PXP\",\"algorithm\":\"SHA1\",\"digits\":6,\"timestamp\":59,\"code\":\"94287082\"}"
+    }
+  ],
+  "hints": {
+    "secret": "The secret is Base32 text; spaces and hyphens are ignored.",
+    "output": "HMAC computation goes through cryptosvc to Tongsuo; this tool does not implement HMAC itself."
+  },
+  "faq": [
+    {
+      "q": "Is it compatible with common authenticator apps?",
+      "a": "Yes. With standard parameters the result matches mainstream authenticators."
+    },
+    {
+      "q": "Why is SHA1 the default?",
+      "a": "SHA1 has the widest compatibility; choose SHA256 or SHA512 where stronger security matters."
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "name": "SSH Key Generator",
+  "description": "Generate an OpenSSH key pair with the private key, an authorized_keys line and a SHA256 fingerprint.",
+  "category": "Keys",
+  "actions": {
+    "run": "Generate"
+  },
+  "fields": {
+    "algorithm": "Algorithm",
+    "bits": "RSA bits",
+    "comment": "Comment"
+  },
+  "options": {
+    "algorithm": {
+      "Ed25519": "Ed25519",
+      "RSA": "RSA"
+    }
+  },
+  "results": {
+    "privateKey": "Private key",
+    "publicKey": "Public key",
+    "fingerprint": "Fingerprint",
+    "bits": "RSA bits",
+    "comment": "Comment"
+  },
+  "examples": [
+    {
+      "label": "Generate an Ed25519 key",
+      "value": "{\"algorithm\":\"Ed25519\",\"comment\":\"toolbit@example.com\"}"
+    },
+    {
+      "label": "Generate an RSA key",
+      "value": "{\"algorithm\":\"RSA\",\"bits\":3072,\"comment\":\"toolbit@example.com\"}"
+    }
+  ],
+  "hints": {
+    "algorithm": "The first version supports unencrypted private keys only: the passphrase-encrypted variant needs a bcrypt KDF that the upstream library does not yet provide.",
+    "output": "Keep the private key safe; the fingerprint lets you confirm both ends match."
+  },
+  "faq": [
+    {
+      "q": "Can it generate a passphrase-protected key?",
+      "a": "Not yet. It needs a bcrypt KDF and encrypted-key format conversion, which must come from the upstream library rather than a home-grown fallback."
+    },
+    {
+      "q": "What format is the private key in?",
+      "a": "The openssh-key-v1 format, which can be written straight to ~/.ssh/id_ed25519."
+    }
+  ]
+}

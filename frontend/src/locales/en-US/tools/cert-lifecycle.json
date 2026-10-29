@@ -1,0 +1,47 @@
+{
+  "name": "Certificate Lifecycle",
+  "description": "Compute a certificate's validity window, expiry countdown and renewal advice.",
+  "category": "Certificates",
+  "actions": {
+    "run": "Compute"
+  },
+  "fields": {
+    "certificate": "Certificate",
+    "isPem": "Is PEM",
+    "warningDays": "Warning days"
+  },
+  "options": {},
+  "results": {
+    "notBefore": "Not before",
+    "notAfter": "Not after",
+    "validDays": "Valid days",
+    "daysRemaining": "Days remaining",
+    "hoursRemaining": "Hours remaining",
+    "status": "Status",
+    "isSelfSigned": "Self-signed",
+    "isCa": "CA certificate",
+    "keyAlgorithm": "Key algorithm",
+    "san": "Subject alternative names",
+    "recommendations": "Recommendations"
+  },
+  "examples": [
+    {
+      "label": "Inspect a certificate validity",
+      "value": "{\"warningDays\":30}"
+    }
+  ],
+  "hints": {
+    "certificate": "Paste the PEM text; parsing goes through pkisvc for consistency with the other certificate tools.",
+    "output": "The status is one of valid, expiring, expired or not yet valid."
+  },
+  "faq": [
+    {
+      "q": "Does it check the certificate chain?",
+      "a": "No, it looks at a single certificate. Use the chain verifier for chains."
+    },
+    {
+      "q": "What about self-signed certificates?",
+      "a": "Clients must trust that CA explicitly, so they are unsuitable for public environments."
+    }
+  ]
+}

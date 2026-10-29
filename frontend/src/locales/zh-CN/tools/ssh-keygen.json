@@ -1,0 +1,50 @@
+{
+  "name": "SSH 密钥生成",
+  "description": "生成 OpenSSH 格式的密钥对，输出私钥、authorized_keys 公钥行与 SHA256 指纹。",
+  "category": "密钥",
+  "actions": {
+    "run": "生成"
+  },
+  "fields": {
+    "algorithm": "密钥算法",
+    "bits": "RSA 位数",
+    "comment": "注释"
+  },
+  "options": {
+    "algorithm": {
+      "Ed25519": "Ed25519",
+      "RSA": "RSA"
+    }
+  },
+  "results": {
+    "privateKey": "私钥",
+    "publicKey": "公钥",
+    "fingerprint": "指纹",
+    "bits": "RSA 位数",
+    "comment": "注释"
+  },
+  "examples": [
+    {
+      "label": "生成 Ed25519 密钥",
+      "value": "{\"algorithm\":\"Ed25519\",\"comment\":\"toolbit@example.com\"}"
+    },
+    {
+      "label": "生成 RSA 密钥",
+      "value": "{\"algorithm\":\"RSA\",\"bits\":3072,\"comment\":\"toolbit@example.com\"}"
+    }
+  ],
+  "hints": {
+    "algorithm": "首版**只支持未加密私钥**：口令加密变体需要 bcrypt KDF，属上游能力缺口，暂不提供。",
+    "output": "私钥请妥善保管；指纹可用于核对两端是否一致。"
+  },
+  "faq": [
+    {
+      "q": "能生成带口令的私钥吗？",
+      "a": "暂不能。口令加密需要 bcrypt KDF 与密文格式转换，按规范须走上游支持，不做自研兜底。"
+    },
+    {
+      "q": "私钥格式是什么？",
+      "a": "OpenSSH 的 openssh-key-v1 格式，可直接写入 ~/.ssh/id_ed25519。"
+    }
+  ]
+}
