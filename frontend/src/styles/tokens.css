@@ -51,6 +51,38 @@
   --tb-danger: #dc2626;
   --tb-info: #2563eb;
 
+  /*
+   * 图标色调（彩色图标）：12 组**固定**色，**不随主色切换**。
+   * 语义色承载状态、与主色正交；色调承载「这个图标是什么颜色」，
+   * 与主色也是正交的两条轴 —— 主色用于交互高亮，色调用于图标识别。
+   * 每个色调两个变量：`--tb-tone-<名>` 是图标前景色，`--tb-tone-<名>-soft`
+   * 是图标底色（胶囊背景）。
+   */
+  --tb-tone-indigo: #4f46e5;
+  --tb-tone-indigo-soft: #edecfc;
+  --tb-tone-blue: #1d4ed8;
+  --tb-tone-blue-soft: #e9effd;
+  --tb-tone-sky: #0369a1;
+  --tb-tone-sky-soft: #e8f2f8;
+  --tb-tone-cyan: #0e7490;
+  --tb-tone-cyan-soft: #e4f4f8;
+  --tb-tone-teal: #0f766e;
+  --tb-tone-teal-soft: #e7f4f3;
+  --tb-tone-green: #166534;
+  --tb-tone-green-soft: #e8f3ec;
+  --tb-tone-lime: #3f6212;
+  --tb-tone-lime-soft: #eff4e3;
+  --tb-tone-amber: #92400e;
+  --tb-tone-amber-soft: #f7eee3;
+  --tb-tone-orange: #9a3412;
+  --tb-tone-orange-soft: #f9ece4;
+  --tb-tone-rose: #be123c;
+  --tb-tone-rose-soft: #fdebef;
+  --tb-tone-violet: #7c3aed;
+  --tb-tone-violet-soft: #f0ebfd;
+  --tb-tone-slate: #475569;
+  --tb-tone-slate-soft: #edf0f3;
+
   /* 间距 */
   --tb-space-1: 4px;
   --tb-space-2: 8px;
@@ -248,6 +280,32 @@
   --tb-warning: #fbbf24;
   --tb-danger: #f87171;
   --tb-info: #60a5fa;
+
+  /* 图标色调（深色）：前景色提亮，底色压暗 */
+  --tb-tone-indigo: #a5b4fc;
+  --tb-tone-indigo-soft: #24293c;
+  --tb-tone-blue: #60a5fa;
+  --tb-tone-blue-soft: #1b2740;
+  --tb-tone-sky: #38bdf8;
+  --tb-tone-sky-soft: #142a3a;
+  --tb-tone-cyan: #22d3ee;
+  --tb-tone-cyan-soft: #10303a;
+  --tb-tone-teal: #2dd4bf;
+  --tb-tone-teal-soft: #11302e;
+  --tb-tone-green: #4ade80;
+  --tb-tone-green-soft: #16301f;
+  --tb-tone-lime: #a3e635;
+  --tb-tone-lime-soft: #26321a;
+  --tb-tone-amber: #fbbf24;
+  --tb-tone-amber-soft: #33280f;
+  --tb-tone-orange: #fb923c;
+  --tb-tone-orange-soft: #33200f;
+  --tb-tone-rose: #fb7185;
+  --tb-tone-rose-soft: #331620;
+  --tb-tone-violet: #a78bfa;
+  --tb-tone-violet-soft: #271f3d;
+  --tb-tone-slate: #94a3b8;
+  --tb-tone-slate-soft: #232b36;
 
   /* 深色专用阴影：纯黑 + 更低透明度，避免灰蒙 */
   --tb-shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);

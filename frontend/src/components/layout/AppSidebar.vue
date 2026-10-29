@@ -24,6 +24,8 @@ import { isImplemented } from '@/tools'
 import { categoryIcon } from '@/tools/categories'
 import { ensureToolDescriptions, toolDescription } from '@/tools/toolDescriptions'
 import { toolIcon } from '@/tools/toolIcons'
+import { categoryTone, toolTone, toneStyle } from '@/tools/tones'
+import type { Tone } from '@/tools/tones'
 
 const props = defineProps<{
   /** 是否折叠。 */
@@ -122,6 +124,16 @@ function toolName(tool: { name: string; nameEn: string }): string {
 /** 工具图标：未登记时回落到所属分类的图标。 */
 function itemIcon(slug: string, icon: string | undefined): ReturnType<typeof toolIcon> {
   return toolIcon(slug, categoryIcon(icon))
+}
+
+/** 工具图标色调：未登记时回落到所属分类的色调。 */
+function itemTone(slug: string, category: string): Tone {
+  return toolTone(slug, category)
+}
+
+/** 色调对应的 CSS 变量（前景色 + 底色）。 */
+function toneVars(tone: Tone): Record<string, string> {
+  return toneStyle(tone)
 }
 
 /** 工具的一句话描述（未加载时为空串）。 */
@@ -419,7 +431,10 @@ onBeforeUnmount(() => {
             :aria-expanded="isExpanded(group.cat.slug)"
             @click="toggleCategory(group.cat.slug)"
           >
-            <span class="sidebar__chip sidebar__chip--category">
+            <span
+              class="sidebar__chip sidebar__chip--category"
+              :style="toneVars(categoryTone(group.cat.slug))"
+            >
               <AppIcon
                 :name="categoryIcon(group.cat.icon)"
                 :size="16"
@@ -447,7 +462,10 @@ onBeforeUnmount(() => {
             @blur="scheduleClose"
             @click="onFlyoutNavigate"
           >
-            <span class="sidebar__chip sidebar__chip--category">
+            <span
+              class="sidebar__chip sidebar__chip--category"
+              :style="toneVars(categoryTone(group.cat.slug))"
+            >
               <AppIcon
                 :name="categoryIcon(group.cat.icon)"
                 :size="16"
@@ -470,7 +488,10 @@ onBeforeUnmount(() => {
                 :class="{ 'sidebar__tool--soon': !isImplemented(tool.slug) }"
                 :to="{ name: 'tool', params: { slug: tool.slug } }"
               >
-                <span class="sidebar__tool-icon">
+                <span
+                  class="sidebar__tool-icon"
+                  :style="toneVars(itemTone(tool.slug, group.cat.slug))"
+                >
                   <AppIcon
                     :name="itemIcon(tool.slug, group.cat.icon)"
                     :size="16"
@@ -516,10 +537,15 @@ onBeforeUnmount(() => {
       @mouseleave="scheduleClose"
     >
       <p class="nav-flyout__title">
-        <AppIcon
-          :name="categoryIcon(flyoutGroup.cat.icon)"
-          :size="15"
-        />
+        <span
+          class="nav-flyout__title-icon"
+          :style="toneVars(categoryTone(flyoutGroup.cat.slug))"
+        >
+          <AppIcon
+            :name="categoryIcon(flyoutGroup.cat.icon)"
+            :size="15"
+          />
+        </span>
         <span class="nav-flyout__title-text">
           {{ categoryName(flyoutGroup.cat.slug, flyoutGroup.cat.name) }}
         </span>
@@ -537,7 +563,10 @@ onBeforeUnmount(() => {
             :to="{ name: 'tool', params: { slug: tool.slug } }"
             @click="onFlyoutNavigate"
           >
-            <span class="nav-flyout__icon">
+            <span
+              class="nav-flyout__icon"
+              :style="toneVars(itemTone(tool.slug, flyoutGroup.cat.slug))"
+            >
               <AppIcon
                 :name="itemIcon(tool.slug, flyoutGroup.cat.icon)"
                 :size="16"
@@ -763,9 +792,14 @@ onBeforeUnmount(() => {
   border-radius: 7px;
 }
 
-.sidebar__shortcut:hover .sidebar__chip,
-.sidebar__category:hover .sidebar__chip {
+.sidebar__shortcut:hover .sidebar__chip {
   color: var(--tb-text);
+}
+
+/* 分类图标胶囊：每个分类一个颜色（不随 hover 变灰） */
+.sidebar__chip--category {
+  color: var(--tb-tone, var(--tb-text-secondary));
+  background: var(--tb-tone-soft, var(--tb-bg-sunken));
 }
 
 .sidebar__shortcut.router-link-exact-active .sidebar__chip {
@@ -890,22 +924,26 @@ onBeforeUnmount(() => {
   text-decoration: none;
 }
 
+/* 工具图标：每个工具一个颜色，hover / 选中时保留自身色调 */
 .sidebar__tool-icon {
   display: grid;
   place-items: center;
   flex: none;
   width: 18px;
-  color: var(--tb-text-tertiary);
+  color: var(--tb-tone, var(--tb-text-tertiary));
   transition: color var(--tb-transition);
 }
 
 .sidebar__tool-row:hover .sidebar__tool-icon {
-  color: var(--tb-text-secondary);
+  color: var(--tb-tone, var(--tb-text-secondary));
 }
 
-.sidebar__tool-row--active .sidebar__tool,
-.sidebar__tool-row--active .sidebar__tool-icon {
+.sidebar__tool-row--active .sidebar__tool {
   color: var(--tb-primary);
+}
+
+.sidebar__tool-row--active .sidebar__tool-icon {
+  color: var(--tb-tone, var(--tb-primary));
 }
 
 /* 收藏：默认淡出，hover / 已收藏 / 选中 / 键盘聚焦时可见 */
@@ -1020,6 +1058,18 @@ onBeforeUnmount(() => {
   border-bottom: 1px solid var(--tb-border);
 }
 
+/* 悬浮子菜单标题的分类图标：与侧栏分类图标同色 */
+.nav-flyout__title-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  color: var(--tb-tone, var(--tb-text-secondary));
+  background: var(--tb-tone-soft, transparent);
+  border-radius: var(--tb-radius-control);
+}
+
 .nav-flyout__title-text {
   flex: 1;
   min-width: 0;
@@ -1066,12 +1116,12 @@ onBeforeUnmount(() => {
   flex: none;
   width: 18px;
   height: 22px;
-  color: var(--tb-text-tertiary);
+  color: var(--tb-tone, var(--tb-text-tertiary));
 }
 
 .nav-flyout__item:hover .nav-flyout__icon,
 .nav-flyout__item--active .nav-flyout__icon {
-  color: inherit;
+  color: var(--tb-tone, inherit);
 }
 
 .nav-flyout__text {

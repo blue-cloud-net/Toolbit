@@ -12,6 +12,9 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePrefsStore } from '@/stores/prefs'
 import { isImplemented } from '@/tools'
+import { categoryIcon } from '@/tools/categories'
+import { toolIcon } from '@/tools/toolIcons'
+import { toolTone, toneStyle } from '@/tools/tones'
 
 /** 分栏比例的持久化键（属界面偏好，非工具输入）。 */
 const SPLIT_STORAGE_KEY = 'toolbit.split'
@@ -66,6 +69,17 @@ const categoryName = computed(() => {
 const favorite = computed(() => prefs.isFavorite(props.slug))
 const favoriteLabel = computed(() =>
   favorite.value ? t('tool.favorite.remove') : t('tool.favorite.add'),
+)
+
+/** 工具图标名：未登记时回落到所属分类的图标。 */
+const iconName = computed(() => {
+  const cat = category.value
+  return toolIcon(props.slug, categoryIcon(cat?.icon))
+})
+
+/** 工具图标色调：未登记时回落到所属分类的色调。 */
+const toneVars = computed(() =>
+  toneStyle(toolTone(props.slug, category.value?.slug)),
 )
 
 function toggleFavorite(): void {
@@ -213,6 +227,16 @@ onBeforeUnmount(() => {
       </nav>
 
       <div class="tool-page__title-row">
+        <span
+          class="tool-page__icon"
+          :style="toneVars"
+          aria-hidden="true"
+        >
+          <AppIcon
+            :name="iconName"
+            :size="20"
+          />
+        </span>
         <h1 class="tool-page__title">
           {{ displayName }}
         </h1>
@@ -398,6 +422,18 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: var(--tb-space-2);
+}
+
+/* 工具图标胶囊：每个工具一个颜色 */
+.tool-page__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  color: var(--tb-tone, var(--tb-primary));
+  background: var(--tb-tone-soft, var(--tb-primary-soft));
+  border-radius: var(--tb-radius-control);
 }
 
 .tool-page__favorite {

@@ -11,6 +11,7 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import { useCatalogStore } from '@/stores/catalog'
 import { getToolLoader, isImplemented } from '@/tools'
 import { categoryIcon } from '@/tools/categories'
+import { toneStyle, toolTone } from '@/tools/tones'
 import type { ToolMeta } from '@/types/tools'
 
 const props = defineProps<{
@@ -25,6 +26,12 @@ const implemented = computed(() => isImplemented(props.tool.slug))
 
 /** 所属分类的图标名。 */
 const iconName = computed(() => categoryIcon(catalog.categoryMap.get(props.tool.category)?.icon))
+
+/** 图标色调：按工具登记，未登记时回落到所属分类。 */
+const tone = computed(() => toolTone(props.tool.slug, props.tool.category))
+
+/** 色调对应的 CSS 变量（前景色 + 底色）。 */
+const toneVars = computed(() => toneStyle(tone.value))
 
 /** 已预取过的 slug（模块级，避免重复发起请求）。 */
 const prefetched = new Set<string>()
@@ -66,6 +73,7 @@ const fallbackText = computed(() =>
   >
     <span
       class="tool-card__icon"
+      :style="toneVars"
       aria-hidden="true"
     >
       <AppIcon
@@ -119,8 +127,8 @@ const fallbackText = computed(() =>
   flex: none;
   width: 36px;
   height: 36px;
-  color: var(--tb-primary);
-  background: var(--tb-primary-soft);
+  color: var(--tb-tone, var(--tb-primary));
+  background: var(--tb-tone-soft, var(--tb-primary-soft));
   border-radius: var(--tb-radius-control);
 }
 
@@ -132,9 +140,10 @@ const fallbackText = computed(() =>
   flex: 1;
 }
 
+/* hover 时卡片随自身色调加深，保持「每个图标一个颜色」的识别度 */
 .tool-card:hover {
-  color: var(--tb-primary);
-  border-color: var(--tb-primary);
+  color: var(--tb-tone, var(--tb-primary));
+  border-color: var(--tb-tone, var(--tb-primary));
   box-shadow: var(--tb-shadow-md);
   transform: translateY(-2px);
   text-decoration: none;

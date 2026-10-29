@@ -5,9 +5,12 @@
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import AppIcon from '@/components/common/AppIcon.vue'
 import ToolCard from '@/components/discovery/ToolCard.vue'
 import { setDocumentTitle } from '@/router'
 import { useCatalogStore } from '@/stores/catalog'
+import { categoryIcon } from '@/tools/categories'
+import { categoryTone, toneStyle } from '@/tools/tones'
 
 const props = defineProps<{
   /** 分类 slug。 */
@@ -19,6 +22,15 @@ const catalog = useCatalogStore()
 
 const meta = computed(() => catalog.categoryMap.get(props.category))
 const tools = computed(() => catalog.getToolsByCategory(props.category))
+
+/** 分类图标名。 */
+const iconName = computed(() => categoryIcon(meta.value?.icon))
+
+/** 分类色调。 */
+const tone = computed(() => categoryTone(props.category))
+
+/** 色调对应的 CSS 变量（前景色 + 底色）。 */
+const toneVars = computed(() => toneStyle(tone.value))
 
 const title = computed(() => {
   const cat = meta.value
@@ -53,12 +65,26 @@ watch(
       <span>{{ title }}</span>
     </nav>
 
-    <h1 class="category__title">
-      {{ title }}
-    </h1>
-    <p class="category__count">
-      {{ t('home.toolCount', { count: tools.length }) }}
-    </p>
+    <div
+      class="category__head"
+      :style="toneVars"
+    >
+      <span
+        class="category__icon"
+        aria-hidden="true"
+      >
+        <AppIcon
+          :name="iconName"
+          :size="18"
+        />
+      </span>
+      <h1 class="category__title">
+        {{ title }}
+      </h1>
+      <p class="category__count">
+        {{ t('home.toolCount', { count: tools.length }) }}
+      </p>
+    </div>
 
     <p
       v-if="!meta && catalog.loaded"
@@ -92,6 +118,24 @@ watch(
   gap: var(--tb-space-1);
   font-size: var(--tb-font-xs);
   color: var(--tb-text-tertiary);
+}
+
+/* 分类头：图标胶囊 + 标题 + 工具数 */
+.category__head {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+}
+
+.category__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  color: var(--tb-tone, var(--tb-primary));
+  background: var(--tb-tone-soft, var(--tb-primary-soft));
+  border-radius: var(--tb-radius-control);
 }
 
 .category__title {

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 主色对比度校验
+ * 主色与图标色调对比度校验
  *
  * 校验项：
  *   1. frontend/src/styles/tokens.css 中每个 [data-accent] 的 primary，
@@ -8,6 +8,8 @@
  *   2. 每个 primary 上的前景色 --tb-primary-contrast 对 primary 对比度 >= 4.5:1
  *   3. frontend/src/config/accents.ts 的色值与 tokens.css 中同名色板一致
  *   4. 语义色（success / warning / danger / info）在所有色板下取值不变
+ *   5. 图标色调 --tb-tone-<名> 对 --tb-tone-<名>-soft 对比度 >= 4.5:1，
+ *      且在所有主色色板下取值不变（色调不随主色漂移）
  *
  * 退出码：0 = 通过；1 = 存在问题（输出差异清单）
  *
@@ -27,6 +29,9 @@ const MIN_RATIO = 4.5;
 
 /** 语义色：这些变量在任何色板下都不得改变。 */
 const SEMANTIC_VARS = ["--tb-success", "--tb-warning", "--tb-danger", "--tb-info"];
+
+/** 图标色调前缀：色调固定，不随主色切换。 */
+const TONE_PREFIX = "--tb-tone-";
 
 const problems = [];
 const notes = [];
@@ -193,9 +198,64 @@ async function main() {
     }
   }
 
+  // 5) 图标色调：前景色对底色 >= 4.5:1，且不随主色漂移
+  const toneNames = new Set();
+  for (const scope of scopes.values()) {
+    for (const name of Object.keys(scope.vars)) {
+      if (name.startsWith(TONE_PREFIX) && !name.endsWith("-soft")) {
+        toneNames.add(name.slice(TONE_PREFIX.length));
+      }
+    }
+  }
+  if (toneNames.size === 0) {
+    problems.push("tokens.css 中未找到任何 --tb-tone-* 图标色调");
+  }
+  let toneChecked = 0;
+  for (const tone of [...toneNames].sort()) {
+    const fgName = `${TONE_PREFIX}${tone}`;
+    const softName = `${fgName}-soft`;
+    for (const [key, scope] of scopes) {
+      const fg = scope.vars[fgName];
+      const soft = scope.vars[softName];
+      if (!fg || !soft) {
+        continue;
+      }
+      const ratio = contrast(fg, soft);
+      if (ratio < MIN_RATIO) {
+        problems.push(
+          `[${key}] ${fgName} ${fg} 对 ${softName} ${soft} 的对比度为 ${ratio.toFixed(2)}:1，低于 ${MIN_RATIO}:1`,
+        );
+      }
+      toneChecked += 1;
+    }
+  }
+  // 色调必须在所有主色色板下保持一致
+  for (const tone of [...toneNames].sort()) {
+    for (const suffix of ["", "-soft"]) {
+      const name = `${TONE_PREFIX}${tone}${suffix}`;
+      const lightValue = scopes.get("light:default")?.vars[name];
+      const darkValue = scopes.get("dark:default")?.vars[name];
+      if (!lightValue || !darkValue) {
+        problems.push(`tokens.css 缺少图标色调 ${name}（明暗两套都要定义）`);
+        continue;
+      }
+      for (const [key, scope] of scopes) {
+        const value = scope.vars[name];
+        if (!value) continue;
+        const expected = scope.isDark ? darkValue : lightValue;
+        if (value !== expected) {
+          problems.push(
+            `[${key}] 图标色调 ${name} 被改成了 ${value}，同明暗基准为 ${expected}（色调不得随主色漂移）`,
+          );
+        }
+      }
+    }
+  }
+
   notes.push(`对比度：${checked} 项校验（${scopes.size} 个作用域）`);
   notes.push(`色板一致性：${tsSwatches.length} 组`);
   notes.push(`语义色：${SEMANTIC_VARS.length} 项（${scopes.size} 个作用域）`);
+  notes.push(`图标色调：${toneNames.size} 组（${toneChecked} 项对比度）`);
 
   console.log("── 主色检查 ──────────────────────────────");
   for (const n of notes) console.log(`  · ${n}`);
