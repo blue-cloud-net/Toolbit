@@ -76,6 +76,21 @@ let socket: WebSocket | null = null
 
 const faq = computed<FaqItem[]>(() => tm('tools.ssl-check.faq') as FaqItem[])
 
+/** 结论徽章：TLS 链是否验证通过。 */
+const verdict = computed(() => {
+  const result = data.value
+  if (!result) {
+    return null
+  }
+  if (!result.chainValid) {
+    return { level: 'danger' as const, label: t('tool.verdict.fail') }
+  }
+  if (!result.verified) {
+    return { level: 'warning' as const, label: t('tool.verdict.warn') }
+  }
+  return { level: 'success' as const, label: t('tool.verdict.pass') }
+})
+
 const progressText = computed(() => {
   if (!progress.value) {
     return ''
@@ -289,6 +304,7 @@ function reset(): void {
         :text="resultText"
         :meta="meta"
         :error="error"
+        :verdict="verdict"
         :title="t('tools.ssl-check.results.output')"
         @retry="run"
       />

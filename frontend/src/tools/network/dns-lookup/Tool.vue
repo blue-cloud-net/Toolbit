@@ -91,6 +91,30 @@ const resultText = computed(() => {
 
 const faq = computed<FaqItem[]>(() => tm('tools.dns-lookup.faq') as FaqItem[])
 
+/** 汇总：成功数、最慢节点、失败节点。 */
+const summary = computed(() => {
+  const result = data.value
+  if (!result || result.perServer.length === 0) {
+    return null
+  }
+  const ok = result.perServer.filter((item) => item.error === null)
+  const failed = result.perServer.length - ok.length
+  let slowest = ''
+  let slowestMs = -1
+  for (const item of ok) {
+    if (item.latencyMs > slowestMs) {
+      slowest = `${item.latencyMs}ms (${item.server})`
+      slowestMs = item.latencyMs
+    }
+  }
+  return {
+    succeeded: ok.length,
+    failed,
+    slowest,
+    total: result.perServer.length,
+  }
+})
+
 function run(): void {
   const payload: Record<string, unknown> = { host: host.value, type: type.value }
   if (addr.value.trim() !== '') {
@@ -195,7 +219,16 @@ function reset(): void {
         :error="error"
         :title="t('tools.dns-lookup.results.output')"
         @retry="run"
-      />
+      >
+        <template
+          v-if="summary"
+          #summary
+        >
+          <span>{{ t('tool.result.summary.succeeded') }} {{ summary.succeeded }} / {{ summary.total }}</span>
+          <span v-if="summary.slowest">{{ t('tool.result.summary.slowest') }} {{ summary.slowest }}</span>
+          <span v-if="summary.failed > 0">{{ t('tool.result.summary.failed') }} {{ summary.failed }}</span>
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

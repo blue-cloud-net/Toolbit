@@ -76,6 +76,31 @@ const resultText = computed(() => {
 
 const faq = computed<FaqItem[]>(() => tm('tools.domain-verify.faq') as FaqItem[])
 
+/** 汇总：各解析器的成功 / 失败数。 */
+const summary = computed(() => {
+  const result = data.value
+  if (!result || result.perResolver.length === 0) {
+    return null
+  }
+  const succeeded = result.perResolver.filter((item) => item.error === null).length
+  return {
+    succeeded,
+    failed: result.perResolver.length - succeeded,
+    total: result.perResolver.length,
+  }
+})
+
+/** 结论徽章：期望值是否匹配。 */
+const verdict = computed(() => {
+  const result = data.value
+  if (!result) {
+    return null
+  }
+  return result.matched
+    ? { level: 'success' as const, label: t('tool.verdict.pass') }
+    : { level: 'danger' as const, label: t('tool.verdict.fail') }
+})
+
 const canRun = computed(
   () => domain.value.trim() !== '' && expected.value.trim() !== '',
 )
@@ -185,9 +210,18 @@ function reset(): void {
         :text="resultText"
         :meta="meta"
         :error="error"
+        :verdict="verdict"
         :title="t('tools.domain-verify.results.output')"
         @retry="run"
-      />
+      >
+        <template
+          v-if="summary"
+          #summary
+        >
+          <span>{{ t('tool.result.summary.succeeded') }} {{ summary.succeeded }} / {{ summary.total }}</span>
+          <span v-if="summary.failed > 0">{{ t('tool.result.summary.failed') }} {{ summary.failed }}</span>
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

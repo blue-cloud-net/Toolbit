@@ -11,6 +11,7 @@ import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/encoding/url-codec/example'
 
@@ -46,8 +47,21 @@ const input = ref('')
 const component = ref<Component>('full')
 const plusAsSpace = ref(true)
 
-const { state, data, meta, error, run: execute, reset: resetRun } =
-  useToolRun<URLCodecResult>({ slug: 'url-codec' })
+const {
+  state,
+  data,
+  meta,
+  error,
+  run: execute,
+  reset: resetRun,
+  bindInput,
+  useAsInput,
+} = useToolRun<URLCodecResult>({ slug: 'url-codec' })
+
+/** 结果区的「作为新输入」：把结果回填到主输入框（仅内存，不写存储）。 */
+bindInput((text) => {
+  input.value = text
+})
 
 const resultText = computed(() => data.value?.output ?? '')
 const running = computed(() => state.value === 'loading')
@@ -65,6 +79,14 @@ function run(): void {
     plusAsSpace: plusAsSpace.value,
   })
 }
+
+/** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
+useAutoRun({
+  slug: 'url-codec',
+  run,
+  watch: [operation, input, component, plusAsSpace],
+  enabled: () => input.value !== '',
+})
 
 /** 重置表单与结果。 */
 function reset(): void {
@@ -188,6 +210,7 @@ function onKeydown(event: KeyboardEvent): void {
         :meta="meta"
         :error="error"
         :title="t('tools.url-codec.results.output')"
+        :use-as-input="useAsInput"
         @retry="run"
       >
         <template

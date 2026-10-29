@@ -12,6 +12,7 @@ import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/formatting/xml-format/example'
 
@@ -44,8 +45,22 @@ const action = ref<Action>('format')
 const indent = ref(2)
 const keepComments = ref(false)
 
-const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<XmlFormatResult>({
+const {
+  state,
+  data,
+  meta,
+  error,
+  run: execute,
+  reset: resetRun,
+  bindInput,
+  useAsInput,
+} = useToolRun<XmlFormatResult>({
   slug: 'xml-format',
+})
+
+/** 结果区的「作为新输入」：把结果回填到主输入框（仅内存，不写存储）。 */
+bindInput((text) => {
+  input.value = text
 })
 
 const resultText = computed(() => data.value?.output ?? '')
@@ -65,6 +80,14 @@ function run(): void {
     keepComments: keepComments.value,
   })
 }
+
+/** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
+useAutoRun({
+  slug: 'xml-format',
+  run,
+  watch: [input, action, indent, keepComments],
+  enabled: () => input.value !== '',
+})
 
 /** 重置表单与结果。 */
 function reset(): void {
@@ -176,6 +199,7 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.xml-format.results.output')"
+        :use-as-input="useAsInput"
         @retry="run"
       >
         <template

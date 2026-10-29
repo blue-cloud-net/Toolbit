@@ -11,6 +11,7 @@ import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES, type CronPreset } from '@/tools/system/crontab-generator/example'
 
@@ -108,6 +109,13 @@ function run(): void {
     count: countValue.value,
   })
 }
+
+/** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
+useAutoRun({
+  slug: 'crontab-generator',
+  run,
+  watch: [preset, minute, hour, dayOfMonth, month, dayOfWeek, timezone, count],
+})
 
 /** 重置表单与结果。 */
 function reset(): void {

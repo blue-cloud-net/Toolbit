@@ -4,7 +4,7 @@
  * 四态：`idle` / `loading` / `success` / `error`。
  * 组件卸载或重复运行时**必须**中止上一次请求。
  */
-import { onScopeDispose, ref, shallowRef } from 'vue'
+import { computed, onScopeDispose, ref, shallowRef } from 'vue'
 
 import { ApiError, callTool } from '@/api/client'
 import { localizeError, type LocalizedError } from '@/i18n/errors'
@@ -84,5 +84,30 @@ export function useToolRun<T = unknown>(options: UseToolRunOptions) {
 
   onScopeDispose(cancel)
 
-  return { state, data, meta, error, run, reset, cancel }
+  /** 输入回填器：工具页注册，用于「作为新输入」。 */
+  const inputFiller = shallowRef<((text: string) => void) | null>(null)
+
+  /**
+   * 注册输入回填函数。
+   *
+   * 工具页把自己的主输入 ref 交给这里，结果区的「作为新输入」
+   * 就能把结果文本回填到输入区。回填只改内存状态，**不写**任何浏览器存储。
+   */
+  function bindInput(filler: (text: string) => void): void {
+    inputFiller.value = filler
+  }
+
+  /** 把文本回填到输入区；未注册回填器时返回 false。 */
+  function useAsInput(text: string): boolean {
+    if (!inputFiller.value) {
+      return false
+    }
+    inputFiller.value(text)
+    return true
+  }
+
+  /** 是否支持「作为新输入」。 */
+  const canUseAsInput = computed(() => inputFiller.value !== null)
+
+  return { state, data, meta, error, run, reset, cancel, bindInput, useAsInput, canUseAsInput }
 }

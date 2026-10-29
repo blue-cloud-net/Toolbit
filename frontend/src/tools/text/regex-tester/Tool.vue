@@ -63,8 +63,22 @@ const flags = ref<string[]>([])
 const maxMatches = ref(0)
 const groupNames = ref('')
 
-const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<RegexTesterResult>({
+const {
+  state,
+  data,
+  meta,
+  error,
+  run: execute,
+  reset: resetRun,
+  bindInput,
+  useAsInput,
+} = useToolRun<RegexTesterResult>({
   slug: 'regex-tester',
+})
+
+/** 结果区的「作为新输入」：把结果回填到主输入框（仅内存，不写存储）。 */
+bindInput((text) => {
+  input.value = text
 })
 
 const running = computed(() => state.value === 'loading')
@@ -259,6 +273,7 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.regex-tester.results.matches')"
+        :use-as-input="useAsInput"
         @retry="run"
       >
         <template

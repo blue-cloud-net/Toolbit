@@ -203,7 +203,7 @@ tools:
     timeoutMs: 10000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.hash-calc
 
@@ -686,7 +686,7 @@ tools:
     timeoutMs: 10000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.base64
 
@@ -702,7 +702,7 @@ tools:
     timeoutMs: 10000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.url-codec
 
@@ -734,7 +734,7 @@ tools:
     timeoutMs: 5000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.number-base
 
@@ -750,7 +750,7 @@ tools:
     timeoutMs: 10000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.encoding-convert
 
@@ -783,7 +783,7 @@ tools:
     timeoutMs: 10000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: true
     i18nKey: tools.json-format
 
@@ -799,7 +799,7 @@ tools:
     timeoutMs: 10000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: true
     i18nKey: tools.js-format
 
@@ -815,7 +815,7 @@ tools:
     timeoutMs: 10000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: true
     i18nKey: tools.sql-format
 
@@ -831,7 +831,7 @@ tools:
     timeoutMs: 10000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: true
     i18nKey: tools.html-format
 
@@ -847,7 +847,7 @@ tools:
     timeoutMs: 10000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: true
     i18nKey: tools.xml-format
 
@@ -863,7 +863,7 @@ tools:
     timeoutMs: 10000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: true
     i18nKey: tools.toml-format
 
@@ -879,7 +879,7 @@ tools:
     timeoutMs: 10000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: true
     i18nKey: tools.yaml-format
 
@@ -895,7 +895,7 @@ tools:
     timeoutMs: 15000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: true
     i18nKey: tools.format-convert
 
@@ -928,7 +928,7 @@ tools:
     timeoutMs: 10000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.text-convert
 
@@ -945,7 +945,7 @@ tools:
     timeoutMs: 5000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.timestamp
 
@@ -977,7 +977,7 @@ tools:
     timeoutMs: 5000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.date-calc
 
@@ -993,7 +993,7 @@ tools:
     timeoutMs: 5000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.country-code
 
@@ -1009,7 +1009,7 @@ tools:
     timeoutMs: 10000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.cn-regions
 
@@ -1042,7 +1042,7 @@ tools:
     timeoutMs: 5000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.curl-generator
 
@@ -1058,7 +1058,7 @@ tools:
     timeoutMs: 5000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.crontab-generator
 
@@ -1074,7 +1074,7 @@ tools:
     timeoutMs: 5000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.chmod-calc
 
@@ -1091,7 +1091,7 @@ tools:
     timeoutMs: 5000
     sensitive: false
     requiresNetwork: false
-    autoRun: false
+    autoRun: true
     wide: false
     i18nKey: tools.cidr-calc
 

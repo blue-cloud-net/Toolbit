@@ -41,8 +41,22 @@ const inputEncoding = ref<TransferEncoding>('utf8')
 const level = ref(6)
 const outputEncoding = ref<TransferEncoding>('base64')
 
-const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<GzipDeflateResult>({
+const {
+  state,
+  data,
+  meta,
+  error,
+  run: execute,
+  reset: resetRun,
+  bindInput,
+  useAsInput,
+} = useToolRun<GzipDeflateResult>({
   slug: 'gzip-deflate',
+})
+
+/** 结果区的「作为新输入」：把结果回填到主输入框（仅内存，不写存储）。 */
+bindInput((text) => {
+  input.value = text
 })
 
 const resultText = computed(() => data.value?.output ?? '')
@@ -223,6 +237,7 @@ function onKeydown(event: KeyboardEvent): void {
         :meta="meta"
         :error="error"
         :title="t('tools.gzip-deflate.results.output')"
+        :use-as-input="useAsInput"
         @retry="run"
       >
         <template

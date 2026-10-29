@@ -66,7 +66,14 @@ const {
   error,
   run: execute,
   reset: resetRun,
+  bindInput,
+  useAsInput,
 } = useToolRun<SignatureResult>({ slug: 'signature' })
+
+/** 结果区的「作为新输入」：把结果回填到主输入框（仅内存，不写存储）。 */
+bindInput((text) => {
+  message.value = text
+})
 
 const running = computed(() => state.value === 'loading')
 
@@ -95,6 +102,17 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.signature.faq') as FaqItem[])
+
+/** 结论徽章：验签模式才有结论。 */
+const verdict = computed(() => {
+  const result = data.value
+  if (!result || typeof result.valid !== 'boolean') {
+    return null
+  }
+  return result.valid
+    ? { level: 'success' as const, label: t('tool.verdict.pass') }
+    : { level: 'danger' as const, label: t('tool.verdict.fail') }
+})
 
 /** 运行当前输入。 */
 function run(): void {
@@ -315,7 +333,9 @@ function fillExample(): void {
         :text="resultText"
         :meta="meta"
         :error="error"
+        :verdict="verdict"
         :title="t('tools.signature.results.output')"
+        :use-as-input="useAsInput"
         @retry="run"
       />
     </template>

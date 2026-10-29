@@ -4,7 +4,9 @@
     "options": "参数",
     "result": "结果",
     "usage": "使用说明",
-    "faq": "常见问题"
+    "faq": "常见问题",
+    "expand": "展开",
+    "collapse": "收起"
   },
   "fields": {
     "encoding": "编码"
@@ -22,7 +24,14 @@
     "success": "完成",
     "error": "失败",
     "duration": "耗时 {ms} 毫秒",
-    "emptyOutput": "（空结果）"
+    "emptyOutput": "（空结果）",
+    "useAsInput": "作为新输入",
+    "summary": {
+      "succeeded": "成功",
+      "failed": "失败",
+      "slowest": "最慢",
+      "total": "总数"
+    }
   },
   "warnings": {
     "title": "警告",
@@ -33,6 +42,17 @@
     "requestId": "请求标识",
     "retry": "重试",
     "unknown": "发生未知错误。"
+  },
+  "verdict": {
+    "pass": "通过",
+    "fail": "未通过",
+    "warn": "存在风险",
+    "unknown": "状态未知",
+    "revokedCount": "含 {count} 条吊销记录"
+  },
+  "editor": {
+    "line": "行 {line}, 列 {column}",
+    "stats": "{chars} 字符 / {bytes} 字节 / {lines} 行"
   },
   "run": {
     "hint": "快捷键：Ctrl / ⌘ + Enter",

@@ -6,8 +6,11 @@
  * 内容只存在于组件局部状态：**不写**任何浏览器存储。
  */
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const model = defineModel<string>({ required: true })
+
+const { t } = useI18n()
 
 const props = withDefaults(
   defineProps<{
@@ -27,11 +30,37 @@ const props = withDefaults(
 
 const textarea = ref<HTMLTextAreaElement | null>(null)
 
+/** 光标位置（1 基）。 */
+const cursorLine = ref(1)
+const cursorColumn = ref(1)
+
 /** 行号列表。 */
 const lineNumbers = computed(() => {
   const count = model.value.split('\n').length
   return Array.from({ length: count }, (_, i) => i + 1)
 })
+
+/** 总行数。 */
+const lineCount = computed(() => model.value.split('\n').length)
+
+/** 字符数（Unicode 码点数）。 */
+const charCount = computed(() => Array.from(model.value).length)
+
+/** 字节数（UTF-8）。 */
+const byteCount = computed(() => new TextEncoder().encode(model.value).length)
+
+/** 根据光标偏移更新行列号。 */
+function updateCursor(): void {
+  const el = textarea.value
+  if (!el) {
+    return
+  }
+  const offset = el.selectionStart ?? 0
+  const before = model.value.slice(0, offset)
+  const lines = before.split('\n')
+  cursorLine.value = lines.length
+  cursorColumn.value = (lines[lines.length - 1] ?? '').length + 1
+}
 
 /** 处理按键：Tab 缩进、Ctrl / ⌘ + Enter 运行。 */
 function onKeydown(event: KeyboardEvent): void {
@@ -97,13 +126,26 @@ const emit = defineEmits<{
       :aria-label="label"
       :placeholder="placeholder"
       @keydown="onKeydown"
+      @keyup="updateCursor"
+      @click="updateCursor"
+      @select="updateCursor"
     />
+
+    <footer class="code-editor__status">
+      <span class="code-editor__status-item">
+        {{ t('tool.editor.line', { line: cursorLine, column: cursorColumn }) }}
+      </span>
+      <span class="code-editor__status-item">
+        {{ t('tool.editor.stats', { chars: charCount, bytes: byteCount, lines: lineCount }) }}
+      </span>
+    </footer>
   </div>
 </template>
 
 <style scoped>
 .code-editor {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: var(--tb-space-2);
   align-items: stretch;
 }
@@ -130,7 +172,6 @@ const emit = defineEmits<{
 }
 
 .code-editor__area {
-  flex: 1;
   min-width: 0;
   padding: var(--tb-space-2) var(--tb-space-3);
   font-family: var(--tb-font-mono);
@@ -146,5 +187,20 @@ const emit = defineEmits<{
 
 .code-editor__area:read-only {
   color: var(--tb-text-secondary);
+}
+
+.code-editor__status {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--tb-space-3);
+  padding: 0 var(--tb-space-1);
+  font-family: var(--tb-font-mono);
+  font-size: var(--tb-font-2xs);
+  color: var(--tb-text-tertiary);
+}
+
+.code-editor__status-item {
+  white-space: nowrap;
 }
 </style>

@@ -64,6 +64,17 @@ const resultText = computed(() => {
 
 const faq = computed<FaqItem[]>(() => tm('tools.key-match.faq') as FaqItem[])
 
+/** 结论徽章：一眼看到两把密钥是否匹配。 */
+const verdict = computed(() => {
+  const result = data.value
+  if (!result) {
+    return null
+  }
+  return result.match
+    ? { level: 'success' as const, label: t('tool.verdict.pass') }
+    : { level: 'danger' as const, label: t('tool.verdict.fail') }
+})
+
 /** 运行当前输入。 */
 function run(): void {
   void execute({
@@ -130,6 +141,7 @@ function fillExample(): void {
         :text="resultText"
         :meta="meta"
         :error="error"
+        :verdict="verdict"
         :title="t('tools.key-match.results.result')"
         @retry="run"
       />

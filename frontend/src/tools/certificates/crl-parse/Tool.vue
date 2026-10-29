@@ -54,7 +54,14 @@ const {
   error,
   run: execute,
   reset: resetRun,
+  bindInput,
+  useAsInput,
 } = useToolRun<CRLParseResult>({ slug: 'crl-parse' })
+
+/** 结果区的「作为新输入」：把结果回填到主输入框（仅内存，不写存储）。 */
+bindInput((text) => {
+  input.value = text
+})
 
 const running = computed(() => state.value === 'loading')
 
@@ -80,6 +87,21 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.crl-parse.faq') as FaqItem[])
+
+/** 结论徽章：CRL 中含吊销条目时提示。 */
+const verdict = computed(() => {
+  const result = data.value
+  if (!result) {
+    return null
+  }
+  if (result.revoked.length > 0) {
+    return {
+      level: 'warning' as const,
+      label: t('tool.verdict.revokedCount', { count: result.revoked.length }),
+    }
+  }
+  return { level: 'success' as const, label: t('tool.verdict.pass') }
+})
 
 /** 运行当前输入。 */
 function run(): void {
@@ -138,7 +160,9 @@ function fillExample(): void {
         :text="resultText"
         :meta="meta"
         :error="error"
+        :verdict="verdict"
         :title="t('tools.crl-parse.results.info')"
+        :use-as-input="useAsInput"
         @retry="run"
       />
     </template>

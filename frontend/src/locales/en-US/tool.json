@@ -4,7 +4,9 @@
     "options": "Options",
     "result": "Result",
     "usage": "Usage",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "expand": "Expand",
+    "collapse": "Collapse"
   },
   "fields": {
     "encoding": "Encoding"
@@ -22,7 +24,14 @@
     "success": "Done",
     "error": "Failed",
     "duration": "Took {ms} ms",
-    "emptyOutput": "(empty result)"
+    "emptyOutput": "(empty result)",
+    "useAsInput": "Use as input",
+    "summary": {
+      "succeeded": "Succeeded",
+      "failed": "Failed",
+      "slowest": "Slowest",
+      "total": "Total"
+    }
   },
   "warnings": {
     "title": "Warnings",
@@ -33,6 +42,17 @@
     "requestId": "Request ID",
     "retry": "Retry",
     "unknown": "An unknown error occurred."
+  },
+  "verdict": {
+    "pass": "Passed",
+    "fail": "Failed",
+    "warn": "Needs attention",
+    "unknown": "Unknown status",
+    "revokedCount": "{count} revoked entries"
+  },
+  "editor": {
+    "line": "Line {line}, column {column}",
+    "stats": "{chars} chars / {bytes} bytes / {lines} lines"
   },
   "run": {
     "hint": "Shortcut: Ctrl / ⌘ + Enter",

@@ -29,7 +29,10 @@ withDefaults(
         <slot name="input" />
       </div>
 
-      <div class="tool-panel__options">
+      <div
+        v-if="$slots.options"
+        class="tool-panel__options"
+      >
         <h2 class="tool-panel__title">
           {{ optionsTitle ?? t('tool.sections.options') }}
         </h2>

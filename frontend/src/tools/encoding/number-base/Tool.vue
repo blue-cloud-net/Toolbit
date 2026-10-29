@@ -9,6 +9,7 @@ import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { DEFAULT_EXAMPLE } from '@/tools/encoding/number-base/example'
 
@@ -32,8 +33,22 @@ const from = ref(10)
 const to = ref(16)
 const prefix = ref(false)
 
-const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<NumberBaseResult>({
+const {
+  state,
+  data,
+  meta,
+  error,
+  run: execute,
+  reset: resetRun,
+  bindInput,
+  useAsInput,
+} = useToolRun<NumberBaseResult>({
   slug: 'number-base',
+})
+
+/** 结果区的「作为新输入」：把结果回填到主输入框（仅内存，不写存储）。 */
+bindInput((text) => {
+  value.value = text
 })
 
 const resultText = computed(() => data.value?.result ?? '')
@@ -53,6 +68,14 @@ function run(): void {
     prefix: prefix.value,
   })
 }
+
+/** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
+useAutoRun({
+  slug: 'number-base',
+  run,
+  watch: [value, from, to, prefix],
+  enabled: () => value.value !== '',
+})
 
 /** 重置。 */
 function reset(): void {
@@ -172,6 +195,7 @@ function onKeydown(event: KeyboardEvent): void {
         :meta="meta"
         :error="error"
         :title="t('tools.number-base.results.output')"
+        :use-as-input="useAsInput"
         @retry="run"
       />
     </template>

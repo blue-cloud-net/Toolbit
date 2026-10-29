@@ -55,7 +55,14 @@ const {
   error,
   run: execute,
   reset: resetRun,
+  bindInput,
+  useAsInput,
 } = useToolRun<HmacGenResult>({ slug: 'hmac-gen' })
+
+/** 结果区的「作为新输入」：把结果回填到主输入框（仅内存，不写存储）。 */
+bindInput((text) => {
+  message.value = text
+})
 
 const running = computed(() => state.value === 'loading')
 const resultText = computed(() => data.value?.mac ?? '')
@@ -205,6 +212,7 @@ function onKeydown(event: KeyboardEvent): void {
         :meta="meta"
         :error="error"
         :title="t('tools.hmac-gen.results.mac')"
+        :use-as-input="useAsInput"
         @retry="run"
       />
     </template>

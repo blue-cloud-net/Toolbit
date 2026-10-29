@@ -12,6 +12,7 @@ import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { DEFAULT_EXAMPLE } from '@/tools/crypto/hash-calc/example'
 
@@ -45,7 +46,14 @@ const {
   error,
   run: execute,
   reset: resetRun,
+  bindInput,
+  useAsInput,
 } = useToolRun<HashCalcResult>({ slug: 'hash-calc' })
+
+/** 结果区的「作为新输入」：把结果回填到主输入框（仅内存，不写存储）。 */
+bindInput((text) => {
+  input.value = text
+})
 
 const running = computed(() => state.value === 'loading')
 
@@ -74,6 +82,14 @@ function run(): void {
     outputEncoding: outputEncoding.value,
   })
 }
+
+/** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
+useAutoRun({
+  slug: 'hash-calc',
+  run,
+  watch: [input, algorithms, inputEncoding, outputEncoding],
+  enabled: () => input.value !== '',
+})
 
 /** 重置表单与结果。 */
 function reset(): void {
@@ -191,6 +207,7 @@ function onKeydown(event: KeyboardEvent): void {
         :meta="meta"
         :error="error"
         :title="t('tools.hash-calc.results.digests')"
+        :use-as-input="useAsInput"
         @retry="run"
       />
     </template>

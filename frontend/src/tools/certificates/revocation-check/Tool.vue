@@ -81,6 +81,21 @@ const resultText = computed(() => {
 
 const faq = computed<FaqItem[]>(() => tm('tools.revocation-check.faq') as FaqItem[])
 
+/** 结论徽章：按 CRL 状态给出结论。 */
+const verdict = computed(() => {
+  const result = data.value
+  if (!result) {
+    return null
+  }
+  if (result.status === 'good') {
+    return { level: 'success' as const, label: t('tool.verdict.pass') }
+  }
+  if (result.status === 'revoked') {
+    return { level: 'danger' as const, label: t('tool.verdict.fail') }
+  }
+  return { level: 'warning' as const, label: t('tool.verdict.unknown') }
+})
+
 /** 运行当前输入。 */
 function run(): void {
   void execute({
@@ -159,6 +174,7 @@ function fillExample(): void {
         :text="resultText"
         :meta="meta"
         :error="error"
+        :verdict="verdict"
         :title="t('tools.revocation-check.results.output')"
         @retry="run"
       />

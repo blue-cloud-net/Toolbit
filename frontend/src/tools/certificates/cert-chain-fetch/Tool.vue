@@ -72,6 +72,21 @@ const resultText = computed(() => {
 
 const faq = computed<FaqItem[]>(() => tm('tools.cert-chain-fetch.faq') as FaqItem[])
 
+/** 结论徽章：拉到的链是否验证通过。 */
+const verdict = computed(() => {
+  const result = data.value
+  if (!result) {
+    return null
+  }
+  if (!result.chainSummary.chainValid) {
+    return { level: 'danger' as const, label: t('tool.verdict.fail') }
+  }
+  if (!result.chainSummary.verified) {
+    return { level: 'warning' as const, label: t('tool.verdict.warn') }
+  }
+  return { level: 'success' as const, label: t('tool.verdict.pass') }
+})
+
 function run(): void {
   const payload: Record<string, unknown> = { host: host.value, port: port.value }
   if (serverName.value.trim() !== '') {
@@ -151,6 +166,7 @@ function reset(): void {
         :text="resultText"
         :meta="meta"
         :error="error"
+        :verdict="verdict"
         :title="t('tools.cert-chain-fetch.results.output')"
         @retry="run"
       />

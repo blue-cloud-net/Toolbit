@@ -8,10 +8,29 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CopyButton from '@/components/tool/CopyButton.vue'
+import EmptyState from '@/components/tool/EmptyState.vue'
 import ErrorAlert from '@/components/tool/ErrorAlert.vue'
+import LoadingSkeleton from '@/components/tool/LoadingSkeleton.vue'
+import AppIcon from '@/components/common/AppIcon.vue'
 import { localizeWarning, type LocalizedError } from '@/i18n/errors'
 import type { Meta } from '@/types/api'
 import type { RunState } from '@/composables/useToolRun'
+
+/** 结论徽章。 */
+export interface Verdict {
+  /** 语义级别。 */
+  level: 'success' | 'danger' | 'warning' | 'info'
+  /** 结论文案。 */
+  label: string
+}
+
+/** 结论级别 → 图标名。 */
+const VERDICT_ICONS = {
+  success: 'check',
+  danger: 'close',
+  warning: 'alert',
+  info: 'document',
+} as const
 
 const props = withDefaults(
   defineProps<{
@@ -27,8 +46,20 @@ const props = withDefaults(
     error?: LocalizedError | null
     /** 是否显示警告区。 */
     showWarnings?: boolean
+    /** 结论徽章；由可验证类工具传入。 */
+    verdict?: Verdict | null
+    /** 「作为新输入」回调；工具页用 useToolRun 的 useAsInput 传入。 */
+    useAsInput?: ((text: string) => boolean) | null
   }>(),
-  { text: '', title: undefined, meta: null, error: null, showWarnings: true },
+  {
+    text: '',
+    title: undefined,
+    meta: null,
+    error: null,
+    showWarnings: true,
+    verdict: null,
+    useAsInput: null,
+  },
 )
 
 const emit = defineEmits<{
@@ -64,6 +95,11 @@ const durationText = computed(() => {
   return typeof ms === 'number' ? t('tool.result.duration', { ms }) : ''
 })
 
+/** 把结果回填到输入区。 */
+function onUseAsInput(): void {
+  props.useAsInput?.(props.text)
+}
+
 watch(
   () => props.state,
   async (next) => {
@@ -90,6 +126,15 @@ watch(
           v-if="durationText"
           class="result__duration"
         >{{ durationText }}</span>
+        <button
+          v-if="useAsInput && state === 'success' && text !== ''"
+          type="button"
+          class="result__reuse"
+          :title="t('tool.result.useAsInput')"
+          @click="onUseAsInput"
+        >
+          {{ t('tool.result.useAsInput') }}
+        </button>
         <CopyButton
           v-if="state === 'success' && text !== ''"
           :text="text"
@@ -104,20 +149,38 @@ watch(
       {{ announcement }}
     </p>
 
-    <p
-      v-if="state === 'idle'"
-      class="result__placeholder"
+    <div
+      v-if="verdict && state === 'success'"
+      class="result__verdict"
+      :class="`result__verdict--${verdict.level}`"
+      role="status"
     >
-      {{ t('tool.result.idle') }}
-      <span class="result__hint">{{ t('tool.result.idleHint') }}</span>
-    </p>
+      <AppIcon
+        :name="VERDICT_ICONS[verdict.level]"
+        :size="20"
+      />
+      <span class="result__verdict-label">{{ verdict.label }}</span>
+    </div>
 
-    <p
-      v-else-if="state === 'loading'"
-      class="result__placeholder"
+    <div
+      v-if="$slots.summary && state === 'success'"
+      class="result__summary"
     >
-      {{ t('tool.result.loading') }}
-    </p>
+      <slot name="summary" />
+    </div>
+
+    <EmptyState
+      v-if="state === 'idle'"
+      :title="t('tool.result.idle')"
+      :hint="t('tool.result.idleHint')"
+      icon="document"
+    />
+
+    <LoadingSkeleton
+      v-else-if="state === 'loading'"
+      :rows="4"
+      variant="block"
+    />
 
     <ErrorAlert
       v-else-if="state === 'error'"
@@ -164,6 +227,8 @@ watch(
   background: var(--tb-bg-elevated);
   border: 1px solid var(--tb-border);
   border-radius: var(--tb-radius-panel);
+  /* 顶部主色带：明确「以下是输出」，与输入区区分。 */
+  border-top: 3px solid var(--tb-primary);
 }
 
 .result__head {
@@ -188,6 +253,24 @@ watch(
 .result__duration {
   font-size: var(--tb-font-xs);
   color: var(--tb-text-tertiary);
+}
+
+.result__reuse {
+  padding: 0 var(--tb-space-2);
+  font-size: var(--tb-font-xs);
+  color: var(--tb-text-secondary);
+  background: var(--tb-bg-sunken);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-control);
+  cursor: pointer;
+  transition:
+    color var(--tb-transition),
+    border-color var(--tb-transition);
+}
+
+.result__reuse:hover {
+  color: var(--tb-primary);
+  border-color: var(--tb-primary);
 }
 
 .result__placeholder {
@@ -233,6 +316,58 @@ watch(
   white-space: pre-wrap;
   word-break: break-all;
   background: var(--tb-bg-sunken);
+  border-radius: var(--tb-radius-control);
+}
+
+/* 结论徽章：大字结论，一眼可见。 */
+.result__verdict {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-3);
+  font-size: var(--tb-font-lg);
+  font-weight: 600;
+  border: 1px solid;
+  border-radius: var(--tb-radius-control);
+}
+
+.result__verdict--success {
+  color: var(--tb-success);
+  background: color-mix(in srgb, var(--tb-success) 12%, var(--tb-bg-elevated));
+  border-color: color-mix(in srgb, var(--tb-success) 40%, var(--tb-border));
+}
+
+.result__verdict--danger {
+  color: var(--tb-danger);
+  background: color-mix(in srgb, var(--tb-danger) 12%, var(--tb-bg-elevated));
+  border-color: color-mix(in srgb, var(--tb-danger) 40%, var(--tb-border));
+}
+
+.result__verdict--warning {
+  color: var(--tb-warning);
+  background: color-mix(in srgb, var(--tb-warning) 12%, var(--tb-bg-elevated));
+  border-color: color-mix(in srgb, var(--tb-warning) 40%, var(--tb-border));
+}
+
+.result__verdict--info {
+  color: var(--tb-info);
+  background: color-mix(in srgb, var(--tb-info) 12%, var(--tb-bg-elevated));
+  border-color: color-mix(in srgb, var(--tb-info) 40%, var(--tb-border));
+}
+
+.result__verdict-label {
+  min-width: 0;
+}
+
+/* 汇总统计条：网络类工具的成败计数。 */
+.result__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-2) var(--tb-space-4);
+  padding: var(--tb-space-2) var(--tb-space-3);
+  font-size: var(--tb-font-xs);
+  background: var(--tb-bg-sunken);
+  border: 1px solid var(--tb-border);
   border-radius: var(--tb-radius-control);
 }
 </style>

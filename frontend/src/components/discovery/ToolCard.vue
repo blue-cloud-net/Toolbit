@@ -7,7 +7,10 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { isImplemented } from '@/tools'
+import AppIcon from '@/components/common/AppIcon.vue'
+import { useCatalogStore } from '@/stores/catalog'
+import { getToolLoader, isImplemented } from '@/tools'
+import { categoryIcon } from '@/tools/categories'
 import type { ToolMeta } from '@/types/tools'
 
 const props = defineProps<{
@@ -16,8 +19,30 @@ const props = defineProps<{
 }>()
 
 const { t, locale } = useI18n()
+const catalog = useCatalogStore()
 
 const implemented = computed(() => isImplemented(props.tool.slug))
+
+/** 所属分类的图标名。 */
+const iconName = computed(() => categoryIcon(catalog.categoryMap.get(props.tool.category)?.icon))
+
+/** 已预取过的 slug（模块级，避免重复发起请求）。 */
+const prefetched = new Set<string>()
+
+/** 预取工具 chunk（规范 §11：卡片 hover 应当预取）。 */
+function prefetch(): void {
+  if (prefetched.has(props.tool.slug)) {
+    return
+  }
+  prefetched.add(props.tool.slug)
+  const loader = getToolLoader(props.tool.slug)
+  if (!loader) {
+    return
+  }
+  void loader().catch(() => {
+    // 预取失败不影响正常导航。
+  })
+}
 const displayName = computed(() => (locale.value === 'en-US' ? props.tool.nameEn : props.tool.name))
 const displayDesc = computed(() => {
   const key = `tools.${props.tool.slug}.description`
@@ -36,36 +61,51 @@ const fallbackText = computed(() =>
     class="tool-card"
     :class="{ 'tool-card--soon': !implemented }"
     :to="{ name: 'tool', params: { slug: tool.slug } }"
+    @mouseenter="prefetch"
+    @focusin="prefetch"
   >
-    <div class="tool-card__head">
-      <h3 class="tool-card__title">
-        {{ displayName }}
-      </h3>
-      <span
-        v-if="!implemented"
-        class="tool-card__badge"
-      >{{ t('home.soon') }}</span>
+    <span
+      class="tool-card__icon"
+      aria-hidden="true"
+    >
+      <AppIcon
+        :name="iconName"
+        :size="18"
+      />
+    </span>
+
+    <div class="tool-card__body">
+      <div class="tool-card__head">
+        <h3 class="tool-card__title">
+          {{ displayName }}
+        </h3>
+        <span
+          v-if="!implemented"
+          class="tool-card__badge"
+        >{{ t('home.soon') }}</span>
+      </div>
+      <p
+        v-if="displayDesc"
+        class="tool-card__desc"
+      >
+        {{ displayDesc }}
+      </p>
+      <p
+        v-else-if="fallbackText"
+        class="tool-card__desc tool-card__desc--muted"
+      >
+        {{ fallbackText }}
+      </p>
     </div>
-    <p
-      v-if="displayDesc"
-      class="tool-card__desc"
-    >
-      {{ displayDesc }}
-    </p>
-    <p
-      v-else-if="fallbackText"
-      class="tool-card__desc tool-card__desc--muted"
-    >
-      {{ fallbackText }}
-    </p>
   </RouterLink>
 </template>
 
 <style scoped>
 .tool-card {
   display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--tb-space-3);
   padding: var(--tb-space-3) var(--tb-space-4);
   background: var(--tb-bg-elevated);
   border: 1px solid var(--tb-border);
@@ -73,10 +113,36 @@ const fallbackText = computed(() =>
   transition: border-color var(--tb-transition), transform var(--tb-transition);
 }
 
+.tool-card__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  color: var(--tb-primary);
+  background: var(--tb-primary-soft);
+  border-radius: var(--tb-radius-control);
+}
+
+.tool-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  min-width: 0;
+  flex: 1;
+}
+
 .tool-card:hover {
-  border-color: var(--tb-border-strong);
-  transform: translateY(-1px);
+  color: var(--tb-primary);
+  border-color: var(--tb-primary);
+  box-shadow: var(--tb-shadow-md);
+  transform: translateY(-2px);
   text-decoration: none;
+}
+
+.tool-card:focus-visible {
+  border-color: var(--tb-primary);
+  box-shadow: var(--tb-shadow-md);
 }
 
 .tool-card--soon {

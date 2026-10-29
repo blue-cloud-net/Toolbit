@@ -11,6 +11,7 @@ import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES, type PermBit, type PermClass } from '@/tools/system/chmod-calc/example'
 
@@ -129,6 +130,13 @@ function run(): void {
     other: other.value,
   })
 }
+
+/** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
+useAutoRun({
+  slug: 'chmod-calc',
+  run,
+  watch: [mode, user, group, other],
+})
 
 /** 重置表单与结果。 */
 function reset(): void {

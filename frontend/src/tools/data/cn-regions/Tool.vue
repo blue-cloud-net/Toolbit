@@ -11,6 +11,7 @@ import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/data/cn-regions/example'
 
@@ -81,6 +82,14 @@ const faq = computed<FaqItem[]>(() => tm('tools.cn-regions.faq') as FaqItem[])
 function run(): void {
   void execute({ query: query.value, province: province.value })
 }
+
+/** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
+useAutoRun({
+  slug: 'cn-regions',
+  run,
+  watch: [query, province],
+  enabled: () => query.value !== '' || province.value !== '',
+})
 
 /** 重置表单与结果。 */
 function reset(): void {

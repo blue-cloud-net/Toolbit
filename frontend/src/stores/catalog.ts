@@ -109,6 +109,7 @@ export const useCatalogStore = defineStore('catalog', () => {
     implementedTools,
     groupedTools,
     load,
+    applyCatalog,
     getTool,
     getToolsByCategory,
   }

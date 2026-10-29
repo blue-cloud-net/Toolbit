@@ -12,6 +12,7 @@ import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/formatting/html-format/example'
 
@@ -43,8 +44,22 @@ const input = ref('')
 const action = ref<Action>('format')
 const indent = ref(2)
 
-const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<HtmlFormatResult>({
+const {
+  state,
+  data,
+  meta,
+  error,
+  run: execute,
+  reset: resetRun,
+  bindInput,
+  useAsInput,
+} = useToolRun<HtmlFormatResult>({
   slug: 'html-format',
+})
+
+/** 结果区的「作为新输入」：把结果回填到主输入框（仅内存，不写存储）。 */
+bindInput((text) => {
+  input.value = text
 })
 
 const resultText = computed(() => data.value?.output ?? '')
@@ -63,6 +78,14 @@ function run(): void {
     indent: indent.value,
   })
 }
+
+/** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
+useAutoRun({
+  slug: 'html-format',
+  run,
+  watch: [input, action, indent],
+  enabled: () => input.value !== '',
+})
 
 /** 重置表单与结果。 */
 function reset(): void {
@@ -160,6 +183,7 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.html-format.results.output')"
+        :use-as-input="useAsInput"
         @retry="run"
       >
         <template

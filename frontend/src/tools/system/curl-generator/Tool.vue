@@ -12,6 +12,7 @@ import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import {
   EXAMPLES,
@@ -127,6 +128,14 @@ function run(): void {
     shell: shell.value,
   })
 }
+
+/** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
+useAutoRun({
+  slug: 'curl-generator',
+  run,
+  watch: [method, url, headers, body, bodyFormat, auth, username, password, token, insecure, followRedirects, timeoutValue, shell],
+  enabled: () => url.value !== '' || body.value !== '',
+})
 
 /** 重置表单与结果。 */
 function reset(): void {

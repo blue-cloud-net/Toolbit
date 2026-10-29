@@ -43,7 +43,14 @@ const {
   error,
   run: execute,
   reset: resetRun,
+  bindInput,
+  useAsInput,
 } = useToolRun<JWKXMLConvertResult>({ slug: 'jwk-xml-convert' })
+
+/** 结果区的「作为新输入」：把结果回填到主输入框（仅内存，不写存储）。 */
+bindInput((text) => {
+  inputData.value = text
+})
 
 const running = computed(() => state.value === 'loading')
 
@@ -176,6 +183,7 @@ function fillExample(): void {
         :meta="meta"
         :error="error"
         :title="t('tools.jwk-xml-convert.results.output')"
+        :use-as-input="useAsInput"
         @retry="run"
       />
     </template>

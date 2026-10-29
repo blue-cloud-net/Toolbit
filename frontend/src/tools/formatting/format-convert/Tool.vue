@@ -12,6 +12,7 @@ import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/formatting/format-convert/example'
 
@@ -40,8 +41,22 @@ const to = ref<DataFormat>('yaml')
 const indent = ref(2)
 const pretty = ref(true)
 
-const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<FormatConvertResult>({
+const {
+  state,
+  data,
+  meta,
+  error,
+  run: execute,
+  reset: resetRun,
+  bindInput,
+  useAsInput,
+} = useToolRun<FormatConvertResult>({
   slug: 'format-convert',
+})
+
+/** 结果区的「作为新输入」：把结果回填到主输入框（仅内存，不写存储）。 */
+bindInput((text) => {
+  input.value = text
 })
 
 const resultText = computed(() => data.value?.output ?? '')
@@ -65,6 +80,14 @@ function run(): void {
     pretty: pretty.value,
   })
 }
+
+/** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
+useAutoRun({
+  slug: 'format-convert',
+  run,
+  watch: [input, from, to, indent, pretty],
+  enabled: () => input.value !== '',
+})
 
 /** 重置表单与结果。 */
 function reset(): void {
@@ -198,6 +221,7 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.format-convert.results.output')"
+        :use-as-input="useAsInput"
         @retry="run"
       >
         <template
