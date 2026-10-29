@@ -1,0 +1,43 @@
+{
+  "name": "Certificate Chain Fetcher",
+  "description": "Fetch the certificate chain a host actually sends, with a chain summary and verification result.",
+  "category": "Certificates",
+  "actions": {
+    "fetch": "Fetch"
+  },
+  "fields": {
+    "host": "Host",
+    "port": "Port",
+    "serverName": "SNI",
+    "timeoutMs": "Timeout (ms)"
+  },
+  "options": {},
+  "results": {
+    "output": "Chain PEM",
+    "summary": "Chain summary"
+  },
+  "examples": [
+    {
+      "label": "Fetch a public chain",
+      "value": "example.com:443"
+    }
+  ],
+  "hints": {
+    "port": "Only fixed ports are allowed (43 / 53 / 80 / 443 / 853).",
+    "private": "Private, loopback and link-local addresses are always blocked."
+  },
+  "faq": [
+    {
+      "q": "Is this the chain the server really sends?",
+      "a": "Yes. Only certificates presented during the TLS handshake are returned; nothing is added."
+    },
+    {
+      "q": "What if the chain is incomplete?",
+      "a": "Use the chain repair tool to append the missing intermediates."
+    },
+    {
+      "q": "Are fetched certificates stored?",
+      "a": "No. Responses are discarded immediately and never written to storage or logs."
+    }
+  ]
+}

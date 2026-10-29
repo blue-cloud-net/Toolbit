@@ -1,0 +1,49 @@
+{
+  "name": "Domain Verifier",
+  "description": "Prove domain ownership through a DNS TXT / CNAME record or a file hosted on the site.",
+  "category": "Certificates",
+  "actions": {
+    "verify": "Verify"
+  },
+  "fields": {
+    "type": "Method",
+    "domain": "Domain",
+    "expected": "Expected value",
+    "filePath": "File path",
+    "resolvers": "DNS servers",
+    "timeoutMs": "Timeout (ms)"
+  },
+  "options": {
+    "dnsTxt": "DNS TXT",
+    "dnsCname": "DNS CNAME",
+    "httpFile": "Site file"
+  },
+  "results": {
+    "output": "Result",
+    "perResolver": "Per-resolver results"
+  },
+  "examples": [
+    {
+      "label": "Verify a TXT record",
+      "value": "example.com / dns-txt"
+    }
+  ],
+  "hints": {
+    "httpFile": "The site file is fetched from `https://<domain>/<path>` and must return 200 with an exact match.",
+    "resolvers": "Leave empty to use the system resolvers; each resolver is compared separately."
+  },
+  "faq": [
+    {
+      "q": "Does `dns-txt` support several resolvers?",
+      "a": "Yes. Each resolver reports its own outcome and any match makes the overall result a match."
+    },
+    {
+      "q": "Why must the site file match exactly?",
+      "a": "Exact matching avoids false positives; leading and trailing whitespace is ignored."
+    },
+    {
+      "q": "Can I verify an internal domain?",
+      "a": "DNS methods can; `http-file` needs egress, so private addresses are blocked."
+    }
+  ]
+}

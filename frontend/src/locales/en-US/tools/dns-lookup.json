@@ -1,0 +1,44 @@
+{
+  "name": "DNS Lookup",
+  "description": "Look up records and compare responses and latency across custom DNS servers.",
+  "category": "Network",
+  "actions": {
+    "lookup": "Look up"
+  },
+  "fields": {
+    "host": "Domain",
+    "type": "Record type",
+    "proto": "Protocol",
+    "addr": "Server",
+    "timeoutMs": "Timeout (ms)"
+  },
+  "options": {},
+  "results": {
+    "output": "Answers",
+    "perServer": "Per-server results"
+  },
+  "examples": [
+    {
+      "label": "Look up an A record",
+      "value": "example.com / A"
+    }
+  ],
+  "hints": {
+    "servers": "Leave empty to use the system resolvers; when set, only those servers are queried.",
+    "doh": "DoH requires a full `https://` URL."
+  },
+  "faq": [
+    {
+      "q": "Why did one server fail?",
+      "a": "A single failure does not fail the request; the error is recorded on that server's `error` field."
+    },
+    {
+      "q": "Are TTLs included?",
+      "a": "Yes. Every answer carries its TTL in seconds."
+    },
+    {
+      "q": "May a custom server be an internal address?",
+      "a": "No. Custom servers go through the same egress guard, so private addresses are blocked."
+    }
+  ]
+}

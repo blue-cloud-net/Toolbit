@@ -1,0 +1,43 @@
+{
+  "name": "WebSocket 测试",
+  "description": "在浏览器内直连 WebSocket 服务，展示握手耗时、子协议与收发内容。",
+  "category": "网络",
+  "actions": {
+    "connect": "连接",
+    "disconnect": "断开"
+  },
+  "fields": {
+    "url": "地址",
+    "protocols": "子协议",
+    "message": "发送内容"
+  },
+  "options": {},
+  "results": {
+    "output": "连接结果",
+    "log": "收发日志"
+  },
+  "examples": [
+    {
+      "label": "公共回显服务",
+      "value": "wss://echo.websocket.org"
+    }
+  ],
+  "hints": {
+    "headers": "浏览器**无法**自定义请求头、**无法**使用自定义 TLS 证书、**无法**指定源端口。",
+    "origin": "跨域连接遵循浏览器同源策略，不受本站服务端配置影响。"
+  },
+  "faq": [
+    {
+      "q": "为什么请求不经过后端？",
+      "a": "本工具用浏览器原生 `WebSocket` 直连目标，服务端不参与握手。"
+    },
+    {
+      "q": "连接会被计入统计吗？",
+      "a": "不会记录连接内容，只统计工具被打开的次数。"
+    },
+    {
+      "q": "能测 `ws://` 吗？",
+      "a": "本站是 HTTPS 时浏览器会拦截 `ws://` 混合内容，请用 `wss://`。"
+    }
+  ]
+}

@@ -707,28 +707,34 @@ ASN.1 结构树可视化。
 
 从目标主机获取证书链（需出网）。
 
-### 请求（multipart 或 JSON）
+### 请求
+
+JSON：`POST /api/v1/tools/cert-chain-fetch`。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `host` | string | 是 | 目标主机 |
-| `port` | number | 否 | 默认 443 |
-| `serverName` | string | 否 | SNI |
-| `timeoutMs` | int | 否 | 超时，默认 15000 |
+| `port` | number | 否 | 默认 `443` |
+| `serverName` | string | 否 | SNI，缺省用 `host` |
+| `timeoutMs` | int | 否 | 超时，默认 `30000` |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `chainPem` | string | 完整链 PEM |
-| `chain` | array | `[{ pem, info }]` |
-| `chainSummary` | object | 链的摘要信息 |
+| `host` / `port` | string / number | 回显目标 |
+| `chainPem` | string | 完整链 PEM（叶证书在前） |
+| `chain` | array | `[{ pem, info, trusted }]`，`info` 与 `cert-parse` 一致 |
+| `chainSummary` | object | `{ count, subject, issuer, notBefore, notAfter, selfSigned, chainValid, chainErrors[], verified }` |
 
 ### 错误
 
-`SSRF_BLOCKED`、`DNS_ERROR`、`TLS_ERROR`、`HOST_UNREACHABLE`、`UPSTREAM_TIMEOUT`、`NETWORK_DISABLED`。
+`SSRF_BLOCKED`、`DNS_ERROR`、`TLS_ERROR`、`HOST_UNREACHABLE`、`UPSTREAM_TIMEOUT`、
+`NETWORK_DISABLED`、`INVALID_DOMAIN`、`INVALID_FIELD`。
 
 > 私网 / 环回 / 链路本地地址**一律**被拦截（`SSRF_BLOCKED`）。
+> 端口只允许固定白名单（43 / 53 / 80 / 443 / 853），其它端口同样返回 `SSRF_BLOCKED`。
+> 只返回服务端在 TLS 握手中**实际发送**的证书，工具**不**补链。
 
 ---
 
@@ -736,7 +742,11 @@ ASN.1 结构树可视化。
 
 查询证书透明度日志（需出网）。
 
-### 请求
+> **本版未实现**：catalog 保留登记，但后端不注册该 slug，
+> 调用返回 `501` + `NOT_IMPLEMENTED`。原因与后续计划见
+> [../../roadmap.md](../../roadmap.md) 的已知限制。
+
+### 请求（约定的未来契约）
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
@@ -744,7 +754,7 @@ ASN.1 结构树可视化。
 | `matchType` | string | 否 | `exact`（默认）\| `contains` \| `wildcard` |
 | `limit` | int | 否 | 返回条数，默认 20 |
 
-### 响应
+### 响应（约定的未来契约）
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
@@ -752,7 +762,7 @@ ASN.1 结构树可视化。
 
 ### 错误
 
-`UPSTREAM_ERROR`、`UPSTREAM_TIMEOUT`、`NETWORK_DISABLED`、`INVALID_DOMAIN`。
+`NOT_IMPLEMENTED`。
 
 ---
 
@@ -768,21 +778,28 @@ ASN.1 结构树可视化。
 | `domain` | string | 是 | 域名 |
 | `expected` | string | 是 | 期望值 |
 | `filePath` | string | `http-file` 时是 | 文件路径（相对站点根） |
-| `resolvers` | array | 否 | 自定义 DNS 服务器 |
-| `timeoutMs` | int | 否 | 超时 |
+| `resolvers` | array | 否 | 自定义 DNS 服务器，形如 `1.1.1.1:53`，最多 8 个 |
+| `timeoutMs` | int | 否 | 超时，默认 `5000` |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
+| `type` / `domain` / `expected` | string | 回显请求 |
 | `matched` | bool | 是否匹配 |
-| `perResolver` | array | 每个解析器的结果 |
+| `perResolver` | array | `[{ resolver, values[], matched, error }]`（DNS 方式） |
 | `httpStatus` | number | HTTP 方式的状态码 |
-| `bodyPreview` | string | 响应体预览（截断） |
+| `bodyPreview` | string | 响应体预览（最多 512 字节） |
 
 ### 错误
 
-`INVALID_DOMAIN`、`DNS_ERROR`、`UPSTREAM_ERROR`、`UPSTREAM_TIMEOUT`、`NETWORK_DISABLED`。
+`INVALID_DOMAIN`、`INVALID_FIELD`、`MISSING_FIELD`、`DNS_ERROR`、`UPSTREAM_ERROR`、
+`UPSTREAM_TIMEOUT`、`SSRF_BLOCKED`、`NETWORK_DISABLED`。
+
+> DNS 方式逐台解析器给结论，**任一匹配即总体匹配**；单台失败不返回错误，
+> 记在对应 `perResolver[].error` 里。
+> HTTP 方式固定访问 `https://<域名>/<路径>`，只有 `200` 且内容（忽略首尾空白）完全一致才算匹配。
+> 自定义解析器同样要过出网防护，私网地址会被拦截。
 
 ---
 

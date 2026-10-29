@@ -1,0 +1,48 @@
+{
+  "name": "SSL 证书检测",
+  "description": "对目标主机做 TLS 握手，流式展示各阶段进度与协商结果、证书链与验证结论。",
+  "category": "网络",
+  "actions": {
+    "probe": "开始检测"
+  },
+  "fields": {
+    "host": "主机",
+    "port": "端口",
+    "sni": "SNI",
+    "depth": "链深度上限",
+    "versions": "协议版本",
+    "ciphers": "密码套件",
+    "timeoutMs": "超时（毫秒）"
+  },
+  "options": {},
+  "results": {
+    "output": "检测结果",
+    "progress": "探测进度",
+    "chain": "证书链"
+  },
+  "examples": [
+    {
+      "label": "检测公共站点",
+      "value": "example.com:443"
+    }
+  ],
+  "hints": {
+    "sni": "留空时用主机名做 SNI。",
+    "versions": "留空表示使用默认版本范围（TLS 1.2 起）。",
+    "ciphers": "TLS 1.3 的密码套件无法通过配置裁剪。"
+  },
+  "faq": [
+    {
+      "q": "为什么显示「验证未完成」？",
+      "a": "本地信任库不可用时只能判断链内是否自洽，此时 `verified` 为 false 并给出警告。"
+    },
+    {
+      "q": "目标是内网地址会怎样？",
+      "a": "出网防护会拦截私有、环回、链路本地地址，返回 `SSRF_BLOCKED`。"
+    },
+    {
+      "q": "同一时间能开多条连接吗？",
+      "a": "不能。同一来源 IP 同时只允许 1 条流式连接。"
+    }
+  ]
+}

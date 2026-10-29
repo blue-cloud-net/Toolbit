@@ -1,0 +1,46 @@
+{
+  "name": "CIDR Calculator",
+  "description": "Compute network address, mask, usable hosts and subnets, or convert an address range back into CIDR blocks.",
+  "category": "Network",
+  "actions": {
+    "calculate": "Calculate"
+  },
+  "fields": {
+    "mode": "Input mode",
+    "cidr": "CIDR block",
+    "start": "Start address",
+    "end": "End address",
+    "split": "Split prefix"
+  },
+  "options": {
+    "modeCidr": "CIDR block",
+    "modeRange": "Address range"
+  },
+  "results": {
+    "output": "Result"
+  },
+  "examples": [
+    {
+      "label": "IPv4 /24 block",
+      "value": "192.168.1.0/24"
+    }
+  ],
+  "hints": {
+    "split": "The split prefix must not be shorter than the original one; at most 256 subnets per call.",
+    "hostCount": "For IPv4 a `/31` counts 2 usable hosts and a `/32` counts 1; IPv6 has no unusable addresses."
+  },
+  "faq": [
+    {
+      "q": "Why is `hostCount` a string?",
+      "a": "IPv6 address counts can exceed 2⁶⁴, so only a decimal string keeps them exact."
+    },
+    {
+      "q": "Why does a range produce several CIDRs?",
+      "a": "An arbitrary range usually cannot be a single CIDR, so the tool returns the minimal set."
+    },
+    {
+      "q": "Does IPv6 have a broadcast address?",
+      "a": "No. The `broadcast` field is empty for IPv6."
+    }
+  ]
+}

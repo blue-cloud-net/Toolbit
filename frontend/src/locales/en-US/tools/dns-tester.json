@@ -1,0 +1,46 @@
+{
+  "name": "DNS Record Tester",
+  "description": "Check domain registration data, DNSSEC deployment and reverse DNS in one place.",
+  "category": "Network",
+  "actions": {
+    "test": "Run test"
+  },
+  "fields": {
+    "action": "Check",
+    "domain": "Domain",
+    "ip": "IP address",
+    "timeoutMs": "Timeout (ms)"
+  },
+  "options": {
+    "whois": "Registration (whois / RDAP)",
+    "dnssec": "DNSSEC",
+    "ptr": "Reverse DNS"
+  },
+  "results": {
+    "output": "Result"
+  },
+  "examples": [
+    {
+      "label": "Check DNSSEC",
+      "value": "example.com / dnssec"
+    }
+  ],
+  "hints": {
+    "whois": "RDAP over HTTPS is tried first, falling back to the whois protocol (TCP 43).",
+    "ptr": "Reverse lookup also performs a forward lookup to expose mismatches."
+  },
+  "faq": [
+    {
+      "q": "Why are some whois fields empty?",
+      "a": "Some registries restrict queries or redact fields; missing values are returned as empty strings."
+    },
+    {
+      "q": "What does `dnssec` check?",
+      "a": "It walks DS records and queries DNSKEY to determine whether a chain of trust anchor exists."
+    },
+    {
+      "q": "What does a PTR mismatch mean?",
+      "a": "The reverse record points at a name that does not resolve back to the same address, which is a configuration gap."
+    }
+  ]
+}

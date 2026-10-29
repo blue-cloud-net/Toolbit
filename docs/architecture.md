@@ -1,6 +1,6 @@
 # 架构总览
 
-> 状态：Draft ｜ 适用版本：v0.5.0 ｜ 最后更新：2026-10-29
+> 状态：Stable ｜ 适用版本：v0.7.0 ｜ 最后更新：2026-10-29
 
 本文描述蓝云工具箱的整体结构、运行时行为与关键决策。**先读目标与非目标，再读分层，最后看决策清单。**
 
@@ -45,7 +45,8 @@ flowchart LR
 
 - 进程同时承担 API 与静态资源两个角色，监听 `30234`。
 - Tongsuo 以 cgo 方式链接，运行时通过 ELF `rpath` 定位 `/opt/tongsuo/lib64`。
-- 出网仅限 5 个在线工具，全部经过 `backend/internal/netguard`。
+- 出网仅限 6 个在线工具（`ssl-check` 走 WebSocket 流式端点），
+  全部经过 `backend/internal/netguard`。
 
 ---
 
@@ -545,6 +546,11 @@ erDiagram
 | 读证书只能拿到扩展 DER（上游缺口 I-19） | `templateCert` 无法拷贝扩展 | 语义收窄为「复用公钥与有效期」，契约与文档同时写明 |
 | `CRLBuilder.Revoke` 只吃证书（上游缺口 I-20） | 无法按序列号吊销 | `revoked[]` 只接受证书，契约无 `serial` 选项 |
 | `PKCS12_newpass` 无法处理外部容器（上游缺口 I-22） | `pfx-change-password` 只能改本库打包的容器 | 契约测试用本库打包的容器；文档与前端提示写明限制 |
+| `ct-search` 未接入 CT 日志 | 该工具返回 `NOT_IMPLEMENTED` | 公开 CT 查询服务无稳定 SLA，推迟到后续版本 |
+| TLS 客户端用 Go 的 `crypto/tls` | 与「密码学一律走铜锁」的口径存在张力 | 仅限**出网探测**；链验证仍走 `pkisvc.VerifyChain`，条款见 `standards/03-crypto.md` |
+| 本地信任库可能缺失 | `ssl-check` 只能判定链内自洽 | 响应里区分 `chainValid` / `verified` / `implicitTrust` |
+| 自定义 DNS 服务器可指定 DoH URL | 服务器地址由用户输入 | 同样经 `netguard`，私网地址与非白名单端口被拦截 |
+| 系统解析器（`/etc/resolv.conf`）不做私网校验 | 理论上可解析内网名字 | 属运维配置而非用户输入；用户自定义服务器仍受校验 |
 | cgo 不可中断 | 超时后工作仍占用 CPU | 重操作并发 ≤ 2；记录 orphan 日志 |
 | `js-format` / `sql-format` 依赖内嵌 JS bundle | 镜像增大，供应链面增加 | 固定版本 + 校验和；预算内 |
 | 单进程 | 无水平扩展 | v1 不需要 |

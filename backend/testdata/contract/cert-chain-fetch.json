@@ -1,0 +1,47 @@
+{
+  "slug": "cert-chain-fetch",
+  "description": "证书链获取的契约测试数据。真实抓链需要出网，因此这里覆盖「被出网策略拦截」与参数校验两条确定性路径。",
+  "cases": [
+    {
+      "name": "回环目标被出网策略拦截",
+      "request": {
+        "host": "127.0.0.1"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "SSRF_BLOCKED"
+      }
+    },
+    {
+      "name": "主机名带端口",
+      "request": {
+        "host": "example.com:443"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_DOMAIN"
+      }
+    },
+    {
+      "name": "缺少主机名",
+      "request": {
+        "port": 443
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "端口不在白名单",
+      "request": {
+        "host": "example.com",
+        "port": 8443
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "SSRF_BLOCKED"
+      }
+    }
+  ]
+}

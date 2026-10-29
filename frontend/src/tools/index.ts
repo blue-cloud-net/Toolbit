@@ -49,6 +49,14 @@ export const toolRegistry: Record<string, ToolLoader> = {
   'p7b-pack': () => import('./certificates/p7b-pack/index'),
   'p7b-extract': () => import('./certificates/p7b-extract/index'),
   'caa-gen': () => import('./certificates/caa-gen/index'),
+  'cert-chain-fetch': () => import('./certificates/cert-chain-fetch/index'),
+  'ct-search': () => import('./certificates/ct-search/index'),
+  'domain-verify': () => import('./certificates/domain-verify/index'),
+  'cidr-calc': () => import('./network/cidr-calc/index'),
+  'ssl-check': () => import('./network/ssl-check/index'),
+  'dns-lookup': () => import('./network/dns-lookup/index'),
+  'dns-tester': () => import('./network/dns-tester/index'),
+  'websocket-test': () => import('./network/websocket-test/index'),
 }
 
 /** 已实现的工具 slug 集合。 */

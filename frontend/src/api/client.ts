@@ -184,6 +184,20 @@ async function request<T>(
 }
 
 /** 拉取工具目录。 */
+/**
+ * 流式工具的 WebSocket 端点地址。
+ *
+ * 只有流式工具（当前为 `ssl-check`）使用；与 REST 共用同一个 API 基址，
+ * 协议按当前页面是否 HTTPS 自动切换 `ws` / `wss`。
+ */
+export function streamURL(slug: string): string {
+  const origin = window.location.origin
+  const base = API_BASE === '' ? origin : new URL(API_BASE, origin).toString().replace(/\/+$/, '')
+  const url = new URL(`${base}/api/v1/tools/${encodeURIComponent(slug)}/stream`, origin)
+  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+  return url.toString()
+}
+
 export function fetchCatalog(options: RequestOptions = {}): Promise<ToolCallResult<CatalogResponse>> {
   return request<CatalogResponse>('/api/v1/tools', { method: 'GET' }, options)
 }

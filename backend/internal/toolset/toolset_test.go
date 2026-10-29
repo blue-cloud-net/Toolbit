@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/blue-cloud-net/Toolbit/backend/internal/catalog"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/netguard"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
 )
 
@@ -13,7 +14,7 @@ import (
 // 取决于注册顺序，属于**静默**的缺陷，必须在编译期就被拦住。
 func TestDefinitionsNoDuplicate(t *testing.T) {
 	seen := make(map[string]bool)
-	for _, d := range Definitions() {
+	for _, d := range Definitions(testGuard(t)) {
 		if d.Slug == "" {
 			t.Fatal("存在空 slug 的工具定义")
 		}
@@ -34,9 +35,15 @@ func TestDefinitionsInCatalog(t *testing.T) {
 		t.Fatalf("加载目录失败：%v", err)
 	}
 
-	registry := tools.NewRegistry(Definitions())
+	registry := tools.NewRegistry(Definitions(testGuard(t)))
 	_, orphan := tools.CrossCheck(cat, registry)
 	if len(orphan) > 0 {
 		t.Errorf("存在未登记的工具实现：%v", orphan)
 	}
+}
+
+// testGuard 构造一个允许出网的守卫（装配层测试不出网）。
+func testGuard(t *testing.T) *netguard.Guard {
+	t.Helper()
+	return netguard.New(netguard.Config{Enabled: true})
 }

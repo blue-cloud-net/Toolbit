@@ -1,6 +1,6 @@
 # 密码学与资源生命周期规范
 
-> 状态：Draft ｜ 适用版本：v0.5.0 ｜ 最后更新：2026-10-29
+> 状态：Stable ｜ 适用版本：v0.7.0 ｜ 最后更新：2026-10-29
 
 适用包：`backend/internal/cryptosvc`（以及所有间接使用 Tongsuo 的代码）。
 
@@ -198,6 +198,10 @@ SM2 密文的 `C1C3C2` / `C1C2C3` 顺序与 `04` 前缀在各实现间不统一�
 - **必须**：两个密码学层的句柄类型**互不通用**；跨层只传 PEM / DER 等**表示层**数据。
 - **禁止**：在 tools 层直接 import `tongsuo-go`（由 `.golangci.yml` 的 `depguard` 拦截）。
 - **禁止**：用 Go 标准库 `crypto/*` 在 Toolbit 内实现或拼装密码学运算。
+- **例外（v0.7.0 起）**：`crypto/tls` **可以作为 TLS 客户端**使用 —— 它是协议栈调用，
+  不是自行拼装原语。允许的用途仅限**出网探测**（`ssl-check`、`cert-chain-fetch`、
+  DoT / DoH）与 `netguard` 建连；Toolbit **不**把它的输出当作自己的密码学结果，
+  也**不**用它替代 `cryptosvc`。证书链的验证仍走 `pkisvc.VerifyChain`。
 
 ### 8.1 DN 构造
 

@@ -1,0 +1,48 @@
+{
+  "slug": "dns-tester",
+  "description": "DNS 综合检测的契约测试数据。whois 走 RDAP / whois 43 端口，dnssec 与 ptr 走系统解析器，均需真实外网，因此本文件只覆盖可离线判定的校验路径。",
+  "cases": [
+    {
+      "name": "动作不支持",
+      "request": {
+        "action": "bogus",
+        "domain": "example.com"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "dnssec 缺少域名",
+      "request": {
+        "action": "dnssec"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "ptr 缺少地址",
+      "request": {
+        "action": "ptr"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "地址格式非法",
+      "request": {
+        "action": "ptr",
+        "ip": "not-an-ip"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

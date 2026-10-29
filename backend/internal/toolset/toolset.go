@@ -9,10 +9,12 @@
 package toolset
 
 import (
+	"github.com/blue-cloud-net/Toolbit/backend/internal/netguard"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/crypto"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/encoding"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/keys"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/network"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/pki"
 )
 
@@ -20,11 +22,14 @@ import (
 //
 // 顺序稳定：先按分类，再按分类内 `Definitions()` 的登记顺序。
 // 该顺序**不**影响分发（分发按 slug 查表），但便于日志与测试比对。
-func Definitions() []tools.Definition {
-	defs := make([]tools.Definition, 0, 32)
+//
+// guard 是出网守卫；为 nil 时全部出网工具返回 NETWORK_DISABLED。
+func Definitions(guard *netguard.Guard) []tools.Definition {
+	defs := make([]tools.Definition, 0, 48)
 	defs = append(defs, encoding.Definitions()...)
 	defs = append(defs, crypto.Definitions()...)
 	defs = append(defs, keys.Definitions()...)
 	defs = append(defs, pki.Definitions()...)
+	defs = append(defs, network.Definitions(guard)...)
 	return defs
 }

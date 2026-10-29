@@ -1,0 +1,44 @@
+{
+  "name": "证书透明度查询",
+  "description": "查询证书透明度日志中为该域名签发的证书。当前版本尚未开放。",
+  "category": "证书",
+  "actions": {
+    "search": "查询"
+  },
+  "fields": {
+    "domain": "域名",
+    "matchType": "匹配方式",
+    "limit": "返回条数"
+  },
+  "options": {
+    "exact": "精确",
+    "contains": "包含",
+    "wildcard": "通配"
+  },
+  "results": {
+    "output": "证书列表"
+  },
+  "examples": [
+    {
+      "label": "查询 example.com",
+      "value": "example.com"
+    }
+  ],
+  "hints": {
+    "unavailable": "本版未接入证书透明度日志，调用会返回 `NOT_IMPLEMENTED`。"
+  },
+  "faq": [
+    {
+      "q": "为什么还不能用？",
+      "a": "公开的透明度日志查询服务没有稳定 SLA，本版先不接入，后续版本再评估。"
+    },
+    {
+      "q": "有替代办法吗？",
+      "a": "可以先用「证书链获取」查看目标主机当前实际使用的证书。"
+    },
+    {
+      "q": "以后会加回来吗？",
+      "a": "会。缺口已登记在路线图的已知限制里。"
+    }
+  ]
+}

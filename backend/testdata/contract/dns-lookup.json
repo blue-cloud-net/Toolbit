@@ -1,0 +1,64 @@
+{
+  "slug": "dns-lookup",
+  "description": "DNS 查询的契约测试数据。出网用例指向回环地址，由 netguard 拦截，结果写在 perServer.error 中——这样用例无需真实外网即可断言。",
+  "cases": [
+    {
+      "name": "回环服务器被出网策略拦截（单服务器级错误）",
+      "request": {
+        "host": "example.com",
+        "type": "A",
+        "servers": [
+          {
+            "proto": "udp",
+            "addr": "127.0.0.1:53"
+          }
+        ]
+      },
+      "expect": {
+        "code": 200,
+        "dataContains": {
+          "host": "example.com",
+          "type": "A"
+        }
+      }
+    },
+    {
+      "name": "记录类型不支持",
+      "request": {
+        "host": "example.com",
+        "type": "BOGUS"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "缺少记录类型",
+      "request": {
+        "host": "example.com"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "服务器协议不支持",
+      "request": {
+        "host": "example.com",
+        "type": "A",
+        "servers": [
+          {
+            "proto": "gopher",
+            "addr": "1.1.1.1:53"
+          }
+        ]
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

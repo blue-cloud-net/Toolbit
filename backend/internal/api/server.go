@@ -14,6 +14,7 @@ import (
 	"github.com/blue-cloud-net/Toolbit/backend/internal/catalog"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/config"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/httpx"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/netguard"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/stats"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/toolerr"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
@@ -25,11 +26,13 @@ type Server struct {
 	logger  *slog.Logger
 	catalog *catalog.Catalog
 	tools   *tools.Registry
+	network *netguard.Guard
 	stats   *stats.Store
 	writer  *stats.Writer
 	web     http.Handler
 
 	limiter *rateLimiter
+	streams *streamLimiter
 }
 
 // Options 是 Server 的构造参数。
@@ -42,6 +45,8 @@ type Options struct {
 	Catalog *catalog.Catalog
 	// Tools 是工具实现注册表。
 	Tools *tools.Registry
+	// Network 是出网守卫；可为 nil（出网工具全部返回 NETWORK_DISABLED）。
+	Network *netguard.Guard
 	// Stats 是统计库；可为 nil（统计关闭）。
 	Stats *stats.Store
 	// StatsWriter 是统计写入器；可为 nil（统计关闭）。
@@ -61,10 +66,12 @@ func New(opts Options) *Server {
 		logger:  logger,
 		catalog: opts.Catalog,
 		tools:   opts.Tools,
+		network: opts.Network,
 		stats:   opts.Stats,
 		writer:  opts.StatsWriter,
 		web:     opts.Web,
 		limiter: newRateLimiter(),
+		streams: newStreamLimiter(),
 	}
 }
 
@@ -99,6 +106,7 @@ func (s *Server) Handler() http.Handler {
 	api.GET("/v1/meta", s.handleMeta)
 	api.GET("/v1/tools", s.handleCatalog)
 	api.Any("/v1/tools/:slug", s.handleTool)
+	api.GET("/v1/tools/:slug/stream", s.handleToolStream)
 
 	// 探针端点不启用限流，也不参与统计。
 	r.GET("/healthz", s.handleHealthz)

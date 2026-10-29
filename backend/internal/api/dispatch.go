@@ -48,6 +48,20 @@ func (s *Server) handleTool(c *gin.Context) {
 		return
 	}
 
+	// 1b. 按传输方式分流：`client` 没有后端端点；`websocket` 只有 /stream。
+	switch tool.Transport {
+	case catalog.TransportClient:
+		// 纯前端工具：后端不存在该端点，按「不存在」处理。
+		s.fail(c, start, toolerr.Newf(toolerr.CodeToolNotFound, map[string]any{"slug": slug}))
+		return
+	case catalog.TransportWebSocket:
+		s.fail(c, start, toolerr.Newf(toolerr.CodeMethodNotAllowed, map[string]any{
+			"method":  c.Request.Method,
+			"allowed": http.MethodGet,
+		}))
+		return
+	}
+
 	// 2. 本版是否已实现该工具。
 	def, ok := s.tools.Lookup(slug)
 	if !ok {

@@ -1,0 +1,49 @@
+{
+  "name": "域名验证",
+  "description": "通过 DNS TXT / CNAME 记录或站点文件校验域名所有权。",
+  "category": "证书",
+  "actions": {
+    "verify": "验证"
+  },
+  "fields": {
+    "type": "验证方式",
+    "domain": "域名",
+    "expected": "期望值",
+    "filePath": "文件路径",
+    "resolvers": "DNS 服务器",
+    "timeoutMs": "超时（毫秒）"
+  },
+  "options": {
+    "dnsTxt": "DNS TXT",
+    "dnsCname": "DNS CNAME",
+    "httpFile": "站点文件"
+  },
+  "results": {
+    "output": "验证结果",
+    "perResolver": "逐解析器结果"
+  },
+  "examples": [
+    {
+      "label": "校验 TXT 记录",
+      "value": "example.com / dns-txt"
+    }
+  ],
+  "hints": {
+    "httpFile": "站点文件走 `https://<域名>/<路径>`，需要 200 且内容完全一致。",
+    "resolvers": "留空使用系统解析器；填写后逐个比对。"
+  },
+  "faq": [
+    {
+      "q": "`dns-txt` 支持多个解析器吗？",
+      "a": "支持。每个解析器单独给结论，任一匹配即总体匹配。"
+    },
+    {
+      "q": "站点文件为什么要完全一致？",
+      "a": "完全一致才能排除误判；首尾空白会被忽略。"
+    },
+    {
+      "q": "能验证内网域名吗？",
+      "a": "DNS 方式可以；`http-file` 因为要出网，私有地址会被拦截。"
+    }
+  ]
+}
