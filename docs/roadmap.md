@@ -69,8 +69,8 @@ RC 是 `1.0.0` 的**预发布标识**，与 `0.x` 是两条独立轨道。
 | `v0.4.0` | 密钥管理 | 6 | 16 | ✅ 已完成 |
 | `v0.5.0` | PKI 解析与链验证 | 8 | 24 | ✅ 已完成 |
 | `v0.6.0` | PKI 生成、吊销与容器 | 12 | 36 | ✅ 已完成 |
-| `v0.7.0` | 网络探测 | 8 | 44 | 待开始 |
-| `v0.8.0` | 通用工具与文档处理 | 26 | 70 | 待开始 |
+| `v0.7.0` | 网络探测 | 7 | 43 | ✅ 已完成（`ct-search` 未实现） |
+| `v0.8.0` | 通用工具与文档处理 | 27 | 70 | 待开始 |
 | `v0.9.0` | **统计体系** | 0 | 70 | 待开始 |
 | `v0.10.0`+ | 质量与硬化（可继续递增） | 0 | 70 | 待开始 |
 | `v1.0.0-rc.N` | 发布候选 | 0 | 70 | 待开始 |
@@ -901,6 +901,9 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 
 ## 10. v0.7.0 —— 网络探测
 
+**状态**：✅ 已完成（2026-10-29）。8 个工具中 **7 个已实现**，`ct-search` 未实现，
+累计 **43** 个可用工具。
+
 **目标**：出网能力就继，SSRF 防护全覆盖。
 
 ### 交付物（8）
@@ -923,6 +926,77 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 - `ssl-check` 四条路径（正常 / 非法输入 / 超时 / 客户端取消）有测试；
 - `TOOLBIT_NETWORK_ENABLED=false` 时全部返回 `NETWORK_DISABLED`；
 - `websocket-test` 确认无后端端点，catalog 为 `transport: client`。
+
+### 10.1 交付结果
+
+| 工具 | 状态 | 传输 | 说明 |
+| --- | --- | --- | --- |
+| `cidr-calc` | ✅ | JSON | 纯计算，含范围反推与拆分 |
+| `ssl-check` | ✅ | WebSocket | 流式进度 + 结果；链验证区分 `chainValid` / `verified` |
+| `dns-lookup` | ✅ | JSON | udp / tcp / dot / doh 四种协议 |
+| `dns-tester` | ✅ | JSON | RDAP 优先、whois 43 端口回退；dnssec / ptr |
+| `websocket-test` | ✅ | client | 浏览器原生直连，**无**后端端点 |
+| `cert-chain-fetch` | ✅ | JSON | 只呈现服务端实发链，不补链 |
+| `domain-verify` | ✅ | JSON | dns-txt / dns-cname / http-file |
+| `ct-search` | ⛔ | JSON | 未实现，返回 `NOT_IMPLEMENTED` |
+
+### 10.2 任务清单
+
+#### Phase N-A —— 出网防护层
+
+| # | 任务 | 落点 | 状态 |
+| --- | --- | --- | --- |
+| N1 | 地址校验：私网 / 回环 / 链路本地 / `0.0.0.0/8` / IPv4-mapped IPv6 | `backend/internal/netguard/netguard.go` | ✅ |
+| N2 | 钉住已校验 IP 建连（防 DNS rebinding） | `backend/internal/netguard/dial.go` | ✅ |
+| N3 | 端口白名单与协议白名单 | `backend/internal/netguard/netguard.go` | ✅ |
+| N4 | 重定向逐跳校验（≤3 跳） | `backend/internal/netguard/dial.go` | ✅ |
+| N5 | `TOOLBIT_NETWORK_ENABLED` / `TOOLBIT_NETWORK_ALLOWLIST` 接入 | `backend/cmd/toolbit/main.go` | ✅ |
+
+#### Phase N-B —— 工具实现
+
+| # | 任务 | 落点 | 状态 |
+| --- | --- | --- | --- |
+| N6 | `cidr-calc`（含范围反推、拆分、IPv6 大数） | `backend/internal/tools/network/cidr.go` | ✅ |
+| N7 | `dns-lookup`（四种协议） | `backend/internal/tools/network/dns.go` | ✅ |
+| N8 | `dns-tester`（RDAP / whois / dnssec / ptr） | `backend/internal/tools/network/{dnstester,whois}.go` | ✅ |
+| N9 | `cert-chain-fetch` + `domain-verify` | `backend/internal/tools/network/{chainfetch,domainverify}.go` | ✅ |
+| N10 | 装配层注入守卫 | `backend/internal/toolset/toolset.go` | ✅ |
+
+#### Phase N-C —— 流式端点
+
+| # | 任务 | 落点 | 状态 |
+| --- | --- | --- | --- |
+| N11 | `ssl-check` TLS 探测服务 | `backend/internal/tools/network/sslcheck.go` | ✅ |
+| N12 | WebSocket 端点与帧协议 | `backend/internal/api/stream.go` | ✅ |
+| N13 | 同 IP 并发上限、首帧 5s、心跳 30s、空闲 60s、关闭码 | `backend/internal/api/stream.go` | ✅ |
+| N14 | 按 `transport` 分流（`client` → 404、`websocket` → 405） | `backend/internal/api/dispatch.go` | ✅ |
+
+#### Phase N-D —— 契约与前端
+
+| # | 任务 | 落点 | 状态 |
+| --- | --- | --- | --- |
+| N15 | catalog 调整（`ssl-check` → websocket、`websocket-test` → client、`cert-chain-fetch` → json） | `backend/catalog/tools.yaml` | ✅ |
+| N16 | 5 份契约数据（出网工具覆盖策略与校验路径） | `backend/testdata/contract/*.json` | ✅ |
+| N17 | 8 个前端工具页与 16 份双语词条 | `frontend/src/tools/{network,certificates}/**` | ✅ |
+| N18 | `streamURL` 与流式页面状态机 | `frontend/src/api/client.ts` `frontend/src/tools/network/ssl-check/` | ✅ |
+
+#### Phase N-E —— 文档
+
+| # | 任务 | 落点 | 状态 |
+| --- | --- | --- | --- |
+| N19 | 网络与出网证书工具的 API 契约 | `docs/api/tools/network.md` `docs/api/tools/certificates.md` | ✅ |
+| N20 | 出网实现口径与 TLS 客户端边界 | `docs/standards/06-security.md` `docs/standards/03-crypto.md` | ✅ |
+| N21 | 架构能力与已知限制 | `docs/architecture.md` | ✅ |
+| N22 | 产品说明校准 | `docs/tools.md` | ✅ |
+
+### 10.3 已知限制
+
+| 限制 | 影响 | 计划 |
+| --- | --- | --- |
+| `ct-search` 未接入 CT 日志 | 该工具不可用（`NOT_IMPLEMENTED`） | 公开 CT 查询服务无稳定 SLA，后续版本评估自建或换源 |
+| TLS 客户端用 Go 的 `crypto/tls` | 与「密码学一律走铜锁」的口径存在张力 | 仅限出网探测；链验证仍走 `pkisvc.VerifyChain`，条款见 `standards/03-crypto.md` |
+| 本地信任库可能缺失 | `ssl-check` 只能判定链内自洽 | 响应区分 `chainValid` / `verified` / `implicitTrust` 并给 `UNTRUSTED_CHAIN` 警告 |
+| 系统解析器不做私网校验 | 理论上可解析内网名字 | 属运维配置而非用户输入；用户自定义服务器仍受校验 |
 
 ---
 
