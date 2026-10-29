@@ -32,6 +32,18 @@ import (
 )
 
 func main() {
+	// 子命令分派：目前只有 healthcheck（容器探针，见 healthcheck.go）。
+	// 其余参数一律视为用法错误，**不**回落到启动服务。
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "healthcheck":
+			os.Exit(runHealthcheck(os.Stdout, os.Stderr, os.LookupEnv))
+		default:
+			fmt.Fprintf(os.Stderr, "未知子命令：%s\n用法：toolbit [healthcheck]\n", os.Args[1])
+			os.Exit(exitUsage)
+		}
+	}
+
 	if err := run(); err != nil {
 		// 启动失败：只打印错误，不打印任何配置值。
 		fmt.Fprintln(os.Stderr, "启动失败：", err)
