@@ -1,0 +1,3332 @@
+{
+  "text-diff": {
+    "category": "text",
+    "name": [
+      "文本差异对比",
+      "Text Diff"
+    ],
+    "description": [
+      "对比两段文本的差异：文本模式按行标注增删，JSON 模式按结构化路径标注。",
+      "Compare two texts: line-level diff for text, structured path diff for JSON."
+    ],
+    "categoryLabel": [
+      "文本",
+      "Text"
+    ],
+    "actions": {
+      "run": [
+        "对比差异",
+        "Compare"
+      ]
+    },
+    "fields": {
+      "mode": [
+        "对比模式",
+        "Diff mode"
+      ],
+      "left": [
+        "基准文本",
+        "Base text"
+      ],
+      "right": [
+        "对比文本",
+        "Compared text"
+      ],
+      "ignoreWhitespace": [
+        "忽略行尾空白",
+        "Ignore trailing whitespace"
+      ]
+    },
+    "options": {
+      "mode": {
+        "text": [
+          "文本",
+          "Text"
+        ],
+        "json": [
+          "JSON",
+          "JSON"
+        ]
+      }
+    },
+    "results": {
+      "identical": [
+        "完全一致",
+        "Identical"
+      ],
+      "added": [
+        "新增行",
+        "Added"
+      ],
+      "removed": [
+        "删除行",
+        "Removed"
+      ],
+      "unchanged": [
+        "未变行",
+        "Unchanged"
+      ],
+      "changes": [
+        "结构化差异",
+        "Structured changes"
+      ],
+      "summary": [
+        "差异摘要",
+        "Diff summary"
+      ]
+    },
+    "hints": {
+      "mode": [
+        "文本模式按行做最长公共子序列对比；JSON 模式按结构化路径（如 $.items[0].name）标注增删改。",
+        "Text mode diffs line by line with LCS; JSON mode annotates changes by structured path such as $.items[0].name."
+      ],
+      "output": [
+        "结果给出新增、删除与未变的行数；JSON 模式下按路径列出每处差异。",
+        "The result reports added, removed and unchanged counts; in JSON mode every change is listed by path."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "为什么两侧都为空会报错？",
+          "Why is an empty side an error?"
+        ],
+        "a": [
+          "差异对比需要两个基准，空输入无法判定差异，因此按缺少字段处理。",
+          "A diff needs both sides; an empty input cannot be compared and is reported as a missing field."
+        ]
+      },
+      {
+        "q": [
+          "JSON 模式如何处理数组长度变化？",
+          "How are array length changes handled in JSON mode?"
+        ],
+        "a": [
+          "按下标逐项比较，多出的元素标记为新增，少掉的标记为删除。",
+          "Items are compared by index: extra elements are marked as inserted and missing ones as deleted."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "对比两段文本",
+          "Compare two texts"
+        ],
+        "value": "{\"left\":{\"data\":\"a\\nb\\nc\\n\"},\"right\":{\"data\":\"a\\nx\\nc\\n\"},\"mode\":\"text\"}"
+      },
+      {
+        "label": [
+          "对比 JSON 结构",
+          "Compare JSON structure"
+        ],
+        "value": "{\"left\":{\"data\":\"{\\\"a\\\":1,\\\"b\\\":{\\\"c\\\":2}}\"},\"right\":{\"data\":\"{\\\"a\\\":1,\\\"b\\\":{\\\"c\\\":3}}\"},\"mode\":\"json\"}"
+      }
+    ]
+  },
+  "regex-validate": {
+    "category": "text",
+    "name": [
+      "正则表达式校验",
+      "Regex Validator"
+    ],
+    "description": [
+      "只校验正则表达式的语法，输出是否合法、错误位置与改进建议。",
+      "Validate the syntax of a regular expression and report errors and suggestions."
+    ],
+    "categoryLabel": [
+      "文本",
+      "Text"
+    ],
+    "actions": {
+      "run": [
+        "校验",
+        "Validate"
+      ]
+    },
+    "fields": {
+      "pattern": [
+        "正则表达式",
+        "Pattern"
+      ],
+      "flags": [
+        "标志",
+        "Flags"
+      ]
+    },
+    "options": {
+      "flags": {
+        "i": [
+          "忽略大小写",
+          "Ignore case"
+        ],
+        "m": [
+          "多行模式",
+          "Multiline"
+        ],
+        "s": [
+          "匹配换行",
+          "Dot matches newline"
+        ],
+        "x": [
+          "忽略空白",
+          "Extended"
+        ]
+      }
+    },
+    "results": {
+      "valid": [
+        "语法合法",
+        "Valid"
+      ],
+      "invalid": [
+        "语法错误",
+        "Invalid"
+      ],
+      "dialect": [
+        "正则方言",
+        "Dialect"
+      ],
+      "error": [
+        "错误信息",
+        "Error message"
+      ],
+      "position": [
+        "错误位置",
+        "Error position"
+      ],
+      "captureGroups": [
+        "捕获组数",
+        "Capture groups"
+      ],
+      "suggestions": [
+        "改进建议",
+        "Suggestions"
+      ]
+    },
+    "hints": {
+      "pattern": [
+        "本工具**只校验不匹配**：不接收待匹配文本，因此不存在超时的可能。",
+        "This tool only validates and never matches, so it accepts no subject text and cannot time out."
+      ],
+      "output": [
+        "表达式合法时给出捕获组数量与改进建议；不合法时给出错误位置（第几行第几列）。",
+        "A valid pattern reports the capture group count and suggestions; an invalid one reports the exact position."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "支持哪些正则方言？",
+          "Which flavour is supported?"
+        ],
+        "a": [
+          "统一使用 RE2 方言（Go 正则），不支持回溯引用与递归等特性。",
+          "The RE2 flavour (Go regular expressions) is used throughout; backreferences and recursion are not supported."
+        ]
+      },
+      {
+        "q": [
+          "和正则测试工具有什么区别？",
+          "How does this differ from the regex tester?"
+        ],
+        "a": [
+          "正则测试会实际匹配文本并给出全部命中；本工具只判断表达式本身是否合法。",
+          "The regex tester actually matches text and lists every hit; this tool only judges whether the expression itself is valid."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "校验手机号表达式",
+          "Validate a phone pattern"
+        ],
+        "value": "{\"pattern\":\"^1[3-9]\\\\d{9}$\"}"
+      },
+      {
+        "label": [
+          "校验有语法错误的表达式",
+          "Validate a broken pattern"
+        ],
+        "value": "{\"pattern\":\"([a-z\"}"
+      }
+    ]
+  },
+  "regex-build": {
+    "category": "text",
+    "name": [
+      "正则表达式生成",
+      "Regex Builder"
+    ],
+    "description": [
+      "由结构化选项拼装正则表达式，并给出逐段释义。",
+      "Assemble a regular expression from structured options with per-part explanations."
+    ],
+    "categoryLabel": [
+      "文本",
+      "Text"
+    ],
+    "actions": {
+      "run": [
+        "生成",
+        "Build"
+      ]
+    },
+    "fields": {
+      "parts": [
+        "组成部分",
+        "Parts"
+      ],
+      "prefix": [
+        "固定前缀",
+        "Fixed prefix"
+      ],
+      "suffix": [
+        "固定后缀",
+        "Fixed suffix"
+      ],
+      "minRepeat": [
+        "最小重复次数",
+        "Min repeat"
+      ],
+      "maxRepeat": [
+        "最大重复次数",
+        "Max repeat"
+      ],
+      "anchored": [
+        "首尾加锚点",
+        "Anchor both ends"
+      ]
+    },
+    "options": {
+      "parts": {
+        "anyChar": [
+          "任意字符",
+          "Any character"
+        ],
+        "digits": [
+          "数字",
+          "Digits"
+        ],
+        "letters": [
+          "字母",
+          "Letters"
+        ],
+        "word": [
+          "单词字符",
+          "Word character"
+        ],
+        "space": [
+          "空白字符",
+          "Whitespace"
+        ],
+        "upper": [
+          "大写字母",
+          "Uppercase"
+        ],
+        "lower": [
+          "小写字母",
+          "Lowercase"
+        ],
+        "chinese": [
+          "中文字符",
+          "Chinese character"
+        ],
+        "hyphen": [
+          "连字符",
+          "Hyphen"
+        ],
+        "dot": [
+          "点号",
+          "Dot"
+        ],
+        "at": [
+          "邮箱符号",
+          "At sign"
+        ],
+        "slash": [
+          "斜杠",
+          "Slash"
+        ]
+      }
+    },
+    "results": {
+      "pattern": [
+        "生成的表达式",
+        "Generated pattern"
+      ],
+      "valid": [
+        "语法合法",
+        "Valid"
+      ],
+      "explanation": [
+        "逐段释义",
+        "Per-part explanation"
+      ],
+      "error": [
+        "错误信息",
+        "Error message"
+      ]
+    },
+    "hints": {
+      "parts": [
+        "勾选需要的组成部分，生成器会按固定顺序拼装并给出每段的含义说明。",
+        "Tick the parts you need; the generator assembles them in a fixed order and explains each one."
+      ],
+      "output": [
+        "生成结果会按 RE2 方录校验；非法组合（例如空表达式）会直接标出。",
+        "The result is validated against the RE2 flavour; invalid combinations such as an empty pattern are flagged."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "生成器能生成任意正则吗？",
+          "Can it generate any regular expression?"
+        ],
+        "a": [
+          "不能。它覆盖常见片段，不支持嵌套量词、回溯引用等复杂结构。",
+          "No. It covers common fragments and does not handle nested quantifiers, backreferences or other advanced constructs."
+        ]
+      },
+      {
+        "q": [
+          "固定前缀里的特殊字符会转义吗？",
+          "Are special characters in the prefix escaped?"
+        ],
+        "a": [
+          "会。前后缀中的正则元字符会被转义，按字面量匹配。",
+          "Yes. Regex metacharacters in the prefix and suffix are escaped and matched literally."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "拼接数字与连字符",
+          "Digits and hyphen"
+        ],
+        "value": "{\"parts\":[\"digits\",\"hyphen\",\"digits\"]}"
+      },
+      {
+        "label": [
+          "带量词的字母片段",
+          "Letters with quantifier"
+        ],
+        "value": "{\"parts\":[\"letters\"],\"quantifier\":{\"min\":2,\"max\":8}}"
+      }
+    ]
+  },
+  "data-mask": {
+    "category": "text",
+    "name": [
+      "敏感数据脱敏",
+      "Data Masker"
+    ],
+    "description": [
+      "识别文本中的手机号、身份证、银行卡、邮箱等敏感信息并脱敏。",
+      "Detect and mask phone numbers, ID cards, bank cards, emails and more in text."
+    ],
+    "categoryLabel": [
+      "文本",
+      "Text"
+    ],
+    "actions": {
+      "run": [
+        "脱敏",
+        "Mask"
+      ]
+    },
+    "fields": {
+      "text": [
+        "待脱敏文本",
+        "Text to mask"
+      ],
+      "types": [
+        "脱敏类型",
+        "Types"
+      ],
+      "position": [
+        "保留策略",
+        "Keep strategy"
+      ],
+      "keepCount": [
+        "保留字符数",
+        "Keep count"
+      ]
+    },
+    "options": {
+      "position": {
+        "keepHead": [
+          "保留开头",
+          "Keep head"
+        ],
+        "keepTail": [
+          "保留结尾",
+          "Keep tail"
+        ],
+        "keepBoth": [
+          "保留首尾",
+          "Keep both"
+        ],
+        "hash": [
+          "全部遮蔽",
+          "Mask all"
+        ]
+      }
+    },
+    "results": {
+      "masked": [
+        "脱敏结果",
+        "Masked text"
+      ],
+      "total": [
+        "命中总数",
+        "Total matches"
+      ],
+      "count": [
+        "命中次数",
+        "Match count"
+      ]
+    },
+    "hints": {
+      "text": [
+        "脱敏在**服务端**完成：文本不会离开后端，返回的只有脱敏结果与统计。",
+        "Masking runs on the server: the text never leaves the backend and only the masked result and counts come back."
+      ],
+      "output": [
+        "样例用占位字符给出（如 138****8000），**不回显**任何真实命中值。",
+        "Samples use placeholders such as 138****8000 and never echo real matched values."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "会不会误伤普通文本？",
+          "Could it mask ordinary text?"
+        ],
+        "a": [
+          "姓名规则对两到四个汉字生效，短句可能被误判；建议先小范围试用。",
+          "The name rule matches two to four Chinese characters, so short sentences may be caught; try it on a small sample first."
+        ]
+      },
+      {
+        "q": [
+          "脱敏结果能直接用于生产吗？",
+          "Is the output production-ready?"
+        ],
+        "a": [
+          "它按常见格式识别，可能漏掉格式特殊的值，请配合业务侧校验。",
+          "It recognises common formats and may miss unusual ones, so keep validating on the business side."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "脱敏手机号",
+          "Mask a phone number"
+        ],
+        "value": "{\"text\":\"我的手机号是 13800138000\",\"types\":[\"phone\"],\"keepCount\":3}"
+      },
+      {
+        "label": [
+          "脱敏身份证并保留尾部",
+          "Mask an ID card keeping the tail"
+        ],
+        "value": "{\"text\":\"身份证 110101199003078888\",\"types\":[\"idCard\"],\"position\":\"keepTail\",\"keepCount\":3}"
+      }
+    ]
+  },
+  "text-stats": {
+    "category": "text",
+    "name": [
+      "文本统计",
+      "Text Statistics"
+    ],
+    "description": [
+      "统计文本的字数、行数、段落数与字符构成，中英文分别计数。",
+      "Count words, lines, paragraphs and character classes, separating Chinese and English."
+    ],
+    "categoryLabel": [
+      "文本",
+      "Text"
+    ],
+    "actions": {
+      "run": [
+        "统计",
+        "Count"
+      ]
+    },
+    "fields": {
+      "text": [
+        "待统计文本",
+        "Text to count"
+      ]
+    },
+    "results": {
+      "characters": [
+        "字符总数",
+        "Total characters"
+      ],
+      "charactersNoSpace": [
+        "不含空白",
+        "Without whitespace"
+      ],
+      "words": [
+        "词数",
+        "Words"
+      ],
+      "chineseChars": [
+        "中文字符",
+        "Chinese characters"
+      ],
+      "englishWords": [
+        "英文单词",
+        "English words"
+      ],
+      "digits": [
+        "数字字符",
+        "Digits"
+      ],
+      "punctuation": [
+        "标点符号",
+        "Punctuation"
+      ],
+      "lines": [
+        "行数",
+        "Lines"
+      ],
+      "paragraphs": [
+        "段落数",
+        "Paragraphs"
+      ],
+      "bytes": [
+        "字节数",
+        "Bytes"
+      ]
+    },
+    "hints": {
+      "text": [
+        "中文按**字**计数，英文按**词**计数，两者相加即为总词数。",
+        "Chinese is counted per character and English per word; their sum is the total word count."
+      ],
+      "output": [
+        "统计全部在服务端完成，文本不会离开后端。",
+        "All counting happens on the server and the text never leaves the backend."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "中英混排怎么算词数？",
+          "How are mixed texts counted?"
+        ],
+        "a": [
+          "中文部分逐字计数，英文部分按空白与标点切分后按词计数。",
+          "Chinese characters are counted individually and English is split on whitespace and punctuation."
+        ]
+      },
+      {
+        "q": [
+          "行尾换行会多算一行吗？",
+          "Does a trailing newline add a line?"
+        ],
+        "a": [
+          "不会。末尾空行不计入行数，与多数编辑器一致。",
+          "No. A trailing blank line is not counted, matching most editors."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "统计中英混排文本",
+          "Count mixed Chinese and English"
+        ],
+        "value": "{\"text\":\"Hello 世界\\n第二行\"}"
+      }
+    ]
+  },
+  "id-validator": {
+    "category": "data",
+    "name": [
+      "证件号码校验",
+      "ID Validator"
+    ],
+    "description": [
+      "校验身份证号、统一社会信用代码、手机号、银行卡号与邮政编码，并给出规范化结果。",
+      "Validate Chinese ID numbers, USCC codes, phone numbers, bank cards and postcodes, with normalised output."
+    ],
+    "categoryLabel": [
+      "数据",
+      "Data"
+    ],
+    "actions": {
+      "run": [
+        "校验",
+        "Validate"
+      ]
+    },
+    "fields": {
+      "type": [
+        "校验类型",
+        "Type"
+      ],
+      "value": [
+        "待校验值",
+        "Value"
+      ]
+    },
+    "options": {
+      "type": {
+        "idCard": [
+          "身份证号",
+          "ID card"
+        ],
+        "uscc": [
+          "统一社会信用代码",
+          "USCC"
+        ],
+        "phone": [
+          "手机号",
+          "Phone"
+        ],
+        "bankCard": [
+          "银行卡号",
+          "Bank card"
+        ],
+        "postcode": [
+          "邮政编码",
+          "Postcode"
+        ]
+      }
+    },
+    "results": {
+      "valid": [
+        "校验通过",
+        "Valid"
+      ],
+      "invalid": [
+        "校验失败",
+        "Invalid"
+      ],
+      "normalized": [
+        "规范化结果",
+        "Normalised value"
+      ],
+      "checkDigit": [
+        "校验位",
+        "Check digit"
+      ],
+      "region": [
+        "归属地区",
+        "Region"
+      ],
+      "birthday": [
+        "出生日期",
+        "Date of birth"
+      ],
+      "gender": [
+        "性别",
+        "Gender"
+      ],
+      "issue": [
+        "失败原因",
+        "Reason"
+      ]
+    },
+    "hints": {
+      "value": [
+        "校验全部在服务端完成；失败时只给出**原因类型**，不回显输入内容。",
+        "Validation runs entirely on the server; on failure only the reason type is returned and the input is never echoed."
+      ],
+      "output": [
+        "身份证会给出省份、出生日期与性别；统一社会信用代码会给出校验位。",
+        "ID cards report province, date of birth and gender; USCC codes report the check character."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "支持 15 位身份证吗？",
+          "Are 15-digit ID cards supported?"
+        ],
+        "a": [
+          "不支持，只校验 18 位（含末位 X）格式。",
+          "No, only the 18-digit form with an optional trailing X is validated."
+        ]
+      },
+      {
+        "q": [
+          "校验位算法是安全的吗？",
+          "Is the check digit algorithm secure?"
+        ],
+        "a": [
+          "校验位只是防录入错误的定长加权校验和，**不是**密码学签名，不能用于身份认证。",
+          "The check digit is a fixed-weight checksum against typing errors, not a cryptographic signature, and must not be used for authentication."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "校验身份证号",
+          "Validate an ID card number"
+        ],
+        "value": "{\"type\":\"idCard\",\"value\":\"11010519491231002X\"}"
+      },
+      {
+        "label": [
+          "校验银行卡号",
+          "Validate a bank card number"
+        ],
+        "value": "{\"type\":\"bankCard\",\"value\":\"4111111111111111\"}"
+      }
+    ]
+  },
+  "csv-convert": {
+    "category": "data",
+    "name": [
+      "CSV 转换",
+      "CSV Converter"
+    ],
+    "description": [
+      "在 CSV 与 JSON 之间互转，支持自定义分隔符、表头识别与合法性校验。",
+      "Convert between CSV and JSON with custom delimiters, header detection and validation."
+    ],
+    "categoryLabel": [
+      "数据",
+      "Data"
+    ],
+    "actions": {
+      "run": [
+        "转换",
+        "Convert"
+      ]
+    },
+    "fields": {
+      "operation": [
+        "转换方向",
+        "Direction"
+      ],
+      "input": [
+        "输入内容",
+        "Input"
+      ],
+      "delimiter": [
+        "分隔符",
+        "Delimiter"
+      ],
+      "hasHeader": [
+        "首行为表头",
+        "First row is a header"
+      ],
+      "pretty": [
+        "缩进输出",
+        "Pretty output"
+      ]
+    },
+    "options": {
+      "operation": {
+        "csvToJson": [
+          "CSV 转 JSON",
+          "CSV to JSON"
+        ],
+        "jsonToCsv": [
+          "JSON 转 CSV",
+          "JSON to CSV"
+        ]
+      }
+    },
+    "results": {
+      "output": [
+        "转换结果",
+        "Converted output"
+      ],
+      "rowCount": [
+        "数据行数",
+        "Data rows"
+      ],
+      "columnCount": [
+        "列数",
+        "Columns"
+      ],
+      "columns": [
+        "列名",
+        "Column names"
+      ]
+    },
+    "hints": {
+      "input": [
+        "CSV 转 JSON 时，未提供表头会按 column1、column2 这样的序号命名列。",
+        "Without a header row, CSV to JSON names the columns column1, column2 and so on."
+      ],
+      "output": [
+        "JSON 转 CSV 时，列名取所有对象的键并集并排序，保证输出稳定。",
+        "For JSON to CSV the columns are the sorted union of all object keys, which keeps the output stable."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "支持 TSV 吗？",
+          "Is TSV supported?"
+        ],
+        "a": [
+          "支持，把分隔符设为制表符即可。",
+          "Yes, set the delimiter to a tab character."
+        ]
+      },
+      {
+        "q": [
+          "为什么 JSON 转 CSV 的列名是排序过的？",
+          "Why are the columns sorted?"
+        ],
+        "a": [
+          "对象是无序的，排序后同一份数据每次都生成同样的表头，便于比对与版本管理。",
+          "Objects are unordered, so sorting keeps the header identical for the same data and makes diffs meaningful."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "CSV 转 JSON",
+          "CSV to JSON"
+        ],
+        "value": "{\"operation\":\"csvToJson\",\"input\":\"name,age\\nalice,30\\nbob,25\\n\",\"hasHeader\":true}"
+      },
+      {
+        "label": [
+          "JSON 转 CSV",
+          "JSON to CSV"
+        ],
+        "value": "{\"operation\":\"jsonToCsv\",\"input\":\"[{\\\"name\\\":\\\"alice\\\",\\\"age\\\":30}]\",\"hasHeader\":true}"
+      }
+    ]
+  },
+  "json-to-types": {
+    "category": "data",
+    "name": [
+      "JSON 转类型定义",
+      "JSON to Types"
+    ],
+    "description": [
+      "由 JSON 样本生成 TypeScript、Go、Rust 或 Java 的类型定义。",
+      "Generate TypeScript, Go, Rust or Java type definitions from a JSON sample."
+    ],
+    "categoryLabel": [
+      "数据",
+      "Data"
+    ],
+    "actions": {
+      "run": [
+        "生成",
+        "Generate"
+      ]
+    },
+    "fields": {
+      "input": [
+        "JSON 输入",
+        "JSON input"
+      ],
+      "language": [
+        "目标语言",
+        "Target language"
+      ],
+      "rootName": [
+        "根类型名",
+        "Root type name"
+      ]
+    },
+    "options": {
+      "language": {
+        "typescript": [
+          "TypeScript",
+          "TypeScript"
+        ],
+        "go": [
+          "Go",
+          "Go"
+        ],
+        "rust": [
+          "Rust",
+          "Rust"
+        ],
+        "java": [
+          "Java",
+          "Java"
+        ]
+      }
+    },
+    "results": {
+      "output": [
+        "类型定义",
+        "Type definitions"
+      ],
+      "typeCount": [
+        "类型数量",
+        "Type count"
+      ]
+    },
+    "hints": {
+      "input": [
+        "这是**结构推断**而非完整模式推导：生成的类型只反映样本里出现过的字段。",
+        "This is structural inference, not full schema derivation: the generated types only cover fields present in the sample."
+      ],
+      "output": [
+        "数字用 json.Number 解析，1 与 1.0 不会被判成不同值。",
+        "Numbers are parsed as json.Number, so 1 and 1.0 are not treated as different values."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "能生成可选字段吗？",
+          "Can it generate optional fields?"
+        ],
+        "a": [
+          "不能。样本里缺失的字段不会出现在结果中。",
+          "No. Fields absent from the sample do not appear in the output."
+        ]
+      },
+      {
+        "q": [
+          "数组元素类型怎么定的？",
+          "How are array element types determined?"
+        ],
+        "a": [
+          "逐项推断后合并；类型不一致时用联合类型表示。",
+          "Each item is inferred and merged; conflicting types become a union."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "生成 TypeScript 类型",
+          "Generate TypeScript types"
+        ],
+        "value": "{\"input\":\"{\\\"id\\\":1,\\\"name\\\":\\\"a\\\"}\",\"language\":\"typescript\",\"rootName\":\"User\"}"
+      },
+      {
+        "label": [
+          "生成 Go 类型",
+          "Generate Go types"
+        ],
+        "value": "{\"input\":\"{\\\"id\\\":1}\",\"language\":\"go\",\"rootName\":\"Item\"}"
+      }
+    ]
+  },
+  "mock-data": {
+    "category": "data",
+    "name": [
+      "假数据生成",
+      "Mock Data Generator"
+    ],
+    "description": [
+      "按字段类型生成假数据，覆盖字符串、数字、邮箱、手机号、姓名等常见类型。",
+      "Generate mock data by field type, covering strings, numbers, emails, phone numbers, names and more."
+    ],
+    "categoryLabel": [
+      "数据",
+      "Data"
+    ],
+    "actions": {
+      "run": [
+        "生成",
+        "Generate"
+      ]
+    },
+    "fields": {
+      "types": [
+        "字段类型",
+        "Field types"
+      ],
+      "count": [
+        "每类数量",
+        "Count per type"
+      ],
+      "locale": [
+        "语言",
+        "Locale"
+      ],
+      "prefix": [
+        "值前缀",
+        "Value prefix"
+      ]
+    },
+    "options": {
+      "locale": {
+        "zh-CN": [
+          "简体中文",
+          "Simplified Chinese"
+        ],
+        "en-US": [
+          "English",
+          "English"
+        ]
+      }
+    },
+    "results": {
+      "fields": [
+        "生成结果",
+        "Generated fields"
+      ],
+      "count": [
+        "每类数量",
+        "Count per type"
+      ],
+      "seed": [
+        "随机种子",
+        "Random seed"
+      ]
+    },
+    "hints": {
+      "types": [
+        "不选类型时默认生成全部类型各若干条。",
+        "With no type selected every type is generated."
+      ],
+      "output": [
+        "响应带本次使用的随机种子，便于复现同一批数据。",
+        "The response carries the random seed so the same batch can be reproduced."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "生成的数据是真实的吗？",
+          "Is the generated data realistic?"
+        ],
+        "a": [
+          "是**假数据**：邮箱统一用 example.com，号码不保证真实存在。",
+          "It is fake: emails always use example.com and numbers are not guaranteed to exist."
+        ]
+      },
+      {
+        "q": [
+          "能复现上次的结果吗？",
+          "Can I reproduce a previous batch?"
+        ],
+        "a": [
+          "可以，响应里的 seed 就是本次使用的随机种子。",
+          "Yes, the seed in the response is the one used for that batch."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "生成字符串与整数",
+          "Generate strings and integers"
+        ],
+        "value": "{\"types\":[\"string\",\"int\"],\"count\":3}"
+      },
+      {
+        "label": [
+          "生成英文邮箱",
+          "Generate English emails"
+        ],
+        "value": "{\"types\":[\"email\"],\"count\":2,\"locale\":\"en-US\"}"
+      }
+    ]
+  },
+  "archive-inspect": {
+    "category": "data",
+    "name": [
+      "归档内容查看",
+      "Archive Inspector"
+    ],
+    "description": [
+      "查看 ZIP、TAR、TAR.GZ 与 GZIP 归档的条目清单与内容预览。",
+      "Inspect the entry list and content preview of ZIP, TAR, TAR.GZ and GZIP archives."
+    ],
+    "categoryLabel": [
+      "数据",
+      "Data"
+    ],
+    "actions": {
+      "run": [
+        "查看",
+        "Inspect"
+      ]
+    },
+    "fields": {
+      "data": [
+        "归档内容",
+        "Archive data"
+      ],
+      "format": [
+        "归档格式",
+        "Archive format"
+      ],
+      "includeContent": [
+        "包含内容预览",
+        "Include content preview"
+      ]
+    },
+    "options": {
+      "format": {
+        "zip": [
+          "ZIP",
+          "ZIP"
+        ],
+        "tar": [
+          "TAR",
+          "TAR"
+        ],
+        "tarGz": [
+          "TAR.GZ",
+          "TAR.GZ"
+        ],
+        "gzip": [
+          "GZIP",
+          "GZIP"
+        ]
+      }
+    },
+    "results": {
+      "entryCount": [
+        "条目数",
+        "Entry count"
+      ],
+      "totalSize": [
+        "解压总大小",
+        "Total uncompressed size"
+      ],
+      "compressedSize": [
+        "归档大小",
+        "Archive size"
+      ],
+      "entries": [
+        "条目清单",
+        "Entries"
+      ],
+      "truncated": [
+        "已截断",
+        "Truncated"
+      ]
+    },
+    "hints": {
+      "data": [
+        "归档内容需用 Base64 传入。",
+        "The archive is supplied as Base64."
+      ],
+      "output": [
+        "**必须**限制条目数与解压体积：归档可以声明极大的解压体积，不限制会耗尽资源。",
+        "Entry count and uncompressed size are capped: an archive can declare an enormous size and would otherwise exhaust resources."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "会真的解压整个归档吗？",
+          "Does it extract the whole archive?"
+        ],
+        "a": [
+          "只读取清单与预览，且总量超过上限时立即中止。",
+          "Only the listing and a preview are read, and the run stops as soon as the total exceeds the limit."
+        ]
+      },
+      {
+        "q": [
+          "支持密码压缩包吗？",
+          "Are encrypted archives supported?"
+        ],
+        "a": [
+          "不支持。加密归档需要口令，本工具不接收口令。",
+          "No. Encrypted archives need a passphrase and this tool does not accept one."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "查看 ZIP 条目",
+          "Inspect a ZIP archive"
+        ],
+        "value": "{\"format\":\"zip\"}"
+      }
+    ]
+  },
+  "file-analyze": {
+    "category": "data",
+    "name": [
+      "文件类型识别",
+      "File Analyzer"
+    ],
+    "description": [
+      "识别文件类型、提取魔数与摘要，用于核对下载到的文件是否与预期一致。",
+      "Identify the file type, extract magic bytes and a digest to verify a downloaded file."
+    ],
+    "categoryLabel": [
+      "数据",
+      "Data"
+    ],
+    "actions": {
+      "run": [
+        "分析",
+        "Analyse"
+      ]
+    },
+    "fields": {
+      "data": [
+        "文件内容",
+        "File data"
+      ],
+      "fileName": [
+        "文件名",
+        "File name"
+      ],
+      "digestAlgorithm": [
+        "摘要算法",
+        "Digest algorithm"
+      ]
+    },
+    "options": {},
+    "results": {
+      "mimeType": [
+        "媒体类型",
+        "Media type"
+      ],
+      "extension": [
+        "扩展名",
+        "Extension"
+      ],
+      "description": [
+        "类型说明",
+        "Description"
+      ],
+      "isTextual": [
+        "文本类",
+        "Textual"
+      ],
+      "magicHex": [
+        "文件头",
+        "Magic bytes"
+      ],
+      "digest": [
+        "摘要",
+        "Digest"
+      ],
+      "digestAlgorithm": [
+        "摘要算法",
+        "Digest algorithm"
+      ],
+      "size": [
+        "字节数",
+        "Size"
+      ]
+    },
+    "hints": {
+      "data": [
+        "文件内容需用 Base64 传入。",
+        "The file is supplied as Base64."
+      ],
+      "output": [
+        "类型判定基于**内置**的魔数快照，不读取系统 MIME 数据库，也不联网。",
+        "Detection uses a built-in magic byte snapshot; the system MIME database is never read and nothing is fetched."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "摘要可以用来核对下载吗？",
+          "Can the digest verify a download?"
+        ],
+        "a": [
+          "可以，把它与来源提供的校验和比对即可。",
+          "Yes, compare it with the checksum published by the source."
+        ]
+      },
+      {
+        "q": [
+          "识别不出类型怎么办？",
+          "What if the type is not recognised?"
+        ],
+        "a": [
+          "会归为 application/octet-stream 并给出扩展名 bin。",
+          "It falls back to application/octet-stream with a bin extension."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "识别 PNG 文件",
+          "Identify a PNG file"
+        ],
+        "value": "{\"fileName\":\"a.png\",\"digestAlgorithm\":\"SHA256\"}"
+      }
+    ]
+  },
+  "wifi-qr": {
+    "category": "data",
+    "name": [
+      "访客 WiFi 二维码",
+      "Guest WiFi QR Code"
+    ],
+    "description": [
+      "生成访客 WiFi 的连接二维码，手机扫码即可入网。",
+      "Generate a guest WiFi QR code that phones can scan to join the network."
+    ],
+    "categoryLabel": [
+      "数据",
+      "Data"
+    ],
+    "actions": {
+      "run": [
+        "生成",
+        "Generate"
+      ]
+    },
+    "fields": {
+      "ssid": [
+        "网络名称",
+        "Network name"
+      ],
+      "password": [
+        "网络密码",
+        "Password"
+      ],
+      "security": [
+        "加密方式",
+        "Security"
+      ],
+      "hidden": [
+        "隐藏网络",
+        "Hidden network"
+      ],
+      "size": [
+        "图片边长",
+        "Image size"
+      ]
+    },
+    "options": {
+      "security": {
+        "WPA": [
+          "WPA / WPA2 / WPA3",
+          "WPA / WPA2 / WPA3"
+        ],
+        "WEP": [
+          "WEP",
+          "WEP"
+        ],
+        "nopass": [
+          "无密码",
+          "Open"
+        ]
+      }
+    },
+    "results": {
+      "payload": [
+        "二维码内容",
+        "QR payload"
+      ],
+      "png": [
+        "PNG 图片",
+        "PNG image"
+      ],
+      "svg": [
+        "SVG 图片",
+        "SVG image"
+      ],
+      "size": [
+        "图片边长",
+        "Image size"
+      ]
+    },
+    "hints": {
+      "ssid": [
+        "二维码内容遵循 WIFI: 约定格式，各平台扫码后可直接连接。",
+        "The payload follows the WIFI: convention so phones can join directly after scanning."
+      ],
+      "output": [
+        "密码会出现在二维码内容里，请只把二维码分享给访客。",
+        "The password is embedded in the payload, so share the code only with guests."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "二维码能离线生成吗？",
+          "Is the code generated offline?"
+        ],
+        "a": [
+          "能，全部在服务端生成，不联网。",
+          "Yes, it is generated entirely on the server with no network access."
+        ]
+      },
+      {
+        "q": [
+          "iOS 和 Android 都能扫吗？",
+          "Do both iOS and Android scan it?"
+        ],
+        "a": [
+          "都能。系统相机与微信等常用扫码工具都识别 WIFI: 格式。",
+          "Yes. The system camera and common scanners such as WeChat all understand the WIFI: format."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "生成 WPA 二维码",
+          "Generate a WPA QR code"
+        ],
+        "value": "{\"ssid\":\"Guest-Network\",\"password\":\"guest-password\",\"security\":\"WPA\",\"size\":256}"
+      },
+      {
+        "label": [
+          "生成开放网络二维码",
+          "Generate an open-network QR code"
+        ],
+        "value": "{\"ssid\":\"Open\",\"password\":\"\",\"security\":\"nopass\",\"size\":256}"
+      }
+    ]
+  },
+  "id-generator": {
+    "category": "data",
+    "name": [
+      "ID 生成",
+      "ID Generator"
+    ],
+    "description": [
+      "统一生成 UUID、ULID、雪花 ID 与 NanoID。",
+      "Generate UUID, ULID, snowflake IDs and NanoID in one place."
+    ],
+    "categoryLabel": [
+      "数据",
+      "Data"
+    ],
+    "actions": {
+      "run": [
+        "生成",
+        "Generate"
+      ]
+    },
+    "fields": {
+      "format": [
+        "ID 格式",
+        "ID format"
+      ],
+      "count": [
+        "生成数量",
+        "Count"
+      ],
+      "length": [
+        "长度",
+        "Length"
+      ],
+      "nodeId": [
+        "节点号",
+        "Node ID"
+      ],
+      "uppercase": [
+        "转成大写",
+        "Uppercase"
+      ]
+    },
+    "options": {
+      "format": {
+        "uuid": [
+          "UUID v4",
+          "UUID v4"
+        ],
+        "ulid": [
+          "ULID",
+          "ULID"
+        ],
+        "snowflake": [
+          "雪花 ID",
+          "Snowflake"
+        ],
+        "nanoid": [
+          "NanoID",
+          "NanoID"
+        ]
+      }
+    },
+    "results": {
+      "ids": [
+        "生成的 ID",
+        "Generated IDs"
+      ],
+      "count": [
+        "数量",
+        "Count"
+      ],
+      "length": [
+        "长度",
+        "Length"
+      ]
+    },
+    "hints": {
+      "format": [
+        "UUID 适合分布式唯一标识；ULID 按时间可排序；雪花 ID 适合数据库主键；NanoID 短且无特殊字符。",
+        "UUID suits distributed identifiers, ULID is time-sortable, snowflake IDs fit database keys and NanoID is short with no special characters."
+      ],
+      "output": [
+        "UUID 与 NanoID 的随机源来自 Tongsuo 的 CSPRNG。",
+        "The random source for UUID and NanoID is the Tongsuo CSPRNG."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "雪花 ID 会重复吗？",
+          "Can snowflake IDs collide?"
+        ],
+        "a": [
+          "同一节点号在同一毫秒内靠序列号区分；不同部署请使用不同节点号。",
+          "Within one node the sequence separates IDs in the same millisecond; use different node IDs across deployments."
+        ]
+      },
+      {
+        "q": [
+          "ULID 和 UUID 怎么选？",
+          "ULID or UUID?"
+        ],
+        "a": [
+          "需要按时间排序或可读前缀选 ULID；只需要唯一性选 UUID。",
+          "Choose ULID when you need time ordering or a readable prefix; choose UUID for uniqueness alone."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "生成 UUID",
+          "Generate UUIDs"
+        ],
+        "value": "{\"format\":\"uuid\",\"count\":3}"
+      },
+      {
+        "label": [
+          "生成 NanoID",
+          "Generate NanoIDs"
+        ],
+        "value": "{\"format\":\"nanoid\",\"count\":2,\"length\":10}"
+      }
+    ]
+  },
+  "nginx-config": {
+    "category": "system",
+    "name": [
+      "Nginx 配置生成",
+      "Nginx Config Generator"
+    ],
+    "description": [
+      "按站点或全局模式生成 Nginx 配置片段，覆盖反向代理、负载均衡、SSL、Gzip 与 CORS。",
+      "Generate Nginx configuration snippets for sites or globals, covering proxying, load balancing, SSL, gzip and CORS."
+    ],
+    "categoryLabel": [
+      "系统",
+      "System"
+    ],
+    "actions": {
+      "run": [
+        "生成",
+        "Generate"
+      ]
+    },
+    "fields": {
+      "mode": [
+        "配置模式",
+        "Mode"
+      ],
+      "serverName": [
+        "站点域名",
+        "Server name"
+      ],
+      "listenPort": [
+        "监听端口",
+        "Listen port"
+      ],
+      "root": [
+        "站点根目录",
+        "Document root"
+      ],
+      "enableSsl": [
+        "启用 HTTPS",
+        "Enable HTTPS"
+      ],
+      "sslCertificate": [
+        "证书路径",
+        "Certificate path"
+      ],
+      "sslPrivateKey": [
+        "私钥路径",
+        "Private key path"
+      ],
+      "enableProxy": [
+        "启用反向代理",
+        "Enable reverse proxy"
+      ],
+      "proxyPass": [
+        "代理目标",
+        "Proxy target"
+      ],
+      "proxyPath": [
+        "代理路径",
+        "Proxy path"
+      ],
+      "enableGzip": [
+        "启用 Gzip",
+        "Enable gzip"
+      ],
+      "enableCors": [
+        "启用跨域",
+        "Enable CORS"
+      ],
+      "allowOrigin": [
+        "允许来源",
+        "Allowed origin"
+      ],
+      "enableWebSocket": [
+        "启用 WebSocket",
+        "Enable WebSocket"
+      ],
+      "enableLoadBalance": [
+        "启用负载均衡",
+        "Enable load balancing"
+      ],
+      "upstreams": [
+        "后端服务器",
+        "Upstream servers"
+      ]
+    },
+    "options": {
+      "mode": {
+        "global": [
+          "全局配置",
+          "Global"
+        ],
+        "site": [
+          "站点配置",
+          "Site"
+        ]
+      }
+    },
+    "results": {
+      "config": [
+        "配置文本",
+        "Configuration"
+      ],
+      "sections": [
+        "配置段",
+        "Sections"
+      ],
+      "warnings": [
+        "提示",
+        "Warnings"
+      ]
+    },
+    "hints": {
+      "config": [
+        "生成的是**配置片段**，请按实际路径与域名调整后再使用。",
+        "The output is a configuration snippet; adjust the paths and domain names before using it."
+      ],
+      "output": [
+        "启用负载均衡时会额外提示把 proxy_pass 指向 upstream 名称。",
+        "Enabling load balancing adds a hint to point proxy_pass at the upstream name."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "会校验配置语法吗？",
+          "Does it validate the configuration?"
+        ],
+        "a": [
+          "不校验，只做模板拼装。落地前请用 nginx -t 检查。",
+          "No, it only assembles the template. Run nginx -t before deploying."
+        ]
+      },
+      {
+        "q": [
+          "会自动申请证书吗？",
+          "Does it obtain certificates?"
+        ],
+        "a": [
+          "不会。证书与私钥路径由你填写，工具不联网也不触碰证书服务。",
+          "No. You supply the certificate and key paths; the tool neither accesses the network nor touches a certificate service."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "生成站点配置",
+          "Generate a site config"
+        ],
+        "value": "{\"mode\":\"site\",\"serverName\":\"example.com\",\"listenPort\":80,\"root\":\"/var/www/html\"}"
+      },
+      {
+        "label": [
+          "生成全局配置",
+          "Generate a global config"
+        ],
+        "value": "{\"mode\":\"global\",\"workerProcesses\":4}"
+      }
+    ]
+  },
+  "firewall-rules": {
+    "category": "system",
+    "name": [
+      "防火墙规则生成",
+      "Firewall Rule Generator"
+    ],
+    "description": [
+      "按场景生成 ufw、firewalld、iptables 与 nftables 的放行规则。",
+      "Generate allow rules for ufw, firewalld, iptables and nftables from common scenarios."
+    ],
+    "categoryLabel": [
+      "系统",
+      "System"
+    ],
+    "actions": {
+      "run": [
+        "生成",
+        "Generate"
+      ]
+    },
+    "fields": {
+      "tool": [
+        "防火墙工具",
+        "Firewall tool"
+      ],
+      "scenario": [
+        "使用场景",
+        "Scenario"
+      ],
+      "ports": [
+        "自定义端口",
+        "Custom ports"
+      ],
+      "protocol": [
+        "协议",
+        "Protocol"
+      ],
+      "source": [
+        "来源地址",
+        "Source address"
+      ]
+    },
+    "options": {
+      "tool": {
+        "ufw": [
+          "ufw",
+          "ufw"
+        ],
+        "firewalld": [
+          "firewalld",
+          "firewalld"
+        ],
+        "iptables": [
+          "iptables",
+          "iptables"
+        ],
+        "nftables": [
+          "nftables",
+          "nftables"
+        ]
+      },
+      "scenario": {
+        "http": [
+          "放行 HTTP",
+          "Allow HTTP"
+        ],
+        "https": [
+          "放行 HTTPS",
+          "Allow HTTPS"
+        ],
+        "ssh": [
+          "放行 SSH",
+          "Allow SSH"
+        ],
+        "database": [
+          "放行数据库",
+          "Allow databases"
+        ],
+        "denyAll": [
+          "默认拒绝入站",
+          "Deny all inbound"
+        ],
+        "allowAll": [
+          "允许全部入站",
+          "Allow all inbound"
+        ]
+      },
+      "protocol": {
+        "tcp": [
+          "TCP",
+          "TCP"
+        ],
+        "udp": [
+          "UDP",
+          "UDP"
+        ],
+        "any": [
+          "任意",
+          "Any"
+        ]
+      }
+    },
+    "results": {
+      "rules": [
+        "规则列表",
+        "Rules"
+      ],
+      "commands": [
+        "可执行命令",
+        "Commands"
+      ],
+      "notes": [
+        "使用提示",
+        "Notes"
+      ]
+    },
+    "hints": {
+      "commands": [
+        "生成的是**命令文本**，只会在你自己的机器上执行；工具不会触碰宿主机防火墙。",
+        "The output is command text that runs only on your own machine; the tool never touches the host firewall."
+      ],
+      "output": [
+        "SSH 场景会提示先确认当前会话已放行，避免把自己锁在门外。",
+        "The SSH scenario reminds you to keep the current session open so you do not lock yourself out."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "会直接执行命令吗？",
+          "Does it run the commands?"
+        ],
+        "a": [
+          "不会，只输出文本，由你自行决定何时执行。",
+          "No. It only prints the text and you decide when to run it."
+        ]
+      },
+      {
+        "q": [
+          "默认拒绝场景安全吗？",
+          "Is the deny-all scenario safe?"
+        ],
+        "a": [
+          "务必先放行 SSH 再启用，否则会失去远程访问能力。",
+          "Always allow SSH first, otherwise you lose remote access."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "生成 HTTPS 放行规则",
+          "Allow HTTPS"
+        ],
+        "value": "{\"tool\":\"ufw\",\"scenario\":\"https\",\"protocol\":\"tcp\"}"
+      },
+      {
+        "label": [
+          "生成 iptables 的 SSH 规则",
+          "Allow SSH with iptables"
+        ],
+        "value": "{\"tool\":\"iptables\",\"scenario\":\"ssh\",\"protocol\":\"tcp\"}"
+      }
+    ]
+  },
+  "docker-compose-gen": {
+    "category": "system",
+    "name": [
+      "Compose 配置生成",
+      "Docker Compose Generator"
+    ],
+    "description": [
+      "由服务定义生成 Docker Compose 配置，包含端口、环境变量、卷与依赖。",
+      "Generate a Docker Compose configuration from service definitions, with ports, environment, volumes and dependencies."
+    ],
+    "categoryLabel": [
+      "系统",
+      "System"
+    ],
+    "actions": {
+      "run": [
+        "生成",
+        "Generate"
+      ]
+    },
+    "fields": {
+      "projectName": [
+        "项目名",
+        "Project name"
+      ],
+      "services": [
+        "服务定义",
+        "Services"
+      ],
+      "networkName": [
+        "网络名",
+        "Network name"
+      ]
+    },
+    "options": {},
+    "results": {
+      "compose": [
+        "配置内容",
+        "Configuration"
+      ],
+      "serviceCount": [
+        "服务数量",
+        "Service count"
+      ],
+      "warnings": [
+        "提示",
+        "Warnings"
+      ]
+    },
+    "hints": {
+      "services": [
+        "按格式填写：镜像必填，端口与卷用 宿主机:容器 形式。",
+        "Fill in the fields: the image is required and ports and volumes use the host:container form."
+      ],
+      "output": [
+        "生成的是配置文本，不连接任何守护进程，也不拉取镜像。",
+        "The output is configuration text; nothing connects to a daemon and no image is pulled."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "会校验 YAML 吗？",
+          "Does it validate the YAML?"
+        ],
+        "a": [
+          "不校验，只做模板拼装。落地前请用 docker compose config 检查。",
+          "No, it only assembles the template. Run docker compose config before deploying."
+        ]
+      },
+      {
+        "q": [
+          "支持健康检查与资源限制吗？",
+          "Are health checks and resource limits supported?"
+        ],
+        "a": [
+          "暂不支持，首版聚焦端口、环境变量、卷与依赖。",
+          "Not yet; the first version focuses on ports, environment, volumes and dependencies."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "生成单服务 Compose",
+          "Generate a single-service Compose"
+        ],
+        "value": "{\"projectName\":\"demo\",\"services\":[{\"name\":\"web\",\"image\":\"nginx:alpine\",\"ports\":[\"8080:80\"]}]}"
+      }
+    ]
+  },
+  "lookup-table": {
+    "category": "system",
+    "name": [
+      "速查表查询",
+      "Lookup Table"
+    ],
+    "description": [
+      "查询端口号、Linux 退出码与时间戳格式的速查表。",
+      "Look up common ports, Linux exit codes and timestamp formats."
+    ],
+    "categoryLabel": [
+      "系统",
+      "System"
+    ],
+    "actions": {
+      "run": [
+        "查询",
+        "Look up"
+      ]
+    },
+    "fields": {
+      "kind": [
+        "速查表类别",
+        "Table"
+      ],
+      "key": [
+        "查询内容",
+        "Query"
+      ]
+    },
+    "options": {
+      "kind": {
+        "port": [
+          "端口号",
+          "Ports"
+        ],
+        "exitcode": [
+          "退出码",
+          "Exit codes"
+        ],
+        "timestamp": [
+          "时间戳格式",
+          "Timestamp formats"
+        ]
+      }
+    },
+    "results": {
+      "matched": [
+        "已命中",
+        "Found"
+      ],
+      "notMatched": [
+        "未命中",
+        "Not found"
+      ],
+      "entry": [
+        "条目",
+        "Entry"
+      ],
+      "candidates": [
+        "候选",
+        "Candidates"
+      ],
+      "dataVersion": [
+        "数据集版本",
+        "Dataset version"
+      ]
+    },
+    "hints": {
+      "key": [
+        "端口可写数字（443）或名称（https）；退出码写数字；时间戳写格式名（unix-ms）。",
+        "Ports accept a number such as 443 or a name such as https; exit codes take a number; timestamp formats take a name such as unix-ms."
+      ],
+      "output": [
+        "数据来自**内置快照**，不联网也不读取系统服务列表。",
+        "The data comes from a built-in snapshot; nothing is fetched and no system service list is read."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "查不到会报错吗？",
+          "Does an unknown query raise an error?"
+        ],
+        "a": [
+          "不会。精确查不到时会给出模糊匹配的候选列表。",
+          "No. When there is no exact match, a list of fuzzy candidates is returned."
+        ]
+      },
+      {
+        "q": [
+          "端口号是权威来源吗？",
+          "Is the port list authoritative?"
+        ],
+        "a": [
+          "是常见端口的快照，具体服务可能另作约定，请以实际部署为准。",
+          "It is a snapshot of common ports; a given service may differ, so follow your actual deployment."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "查询 443 端口",
+          "Look up port 443"
+        ],
+        "value": "{\"kind\":\"port\",\"key\":\"443\"}"
+      },
+      {
+        "label": [
+          "检索退出码",
+          "Search exit codes"
+        ],
+        "value": "{\"kind\":\"exitcode\",\"key\":\"错误\"}"
+      }
+    ]
+  },
+  "device-headers": {
+    "category": "network",
+    "name": [
+      "请求头生成与 UA 解析",
+      "Device Headers"
+    ],
+    "description": [
+      "按平台生成客户端请求头，或反向解析 User-Agent 串。",
+      "Generate client request headers for a platform, or parse a User-Agent string."
+    ],
+    "categoryLabel": [
+      "网络",
+      "Network"
+    ],
+    "actions": {
+      "run": [
+        "生成",
+        "Generate"
+      ]
+    },
+    "fields": {
+      "mode": [
+        "模式",
+        "Mode"
+      ],
+      "platform": [
+        "平台",
+        "Platform"
+      ],
+      "version": [
+        "版本号",
+        "Version"
+      ],
+      "os": [
+        "操作系统",
+        "Operating system"
+      ],
+      "userAgent": [
+        "User-Agent 串",
+        "User-Agent string"
+      ],
+      "acceptLanguage": [
+        "Accept-Language",
+        "Accept-Language"
+      ],
+      "referer": [
+        "Referer",
+        "Referer"
+      ]
+    },
+    "options": {
+      "mode": {
+        "generate": [
+          "生成请求头",
+          "Generate headers"
+        ],
+        "parseUa": [
+          "解析 UA",
+          "Parse UA"
+        ]
+      },
+      "platform": {
+        "chrome": [
+          "Chrome 桌面版",
+          "Chrome desktop"
+        ],
+        "firefox": [
+          "Firefox 桌面版",
+          "Firefox desktop"
+        ],
+        "safari": [
+          "Safari 桌面版",
+          "Safari desktop"
+        ],
+        "edge": [
+          "Edge 桌面版",
+          "Edge desktop"
+        ],
+        "android": [
+          "Android Chrome",
+          "Android Chrome"
+        ],
+        "ios": [
+          "iOS Safari",
+          "iOS Safari"
+        ],
+        "curl": [
+          "curl",
+          "curl"
+        ]
+      }
+    },
+    "results": {
+      "headers": [
+        "请求头",
+        "Headers"
+      ],
+      "userAgent": [
+        "User-Agent",
+        "User-Agent"
+      ],
+      "browser": [
+        "浏览器",
+        "Browser"
+      ],
+      "browserVersion": [
+        "浏览器版本",
+        "Browser version"
+      ],
+      "os": [
+        "操作系统",
+        "Operating system"
+      ],
+      "osVersion": [
+        "系统版本",
+        "OS version"
+      ],
+      "deviceType": [
+        "设备类型",
+        "Device type"
+      ],
+      "isBot": [
+        "爬虫",
+        "Bot"
+      ],
+      "engine": [
+        "渲染引擎",
+        "Engine"
+      ]
+    },
+    "hints": {
+      "platform": [
+        "首版只支持**内置**的常见平台与自定义填写，**不**引入任何在线 UA 查询。",
+        "The first version supports built-in platforms and custom input only; no online UA lookup is used."
+      ],
+      "output": [
+        "解析结果会区分桌面、移动、平板与爬虫，并给出渲染引擎。",
+        "The parse result distinguishes desktop, mobile, tablet and bot, and reports the rendering engine."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "生成的请求头能绕过风控吗？",
+          "Can these headers bypass risk controls?"
+        ],
+        "a": [
+          "不能。它只是常见请求头的模板，用于调试与兼容性测试。",
+          "No. It is only a template of common headers for debugging and compatibility testing."
+        ]
+      },
+      {
+        "q": [
+          "UA 数据库会更新吗？",
+          "Is the UA data kept up to date?"
+        ],
+        "a": [
+          "不会自动更新。数据是内置快照，随工具版本更新。",
+          "Not automatically. The data is a built-in snapshot updated with tool releases."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "生成 Chrome 请求头",
+          "Generate Chrome headers"
+        ],
+        "value": "{\"mode\":\"generate\",\"platform\":\"chrome\",\"version\":\"120.0.0.0\"}"
+      },
+      {
+        "label": [
+          "解析 User-Agent",
+          "Parse a User-Agent"
+        ],
+        "value": "{\"mode\":\"parseUa\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\"}"
+      }
+    ]
+  },
+  "ip-range-expand": {
+    "category": "network",
+    "name": [
+      "IP 段展开",
+      "IP Range Expander"
+    ],
+    "description": [
+      "在 CIDR 与起止地址之间互转，并可把网段展开成地址列表。",
+      "Convert between CIDR blocks and address ranges, and expand a block into an address list."
+    ],
+    "categoryLabel": [
+      "网络",
+      "Network"
+    ],
+    "actions": {
+      "run": [
+        "转换",
+        "Convert"
+      ]
+    },
+    "fields": {
+      "mode": [
+        "模式",
+        "Mode"
+      ],
+      "cidr": [
+        "网段",
+        "CIDR"
+      ],
+      "start": [
+        "起始地址",
+        "Start address"
+      ],
+      "end": [
+        "结束地址",
+        "End address"
+      ],
+      "limit": [
+        "展开上限",
+        "Expand limit"
+      ]
+    },
+    "options": {
+      "mode": {
+        "toCidr": [
+          "地址转 CIDR",
+          "Addresses to CIDR"
+        ],
+        "toRange": [
+          "CIDR 转地址",
+          "CIDR to addresses"
+        ],
+        "expand": [
+          "展开地址列表",
+          "Expand addresses"
+        ]
+      }
+    },
+    "results": {
+      "cidrs": [
+        "网段列表",
+        "CIDR blocks"
+      ],
+      "start": [
+        "起始地址",
+        "Start address"
+      ],
+      "end": [
+        "结束地址",
+        "End address"
+      ],
+      "count": [
+        "地址总数",
+        "Total addresses"
+      ],
+      "addresses": [
+        "地址列表",
+        "Address list"
+      ],
+      "truncated": [
+        "已截断",
+        "Truncated"
+      ]
+    },
+    "hints": {
+      "mode": [
+        "地址转 CIDR 会给出覆盖区间的**最简**网段集合。",
+        "Converting addresses to CIDR yields the minimal set of blocks covering the range."
+      ],
+      "output": [
+        "展开是逐地址枚举，大网段会耗尽资源，因此有地址数上限。",
+        "Expansion enumerates every address, so a large block would exhaust resources; a count limit applies."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "支持 IPv6 吗？",
+          "Is IPv6 supported?"
+        ],
+        "a": [
+          "当前只支持 IPv4。",
+          "Only IPv4 is supported at the moment."
+        ]
+      },
+      {
+        "q": [
+          "为什么展开结果会被截断？",
+          "Why is the expansion truncated?"
+        ],
+        "a": [
+          "地址数超过上限时会停止并标记 truncated，避免耗尽内存与响应体。",
+          "When the count exceeds the limit the run stops and is flagged as truncated to protect memory and response size."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "展开 /30 网段",
+          "Expand a /30"
+        ],
+        "value": "{\"mode\":\"expand\",\"cidr\":\"192.168.1.0/30\",\"limit\":16}"
+      },
+      {
+        "label": [
+          "地址区间转 CIDR",
+          "Convert a range to CIDRs"
+        ],
+        "value": "{\"mode\":\"toCidr\",\"start\":\"192.168.1.10\",\"end\":\"192.168.1.20\"}"
+      }
+    ]
+  },
+  "color-convert": {
+    "category": "formatting",
+    "name": [
+      "颜色格式转换",
+      "Color Converter"
+    ],
+    "description": [
+      "在 HEX、RGB、HSL 与 OKLCH 之间转换颜色，并计算对比度。",
+      "Convert colours between HEX, RGB, HSL and OKLCH, and compute contrast ratios."
+    ],
+    "categoryLabel": [
+      "格式化",
+      "Formatting"
+    ],
+    "actions": {
+      "run": [
+        "转换",
+        "Convert"
+      ]
+    },
+    "fields": {
+      "input": [
+        "颜色值",
+        "Colour value"
+      ],
+      "inputFormat": [
+        "输入格式",
+        "Input format"
+      ]
+    },
+    "options": {
+      "inputFormat": {
+        "hex": [
+          "HEX",
+          "HEX"
+        ],
+        "rgb": [
+          "RGB",
+          "RGB"
+        ],
+        "hsl": [
+          "HSL",
+          "HSL"
+        ],
+        "oklch": [
+          "OKLCH",
+          "OKLCH"
+        ]
+      }
+    },
+    "results": {
+      "hex": [
+        "HEX 表示",
+        "HEX"
+      ],
+      "rgb": [
+        "RGB 表示",
+        "RGB"
+      ],
+      "hsl": [
+        "HSL 表示",
+        "HSL"
+      ],
+      "oklch": [
+        "OKLCH 表示",
+        "OKLCH"
+      ],
+      "contrastOnWhite": [
+        "与白色对比度",
+        "Contrast on white"
+      ],
+      "contrastOnBlack": [
+        "与黑色对比度",
+        "Contrast on black"
+      ],
+      "isDark": [
+        "深色",
+        "Dark"
+      ]
+    },
+    "hints": {
+      "input": [
+        "HEX 支持 3 位与 6 位写法，也可带 8 位透明度。",
+        "HEX accepts 3-digit and 6-digit forms, optionally with 8-digit alpha."
+      ],
+      "output": [
+        "对比度按 WCAG 2.1 的相对亮度公式计算，数值越高越易读。",
+        "Contrast follows the WCAG 2.1 relative luminance formula; higher values are more readable."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "OKLCH 转出来的颜色准确吗？",
+          "Is the OKLCH conversion accurate?"
+        ],
+        "a": [
+          "对 sRGB 色域内的颜色准确；超出色域的颜色按通道截断处理。",
+          "It is accurate within the sRGB gamut; out-of-gamut colours are clipped per channel."
+        ]
+      },
+      {
+        "q": [
+          "对比度多少算合格？",
+          "What contrast ratio is acceptable?"
+        ],
+        "a": [
+          "WCAG AA 要求正文至少 4.5:1，大字号至少 3:1。",
+          "WCAG AA requires at least 4.5:1 for body text and 3:1 for large text."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "十六进制转多格式",
+          "Convert hex to all formats"
+        ],
+        "value": "{\"input\":\"#3B82F6\",\"inputFormat\":\"hex\",\"outputFormats\":[\"hex\",\"rgb\",\"hsl\",\"oklch\"]}"
+      },
+      {
+        "label": [
+          "RGB 字符串输入",
+          "Convert an RGB string"
+        ],
+        "value": "{\"input\":\"rgb(59, 130, 246)\",\"inputFormat\":\"rgb\"}"
+      }
+    ]
+  },
+  "html-escape": {
+    "category": "encoding",
+    "name": [
+      "HTML 实体编解码",
+      "HTML Entity Codec"
+    ],
+    "description": [
+      "在文本与 HTML 实体之间转换，支持命名实体与数字实体。",
+      "Convert between text and HTML entities, covering named and numeric forms."
+    ],
+    "categoryLabel": [
+      "编码",
+      "Encoding"
+    ],
+    "actions": {
+      "run": [
+        "转换",
+        "Convert"
+      ]
+    },
+    "fields": {
+      "mode": [
+        "模式",
+        "Mode"
+      ],
+      "input": [
+        "输入内容",
+        "Input"
+      ]
+    },
+    "options": {
+      "mode": {
+        "encode": [
+          "转义为实体",
+          "Escape to entities"
+        ],
+        "decode": [
+          "还原为字符",
+          "Decode to characters"
+        ]
+      }
+    },
+    "results": {
+      "output": [
+        "转换结果",
+        "Converted output"
+      ],
+      "changedCount": [
+        "替换字符数",
+        "Replaced characters"
+      ]
+    },
+    "hints": {
+      "input": [
+        "转义会处理 & < > \" 与单引号五个字符。",
+        "Escaping handles the five characters & < > \" and the single quote."
+      ],
+      "output": [
+        "解码支持命名实体、&#NN; 与 &#xHH; 三种写法。",
+        "Decoding understands named entities, &#NN; and &#xHH;."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "和 HTML 格式化有什么区别？",
+          "How does this differ from the HTML formatter?"
+        ],
+        "a": [
+          "格式化工具处理整份 HTML 文档；本工具只做实体层面的编解码。",
+          "The formatter handles whole HTML documents; this tool only deals with the entity layer."
+        ]
+      },
+      {
+        "q": [
+          "能防止 XSS 吗？",
+          "Does it prevent XSS?"
+        ],
+        "a": [
+          "不能。转义只是其中一层，仍需配合上下文正确的输出与净化。",
+          "No. Escaping is only one layer; pair it with context-aware output and sanitisation."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "转义 HTML 标签",
+          "Escape HTML tags"
+        ],
+        "value": "{\"mode\":\"encode\",\"input\":\"<b>hi</b> & \\\"x\\\"\"}"
+      },
+      {
+        "label": [
+          "反转义 HTML 实体",
+          "Unescape HTML entities"
+        ],
+        "value": "{\"mode\":\"decode\",\"input\":\"&lt;b&gt;hi&lt;/b&gt;\"}"
+      }
+    ]
+  },
+  "markdown-convert": {
+    "category": "documents",
+    "name": [
+      "Markdown 转换",
+      "Markdown Converter"
+    ],
+    "description": [
+      "在 Markdown 与 HTML 之间互转，并统计标题、链接与代码块数量。",
+      "Convert between Markdown and HTML and count headings, links and code blocks."
+    ],
+    "categoryLabel": [
+      "文档",
+      "Documents"
+    ],
+    "actions": {
+      "run": [
+        "转换",
+        "Convert"
+      ]
+    },
+    "fields": {
+      "mode": [
+        "转换方向",
+        "Direction"
+      ],
+      "input": [
+        "输入内容",
+        "Input"
+      ],
+      "gfm": [
+        "启用 GFM 扩展",
+        "Enable GFM extensions"
+      ]
+    },
+    "options": {
+      "mode": {
+        "toHtml": [
+          "Markdown 转 HTML",
+          "Markdown to HTML"
+        ],
+        "toMarkdown": [
+          "HTML 转 Markdown",
+          "HTML to Markdown"
+        ]
+      }
+    },
+    "results": {
+      "output": [
+        "转换结果",
+        "Converted output"
+      ],
+      "headingCount": [
+        "标题数",
+        "Headings"
+      ],
+      "linkCount": [
+        "链接数",
+        "Links"
+      ],
+      "codeBlockCount": [
+        "代码块数",
+        "Code blocks"
+      ],
+      "wordCount": [
+        "字数",
+        "Word count"
+      ]
+    },
+    "hints": {
+      "input": [
+        "Markdown 解析复用 goldmark；HTML 解析使用标准解析器。",
+        "Markdown parsing reuses goldmark and HTML parsing uses a standard parser."
+      ],
+      "output": [
+        "HTML 转 Markdown 会把常见标签映射为等价语法，脚本与样式内容会被跳过。",
+        "HTML to Markdown maps common tags to equivalent syntax and skips script and style content."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "转换后的 HTML 安全吗？",
+          "Is the converted HTML safe?"
+        ],
+        "a": [
+          "不一定。生成的 HTML **未**净化，直接嵌入页面前请先做净化处理。",
+          "Not necessarily. The generated HTML is not sanitised; sanitise it before embedding."
+        ]
+      },
+      {
+        "q": [
+          "支持表格吗？",
+          "Are tables supported?"
+        ],
+        "a": [
+          "支持，开启 GFM 扩展后 Markdown 表格会正确解析并转成 HTML 表格。",
+          "Yes, with GFM enabled Markdown tables are parsed and converted into HTML tables."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "Markdown 转 HTML",
+          "Markdown to HTML"
+        ],
+        "value": "{\"mode\":\"toHtml\",\"input\":\"# Title\\n\\nSome **bold** text.\",\"gfm\":true}"
+      },
+      {
+        "label": [
+          "HTML 转 Markdown",
+          "HTML to Markdown"
+        ],
+        "value": "{\"mode\":\"toMarkdown\",\"input\":\"<h1>Title</h1><p>Body</p>\"}"
+      }
+    ]
+  },
+  "password-policy": {
+    "category": "crypto",
+    "name": [
+      "口令策略检查",
+      "Password Policy Checker"
+    ],
+    "description": [
+      "检查口令是否满足长度、字符类与弱口令要求，并给出改进建议。",
+      "Check whether a password meets length, character class and weak-password requirements."
+    ],
+    "categoryLabel": [
+      "加密",
+      "Cryptography"
+    ],
+    "actions": {
+      "run": [
+        "检查",
+        "Check"
+      ]
+    },
+    "fields": {
+      "password": [
+        "待检查口令",
+        "Password to check"
+      ],
+      "preset": [
+        "策略预设",
+        "Policy preset"
+      ],
+      "minLength": [
+        "最小长度",
+        "Minimum length"
+      ],
+      "maxLength": [
+        "最大长度",
+        "Maximum length"
+      ],
+      "maxRepeatRun": [
+        "最大连续重复",
+        "Maximum repeat run"
+      ]
+    },
+    "options": {
+      "preset": {
+        "basic": [
+          "基础",
+          "Basic"
+        ],
+        "medium": [
+          "中等",
+          "Medium"
+        ],
+        "strict": [
+          "严格",
+          "Strict"
+        ]
+      }
+    },
+    "results": {
+      "compliant": [
+        "符合策略",
+        "Compliant"
+      ],
+      "score": [
+        "通过率",
+        "Score"
+      ],
+      "strength": [
+        "强度等级",
+        "Strength"
+      ],
+      "checks": [
+        "检查项",
+        "Checks"
+      ],
+      "suggestions": [
+        "改进建议",
+        "Suggestions"
+      ]
+    },
+    "hints": {
+      "password": [
+        "口令只用于本地规则判断，**不**离开浏览器也不写任何存储。",
+        "The password is judged by local rules only; it never leaves the browser and is never stored."
+      ],
+      "output": [
+        "通过率按各项检查的结果计算，强度等级综合通过率与长度。",
+        "The score reflects each check and the strength level combines it with the length."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "这个检查能替代密码管理器吗？",
+          "Does this replace a password manager?"
+        ],
+        "a": [
+          "不能。它只做规则判断，不评估口令是否已被泄露。",
+          "No. It only applies rules and does not check whether a password has been breached."
+        ]
+      },
+      {
+        "q": [
+          "常见弱口令列表有多全？",
+          "How complete is the weak password list?"
+        ],
+        "a": [
+          "只收录最常见的一批，完整判断需要接入泄露库，那超出本工具范围。",
+          "Only the most common ones are included; a full check needs a breach database, which is out of scope here."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "检查强口令",
+          "Check a strong password"
+        ],
+        "value": "{\"password\":\"Zx7#quietRiver9\",\"preset\":\"medium\"}"
+      },
+      {
+        "label": [
+          "检查弱口令",
+          "Check a weak password"
+        ],
+        "value": "{\"password\":\"abc\",\"preset\":\"strict\"}"
+      }
+    ]
+  },
+  "totp": {
+    "category": "crypto",
+    "name": [
+      "动态口令生成校验",
+      "TOTP Generator"
+    ],
+    "description": [
+      "生成与校验 TOTP 动态口令，支持 SHA1、SHA256 与 SHA512。",
+      "Generate and verify TOTP codes with SHA1, SHA256 and SHA512."
+    ],
+    "categoryLabel": [
+      "加密",
+      "Cryptography"
+    ],
+    "actions": {
+      "run": [
+        "生成",
+        "Generate"
+      ]
+    },
+    "fields": {
+      "operation": [
+        "操作",
+        "Operation"
+      ],
+      "secret": [
+        "Base32 密钥",
+        "Base32 secret"
+      ],
+      "algorithm": [
+        "摘要算法",
+        "Digest algorithm"
+      ],
+      "digits": [
+        "验证码位数",
+        "Code digits"
+      ],
+      "period": [
+        "时间步长",
+        "Period"
+      ],
+      "timestamp": [
+        "时间戳",
+        "Timestamp"
+      ],
+      "code": [
+        "待校验验证码",
+        "Code to verify"
+      ],
+      "window": [
+        "允许的时间步",
+        "Allowed steps"
+      ]
+    },
+    "options": {
+      "operation": {
+        "generate": [
+          "生成验证码",
+          "Generate code"
+        ],
+        "verify": [
+          "校验验证码",
+          "Verify code"
+        ]
+      },
+      "algorithm": {
+        "SHA1": [
+          "SHA1",
+          "SHA1"
+        ],
+        "SHA256": [
+          "SHA256",
+          "SHA256"
+        ],
+        "SHA512": [
+          "SHA512",
+          "SHA512"
+        ]
+      }
+    },
+    "results": {
+      "code": [
+        "验证码",
+        "Code"
+      ],
+      "valid": [
+        "校验结论",
+        "Valid"
+      ],
+      "counter": [
+        "时间步计数器",
+        "Counter"
+      ],
+      "validFrom": [
+        "生效时间",
+        "Valid from"
+      ],
+      "validUntil": [
+        "失效时间",
+        "Valid until"
+      ],
+      "remainingSeconds": [
+        "剩余秒数",
+        "Seconds remaining"
+      ]
+    },
+    "hints": {
+      "secret": [
+        "密钥是 Base32 文本；空格与连字符会自动忽略。",
+        "The secret is Base32 text; spaces and hyphens are ignored."
+      ],
+      "output": [
+        "HMAC 计算经 cryptosvc 转调 Tongsuo，本工具不自行实现 HMAC。",
+        "HMAC computation goes through cryptosvc to Tongsuo; this tool does not implement HMAC itself."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "和常见验证器兼容吗？",
+          "Is it compatible with common authenticator apps?"
+        ],
+        "a": [
+          "兼容。标准参数下结果与主流验证器一致。",
+          "Yes. With standard parameters the result matches mainstream authenticators."
+        ]
+      },
+      {
+        "q": [
+          "为什么默认用 SHA1？",
+          "Why is SHA1 the default?"
+        ],
+        "a": [
+          "SHA1 是兼容面最广的默认算法；安全性更高的场景请选 SHA256 或 SHA512。",
+          "SHA1 has the widest compatibility; choose SHA256 or SHA512 where stronger security matters."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "生成验证码",
+          "Generate a code"
+        ],
+        "value": "{\"operation\":\"generate\",\"secret\":\"JBSWY3DPEHPK3PXP\",\"algorithm\":\"SHA1\",\"digits\":6,\"period\":30}"
+      },
+      {
+        "label": [
+          "校验验证码",
+          "Verify a code"
+        ],
+        "value": "{\"operation\":\"verify\",\"secret\":\"JBSWY3DPEHPK3PXP\",\"algorithm\":\"SHA1\",\"digits\":6,\"timestamp\":59,\"code\":\"94287082\"}"
+      }
+    ]
+  },
+  "cert-lifecycle": {
+    "category": "certificates",
+    "name": [
+      "证书生命周期",
+      "Certificate Lifecycle"
+    ],
+    "description": [
+      "计算证书的有效期区间、到期倒计时与续期建议。",
+      "Compute a certificate's validity window, expiry countdown and renewal advice."
+    ],
+    "categoryLabel": [
+      "证书",
+      "Certificates"
+    ],
+    "actions": {
+      "run": [
+        "计算",
+        "Compute"
+      ]
+    },
+    "fields": {
+      "certificate": [
+        "证书内容",
+        "Certificate"
+      ],
+      "isPem": [
+        "是 PEM 文本",
+        "Is PEM"
+      ],
+      "warningDays": [
+        "警告期天数",
+        "Warning days"
+      ]
+    },
+    "options": {},
+    "results": {
+      "notBefore": [
+        "生效时间",
+        "Not before"
+      ],
+      "notAfter": [
+        "过期时间",
+        "Not after"
+      ],
+      "validDays": [
+        "有效天数",
+        "Valid days"
+      ],
+      "daysRemaining": [
+        "剩余天数",
+        "Days remaining"
+      ],
+      "hoursRemaining": [
+        "剩余小时",
+        "Hours remaining"
+      ],
+      "status": [
+        "状态",
+        "Status"
+      ],
+      "isSelfSigned": [
+        "自签名",
+        "Self-signed"
+      ],
+      "isCa": [
+        "CA 证书",
+        "CA certificate"
+      ],
+      "keyAlgorithm": [
+        "公钥算法",
+        "Key algorithm"
+      ],
+      "san": [
+        "主体备用名",
+        "Subject alternative names"
+      ],
+      "recommendations": [
+        "续期建议",
+        "Recommendations"
+      ]
+    },
+    "hints": {
+      "certificate": [
+        "粘贴 PEM 文本即可；证书解析走 pkisvc，与仓库其他证书工具口径一致。",
+        "Paste the PEM text; parsing goes through pkisvc for consistency with the other certificate tools."
+      ],
+      "output": [
+        "状态分为有效、即将过期、已过期与尚未生效四种。",
+        "The status is one of valid, expiring, expired or not yet valid."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "能检查证书链吗？",
+          "Does it check the certificate chain?"
+        ],
+        "a": [
+          "不能，只看单张证书。链验证请用证书链验证工具。",
+          "No, it looks at a single certificate. Use the chain verifier for chains."
+        ]
+      },
+      {
+        "q": [
+          "自签名证书需要注意什么？",
+          "What about self-signed certificates?"
+        ],
+        "a": [
+          "自签名证书需要客户端单独信任该 CA，不适合公开环境。",
+          "Clients must trust that CA explicitly, so they are unsuitable for public environments."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "查看证书有效期",
+          "Inspect a certificate validity"
+        ],
+        "value": "{\"warningDays\":30}"
+      }
+    ]
+  },
+  "ssh-keygen": {
+    "category": "keys",
+    "name": [
+      "SSH 密钥生成",
+      "SSH Key Generator"
+    ],
+    "description": [
+      "生成 OpenSSH 格式的密钥对，输出私钥、authorized_keys 公钥行与 SHA256 指纹。",
+      "Generate an OpenSSH key pair with the private key, an authorized_keys line and a SHA256 fingerprint."
+    ],
+    "categoryLabel": [
+      "密钥",
+      "Keys"
+    ],
+    "actions": {
+      "run": [
+        "生成",
+        "Generate"
+      ]
+    },
+    "fields": {
+      "algorithm": [
+        "密钥算法",
+        "Algorithm"
+      ],
+      "bits": [
+        "RSA 位数",
+        "RSA bits"
+      ],
+      "comment": [
+        "注释",
+        "Comment"
+      ]
+    },
+    "options": {
+      "algorithm": {
+        "Ed25519": [
+          "Ed25519",
+          "Ed25519"
+        ],
+        "RSA": [
+          "RSA",
+          "RSA"
+        ]
+      }
+    },
+    "results": {
+      "privateKey": [
+        "私钥",
+        "Private key"
+      ],
+      "publicKey": [
+        "公钥",
+        "Public key"
+      ],
+      "fingerprint": [
+        "指纹",
+        "Fingerprint"
+      ],
+      "bits": [
+        "RSA 位数",
+        "RSA bits"
+      ],
+      "comment": [
+        "注释",
+        "Comment"
+      ]
+    },
+    "hints": {
+      "algorithm": [
+        "首版**只支持未加密私钥**：口令加密变体需要 bcrypt KDF，属上游能力缺口，暂不提供。",
+        "The first version supports unencrypted private keys only: the passphrase-encrypted variant needs a bcrypt KDF that the upstream library does not yet provide."
+      ],
+      "output": [
+        "私钥请妥善保管；指纹可用于核对两端是否一致。",
+        "Keep the private key safe; the fingerprint lets you confirm both ends match."
+      ]
+    },
+    "faq": [
+      {
+        "q": [
+          "能生成带口令的私钥吗？",
+          "Can it generate a passphrase-protected key?"
+        ],
+        "a": [
+          "暂不能。口令加密需要 bcrypt KDF 与密文格式转换，按规范须走上游支持，不做自研兜底。",
+          "Not yet. It needs a bcrypt KDF and encrypted-key format conversion, which must come from the upstream library rather than a home-grown fallback."
+        ]
+      },
+      {
+        "q": [
+          "私钥格式是什么？",
+          "What format is the private key in?"
+        ],
+        "a": [
+          "OpenSSH 的 openssh-key-v1 格式，可直接写入 ~/.ssh/id_ed25519。",
+          "The openssh-key-v1 format, which can be written straight to ~/.ssh/id_ed25519."
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "label": [
+          "生成 Ed25519 密钥",
+          "Generate an Ed25519 key"
+        ],
+        "value": "{\"algorithm\":\"Ed25519\",\"comment\":\"toolbit@example.com\"}"
+      },
+      {
+        "label": [
+          "生成 RSA 密钥",
+          "Generate an RSA key"
+        ],
+        "value": "{\"algorithm\":\"RSA\",\"bits\":3072,\"comment\":\"toolbit@example.com\"}"
+      }
+    ]
+  }
+}
