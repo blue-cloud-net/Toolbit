@@ -43,6 +43,26 @@ const (
 	MaxPasswordCount = 100
 )
 
+// 口令策略模板。
+const (
+	// PasswordTemplateSimple 是简单口令模板。
+	PasswordTemplateSimple = "simple"
+	// PasswordTemplateStrong 是强口令模板。
+	PasswordTemplateStrong = "strong"
+	// PasswordTemplatePin 是数字口令模板。
+	PasswordTemplatePin = "pin"
+	// PasswordTemplatePassphrase 是可发音口令模板。
+	PasswordTemplatePassphrase = "passphrase"
+)
+
+// PasswordTemplate 返回受支持的策略模板（顺序稳定）。
+func PasswordTemplate() []string {
+	return []string{
+		PasswordTemplateSimple, PasswordTemplateStrong,
+		PasswordTemplatePin, PasswordTemplatePassphrase,
+	}
+}
+
 // PasswordGenRequest 是密码生成工具的请求。
 type PasswordGenRequest struct {
 	// Length 是密码长度；默认 16。
@@ -57,6 +77,14 @@ type PasswordGenRequest struct {
 	RequireEachClass bool `json:"requireEachClass"`
 	// CustomCharset 是自定义字符集；非空时覆盖 Charsets。
 	CustomCharset string `json:"customCharset"`
+	// Template 是策略模板；留空表示不套模板。
+	Template string `json:"template"`
+	// Separator 是批量生成时的分隔符；留空用换行。
+	Separator string `json:"separator"`
+	// ExcludeChars 是要额外排除的字符。
+	ExcludeChars string `json:"excludeChars"`
+	// WordCount 是可发音口令的单词数；默认 3。
+	WordCount int `json:"wordCount"`
 }
 
 // PasswordGenResult 是密码生成工具的响应。
@@ -65,6 +93,10 @@ type PasswordGenResult struct {
 	Passwords []string `json:"passwords"`
 	// EntropyBits 是单个密码的估算熵（bit）。
 	EntropyBits float64 `json:"entropyBits"`
+	// Template 是实际使用的策略模板。
+	Template string `json:"template"`
+	// PoolSize 是字符池大小；可发音口令为空。
+	PoolSize int `json:"poolSize"`
 }
 
 // Validate 做字段级校验。
@@ -82,6 +114,37 @@ func (r *PasswordGenRequest) Validate() error {
 	if r.Count < 1 || r.Count > MaxPasswordCount {
 		return tools.InvalidField("count", []int{1, MaxPasswordCount}, r.Count)
 	}
+	if r.Template != "" && !containsString(PasswordTemplate(), r.Template) {
+		return tools.InvalidField("template", PasswordTemplate(), r.Template)
+	}
+	if r.WordCount < 0 || r.WordCount > 12 {
+		return tools.InvalidField("wordCount", []int{0, 12}, r.WordCount)
+	}
+	if len(r.ExcludeChars) > 64 {
+		return tools.InvalidField("excludeChars", []int{0, 64}, len(r.ExcludeChars))
+	}
+	if len(r.Separator) > 16 {
+		return tools.InvalidField("separator", []int{0, 16}, len(r.Separator))
+	}
+
+	// 套用策略模板：模板给出字符集与约束的默认值。
+	switch r.Template {
+	case PasswordTemplateSimple:
+		r.applyTemplate([]string{CharsetLower, CharsetUpper, CharsetDigit}, false)
+	case PasswordTemplateStrong:
+		r.applyTemplate([]string{CharsetLower, CharsetUpper, CharsetDigit, CharsetSymbol}, true)
+	case PasswordTemplatePin:
+		r.applyTemplate([]string{CharsetDigit}, false)
+	case PasswordTemplatePassphrase:
+		// 可发音口令走独立的单词表，不使用字符池。
+		if r.WordCount == 0 {
+			r.WordCount = 3
+		}
+		if r.Length < 8 || r.Length > 64 {
+			return tools.InvalidField("length", []int{8, 64}, r.Length)
+		}
+	}
+
 	if len(r.Charsets) == 0 && r.CustomCharset == "" {
 		r.Charsets = []string{CharsetLower, CharsetUpper, CharsetDigit, CharsetSymbol}
 	}
@@ -97,6 +160,18 @@ func (r *PasswordGenRequest) Validate() error {
 		return tools.InvalidField("requireEachClass", false, true)
 	}
 	return nil
+}
+
+// applyTemplate 套用策略模板的默认参数。
+//
+// 模板只填充**未显式指定**的字段，用户显式给出的值优先。
+func (r *PasswordGenRequest) applyTemplate(charsets []string, requireEachClass bool) {
+	if len(r.Charsets) == 0 && r.CustomCharset == "" {
+		r.Charsets = charsets
+	}
+	if !r.RequireEachClass {
+		r.RequireEachClass = requireEachClass
+	}
 }
 
 // PasswordGen 生成随机密码。
@@ -129,6 +204,8 @@ func PasswordGen(_ context.Context, req *PasswordGenRequest) (tools.Result, erro
 	return tools.Result{Data: PasswordGenResult{
 		Passwords:   passwords,
 		EntropyBits: entropy,
+		Template:    req.Template,
+		PoolSize:    len(pool),
 	}}, nil
 }
 
@@ -139,6 +216,7 @@ func buildPool(req *PasswordGenRequest) (string, []string, error) {
 		if req.ExcludeAmbiguous {
 			pool = removeChars(pool, ambiguousChars)
 		}
+		pool = removeChars(pool, req.ExcludeChars)
 		if len(pool) == 0 {
 			return "", nil, tools.InvalidField("customCharset", "non-empty", "")
 		}
@@ -162,6 +240,7 @@ func buildPool(req *PasswordGenRequest) (string, []string, error) {
 		if req.ExcludeAmbiguous {
 			chars = removeChars(chars, ambiguousChars)
 		}
+		chars = removeChars(chars, req.ExcludeChars)
 		if chars == "" {
 			continue
 		}
@@ -176,6 +255,11 @@ func buildPool(req *PasswordGenRequest) (string, []string, error) {
 
 // generatePassword 生成一个密码。
 func generatePassword(req *PasswordGenRequest, pool string, classes []string) (string, error) {
+	// 可发音口令走独立路径：它由单词表拼成，不使用字符池。
+	if req.Template == PasswordTemplatePassphrase {
+		return generatePassphrase(req)
+	}
+
 	out := make([]byte, 0, req.Length)
 
 	// 每类至少一个。
