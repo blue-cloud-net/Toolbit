@@ -1,6 +1,6 @@
 # 架构总览
 
-> 状态：Draft ｜ 适用版本：v0.3.1 ｜ 最后更新：2026-10-28
+> 状态：Draft ｜ 适用版本：v0.5.0 ｜ 最后更新：2026-10-29
 
 本文描述蓝云工具箱的整体结构、运行时行为与关键决策。**先读目标与非目标，再读分层，最后看决策清单。**
 
@@ -286,6 +286,14 @@ flowchart LR
 | 密钥运算 | `EncryptPrivateKey` / `DecryptPrivateKey` / `ChangePassphrase` / `ExtractPublicKey` | 口令加解密与改密 |
 | 配对检测 | `Match` | 私钥 ↔ 公钥 / 证书；依据公钥 SPKI 指纹 |
 | JWK / XML | `JWKFromPEM` / `PEMFromJWK` / `XMLFromPEM` / `PEMFromXML` | RFC 7517 与 .NET `RSAKeyValue` |
+| X.509 证书 | `LoadCertificate` / `ParseCertificates` / `Describe` / `Fingerprints` / `CheckValidity` | 主体 / 签发者 / 有效期 / 扩展 / 指纹 / 有效性 |
+| PEM ↔ DER | `SplitPEM` / `NormalizeToDER` / `ConvertPEMDER` | 块拆分、类型过滤、格式互转 |
+| 证书签名请求 | `ParseCSR` / `VerifyCSR` | 主体 / SAN / 公钥 / 扩展 / 自签名校验 |
+| 证书链 | `OrderChain` / `SplitChain` | AKID → SKID 排序与链拆分 |
+| 链验证 | `VerifyChain` | 逐层验证、域名匹配、结构化错误项 |
+| 链修复 | `RepairChain` | 从中间证书与受信任根里补链 |
+| 吊销列表 | `ParseCRLInfo` | 签发者 / 有效期 / 吊销条目 |
+| ASN.1 | `ParseASN1` / `HexDump` | DER 展开为 TLV 树与十六进制转储 |
 
 **与 `cryptosvc` 的边界**
 
@@ -295,7 +303,8 @@ flowchart LR
   跨层只传 PEM / DER 等表示层数据。
 - `pkisvc` 的**公开签名不出现** `tongsuo-go` 的类型，
   以免 tools 层被迫 import `tongsuo-go` 而破坏边界。
-- v0.5.0 / v0.6.0 在本层补齐 X.509、CRL、OCSP 与 PKCS 容器能力。
+- X.509 / CSR / CRL / ASN.1 能力已在 v0.5.0 落到本层；
+  OCSP 与 PKCS 容器能力待 v0.6.0 补齐。
 
 ---
 
@@ -521,6 +530,10 @@ erDiagram
 | 明文 HTTP 下不设 HSTS | — | 由前置代理负责 |
 | `SetTime` 影响同一 `Store` 的后续所有验证 | 链验证时刻回拨可让过期证书通过 | 每请求新建 `Store`；仅在用户显式指定历史时刻时使用 |
 | `RevocationCheck` 不校验 CRL 签名与有效期 | 伪造 CRL 可能误报吊销 | 调用前强制 `CRL.Verify(issuer)` |
+| 没有系统信任库（上游缺口 I-17） | 链验证只能靠用户传入受信任根，否则只验证链内自洽 | 响应里用 `implicitTrust` 显式标出；文档写明语义 |
+| `CertificateRequest` 无公开 `Close()`（上游缺口 I-15） | CSR 句柄只能靠 `finalizer` 回收 | v0.5.0 唯一例外，已登记；上游修复后回头改掉 |
+| `asn1.Parse` 无深度 / 节点数上限（上游缺口 I-16） | 深层嵌套 DER 可能耗尽内存 | 调用上游**之前**自行测量体积与节点数，超限即 `TOO_LARGE` |
+| CRL 序列号超 8 字节时上游返回 `-1`（上游缺口 I-18） | 超长序列号无法无损表达 | 输出**空字符串**，不输出溢出的错误值 |
 | cgo 不可中断 | 超时后工作仍占用 CPU | 重操作并发 ≤ 2；记录 orphan 日志 |
 | `js-format` / `sql-format` 依赖内嵌 JS bundle | 镜像增大，供应链面增加 | 固定版本 + 校验和；预算内 |
 | 单进程 | 无水平扩展 | v1 不需要 |
