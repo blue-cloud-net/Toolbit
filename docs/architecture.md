@@ -294,6 +294,13 @@ flowchart LR
 | 链修复 | `RepairChain` | 从中间证书与受信任根里补链 |
 | 吊销列表 | `ParseCRLInfo` | 签发者 / 有效期 / 吊销条目 |
 | ASN.1 | `ParseASN1` / `HexDump` | DER 展开为 TLV 树与十六进制转储 |
+| CSR 生成 | `CreateCSR` | `NewEmptyCertificateRequest` 分步构建后签名 |
+| 证书签发 | `IssueCertificate` | `NewCertificate` 分步构建（避免「已签名锁」） |
+| CRL 签发 | `CreateCRL` | `NewCRLBuilder`；原因码白名单校验 |
+| 吊销判定 | `LoadRevocationList` / `CheckRevocation` | 先验签后判定；过期 CRL 一律拒绝 |
+| OCSP | `CreateOCSPRequestDER` / `ParseOCSPResponseDER` | 请求生成与响应解析（含可选验签） |
+| PKCS#12 | `PackPKCS12` / `ParsePKCS12` / `ChangePKCS12Password` | 容器打包、解析与改密 |
+| PKCS#7 | `BuildPKCS7` / `ExtractPKCS7` | **仅证书袋**（上游能力边界） |
 
 **与 `cryptosvc` 的边界**
 
@@ -304,7 +311,7 @@ flowchart LR
 - `pkisvc` 的**公开签名不出现** `tongsuo-go` 的类型，
   以免 tools 层被迫 import `tongsuo-go` 而破坏边界。
 - X.509 / CSR / CRL / ASN.1 能力已在 v0.5.0 落到本层；
-  OCSP 与 PKCS 容器能力待 v0.6.0 补齐。
+  证书签发、CRL 签发、吊销判定、OCSP 与 PKCS 容器在 v0.6.0 补齐。
 
 ---
 
@@ -534,6 +541,10 @@ erDiagram
 | `CertificateRequest` 无公开 `Close()`（上游缺口 I-15） | CSR 句柄只能靠 `finalizer` 回收 | v0.5.0 唯一例外，已登记；上游修复后回头改掉 |
 | `asn1.Parse` 无深度 / 节点数上限（上游缺口 I-16） | 深层嵌套 DER 可能耗尽内存 | 调用上游**之前**自行测量体积与节点数，超限即 `TOO_LARGE` |
 | CRL 序列号超 8 字节时上游返回 `-1`（上游缺口 I-18） | 超长序列号无法无损表达 | 输出**空字符串**，不输出溢出的错误值 |
+| 便捷签发入口会「立即签名」（上游缺口 I-21） | 用它们签发的证书丢失 SKID / SAN 等扩展 | `pkisvc` 固定走分步构建，测试守住扩展存在性 |
+| 读证书只能拿到扩展 DER（上游缺口 I-19） | `templateCert` 无法拷贝扩展 | 语义收窄为「复用公钥与有效期」，契约与文档同时写明 |
+| `CRLBuilder.Revoke` 只吃证书（上游缺口 I-20） | 无法按序列号吊销 | `revoked[]` 只接受证书，契约无 `serial` 选项 |
+| `PKCS12_newpass` 无法处理外部容器（上游缺口 I-22） | `pfx-change-password` 只能改本库打包的容器 | 契约测试用本库打包的容器；文档与前端提示写明限制 |
 | cgo 不可中断 | 超时后工作仍占用 CPU | 重操作并发 ≤ 2；记录 orphan 日志 |
 | `js-format` / `sql-format` 依赖内嵌 JS bundle | 镜像增大，供应链面增加 | 固定版本 + 校验和；预算内 |
 | 单进程 | 无水平扩展 | v1 不需要 |
