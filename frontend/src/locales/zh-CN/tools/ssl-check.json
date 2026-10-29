@@ -18,7 +18,10 @@
   "results": {
     "output": "检测结果",
     "progress": "探测进度",
-    "chain": "证书链"
+    "chain": "证书链",
+    "grade": "安全评级 {grade}",
+    "checkPass": "通过",
+    "checkFail": "未通过"
   },
   "examples": [
     {

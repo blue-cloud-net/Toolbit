@@ -9,6 +9,7 @@ import { computed, onScopeDispose, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { ApiError, streamURL } from '@/api/client'
+import KeyValueTable, { type KeyValueRow } from '@/components/tool/KeyValueTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -44,6 +45,8 @@ interface SSLProbeResult {
   verified: boolean
   implicitTrust: boolean
   ocspStapled: boolean
+  grade: string
+  checks: { id: string; label: string; passed: boolean; detail?: string }[]
 }
 
 /** 服务端帧。 */
@@ -76,19 +79,33 @@ let socket: WebSocket | null = null
 
 const faq = computed<FaqItem[]>(() => tm('tools.ssl-check.faq') as FaqItem[])
 
-/** 结论徽章：TLS 链是否验证通过。 */
+/** 结论徽章：按综合评级给出。 */
 const verdict = computed(() => {
   const result = data.value
-  if (!result) {
+  if (!result || !result.grade) {
     return null
   }
-  if (!result.chainValid) {
-    return { level: 'danger' as const, label: t('tool.verdict.fail') }
+  const label = t('tools.ssl-check.results.grade', { grade: result.grade })
+  if (result.grade === 'A+' || result.grade === 'A') {
+    return { level: 'success' as const, label }
   }
-  if (!result.verified) {
-    return { level: 'warning' as const, label: t('tool.verdict.warn') }
+  if (result.grade === 'B') {
+    return { level: 'warning' as const, label }
   }
-  return { level: 'success' as const, label: t('tool.verdict.pass') }
+  return { level: 'danger' as const, label }
+})
+
+/** 逐项检查结论。 */
+const checkRows = computed<KeyValueRow[]>(() => {
+  const result = data.value
+  if (!result || result.checks.length === 0) {
+    return []
+  }
+  return result.checks.map((check) => ({
+    label: check.label,
+    value: check.detail || (check.passed ? t('tools.ssl-check.results.checkPass') : t('tools.ssl-check.results.checkFail')),
+    level: check.passed ? ('success' as const) : ('danger' as const),
+  }))
 })
 
 const progressText = computed(() => {
@@ -307,7 +324,14 @@ function reset(): void {
         :verdict="verdict"
         :title="t('tools.ssl-check.results.output')"
         @retry="run"
-      />
+      >
+        <template
+          v-if="checkRows.length > 0"
+          #extra
+        >
+          <KeyValueTable :rows="checkRows" />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

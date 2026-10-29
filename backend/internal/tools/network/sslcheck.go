@@ -115,6 +115,10 @@ type TLSProbeResult struct {
 	ImplicitTrust bool `json:"implicitTrust"`
 	// OcspStapled 报告服务端是否携带 OCSP 装订响应。
 	OcspStapled bool `json:"ocspStapled"`
+	// Grade 是本次探测的综合评级（A+ / A / B / C / T）。
+	Grade string `json:"grade"`
+	// Checks 是逐项检查结论。
+	Checks []TLSCheck `json:"checks"`
 }
 
 // ValidateTLSProbe 校验探测参数。
@@ -234,6 +238,7 @@ func TLSProbe(
 	}
 	result.ChainValid, result.Verified, result.ImplicitTrust, result.ChainErrors =
 		verifyPeerChain(rawChain, host)
+	result.Grade, result.Checks = evaluateTLSProbe(result)
 	report(PhaseChain, TLSTotalPhases)
 	return result, nil
 }

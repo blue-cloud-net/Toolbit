@@ -18,7 +18,10 @@
   "results": {
     "output": "Result",
     "progress": "Progress",
-    "chain": "Certificate chain"
+    "chain": "Certificate chain",
+    "grade": "Security grade {grade}",
+    "checkPass": "Passed",
+    "checkFail": "Failed"
   },
   "examples": [
     {
