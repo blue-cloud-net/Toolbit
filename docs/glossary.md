@@ -104,7 +104,7 @@
 | 分栏 | wide | ≥1280px 下左右分栏的布局标记 |
 | 预设 | preset | 固定选项集合（如主色、字符集） |
 | 主色 | accent | 界面强调色，共 12 组预设，每组含明暗两套令牌 |
-| 专注模式 | focus mode | 隐藏侧栏与页脚的单工具视图，由 URL 参数 `?focus=1` 触发 |
+| 全屏 | fullscreen | 通过浏览器 Fullscreen API 把界面铺满屏幕，顶栏提供切换按钮；不改 URL |
 | 命令面板 | command palette | 键盘唤起的全局工具检索浮层，`Ctrl/⌘ + K` 打开 |
 | 收藏 | favorites | 存在 `localStorage` 的工具 slug 列表 |
 | 最近使用 | recent | 存在 `localStorage` 的最近工具 slug 列表 |
