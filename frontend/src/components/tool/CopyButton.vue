@@ -13,8 +13,10 @@ const props = withDefaults(
     text: string
     /** 无障碍标签；缺省使用「复制」。 */
     label?: string
+    /** 尺寸；small 用于表格内的紧凑场景。 */
+    size?: 'default' | 'small'
   }>(),
-  { label: undefined },
+  { label: undefined, size: 'default' },
 )
 
 const { t } = useI18n()
@@ -80,6 +82,7 @@ async function copy(): Promise<void> {
   <button
     type="button"
     class="copy-button"
+    :class="{ 'copy-button--small': size === 'small' }"
     :aria-label="label ?? t('common.actions.copy')"
     :disabled="text === ''"
     @click="copy"
@@ -109,6 +112,11 @@ async function copy(): Promise<void> {
 .copy-button:hover:not(:disabled) {
   color: var(--tb-text);
   border-color: var(--tb-border-strong);
+}
+
+.copy-button--small {
+  padding: 0 var(--tb-space-1);
+  font-size: var(--tb-font-2xs);
 }
 
 .copy-button:disabled {

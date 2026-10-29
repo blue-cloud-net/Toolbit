@@ -8,7 +8,8 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CodeEditor from '@/components/tool/CodeEditor.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import JsonViewer, { type JsonNode } from '@/components/tool/JsonViewer.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
@@ -67,6 +68,35 @@ bindInput((text) => {
 
 const resultText = computed(() => data.value?.output ?? '')
 const running = computed(() => state.value === 'loading')
+
+/** 结果视图页签。 */
+const resultViews = computed<ResultView[]>(() => {
+  const views: ResultView[] = [{ id: 'text', label: t('tool.result.viewText') }]
+  if (jsonNodes.value.length > 0) {
+    views.push({ id: 'tree', label: t('tool.result.viewTree') })
+  }
+  return views
+})
+
+/** 当前选中的视图。 */
+const activeView = ref('text')
+
+/** 结构化 JSON 节点；解析失败时为空。 */
+const jsonNodes = computed<JsonNode[]>(() => {
+  const output = data.value?.output
+  if (!output) {
+    return []
+  }
+  try {
+    const parsed: unknown = JSON.parse(output)
+    if (parsed !== null && typeof parsed === 'object') {
+      return [{ key: 'root', value: parsed }]
+    }
+    return [{ key: 'root', value: parsed }]
+  } catch {
+    return []
+  }
+})
 
 /** 常用缩进宽度。 */
 const INDENT_OPTIONS = [2, 4, 8] as const
@@ -215,14 +245,34 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.json-format.results.output')"
         :use-as-input="useAsInput"
+        :views="resultViews"
+        download-filename="result.json"
+        download-mime="application/json;charset=utf-8"
         @retry="run"
       >
+        <template #view="{ viewId }">
+          <JsonViewer
+            v-if="viewId === 'tree' && jsonNodes.length > 0"
+            :nodes="jsonNodes"
+          />
+          <pre
+            v-else-if="resultText !== ''"
+            class="result__output"
+          ><code>{{ resultText }}</code></pre>
+          <p
+            v-else
+            class="result__placeholder"
+          >
+            {{ t('tool.result.emptyOutput') }}
+          </p>
+        </template>
         <template
           v-if="data"
           #extra

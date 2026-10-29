@@ -15,6 +15,8 @@
     "backHome": "Back to home",
     "exitFocus": "Exit focus mode",
     "enterFocus": "Enter focus mode",
+    "showSecret": "Show content",
+    "hideSecret": "Hide content",
     "copyField": "Copy {name}"
   },
   "nav": {

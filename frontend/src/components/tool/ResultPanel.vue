@@ -8,6 +8,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CopyButton from '@/components/tool/CopyButton.vue'
+import DownloadButton from '@/components/tool/DownloadButton.vue'
 import EmptyState from '@/components/tool/EmptyState.vue'
 import ErrorAlert from '@/components/tool/ErrorAlert.vue'
 import LoadingSkeleton from '@/components/tool/LoadingSkeleton.vue'
@@ -22,6 +23,32 @@ export interface Verdict {
   level: 'success' | 'danger' | 'warning' | 'info'
   /** 结论文案。 */
   label: string
+}
+
+/** 结构化结果的一个视图。 */
+export interface ResultView {
+  /** 视图标识。 */
+  id: string
+  /** 页签标题。 */
+  label: string
+}
+
+/** 当前选中的视图标识。 */
+const activeView = defineModel<string>('activeView', { default: '' })
+
+/** 实际展示的视图：优先取选中项，否则取第一个。 */
+const currentView = computed(() => {
+  const list = props.views
+  if (list.length === 0) {
+    return ''
+  }
+  const found = list.find((item) => item.id === activeView.value)
+  return (found ?? list[0]!).id
+})
+
+/** 选中视图。 */
+function selectView(id: string): void {
+  activeView.value = id
 }
 
 /** 结论级别 → 图标名。 */
@@ -50,6 +77,12 @@ const props = withDefaults(
     verdict?: Verdict | null
     /** 「作为新输入」回调；工具页用 useToolRun 的 useAsInput 传入。 */
     useAsInput?: ((text: string) => boolean) | null
+    /** 下载文件名；给出时在标题栏渲染下载按钮。 */
+    downloadFilename?: string
+    /** 下载内容的 MIME 类型。 */
+    downloadMime?: string
+    /** 结构化视图；给出时在结果区渲染可切换的页签。 */
+    views?: ResultView[]
   }>(),
   {
     text: '',
@@ -59,6 +92,9 @@ const props = withDefaults(
     showWarnings: true,
     verdict: null,
     useAsInput: null,
+    downloadFilename: undefined,
+    downloadMime: 'text/plain;charset=utf-8',
+    views: () => [],
   },
 )
 
@@ -126,6 +162,12 @@ watch(
           v-if="durationText"
           class="result__duration"
         >{{ durationText }}</span>
+        <DownloadButton
+          v-if="downloadFilename && state === 'success' && text !== ''"
+          :filename="downloadFilename"
+          :content="text"
+          :mime="downloadMime"
+        />
         <button
           v-if="useAsInput && state === 'success' && text !== ''"
           type="button"
@@ -202,16 +244,43 @@ watch(
         </li>
       </ul>
 
-      <pre
-        v-if="text !== ''"
-        class="result__output"
-      ><code>{{ text }}</code></pre>
-      <p
-        v-else
-        class="result__placeholder"
+      <div
+        v-if="views.length > 0"
+        class="result__tabs"
+        role="tablist"
       >
-        {{ t('tool.result.emptyOutput') }}
-      </p>
+        <button
+          v-for="view in views"
+          :key="view.id"
+          type="button"
+          role="tab"
+          class="result__tab"
+          :class="{ 'result__tab--active': view.id === currentView }"
+          :aria-selected="view.id === currentView"
+          @click="selectView(view.id)"
+        >
+          {{ view.label }}
+        </button>
+      </div>
+
+      <slot
+        v-if="views.length > 0"
+        name="view"
+        :view-id="currentView"
+      />
+
+      <template v-else>
+        <pre
+          v-if="text !== ''"
+          class="result__output"
+        ><code>{{ text }}</code></pre>
+        <p
+          v-else
+          class="result__placeholder"
+        >
+          {{ t('tool.result.emptyOutput') }}
+        </p>
+      </template>
 
       <slot name="extra" />
     </template>
@@ -369,5 +438,34 @@ watch(
   background: var(--tb-bg-sunken);
   border: 1px solid var(--tb-border);
   border-radius: var(--tb-radius-control);
+}
+
+/* 多视图页签。 */
+.result__tabs {
+  display: flex;
+  gap: var(--tb-space-1);
+  border-bottom: 1px solid var(--tb-border);
+}
+
+.result__tab {
+  padding: var(--tb-space-1) var(--tb-space-3);
+  font-size: var(--tb-font-xs);
+  color: var(--tb-text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    color var(--tb-transition),
+    border-color var(--tb-transition);
+}
+
+.result__tab:hover {
+  color: var(--tb-text);
+}
+
+.result__tab--active {
+  color: var(--tb-primary);
+  border-bottom-color: var(--tb-primary);
 }
 </style>

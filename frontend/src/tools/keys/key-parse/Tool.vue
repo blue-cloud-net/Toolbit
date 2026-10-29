@@ -9,6 +9,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import KeyInput from '@/components/tool/KeyInput.vue'
+import KeyValueTable, { type KeyValueRow } from '@/components/tool/KeyValueTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -84,6 +85,30 @@ const resultText = computed(() => {
 
 const faq = computed<FaqItem[]>(() => tm('tools.key-parse.faq') as FaqItem[])
 
+/** 结构化字段：逐项可复制。 */
+const detailRows = computed<KeyValueRow[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const rows: KeyValueRow[] = [
+    { label: t('tools.key-parse.results.algorithm'), value: result.algorithm },
+    { label: t('tools.key-parse.results.keyType'), value: result.keyType },
+    { label: t('tools.key-parse.results.format'), value: result.format },
+  ]
+  if (result.bits) {
+    rows.push({ label: t('tools.key-parse.results.bits'), value: String(result.bits) })
+  }
+  if (result.curve) {
+    rows.push({ label: t('tools.key-parse.results.curve'), value: result.curve })
+  }
+  rows.push({
+    label: t('tools.key-parse.results.fingerprint'),
+    value: result.fingerprintSha256,
+  })
+  return rows
+})
+
 /** 运行当前输入。 */
 function run(): void {
   void execute({
@@ -145,8 +170,16 @@ function fillExample(): void {
         :meta="meta"
         :error="error"
         :title="t('tools.key-parse.results.info')"
+        download-filename="key.txt"
         @retry="run"
-      />
+      >
+        <template
+          v-if="detailRows.length > 0"
+          #extra
+        >
+          <KeyValueTable :rows="detailRows" />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

@@ -9,6 +9,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CertTextInput from '@/components/tool/CertTextInput.vue'
+import KeyValueTable, { type KeyValueRow } from '@/components/tool/KeyValueTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -69,6 +70,40 @@ const cert = ref('')
 const certFormat = ref('auto')
 const atTime = ref('')
 const fingerprints = ref<string[]>(['sha256'])
+
+/** 结构化字段：逐项可复制。 */
+const detailRows = computed<KeyValueRow[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const info = result.certificate
+  const rows: KeyValueRow[] = [
+    { label: t('tools.cert-parse.results.subject'), value: info.subjectText },
+    { label: t('tools.cert-parse.results.issuer'), value: info.issuerText },
+    { label: t('tools.cert-parse.results.serial'), value: info.serial },
+    {
+      label: t('tools.cert-parse.results.validity'),
+      value: `${result.validity.status} (${result.validity.daysRemaining}d)`,
+      level: result.validity.daysRemaining < 0 ? ('danger' as const) : ('success' as const),
+    },
+    { label: t('tools.cert-parse.results.notBefore'), value: info.notBefore },
+    { label: t('tools.cert-parse.results.notAfter'), value: info.notAfter },
+    {
+      label: t('tools.cert-parse.results.publicKey'),
+      value: `${info.publicKey.algorithm} ${info.publicKey.bits}`,
+    },
+    { label: t('tools.cert-parse.results.signatureAlgorithm'), value: info.signatureAlgorithm },
+    {
+      label: t('tools.cert-parse.results.selfSigned'),
+      value: String(result.selfSigned),
+    },
+  ]
+  for (const fp of result.fingerprints) {
+    rows.push({ label: fp.algorithm, value: fp.value })
+  }
+  return rows
+})
 
 const {
   state,
@@ -220,8 +255,16 @@ function fillExample(): void {
         :meta="meta"
         :error="error"
         :title="t('tools.cert-parse.results.info')"
+        download-filename="certificate.txt"
         @retry="run"
-      />
+      >
+        <template
+          v-if="detailRows.length > 0"
+          #extra
+        >
+          <KeyValueTable :rows="detailRows" />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

@@ -27,6 +27,8 @@
     "duration": "Took {ms} ms",
     "emptyOutput": "(empty result)",
     "useAsInput": "Use as input",
+    "viewText": "Raw",
+    "viewTree": "Structured",
     "summary": {
       "succeeded": "Succeeded",
       "failed": "Failed",
@@ -55,6 +57,17 @@
     "base64Invalid": "Contains invalid Base64 characters",
     "uuidOk": "Valid UUID format",
     "uuidInvalid": "Invalid UUID format"
+  },
+  "cert": {
+    "detail": "Certificate details",
+    "issuer": "Issuer",
+    "validity": "Validity",
+    "reason": "Reason"
+  },
+  "file": {
+    "dropHint": "Drop a file here, or click to choose",
+    "tooLarge": "File exceeds the {size} KB limit",
+    "readFailed": "Failed to read the file"
   },
   "verdict": {
     "pass": "Passed",

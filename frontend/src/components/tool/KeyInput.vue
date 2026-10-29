@@ -7,6 +7,8 @@
  */
 import { useI18n } from 'vue-i18n'
 
+import SensitiveInput from '@/components/tool/SensitiveInput.vue'
+
 const value = defineModel<string>({ required: true })
 const format = defineModel<string>('format', { required: true })
 const passphrase = defineModel<string>('passphrase', { default: '' })
@@ -88,14 +90,10 @@ function formatLabel(value: string): string {
       class="field"
     >
       <span class="field__label">{{ t('tool.key.fields.passphrase') }}</span>
-      <input
+      <SensitiveInput
         v-model="passphrase"
-        type="password"
-        class="field__input"
-        autocomplete="off"
-        :aria-label="t('tool.key.fields.passphrase')"
-        :disabled="props.disabled"
-      >
+        :label="t('tool.key.fields.passphrase')"
+      />
     </label>
 
     <p class="field__hint">

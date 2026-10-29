@@ -27,6 +27,8 @@
     "duration": "耗时 {ms} 毫秒",
     "emptyOutput": "（空结果）",
     "useAsInput": "作为新输入",
+    "viewText": "原文",
+    "viewTree": "结构化",
     "summary": {
       "succeeded": "成功",
       "failed": "失败",
@@ -55,6 +57,17 @@
     "base64Invalid": "含非法 Base64 字符",
     "uuidOk": "UUID 格式正确",
     "uuidInvalid": "UUID 格式错误"
+  },
+  "cert": {
+    "detail": "证书详情",
+    "issuer": "颁发者",
+    "validity": "有效期",
+    "reason": "原因"
+  },
+  "file": {
+    "dropHint": "拖放文件到此处，或点击选择",
+    "tooLarge": "文件超过 {size} KB 上限",
+    "readFailed": "读取文件失败"
   },
   "verdict": {
     "pass": "通过",
