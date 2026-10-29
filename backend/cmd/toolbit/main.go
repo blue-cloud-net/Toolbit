@@ -20,6 +20,7 @@ import (
 	"github.com/blue-cloud-net/Toolbit/backend/internal/buildinfo"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/catalog"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/config"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/netguard"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/stats"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/toolset"
@@ -49,13 +50,19 @@ func run() error {
 		return fmt.Errorf("加载工具目录失败: %w", err)
 	}
 
-	registry := tools.NewRegistry(toolset.Definitions())
+	guard := netguard.New(netguard.Config{
+		Enabled:   cfg.NetworkEnabled,
+		Allowlist: cfg.NetworkAllowlist,
+	})
+
+	registry := tools.NewRegistry(toolset.Definitions(guard))
 	missing, orphan := tools.CrossCheck(cat, registry)
 	logger.Info("工具注册表",
 		"implemented", registry.Len(),
 		"missing", len(missing),
 		"orphan", len(orphan),
 		"catalog", cat.String(),
+		"network", cfg.NetworkEnabled,
 	)
 	if len(orphan) > 0 {
 		// 孤儿实现意味着代码与目录不一致，属于部署错误。
@@ -91,6 +98,7 @@ func run() error {
 		Logger:      logger,
 		Catalog:     cat,
 		Tools:       registry,
+		Network:     guard,
 		Stats:       store,
 		StatsWriter: writer,
 		Web:         web,
