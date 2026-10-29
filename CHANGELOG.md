@@ -11,6 +11,15 @@
 
 ### Added
 
+- 品牌标识（Toolbit 徽标）：矢量重绘，贴合品牌名语义
+  - 图形为「T 型手柄 + 六角批头」：`T` 既是首字母，也构成 T 型螺丝刀轮廓；
+    底端尖头六角是批头（bit），合起来正好是「Tool + Bit」
+  - `frontend/public/favicon.svg` 为唯一矢量源；`favicon-32.png` / `favicon.ico` /
+    `apple-touch-icon.png` 均由它生成，不手工维护第二套图形
+  - `frontend/src/components/common/BrandMark.vue`：顶栏品牌标识组件，内联 SVG
+  - 配色走新增的 `--tb-brand-from` / `--tb-brand-to` / `--tb-brand-fg` 令牌，
+    **固定靛蓝**，不随主色切换 —— 徽标是品牌锚点
+  - 顶栏原有的 `◆` 占位字符与 `.header__logo` 样式一并移除
 - `deployments/Dockerfile`：四阶段构建（`tongsuo` → `frontend` → `backend` → `runtime`）
   - Tongsuo 8.4.0 在镜像内编译安装到 `/opt/tongsuo`（`--libdir=lib64 shared enable-ntls`），
     安装路径与 `tongsuo-go` 的 cgo 指令、rpath 严格一致

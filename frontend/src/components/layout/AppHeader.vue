@@ -9,6 +9,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import AppIcon from '@/components/common/AppIcon.vue'
+import BrandMark from '@/components/common/BrandMark.vue'
 import SettingsMenu from '@/components/layout/SettingsMenu.vue'
 import { usePrefsStore } from '@/stores/prefs'
 
@@ -54,10 +55,7 @@ function goHome(): void {
         href="/"
         @click.prevent="goHome"
       >
-        <span
-          class="header__logo"
-          aria-hidden="true"
-        >◆</span>
+        <BrandMark :size="28" />
         <span class="header__brand-text">
           <strong>{{ t('common.appName') }}</strong>
           <small>{{ t('common.appTagline') }}</small>
@@ -130,17 +128,6 @@ function goHome(): void {
 
 .header__brand:hover {
   text-decoration: none;
-}
-
-.header__logo {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  font-size: var(--tb-font-xs);
-  color: var(--tb-primary-contrast);
-  background: var(--tb-primary);
-  border-radius: var(--tb-radius-control);
 }
 
 .header__brand-text {

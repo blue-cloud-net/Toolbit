@@ -181,6 +181,7 @@ ToolPageLayout
 | 边框 | `--tb-border` / `--tb-border-strong` |
 | 文字 | `--tb-text` / `--tb-text-secondary` / `--tb-text-tertiary` |
 | 语义 | `--tb-success` / `--tb-warning` / `--tb-danger` / `--tb-info` |
+| 品牌标识 | `--tb-brand-from` / `--tb-brand-to` / `--tb-brand-fg` |
 
 - 浅色：`--tb-bg` = `#F7F8FA`、elevated `#FFFFFF`、border `#E5E7EB`、text `#111827 / #4B5563 / #9CA3AF`
 - 深色：`--tb-bg` = `#0B0F17`、elevated `#111827`、sunken `#0F1520`、border `#1F2937`、text `#E5E7EB / #9CA3AF`
@@ -205,6 +206,17 @@ ToolPageLayout
 - 间距：4 / 8 / 12 / 16 / 20 / 24 / 32 / 40 / 48。
 - 圆角：6（控件）/ 10（卡片）/ 14（面板）/ 999（胶囊）。
 - 动效：150–200ms `ease-out`；**必须**响应 `prefers-reduced-motion`。
+
+### 8.5 品牌标识
+
+- 徽标图形**必须**是矢量（`frontend/public/favicon.svg` + `frontend/src/components/common/BrandMark.vue`），
+  **禁止**使用位图、图标字体或外链图片。
+- 图形语义**必须**贴合品牌名 Toolbit：`T`（首字母，同时构成 T 型手柄轮廓）+ 六角批头（bit）。
+- 配色**必须**走 `--tb-brand-*` 令牌，**固定靛蓝**，**不随主色（§8.3）切换** ——
+  徽标是品牌锚点，在任意主色与明暗主题下都保持同一识别度。
+- 栅格产物（`favicon-32.png` / `favicon.ico` / `apple-touch-icon.png`）**必须**由同一份矢量源生成，
+  **禁止**手工维护两套图形。
+- `index.html` **必须**声明 `rel="icon"`（SVG + PNG）与 `rel="apple-touch-icon"`。
 
 ---
 

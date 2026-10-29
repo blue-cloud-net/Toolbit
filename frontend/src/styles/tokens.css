@@ -13,6 +13,14 @@
   --tb-primary-soft: #eef2ff;
   --tb-primary-contrast: #ffffff;
 
+  /*
+   * 品牌标识（Toolbit 徽标）：**固定靛蓝，不随主色切换**。
+   * 徽标是品牌锚点，在任意主色与明暗主题下都保持同一识别度。
+   */
+  --tb-brand-from: #6366f1;
+  --tb-brand-to: #4338ca;
+  --tb-brand-fg: #ffffff;
+
   /* 背景 */
   --tb-bg: #f7f8fa;
   --tb-bg-elevated: #ffffff;
