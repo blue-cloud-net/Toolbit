@@ -59,6 +59,7 @@ func gradeOf(score int) string {
 		return "T"
 	}
 }
+
 // evaluateTLSProbe 对探测结果评级并生成逐项清单。
 func evaluateTLSProbe(result *TLSProbeResult) (string, []TLSCheck) {
 	checks := make([]TLSCheck, 0, 6)

@@ -35,6 +35,28 @@
   不输出响应体与配置值 —— 兑现 `docs/api/admin.md` §9.1 早已写明的契约
 - Makefile 新增 `docker-build` / `docker-up` / `docker-smoke` / `docker-logs` / `docker-ps` /
   `docker-shell` / `docker-down` / `docker-clean`
+- 前端体验改版：设计令牌、全局检索与工具页交互的一次性改造
+  - 12 组主色预设（明暗双套 × 5 令牌），可在设置面板切换；
+    语义色（`success` / `warning` / `danger` / `info`）**保持固定不随主色漂移**
+  - 主色对比度门禁 `scripts/check-accent.mjs`：52 项 WCAG 对比度校验（阈值 4.5:1）、
+    色板与令牌一致性校验、语义色漂移校验；已接入 `make lint`
+  - 命令面板：`Ctrl/⌘ + K` 全局唤起，覆盖 70 个工具、10 个分类与 3 个内建页，
+    中英文名任一命中即匹配，支持 `↑` `↓` 选择、`Enter` 打开、`Esc` 关闭、Tab 焦点陷阱
+  - 全局快捷键：`/` 聚焦搜索、`?` 打开快捷键说明、`Alt+↑/↓` 在最近使用中切换
+  - 专注模式：URL 参数 `?focus=1` 隐藏侧栏与页脚（参数只承载界面状态，不承载输入）
+  - 工具页双栏：视口 ≥1024 自动左右分栏，分隔条可拖拽，比例记忆在 `localStorage`
+  - 结果区结论徽章（通过 / 未通过 / 风险 / 未知）与网络类工具的汇总统计条
+  - 结果区「作为新输入」按钮：把结果回填输入区（仅内存，不写任何存储）
+  - 输入即时校验：纯前端语法检查（JSON / 十六进制 / Base64 / UUID），不发起网络请求
+  - 可点击的快速参考面板：正则元字符、cron 表达式、进制写法一键填入
+  - 共享组件补齐 10 个：`SensitiveInput` `FileTextInput` `JsonViewer` `ByteView`
+    `Asn1Tree` `CertChainTable` `CertDetailDialog` `KeyValueTable` `DownloadButton`
+    `ProgressStream`
+  - 结果多视图页签：`json-format` 支持「原文 / 结构化」双视图
+  - `autoRun` 死字段接通：22 个纯本地工具在参数变更后自动运行（400ms 防抖），
+    敏感、出网与高成本工具一律不开启
+  - `ssl-check` 综合评级（A+ / A / B / C / T）与逐项检查清单
+  - 单元测试：命令面板 9 条、主色偏好 9 条、SSL 评级规则 7 条
 
 ### Changed
 
@@ -46,34 +68,6 @@
   digest 固定口径、探针实现方式、compose 位置与禁止清单更新
 - `docs/deploy.md`：Docker 章节改写为 `make docker-up` 为主线，补编排变量表与容器故障排查项
 - `docs/api/admin.md` §9.1：补充探针地址来源、退出码与输出约束
-
-### Added
-
-前端体验改版：设计令牌、全局检索与工具页交互的一次性改造。
-
-- 12 组主色预设（明暗双套 × 5 令牌），可在设置面板切换；
-  语义色（`success` / `warning` / `danger` / `info`）**保持固定不随主色漂移**
-- 主色对比度门禁 `scripts/check-accent.mjs`：52 项 WCAG 对比度校验（阈值 4.5:1）、
-  色板与令牌一致性校验、语义色漂移校验；已接入 `make lint`
-- 命令面板：`Ctrl/⌘ + K` 全局唤起，覆盖 70 个工具、10 个分类与 3 个内建页，
-  中英文名任一命中即匹配，支持 `↑` `↓` 选择、`Enter` 打开、`Esc` 关闭、Tab 焦点陷阱
-- 全局快捷键：`/` 聚焦搜索、`?` 打开快捷键说明、`Alt+↑/↓` 在最近使用中切换
-- 专注模式：URL 参数 `?focus=1` 隐藏侧栏与页脚（参数只承载界面状态，不承载输入）
-- 工具页双栏：视口 ≥1024 自动左右分栏，分隔条可拖拽，比例记忆在 `localStorage`
-- 结果区结论徽章（通过 / 未通过 / 风险 / 未知）与网络类工具的汇总统计条
-- 结果区「作为新输入」按钮：把结果回填输入区（仅内存，不写任何存储）
-- 输入即时校验：纯前端语法检查（JSON / 十六进制 / Base64 / UUID），不发起网络请求
-- 可点击的快速参考面板：正则元字符、cron 表达式、进制写法一键填入
-- 共享组件补齐 10 个：`SensitiveInput` `FileTextInput` `JsonViewer` `ByteView`
-  `Asn1Tree` `CertChainTable` `CertDetailDialog` `KeyValueTable` `DownloadButton`
-  `ProgressStream`
-- 结果多视图页签：`json-format` 支持「原文 / 结构化」双视图
-- `autoRun` 死字段接通：22 个纯本地工具在参数变更后自动运行（400ms 防抖），
-  敏感、出网与高成本工具一律不开启
-- 单元测试：命令面板 9 条、主色偏好 9 条
-
-### Changed
-
 - 字号体系整体上调一档（正文基准 14px → 15px），全站硬编码字号清零
 - 工具卡片增加分类图标锚点，hover 响应主色并预取对应 chunk
 - 侧栏 ≤900px 从「整块隐藏」改为抽屉；新增内联过滤框与筛选后的空分组清理
