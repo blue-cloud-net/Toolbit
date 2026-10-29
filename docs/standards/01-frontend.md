@@ -33,20 +33,36 @@
 frontend/src/
 ├── api/            # 与后端通信的唯一入口
 ├── components/
-│   ├── layout/     # Header / Sidebar / Footer / Drawer
-│   ├── discovery/  # ToolCard / CategoryCard / FilterChips
+│   ├── common/     # AppIcon / BrandMark / ShortcutHelp
+│   ├── layout/     # Header / Sidebar / Footer / SettingsMenu
+│   ├── discovery/  # ToolCard / CategoryCard
 │   ├── search/     # SearchTrigger / CommandPalette
-│   └── tool/       # 工具页专用共享组件
+│   └── tool/       # 工具页专用共享组件（见下方清单）
 ├── composables/    # use* 组合式函数
+├── config/         # accents.ts（主色预设的唯一真源）
 ├── layouts/        # DefaultLayout
 ├── locales/        # zh-CN/ 与 en-US/ 目录（common.json、home.json、tool.json、errors.json、tools/<slug>.json）
 ├── router/
 ├── stores/         # catalog / prefs
-├── styles/         # tokens.css / element-overrides.css / base.css
+├── styles/         # tokens.css / element-overrides.css / base.css / forms.css
 ├── tools/<category>/<slug>/{index.ts,Tool.vue,example.ts}
 ├── types/          # 与后端 DTO 对齐的类型
 └── views/          # 路由级页面组件
 ```
+
+**共享组件清单（`components/tool/`）**
+
+`Asn1Tree` `Base64FileInput` `ByteView` `CertChainTable` `CertDetailDialog`
+`CertTextInput` `CodeEditor` `CodeViewer` `CopyButton` `DownloadButton`
+`EmptyState` `EncodingSelect` `ErrorAlert` `FileDropZone` `FileTextInput`
+`JsonViewer` `KeyInput` `KeyValueTable` `LoadingSkeleton` `ProgressStream`
+`QuickReference` `ResultPanel` `RunBar` `SensitiveInput` `ToolPageLayout`
+`ToolPanel` `ValidationHint`
+
+**组合式函数清单（`composables/`）**
+
+`useAutoRun` `useCommandPalette` `useFileToolRun` `useGlobalHotkeys`
+`useToolRun` `useValidation`
 
 **必须**
 
@@ -194,17 +210,28 @@ ToolPageLayout
 
 ### 8.3 主色
 
-- 仅 8 组预设：靛蓝 `#4F46E5`（默认）、蓝 `#2563EB`、青 `#0EA5A4`、绿 `#16A34A`、紫 `#7C3AED`、玫红 `#E11D48`、琥珀 `#D97706`、石墨 `#475569`。
+- 共 12 组预设：靛蓝 `#4F46E5`（默认）、蓝 `#2563EB`、GitLab 蓝 `#1F75CB`、天蓝 `#0369A1`、
+  青绿 `#0F766E`、绿 `#15803D`、黄绿 `#4D7C0F`、琥珀 `#B45309`、橙 `#C2410C`、
+  玫红 `#E11D48`、紫 `#7C3AED`、石墨 `#475569`。
 - **禁止**提供任意 HEX 取色。
-- 运行时写入 `--el-color-primary` 及 `light-3/5/7/8/9`、`dark-2`，使 Element Plus 组件跟随。
-- 预设色**必须**通过 4.5:1 对比度校验（CI 检查）。
+- 每组预设**必须**提供明暗两套令牌（`--tb-primary` / `-hover` / `-active` / `-soft` / `-contrast`），
+  由 `:root[data-accent]` 与 `:root[data-theme='dark'][data-accent]` 两个作用域定义。
+- 运行时写入 `--el-color-primary` 及 `light-3/5/7/8/9`、`dark-2`，使 Element Plus 组件跟随；
+  派生值**必须**用 `color-mix()` 从 `--tb-primary` 计算，不得写死。
+- 语义色（`success` / `warning` / `danger` / `info`）**必须**保持固定，**不随主色漂移** ——
+  语义色承载状态语义，与品牌无关。
+- 预设色**必须**通过 4.5:1 对比度校验（`scripts/check-accent.mjs` 门禁，检查明暗两套共 52 项）。
 
 ### 8.4 其他
 
 - 字体：系统无衬线（PingFang SC / Microsoft YaHei / Segoe UI）；等宽 `ui-monospace / Menlo / Consolas`。
-- 字号：12 / 13 / 14 / 16 / 18 / 20 / 24 / 30，基准 14。
-- 间距：4 / 8 / 12 / 16 / 20 / 24 / 32 / 40 / 48。
-- 圆角：6（控件）/ 10（卡片）/ 14（面板）/ 999（胶囊）。
+- 字号（`--tb-font-*`）：11 / 13 / 14 / 15（基准）/ 16 / 18 / 20 / 24 / 30。
+  **禁止**在组件里硬编码字号（§8.1）。
+- 间距（`--tb-space-*`）：4 / 8 / 12 / 16 / 20 / 24 / 32 / 40 / 48。
+- 圆角（`--tb-radius-*`）：6（控件）/ 10（卡片）/ 14（面板）/ 999（胶囊）。
+- 阴影（`--tb-shadow-sm/md/lg`）：元素与浮层的层次依据，**禁止**硬编码 `box-shadow`。
+- 断点约定：640 / 768 / 900 / 1024 / 1280 / 1536；
+  **禁止**出现未登记的魔法数字。
 - 动效：150–200ms `ease-out`；**必须**响应 `prefers-reduced-motion`。
 
 ### 8.5 品牌标识

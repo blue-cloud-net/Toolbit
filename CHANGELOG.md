@@ -47,6 +47,50 @@
 - `docs/deploy.md`：Docker 章节改写为 `make docker-up` 为主线，补编排变量表与容器故障排查项
 - `docs/api/admin.md` §9.1：补充探针地址来源、退出码与输出约束
 
+### Added
+
+前端体验改版：设计令牌、全局检索与工具页交互的一次性改造。
+
+- 12 组主色预设（明暗双套 × 5 令牌），可在设置面板切换；
+  语义色（`success` / `warning` / `danger` / `info`）**保持固定不随主色漂移**
+- 主色对比度门禁 `scripts/check-accent.mjs`：52 项 WCAG 对比度校验（阈值 4.5:1）、
+  色板与令牌一致性校验、语义色漂移校验；已接入 `make lint`
+- 命令面板：`Ctrl/⌘ + K` 全局唤起，覆盖 70 个工具、10 个分类与 3 个内建页，
+  中英文名任一命中即匹配，支持 `↑` `↓` 选择、`Enter` 打开、`Esc` 关闭、Tab 焦点陷阱
+- 全局快捷键：`/` 聚焦搜索、`?` 打开快捷键说明、`Alt+↑/↓` 在最近使用中切换
+- 专注模式：URL 参数 `?focus=1` 隐藏侧栏与页脚（参数只承载界面状态，不承载输入）
+- 工具页双栏：视口 ≥1024 自动左右分栏，分隔条可拖拽，比例记忆在 `localStorage`
+- 结果区结论徽章（通过 / 未通过 / 风险 / 未知）与网络类工具的汇总统计条
+- 结果区「作为新输入」按钮：把结果回填输入区（仅内存，不写任何存储）
+- 输入即时校验：纯前端语法检查（JSON / 十六进制 / Base64 / UUID），不发起网络请求
+- 可点击的快速参考面板：正则元字符、cron 表达式、进制写法一键填入
+- 共享组件补齐 10 个：`SensitiveInput` `FileTextInput` `JsonViewer` `ByteView`
+  `Asn1Tree` `CertChainTable` `CertDetailDialog` `KeyValueTable` `DownloadButton`
+  `ProgressStream`
+- 结果多视图页签：`json-format` 支持「原文 / 结构化」双视图
+- `autoRun` 死字段接通：22 个纯本地工具在参数变更后自动运行（400ms 防抖），
+  敏感、出网与高成本工具一律不开启
+- 单元测试：命令面板 9 条、主色偏好 9 条
+
+### Changed
+
+- 字号体系整体上调一档（正文基准 14px → 15px），全站硬编码字号清零
+- 工具卡片增加分类图标锚点，hover 响应主色并预取对应 chunk
+- 侧栏 ≤900px 从「整块隐藏」改为抽屉；新增内联过滤框与筛选后的空分组清理
+- 页面标题随路由更新（此前全部页面标题恒为静态 "Toolbit"）
+- FAQ 与使用说明改为可折叠；`ToolPanel` 无参数时不再渲染空标题
+- `KeyInput` 的口令输入改用 `SensitiveInput`，默认遮蔽并提供显示切换
+- 首屏防闪烁：`index.html` 的 `<head>` 内联脚本在 Vue 之前应用已保存的主题与主色
+- 新增 `noscript` 兜底；新增两枚 `theme-color` meta
+- `CopyButton` 新增 `size` 属性，支持表格内的紧凑场景
+- Element Plus 主色梯度改为由 `--tb-primary` 经 `color-mix()` 派生，不再写死
+
+### 新增的本地存储键
+
+- `toolbit.split`：工具页左右分栏的比例（`0.25` ~ `0.75`），属界面偏好
+
+> 工具输入、密钥、证书与历史结果**一律不写**任何浏览器存储（见 [docs/privacy.md](docs/privacy.md) §5）。
+
 ## [0.7.0] - 2026-10-29
 
 网络探测：出网能力就继，SSRF 防护全覆盖。

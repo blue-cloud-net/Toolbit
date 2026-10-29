@@ -118,6 +118,7 @@ flowchart LR
 | `toolbit.theme` | `light` / `dark` / `system` | 主题偏好 |
 | `toolbit.accent` | 预设主色标识 | 主色偏好 |
 | `toolbit.sidebar` | 折叠 / 展开 | 侧栏状态 |
+| `toolbit.split` | `0.25` ~ `0.75` | 工具页左右分栏的比例 |
 | `toolbit.favorites` | 收藏的 slug 列表 | 收藏 |
 | `toolbit.recent` | 最近使用的 slug 列表 | 最近使用 |
 
