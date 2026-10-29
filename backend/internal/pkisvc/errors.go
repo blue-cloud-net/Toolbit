@@ -60,3 +60,26 @@ func toolerrInvalidKey(reason string) *toolerr.Error {
 		"reason": reason,
 	})
 }
+
+// toolerrInvalidCert 构造「证书无效」错误。
+//
+// reason 是**枚举化**的失败原因，不含任何用户输入。
+func toolerrInvalidCert(reason string) *toolerr.Error {
+	return toolerr.Newf(toolerr.CodeInvalidCert, map[string]any{
+		"reason": reason,
+	})
+}
+
+// toolerrInvalidCSR 构造「证书签名请求无效」错误。
+func toolerrInvalidCSR(reason string) *toolerr.Error {
+	return toolerr.Newf(toolerr.CodeInvalidCSR, map[string]any{
+		"reason": reason,
+	})
+}
+
+// toolerrInvalidCRL 构造「吊销列表无效」错误。
+func toolerrInvalidCRL(reason string) *toolerr.Error {
+	return toolerr.Newf(toolerr.CodeInvalidCRL, map[string]any{
+		"reason": reason,
+	})
+}

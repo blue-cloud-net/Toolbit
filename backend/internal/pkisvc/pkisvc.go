@@ -31,6 +31,8 @@
 // 且 cryptosvc 的公开签名不出现 asym.*，因此 pkisvc 自带一套句柄包装。
 package pkisvc
 
+import "time"
+
 // 密钥算法标识。
 const (
 	// AlgRSA 是 RSA 算法。
@@ -60,6 +62,12 @@ const (
 	// CurveSM2 是国密 SM2 推荐曲线。
 	CurveSM2 = "SM2"
 )
+
+// zeroTime 是「未指定时刻」的零值。
+//
+// 它用于区分「按当前时间判定」与「回拨到某个历史时刻」两种语义：
+// 零值表示不调用 SetTime，非零值表示按该时刻验证。
+var zeroTime time.Time
 
 // KeyAlgorithms 返回受支持的密钥算法名（顺序稳定）。
 func KeyAlgorithms() []string {
