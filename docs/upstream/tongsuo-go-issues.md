@@ -1,6 +1,6 @@
 # 上游依赖缺口台账（tongsuo-go）
 
-> 状态：Draft ｜ 适用版本：v0.4.0 ｜ 最后更新：2026-10-29
+> 状态：Draft ｜ 适用版本：v0.5.0 ｜ 最后更新：2026-10-29
 
 本文登记 Toolbit 在使用 [`tongsuo-go`](https://github.com/blue-cloud-net/tongsuo-go) 时遇到的**能力缺口**。
 
@@ -36,6 +36,10 @@
 | I-12 | `jwk` 不支持 OKP（Ed25519 / X25519）与对称密钥 | `jwk-xml-convert` | 0.4.0 |
 | I-13 | `xml/rsa` **仅支持 RSA** | `jwk-xml-convert` | 0.4.0 |
 | I-14 | `asym` 缺 RSA **PKCS#1 公钥**的导出 / 加载入口 | `keygen` `key-convert` | 0.4.0 |
+| I-15 | `x509.CertificateRequest` **没有公开的 `Close()`** | `csr-parse` | 0.5.0 |
+| I-16 | `x509/asn1.Parse` **没有深度 / 节点数上限参数** | `asn1-view` | 0.5.0 |
+| I-17 | `x509.Store` **没有加载系统信任库**的入口 | `cert-chain-verify` | 0.5.0 |
+| I-18 | `x509.RevokedEntry.Serial` 是 `int64`，超 8 字节返回 `-1` | `crl-parse` | 0.5.0 |
 
 ---
 
@@ -301,6 +305,90 @@ EC / SM2 输入返回 `UNSUPPORTED_FORMAT`。
 **下游影响**　Toolbit 的 `keygen` 的 `publicFormat: pkcs1` 与
 `key-convert` 的 `to: pkcs1`（公钥输入）返回 `UNSUPPORTED_FORMAT`；
 PEM 块标签为 `RSA PUBLIC KEY` 的输入同样被显式拒绝。
+
+---
+
+## I-15 `x509.CertificateRequest` **没有公开的 `Close()`**
+
+**现象**　`x509.Certificate` 与 `x509.CRL` 都提供了幂等的 `Close()`，
+但 `x509.CertificateRequest` **没有**。CSR 的底层句柄只能靠 `finalizer` 回收，
+这与 Toolbit「原生句柄必须显式释放」的硬性要求冲突
+（见 [AGENTS.md §4.7](../AGENTS.md)）。
+
+**期望**　给 `CertificateRequest` 补一个幂等的 `Close()`，
+与 `Certificate.Close()` / `CRL.Close()` 行为一致。
+
+**验收**
+
+- `req.Close()` 可重复调用而不 panic；
+- `req.Close()` 后再调 `MarshalDER()` / `Verify()` 会报错，而不是拿到脏数据；
+- 与 `Certificate` 的句柄释放语义对齐。
+
+**下游影响**　Toolbit 的 `csr-parse` 只能依赖上游 `finalizer` 释放 CSR 句柄，
+**无法**显式释放；这是 v0.5.0 唯一一处句柄释放例外，已在
+[密码学规范 §8.6](../standards/03-crypto.md) 登记。
+
+---
+
+## I-16 `x509/asn1.Parse` **没有深度 / 节点数上限参数**
+
+**现象**　`asn1.Parse(der []byte) (*Node, error)` **只**接受字节，
+既没有深度上限也没有节点数上限；恶意构造的深层嵌套 DER
+（例如几万个嵌套 SEQUENCE）会让它递归展开并占用大量内存。
+
+**期望**　补 `ParseWithLimits(der []byte, maxDepth, maxNodes int) (*Node, error)`，
+或为 `Parse` 增加带上限的变体；在超出上限时返回可识别的错误。
+
+**验收**
+
+- 超过深度上限时返回错误而不是展开到底；
+- 超过节点数上限时返回错误；
+- 默认 `Parse` 行为保持不变。
+
+**下游影响**　Toolbit 的 `asn1-view` 在**调用上游之前**自行测量字节长度与节点数
+（限额见 [密码学规范 §9](../standards/03-crypto.md)），超出即返回 `TOO_LARGE`；
+这是**调用方侧的保护**，不是上游修复。
+
+---
+
+## I-17 `x509.Store` **没有加载系统信任库**的入口
+
+**现象**　`x509.NewStore()` 只能通过 `AddCert` / `AddCRL` 逐个添加对象，
+没有对应 OpenSSL `X509_STORE_set_default_paths()` 的入口，
+因此**无法**把操作系统信任库（`/etc/ssl/certs` 等）加载进 store。
+
+**期望**　补 `NewSystemStore()`（或 `SetDefaultPaths()`），
+使调用方能像 `openssl verify` 一样默认使用系统信任库。
+
+**验收**
+
+- `NewSystemStore()` 创建的 store 能验证一条系统信任链；
+- 不带参数的 `openssl verify` 与上游入口的结论一致。
+
+**下游影响**　Toolbit 的 `cert-chain-verify` **没有系统信任根可用**：
+`trustedRoots` 为空时把链内的自签名根当作**隐含信任锚**，
+此时 `valid: true` 只说明链内自洽，响应里的 `implicitTrust` 为 `true`。
+这一语义已在 API 契约与产品文档中显式说明。
+
+---
+
+## I-18 `x509.RevokedEntry.Serial` 是 `int64`，超 8 字节返回 `-1`
+
+**现象**　`CRL.RevokedEntries()` 返回的 `RevokedEntry.Serial` 是 `int64`，
+底层走 `ASN1_INTEGER_get`；当被吊销证书的序列号长度超过 8 字节时，
+该函数返回 `-1`，于是**所有**超长序列号都被折叠成同一个值 `-1`，
+无法区分。
+
+**期望**　把序列号改为**字符串**（或 `*big.Int`）承载，
+至少要能无损表达 20 字节的序列号。
+
+**验收**
+
+- 一个序列号为 20 字节的吊销条目能读出完整值；
+- 与 `openssl crl -text` 的输出逐项一致。
+
+**下游影响**　Toolbit 的 `crl-parse` 在序列号为负（溢出标记）时输出**空字符串**，
+**不**输出错误的 `-1`；该行为已写入 API 契约的注意事项。
 
 ---
 
