@@ -11,6 +11,37 @@
 
 ### Added
 
+- 工具目录扩容（工具总数 72 → **98**），新增 **26 个工具**，覆盖十个分类：
+  - **文本类**（5）：`text-diff`（文本行级与 JSON 结构化差异对比）、`regex-validate`（只校验正则语法并给出错误位置）、
+    `regex-build`（由结构化选项拼装正则并逐段释义）、`data-mask`（手机号 / 证件号 / 邮箱等敏感数据脱敏）、
+    `text-stats`（字数、行数与字符构成统计）
+  - **数据类**（8）：`id-validator`（身份证 / 信用代码 / 手机号 / 银行卡校验位计算）、`csv-convert`（CSV 与 JSON 互转）、
+    `json-to-types`（由 JSON 样本生成 TypeScript / Go / Rust / Java 类型定义）、`mock-data`（按字段类型生成假数据）、
+    `archive-inspect`（ZIP / TAR / GZIP 条目清单，含解压体积上限）、`file-analyze`（按魔数识别文件类型并给出摘要）、
+    `wifi-qr`（访客 WiFi 接入二维码）、`id-generator`（UUID / ULID / 雪花 ID / NanoID 统一生成）
+  - **系统类**（4）：`nginx-config`（全局与站点双模式配置生成）、`firewall-rules`（ufw / firewalld / iptables / nftables 规则生成）、
+    `docker-compose-gen`（由服务定义生成 Compose 配置）、`lookup-table`（端口、退出码与时间戳格式速查）
+  - **网络类**（2）：`device-headers`（按平台生成客户端请求头，并反向解析 User-Agent）、`ip-range-expand`（IP 段与 CIDR 互转及批量展开）
+  - **格式化 / 编码 / 文档类**（3）：`color-convert`（颜色格式转换与 WCAG 对比度检查）、`html-escape`（HTML 实体编解码）、
+    `markdown-convert`（Markdown 与 HTML 互转）
+  - **加密 / 证书 / 密钥类**（4）：`password-policy`（口令策略合规检查）、`totp`（TOTP 生成与校验，附 RFC 6238 标准向量）、
+    `cert-lifecycle`（证书有效期区间与到期倒计时）、`ssh-keygen`（OpenSSH 格式密钥对与 SHA256 指纹）
+  - 新工具**零新依赖**：全部复用既有依赖树（含 `goldmark`、`golang.org/x/net/html`、`go-qrcode` 与 `tongsuo-go`）
+  - 每个新工具均有**正例 + 反例**单元测试与**契约测试数据**；`totp` 另附 RFC 6238 标准向量，
+    `ssh-keygen` 另附 OpenSSH 格式往返校验
+  - 前端新增 26 个工具页（含共享组件复用）与齐备的双语词条（`zh-CN` / `en-US` key 集合一致）
+
+- 新增两个**网络类**工具（工具总数 70 → 72），均**不出网**、纯查表：
+  - `mime-lookup`（MIME 类型查询）：按扩展名查 MIME 媒体类型，或按媒体类型反查常用扩展名；
+    接受 `png` / `.png` / `report.pdf` 与 `image/png`，媒体类型带参数时自动去掉参数；
+    历史别名（如 `image/x-png`）归一到规范类型；未收录**不是**错误，返回 `matched: false`
+  - `http-status`（HTTP 状态码查询）：按状态码（`100`–`599`）查原因短语与含义，
+    或按关键字检索（同时匹配原因短语、中文说明与类别中文名，`not found` / `重定向` 都能用）；
+    落在区间内但未收录的状态码仍给出所属类别，越界返回 `INVALID_FIELD` 且不回显输入
+  - 两者的数据集是**内置快照**（`backend/internal/tools/network/dataset/*.csv`），
+    **不**读取系统 MIME 数据库、**不**联网，响应带 `dataVersion` 便于追溯
+  - 前端新增 `frontend/src/tools/network/mime-lookup` 与 `frontend/src/tools/network/http-status`，
+    双语词条齐备（`zh-CN` / `en-US` key 集合一致）
 - 设置面板新增「清理缓存」：一键恢复默认配置
   - 按 `toolbit.` 前缀删除语言、主题、主色、侧栏、分栏比例、收藏与最近使用，
     同时清空本源 Cache Storage；同域其他应用的存储不受影响
@@ -95,6 +126,26 @@
 
 ### Changed
 
+- 图标改为**彩色**：不再统一成一个主色，改为每个分类、每个工具各有各的色调
+  - 新增 **12 组固定色调**令牌 `--tb-tone-<名>` / `--tb-tone-<名>-soft`
+    （`tokens.css`，明暗两套），与主色（`--tb-primary`）**正交**：主色负责交互高亮，
+    色调负责图标识别
+  - 新增映射表 `frontend/src/tools/tones.ts`（`CATEGORY_TONES` 分类 → 色调、
+    `TOOL_TONES` 工具 → 色调，未登记时回落到所属分类）
+  - 生效范围：工具卡片、分类标题、侧栏分类胶囊与工具项、分类页标题、工具页标题
+  - `scripts/check-accent.mjs` 门禁扩展：新增色调对底色的 **4.5:1 对比度**校验，
+    并校验色调**不随主色漂移**（12 组 / 24 项）
+- 首页「全部工具」改为**按分类分组**展示：每个分类一节，组标题**可点击**进入该分类的
+  工具列表页（`CategoryHeader` → 路由 `category`）；搜索时同样保持分组结构
+  - 新增组件 `frontend/src/components/discovery/CategoryHeader.vue`，
+    移除 `CategoryCard.vue`（其职责由分组标题承接）
+  - 分类页标题增加带色调的分类图标胶囊
+
+- `password-gen` 增强：新增**策略模板**（长度 / 字符类 / 排除项）、可发音口令与助记词口令，
+  排除易混淆字符集（`I` `l` `O` `0` `1`）
+- `jwt-codec` 增强：新增**非对称签名验证**（`RS256` / `RS384` / `RS512` / `PS256` / `PS384` / `PS512` / `ES256` / `ES384`），
+  并输出签名算法与密钥匹配结论
+
 - 部署产物目录由文档中的 `deploy/` 统一为 **`deployments/`**（`AGENTS.md`、
   `docs/architecture.md`、`README.md`、`.gitignore` 同步）
 - 容器内路径口径统一：前端产物 `/app/web`、统计库 `/app/data/toolbit.db`
@@ -162,6 +213,11 @@
 - `toolset.Definitions` 需要注入出网守卫，进程入口与 API 测试共用同一份装配
 
 ### Fixed
+
+- 修正若干工具在边界输入下的行为：CSV 转换方向此前调反、IP 区间倒置未被拒、
+  CIDR 聚合产出多余网段、HTML 转 Markdown 丢失正文、Markdown 递归参数传递错误
+- `totp` 在未显式指定 `digits` / `period` 时被误拒（校验早于默认值填充）
+- `ssh-keygen` 的 RSA 私钥因 ASN.1 结构多出一个字段而无法解析
 
 - `cidr-calc` 的地址族字段此前返回位宽（32/128），改为 `4` / `6`
 
