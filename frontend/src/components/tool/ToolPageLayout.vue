@@ -250,6 +250,16 @@ onBeforeUnmount(() => {
       </div>
 
       <section
+        v-if="$slots.reference"
+        class="tool-page__content"
+      >
+        <h2 class="tool-page__section-title">
+          {{ t('tool.sections.reference') }}
+        </h2>
+        <slot name="reference" />
+      </section>
+
+      <section
         v-if="$slots.usage"
         class="tool-page__content"
       >

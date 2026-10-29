@@ -24,8 +24,17 @@ const props = withDefaults(
     label?: string
     /** 占位提示。 */
     placeholder?: string
+    /** 校验结论；由 useValidation 提供。 */
+    validation?: { level: 'success' | 'error'; message: string } | null
   }>(),
-  { maxRows: 20, showLineNumbers: true, readonly: false, label: undefined, placeholder: undefined },
+  {
+    maxRows: 20,
+    showLineNumbers: true,
+    readonly: false,
+    label: undefined,
+    placeholder: undefined,
+    validation: null,
+  },
 )
 
 const textarea = ref<HTMLTextAreaElement | null>(null)
@@ -139,6 +148,15 @@ const emit = defineEmits<{
         {{ t('tool.editor.stats', { chars: charCount, bytes: byteCount, lines: lineCount }) }}
       </span>
     </footer>
+
+    <p
+      v-if="validation"
+      class="code-editor__validation"
+      :class="`code-editor__validation--${validation.level}`"
+      role="status"
+    >
+      {{ validation.message }}
+    </p>
   </div>
 </template>
 
@@ -202,5 +220,19 @@ const emit = defineEmits<{
 
 .code-editor__status-item {
   white-space: nowrap;
+}
+
+.code-editor__validation {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: var(--tb-font-2xs);
+}
+
+.code-editor__validation--success {
+  color: var(--tb-success);
+}
+
+.code-editor__validation--error {
+  color: var(--tb-danger);
 }
 </style>

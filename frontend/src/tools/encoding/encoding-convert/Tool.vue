@@ -12,8 +12,10 @@ import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import ValidationHint from '@/components/tool/ValidationHint.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
+import { useValidation } from '@/composables/useValidation'
 import { EXAMPLES } from '@/tools/encoding/encoding-convert/example'
 
 /** 后端 encoding-convert 工具的响应。 */
@@ -100,6 +102,11 @@ function run(): void {
   })
 }
 
+/** 输入即时校验：纯前端语法检查，不发请求、不写存储。 */
+const { validation } = useValidation(input, {
+  format: computed(() => (inputEncoding.value === 'hex' ? 'hex' : 'base64')),
+})
+
 /** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
 useAutoRun({
   slug: 'encoding-convert',
@@ -162,6 +169,7 @@ function onKeydown(event: KeyboardEvent): void {
               :aria-label="t('tools.encoding-convert.fields.input')"
               @keydown="onKeydown"
             />
+            <ValidationHint :validation="validation" />
           </label>
 
           <div class="field-row">

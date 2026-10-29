@@ -5,6 +5,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import QuickReference from '@/components/tool/QuickReference.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -70,6 +71,20 @@ function run(): void {
 }
 
 /** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
+/** 快速参考条目：点击后填入输入框。 */
+const quickRefItems = [
+    { label: '十进制前缀', value: '0x' },
+    { label: '二进制前缀', value: '0b' },
+    { label: '八进制前缀', value: '0o' },
+    { label: '十六进制数字', value: '0123456789ABCDEF' },
+    { label: '二进制数字', value: '01' },
+  ]
+
+/** 把速查条目填入输入框。 */
+function applyQuickRef(text: string): void {
+  value.value = text
+}
+
 useAutoRun({
   slug: 'number-base',
   run,
@@ -197,6 +212,14 @@ function onKeydown(event: KeyboardEvent): void {
         :title="t('tools.number-base.results.output')"
         :use-as-input="useAsInput"
         @retry="run"
+      />
+    </template>
+
+    <template #reference>
+      <QuickReference
+        :title="t('tool.sections.reference')"
+        :items="quickRefItems"
+        :insert="applyQuickRef"
       />
     </template>
 

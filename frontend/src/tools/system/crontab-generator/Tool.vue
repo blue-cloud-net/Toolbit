@@ -7,6 +7,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import QuickReference from '@/components/tool/QuickReference.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -111,6 +112,23 @@ function run(): void {
 }
 
 /** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
+/** 快速参考条目：点击后填入输入框。 */
+const quickRefItems = [
+    { label: '每分钟', value: '*' },
+    { label: '每小时的第 0 分钟', value: '0' },
+    { label: '每 15 分钟', value: '*/15' },
+    { label: '每小时的第 30 分钟', value: '30' },
+    { label: '每天 0 点', value: '0 0 * * *' },
+    { label: '每天中午 12 点', value: '0 12 * * *' },
+    { label: '每周一 9 点', value: '0 9 * * 1' },
+    { label: '每月 1 号 0 点', value: '0 0 1 * *' },
+  ]
+
+/** 把速查条目填入输入框。 */
+function applyQuickRef(value: string): void {
+  minute.value = value
+}
+
 useAutoRun({
   slug: 'crontab-generator',
   run,
@@ -338,6 +356,14 @@ function fillExample(index: number): void {
           </div>
         </template>
       </ResultPanel>
+    </template>
+
+    <template #reference>
+      <QuickReference
+        :title="t('tool.sections.reference')"
+        :items="quickRefItems"
+        :insert="applyQuickRef"
+      />
     </template>
 
     <template #usage>

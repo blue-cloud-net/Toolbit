@@ -6,7 +6,8 @@
     "usage": "Usage",
     "faq": "FAQ",
     "expand": "Expand",
-    "collapse": "Collapse"
+    "collapse": "Collapse",
+    "reference": "Quick reference"
   },
   "fields": {
     "encoding": "Encoding"
@@ -42,6 +43,18 @@
     "requestId": "Request ID",
     "retry": "Retry",
     "unknown": "An unknown error occurred."
+  },
+  "validation": {
+    "jsonOk": "Valid JSON syntax",
+    "jsonInvalid": "Invalid JSON syntax",
+    "jsonInvalidAt": "Invalid JSON syntax (line {line})",
+    "hexOk": "Valid hexadecimal",
+    "hexInvalid": "Contains non-hexadecimal characters",
+    "hexOddLength": "Hexadecimal character count is odd",
+    "base64Ok": "Valid Base64 character set",
+    "base64Invalid": "Contains invalid Base64 characters",
+    "uuidOk": "Valid UUID format",
+    "uuidInvalid": "Invalid UUID format"
   },
   "verdict": {
     "pass": "Passed",

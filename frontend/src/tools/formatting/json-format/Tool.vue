@@ -14,6 +14,7 @@ import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
+import { useValidation } from '@/composables/useValidation'
 import { EXAMPLES } from '@/tools/formatting/json-format/example'
 
 /** 后端 json-format 工具的响应。 */
@@ -84,6 +85,9 @@ function run(): void {
 }
 
 /** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
+/** 输入即时校验：纯前端语法检查，不发请求、不写存储。 */
+const { validation } = useValidation(input, { format: 'json' })
+
 useAutoRun({
   slug: 'json-format',
   run,
@@ -132,6 +136,7 @@ function fillExample(index: number): void {
               v-model="input"
               :label="t('tools.json-format.fields.input')"
               :max-rows="24"
+              :validation="validation"
               @run="run"
             />
           </label>

@@ -8,6 +8,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CodeEditor from '@/components/tool/CodeEditor.vue'
+import QuickReference from '@/components/tool/QuickReference.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -128,6 +129,27 @@ function groupLabel(index: number): string {
 }
 
 /** 运行当前输入。 */
+/** 快速参考条目：点击后填入输入框。 */
+const quickRefItems = [
+    { label: '任意字符', value: '.' },
+    { label: '数字', value: '\\d' },
+    { label: '非数字', value: '\\D' },
+    { label: '单词字符', value: '\\w' },
+    { label: '空白字符', value: '\\s' },
+    { label: '行首', value: '^' },
+    { label: '行尾', value: '$' },
+    { label: '或', value: '|' },
+    { label: '分组', value: '()' },
+    { label: '量词 0+ 次', value: '+' },
+    { label: '量词 0-1 次', value: '?' },
+    { label: '量词 0-∞ 次', value: '*' },
+  ]
+
+/** 把速查条目填入输入框。 */
+function applyQuickRef(value: string): void {
+  pattern.value = value
+}
+
 function run(): void {
   void execute({
     pattern: pattern.value,
@@ -336,6 +358,14 @@ function fillExample(index: number): void {
           </ol>
         </template>
       </ResultPanel>
+    </template>
+
+    <template #reference>
+      <QuickReference
+        :title="t('tool.sections.reference')"
+        :items="quickRefItems"
+        :insert="applyQuickRef"
+      />
     </template>
 
     <template #usage>

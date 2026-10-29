@@ -6,7 +6,8 @@
     "usage": "使用说明",
     "faq": "常见问题",
     "expand": "展开",
-    "collapse": "收起"
+    "collapse": "收起",
+    "reference": "快速参考"
   },
   "fields": {
     "encoding": "编码"
@@ -42,6 +43,18 @@
     "requestId": "请求标识",
     "retry": "重试",
     "unknown": "发生未知错误。"
+  },
+  "validation": {
+    "jsonOk": "JSON 语法正确",
+    "jsonInvalid": "JSON 语法错误",
+    "jsonInvalidAt": "JSON 语法错误（第 {line} 行）",
+    "hexOk": "十六进制格式正确",
+    "hexInvalid": "含非十六进制字符",
+    "hexOddLength": "十六进制字符数为奇数",
+    "base64Ok": "Base64 字符集正确",
+    "base64Invalid": "含非法 Base64 字符",
+    "uuidOk": "UUID 格式正确",
+    "uuidInvalid": "UUID 格式错误"
   },
   "verdict": {
     "pass": "通过",
