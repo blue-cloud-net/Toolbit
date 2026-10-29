@@ -45,8 +45,8 @@ backend/data/
 .env.*.local
 *.pem
 *.key
-!deploy/**/*.pem.example
-!deploy/**/*.key.example
+!deployments/**/*.pem.example
+!deployments/**/*.key.example
 
 # ---- 测试夹具 ----
 # 后端 PKI 测试用的证书链 / CSR / CRL：由 openssl **一次性生成**，

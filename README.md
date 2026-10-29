@@ -23,7 +23,7 @@ v1 规划 **70 个工具**，覆盖国密算法（SM2 / SM3 / SM4）、密钥管
 | 双语界面 | 简体中文 / English 即时切换 |
 | 主题 | 跟随系统的浅色 / 深色主题，8 组预设主色 |
 | 隐私 | 无账号；不存储工具输入；调用统计仅记录匿名聚合数据 |
-| 交付 | 多阶段 Dockerfile，GHCR 多架构镜像（linux/amd64 + linux/arm64） |
+| 交付 | 多阶段 Dockerfile（`deployments/`）：镜像内编译 Tongsuo，运行期只需 glibc |
 
 ---
 
@@ -56,21 +56,17 @@ v1 规划 **70 个工具**，覆盖国密算法（SM2 / SM3 / SM4）、密钥管
 
 ### Docker（推荐）
 
+镜像尚未发布到公共仓库，从源码构建即可（需要本机有 Docker，**不需要**预装 Tongsuo）：
+
 ```bash
-# 拉取镜像
-docker pull ghcr.io/blue-cloud-net/toolbit:latest
+# 构建并启动（首次会编译 Tongsuo，约 5-10 分钟）
+make docker-up
 
-# 运行（数据卷用于存放匿名统计数据库）
-docker run -d --name toolbit \
-  -p 30234:30234 \
-  -v toolbit-data:/app/data \
-  ghcr.io/blue-cloud-net/toolbit:latest
-
-# 探活
-curl http://127.0.0.1:30234/api/health
+# 探活 + 目录 + 前端首页
+make docker-smoke
 ```
 
-浏览器打开 <http://127.0.0.1:30234>。
+浏览器打开 <http://127.0.0.1:30234>。数据（匿名统计库）放在命名卷 `toolbit-data`。
 
 > ⚠️ **部署形态说明**：本项目默认只监听 `30234` 端口的 **HTTP**，不内置 TLS。
 > 由于工具会在服务端处理密钥与明文，**公网暴露时务必在其前方加一层 TLS 反向代理**（Nginx / Caddy），示例见 [docs/deploy.md](docs/deploy.md)。
@@ -109,7 +105,8 @@ cd web && pnpm install && pnpm dev
 | `make test` | 后端单测 + 前端单测 |
 | `make lint` | Go / TS / Markdown / 文档覆盖检查 |
 | `make check-docs` | 校验 catalog、错误码、环境变量在文档中的覆盖率 |
-| `make docker` | 构建容器镜像（本地） |
+| `make docker-up` | 构建镜像并启动（首次会编译 Tongsuo） |
+| `make docker-smoke` | 容器冒烟检查（healthz / readyz / 目录 / 首页） |
 | `make catalog-validate` | 校验 `backend/catalog/tools.yaml` 结构与唯一性 |
 
 ---
@@ -136,7 +133,7 @@ cd web && pnpm install && pnpm dev
 │       ├── tools/           # 各领域工具实现
 │       └── webui/           # 静态资源与 SPA 回退
 ├── frontend/                # Vue 前端
-├── deploy/                  # Dockerfile / compose / entrypoint
+├── deployments/             # Dockerfile / compose / .env.example
 ├── docs/                    # 架构、规范、API、工具规格
 ├── scripts/                 # 文档与一致性校验脚本
 └── .github/workflows/       # CI

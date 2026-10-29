@@ -38,7 +38,7 @@ flowchart LR
   T --> S[(SQLite 匿名统计)]
   T --> X[Tongsuo 原生库<br/>libcrypto.so.3]
   T -->|出网 受 netguard 保护| N[公网: DNS / CT / 目标主机]
-  T --> W[静态资源目录 /app/wwwroot]
+  T --> W[静态资源目录 /app/web]
 ```
 
 **要点**
@@ -102,7 +102,7 @@ Toolbit/
 │
 ├── docs/                       文档（standards / api / templates）
 ├── scripts/                    文档与一致性校验脚本
-├── deploy/                     Dockerfile / compose / entrypoint
+├── deployments/                Dockerfile / docker-compose.yml / .env.example
 │
 ├── Makefile                    跨前后端的工程入口
 ├── .golangci.yml               Go 静态检查规则
@@ -423,14 +423,14 @@ erDiagram
 
 ### 9.1 镜像构建
 
-多阶段 Dockerfile：
+多阶段 Dockerfile（`deployments/Dockerfile`）：
 
 | 阶段 | 基础镜像 | 产出 |
 | --- | --- | --- |
-| `tongsuo` | `golang:1.25`（Debian trixie） | 编译 Tongsuo 8.4.0 → `/opt/tongsuo` |
-| `backend` | 同上 | 静态链接的 `toolbit` 二进制 |
-| `frontend` | `node:22-alpine` | Vite 产物 → `/app/wwwroot` |
-| `runtime` | `debian:bookworm-slim` | 运行时镜像 |
+| `tongsuo` | `golang:1.25-bookworm` | 编译 Tongsuo 8.4.0 → `/opt/tongsuo`（`--libdir=lib64 shared enable-ntls`） |
+| `frontend` | `node:22-alpine` | Vite 产物 → `frontend/dist`（运行时落到 `/app/web`） |
+| `backend` | `golang:1.25-bookworm` | cgo 链接后产生 `/out/toolbit` |
+| `runtime` | `debian:bookworm-slim` | 二进制 + `/app/web` + Tongsuo 运行库 |
 
 **关键点**
 
@@ -443,7 +443,7 @@ erDiagram
 - 非 root 运行（UID 10001）。
 - 只读根文件系统 + `tmpfs` 挂载 `/tmp`；数据卷挂 `/app/data`。
 - `cap_drop: ALL`；`no-new-privileges`。
-- 暴露端口 `30234`；`HEALTHCHECK` 打 `/api/health`。
+- 暴露端口 `30234`；`HEALTHCHECK` 调用内置子命令 `toolbit healthcheck`（打 `/readyz`）。
 
 ### 9.3 网络形态
 

@@ -40,7 +40,7 @@
 | `backend/catalog/tools.yaml` | **工具元数据单一事实来源** | — |
 | `backend/catalog/embed.go` | 把 `tools.yaml` 内嵌进二进制（`//go:embed`） | 标准库 |
 | `frontend/` | Vue 前端 | — |
-| `deploy/` | Dockerfile / compose / entrypoint | — |
+| `deployments/` | Dockerfile / docker-compose.yml / .env.example | — |
 | `scripts/` | 文档与一致性校验脚本（`check-docs.mjs`） | 标准库 |
 | `docs/` | 文档（`standards/` `api/` `_templates/`） | — |
 
@@ -71,6 +71,11 @@ make lint            # golangci-lint + markdownlint + 文档覆盖 + 前端 ESLi
 make check-docs      # catalog / 错误码 / 环境变量覆盖率
 make check-budget    # 前端体积预算（初始 JS 与单工具 chunk）
 make verify          # 提交前全量校验：vet + test + lint + 前端单测、构建与体积预算
+
+# Docker（部署；构建上下文是仓库根，编排在 deployments/）
+make docker-up       # 构建镜像并启动（首次会编译 Tongsuo，约 5-10 分钟）
+make docker-smoke    # 容器冒烟：healthz / readyz / 目录 / 首页
+make docker-down     # 停止并删除容器（保留数据卷）
 ```
 
 `make verify` 是提交前的**唯一闸口**（v0.10.0+ 之前没有 CI）。
@@ -132,6 +137,7 @@ make verify          # 提交前全量校验：vet + test + lint + 前端单测�
 | 修改工具请求 / 响应字段 | 对应 `docs/api/tools/*.md`、前端 DTO 类型 |
 | 新增 / 修改错误码 | `backend/internal/toolerr/registry.go`、[docs/api/errors.md](docs/api/errors.md)、前端 `errors.*` 文案 |
 | 新增 / 修改环境变量 | `backend/internal/config`、[docs/standards/08-deploy.md](docs/standards/08-deploy.md)、[docs/deploy.md](docs/deploy.md) |
+| 修改 Dockerfile / 编排 / 探针 | [docs/standards/08-deploy.md](docs/standards/08-deploy.md)、[docs/deploy.md](docs/deploy.md)、[docs/api/admin.md](docs/api/admin.md) §9 |
 | 修改架构或关键决策 | [docs/architecture.md](docs/architecture.md) |
 | 修改工具的输入输出或默认值 | [docs/tools.md](docs/tools.md)、前端参数区默认值 |
 | 调整阶段范围或退出标准 | [docs/roadmap.md](docs/roadmap.md) |
