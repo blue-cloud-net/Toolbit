@@ -9,6 +9,76 @@
 
 尚无变更。
 
+## [0.5.0] - 2026-10-29
+
+PKI 解析与链验证：能读懂证书，并能判定一条链是否可信。
+**新增 8 个工具**（累计 24 个已实现）。
+
+本版把 `pkisvc` 从「密钥与格式」扩展到完整的 **X.509 只读侧**：
+证书 / CSR / CRL 解析、链排序、链验证、链修复与 ASN.1 展开。
+
+### Added
+
+- PKI 服务层新增 8 个文件（`backend/internal/pkisvc/`）
+  - `cert.go`：证书加载与解析、PEM / DER / base64 / hex 四种输入；
+    主体 / 签发者 / 有效期 / 扩展 / SAN / KU / EKU / SKID / AKID；
+    指纹支持 `MD5` / `SHA1` / `SHA256` / `SHA384` / `SHA512` / `SM3`
+  - `pemder.go`：PEM 块拆分、类型过滤（cert / key / csr / crl）、PEM ↔ DER 互转
+  - `csr.go`：CSR 解析与自签名校验；SAN 由扩展手工解析
+  - `asn1.go`：DER 展开为 TLV 树 + 十六进制转储；调用上游**之前**自测深度 / 节点 / 体积
+  - `chain.go`：AKID → SKID 优先的链排序与链拆分
+  - `chainverify.go`：逐层验证、域名匹配、`X509_V_ERR_*` 结构化错误项
+  - `chainrepair.go`：从中间证书与受信任根里补链
+  - `crl.go`：CRL 解析（签发者 / 时间窗 / 编号 / 吊销条目）
+- 工具 `cert-parse`：证书详情、有效性状态、指纹、原始 DER
+- 工具 `csr-parse`：主体、SAN、公钥、扩展、挑战口令**存在性**、自签名校验结果
+- 工具 `pem-der`：PEM ↔ DER 互转、标签识别、块数
+- 工具 `asn1-view`：DER 结构树 + 十六进制转储（catalog 标记 `wide`）
+- 工具 `cert-chain-parse`：链排序、是否已排序、是否缺根、是否自签名
+- 工具 `cert-chain-verify`：链可信性、错误列表、逐张证书结论、域名匹配、隐含信任锚标志
+- 工具 `cert-chain-repair`：补全缺失的中间证书（纯本地）
+- 工具 `crl-parse`：CRL 签发者、时间窗、签名算法、编号、吊销条目
+- 共享输入类型 `backend/internal/tools/pembundle.go`：`tools.PemBundle`，
+  与 `KeyInput` 共用同一套传输层解码逻辑
+- 前端 8 个工具页与 16 份双语词条；共享组件
+  `CertTextInput.vue`（证书族输入）与 `CodeEditor.vue`（**自渲染**只读树 / hex 视图）
+- 测试夹具 `backend/testdata/fixtures/pki/`（自签根 CA + 中间 CA + 叶证书 + CSR + CRL）
+  与生成脚本 `scripts/gen-pki-fixtures.sh`；**不含任何私钥**
+- 契约测试数据 8 份；服务层与工具层单元测试各 1 个文件
+
+### Changed
+
+- **契约扩展**（只加**可选**字段，不改已有字段语义）
+  - `cert-chain-repair` 新增 `intermediates`
+  - `cert-chain-verify` 的 `trustedRoots` 语义明确为「受信任根列表」
+  - `cert-parse` 的 `fingerprints` 扩展为**全部**哈希算法
+- `cert-chain-parse` 的 `ordered: false` **只**表示输入需要重排，**不是**错误
+- `asn1-view` 的请求体上限由 8 MB 降为 **1 MB**（DER 展开的内存放大）
+- 契约测试与 501 用例改为**从 `toolset.Definitions()` 推导**，
+  新增工具时不再需要手改测试清单
+- 路线图：`docs/roadmap.md` §8 全部任务勾选；§8.3 补 L-T9 – L-T11 三条技术决策
+
+### Fixed
+
+- `backend/internal/api` 的「未实现工具返回 501」用例改用**推导**出来的未实现 slug，
+  避免新工具落地后用例失效
+
+### Known limitations
+
+- `cert-chain-verify` **没有系统信任根可用**：上游未暴露默认信任库
+  （见 `docs/upstream/tongsuo-go-issues.md` I-17）。
+  未传入受信任根时，链内的自签名根被当作**隐含信任锚**，
+  此时 `valid: true` **只**说明链内自洽；响应里的 `implicitTrust` 标出这种情况
+- `csr-parse` 的 CSR 句柄**无法显式释放**：上游 `CertificateRequest` 没有公开的
+  `Close()`（见 I-15），只能依赖 `finalizer` —— v0.5.0 唯一一处句柄释放例外
+- `crl-parse` 的吊销序列号**超过 64 位时输出空字符串**：上游用 64 位整数承载序列号，
+  超长时溢出为 `-1`（见 I-18），工具**不**输出溢出的错误值
+- `asn1-view` 的深度 / 节点上限由 **Toolbit 侧**测量实现（上游 `asn1.Parse`
+  无上限参数，见 I-16）；契约约定的 64 层 / 10000 节点不变
+- CSR 的 SAN 由扩展**手工**解析（上游未暴露 `SAN()` 方法），只覆盖
+  email / DNS / URI / IP / RegisteredID 五类
+- 证书签发、吊销判定、OCSP、PKCS 容器均在 v0.6.0 范围，本版**不含**
+
 ## [0.4.0] - 2026-10-29
 
 密钥管理：交付密钥全生命周期（生成 → 转换 → 解析 → 运算 → 配对）。
