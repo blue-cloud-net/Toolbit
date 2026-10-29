@@ -1,0 +1,48 @@
+{
+  "name": "归档内容查看",
+  "description": "查看 ZIP、TAR、TAR.GZ 与 GZIP 归档的条目清单与内容预览。",
+  "category": "数据",
+  "actions": {
+    "run": "查看"
+  },
+  "fields": {
+    "data": "归档内容",
+    "format": "归档格式",
+    "includeContent": "包含内容预览"
+  },
+  "options": {
+    "format": {
+      "zip": "ZIP",
+      "tar": "TAR",
+      "tarGz": "TAR.GZ",
+      "gzip": "GZIP"
+    }
+  },
+  "results": {
+    "entryCount": "条目数",
+    "totalSize": "解压总大小",
+    "compressedSize": "归档大小",
+    "entries": "条目清单",
+    "truncated": "已截断"
+  },
+  "examples": [
+    {
+      "label": "查看 ZIP 条目",
+      "value": "{\"format\":\"zip\"}"
+    }
+  ],
+  "hints": {
+    "data": "归档内容需用 Base64 传入。",
+    "output": "**必须**限制条目数与解压体积：归档可以声明极大的解压体积，不限制会耗尽资源。"
+  },
+  "faq": [
+    {
+      "q": "会真的解压整个归档吗？",
+      "a": "只读取清单与预览，且总量超过上限时立即中止。"
+    },
+    {
+      "q": "支持密码压缩包吗？",
+      "a": "不支持。加密归档需要口令，本工具不接收口令。"
+    }
+  ]
+}

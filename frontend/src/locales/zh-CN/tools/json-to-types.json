@@ -1,0 +1,49 @@
+{
+  "name": "JSON 转类型定义",
+  "description": "由 JSON 样本生成 TypeScript、Go、Rust 或 Java 的类型定义。",
+  "category": "数据",
+  "actions": {
+    "run": "生成"
+  },
+  "fields": {
+    "input": "JSON 输入",
+    "language": "目标语言",
+    "rootName": "根类型名"
+  },
+  "options": {
+    "language": {
+      "typescript": "TypeScript",
+      "go": "Go",
+      "rust": "Rust",
+      "java": "Java"
+    }
+  },
+  "results": {
+    "output": "类型定义",
+    "typeCount": "类型数量"
+  },
+  "examples": [
+    {
+      "label": "生成 TypeScript 类型",
+      "value": "{\"input\":\"{\\\"id\\\":1,\\\"name\\\":\\\"a\\\"}\",\"language\":\"typescript\",\"rootName\":\"User\"}"
+    },
+    {
+      "label": "生成 Go 类型",
+      "value": "{\"input\":\"{\\\"id\\\":1}\",\"language\":\"go\",\"rootName\":\"Item\"}"
+    }
+  ],
+  "hints": {
+    "input": "这是**结构推断**而非完整模式推导：生成的类型只反映样本里出现过的字段。",
+    "output": "数字用 json.Number 解析，1 与 1.0 不会被判成不同值。"
+  },
+  "faq": [
+    {
+      "q": "能生成可选字段吗？",
+      "a": "不能。样本里缺失的字段不会出现在结果中。"
+    },
+    {
+      "q": "数组元素类型怎么定的？",
+      "a": "逐项推断后合并；类型不一致时用联合类型表示。"
+    }
+  ]
+}

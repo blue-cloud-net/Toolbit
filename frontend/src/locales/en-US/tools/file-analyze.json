@@ -1,0 +1,44 @@
+{
+  "name": "File Analyzer",
+  "description": "Identify the file type, extract magic bytes and a digest to verify a downloaded file.",
+  "category": "Data",
+  "actions": {
+    "run": "Analyse"
+  },
+  "fields": {
+    "data": "File data",
+    "fileName": "File name",
+    "digestAlgorithm": "Digest algorithm"
+  },
+  "options": {},
+  "results": {
+    "mimeType": "Media type",
+    "extension": "Extension",
+    "description": "Description",
+    "isTextual": "Textual",
+    "magicHex": "Magic bytes",
+    "digest": "Digest",
+    "digestAlgorithm": "Digest algorithm",
+    "size": "Size"
+  },
+  "examples": [
+    {
+      "label": "Identify a PNG file",
+      "value": "{\"fileName\":\"a.png\",\"digestAlgorithm\":\"SHA256\"}"
+    }
+  ],
+  "hints": {
+    "data": "The file is supplied as Base64.",
+    "output": "Detection uses a built-in magic byte snapshot; the system MIME database is never read and nothing is fetched."
+  },
+  "faq": [
+    {
+      "q": "Can the digest verify a download?",
+      "a": "Yes, compare it with the checksum published by the source."
+    },
+    {
+      "q": "What if the type is not recognised?",
+      "a": "It falls back to application/octet-stream with a bin extension."
+    }
+  ]
+}

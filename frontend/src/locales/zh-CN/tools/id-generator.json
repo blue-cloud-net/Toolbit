@@ -1,0 +1,52 @@
+{
+  "name": "ID 生成",
+  "description": "统一生成 UUID、ULID、雪花 ID 与 NanoID。",
+  "category": "数据",
+  "actions": {
+    "run": "生成"
+  },
+  "fields": {
+    "format": "ID 格式",
+    "count": "生成数量",
+    "length": "长度",
+    "nodeId": "节点号",
+    "uppercase": "转成大写"
+  },
+  "options": {
+    "format": {
+      "uuid": "UUID v4",
+      "ulid": "ULID",
+      "snowflake": "雪花 ID",
+      "nanoid": "NanoID"
+    }
+  },
+  "results": {
+    "ids": "生成的 ID",
+    "count": "数量",
+    "length": "长度"
+  },
+  "examples": [
+    {
+      "label": "生成 UUID",
+      "value": "{\"format\":\"uuid\",\"count\":3}"
+    },
+    {
+      "label": "生成 NanoID",
+      "value": "{\"format\":\"nanoid\",\"count\":2,\"length\":10}"
+    }
+  ],
+  "hints": {
+    "format": "UUID 适合分布式唯一标识；ULID 按时间可排序；雪花 ID 适合数据库主键；NanoID 短且无特殊字符。",
+    "output": "UUID 与 NanoID 的随机源来自 Tongsuo 的 CSPRNG。"
+  },
+  "faq": [
+    {
+      "q": "雪花 ID 会重复吗？",
+      "a": "同一节点号在同一毫秒内靠序列号区分；不同部署请使用不同节点号。"
+    },
+    {
+      "q": "ULID 和 UUID 怎么选？",
+      "a": "需要按时间排序或可读前缀选 ULID；只需要唯一性选 UUID。"
+    }
+  ]
+}

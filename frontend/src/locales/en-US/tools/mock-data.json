@@ -1,0 +1,49 @@
+{
+  "name": "Mock Data Generator",
+  "description": "Generate mock data by field type, covering strings, numbers, emails, phone numbers, names and more.",
+  "category": "Data",
+  "actions": {
+    "run": "Generate"
+  },
+  "fields": {
+    "types": "Field types",
+    "count": "Count per type",
+    "locale": "Locale",
+    "prefix": "Value prefix"
+  },
+  "options": {
+    "locale": {
+      "zh-CN": "Simplified Chinese",
+      "en-US": "English"
+    }
+  },
+  "results": {
+    "fields": "Generated fields",
+    "count": "Count per type",
+    "seed": "Random seed"
+  },
+  "examples": [
+    {
+      "label": "Generate strings and integers",
+      "value": "{\"types\":[\"string\",\"int\"],\"count\":3}"
+    },
+    {
+      "label": "Generate English emails",
+      "value": "{\"types\":[\"email\"],\"count\":2,\"locale\":\"en-US\"}"
+    }
+  ],
+  "hints": {
+    "types": "With no type selected every type is generated.",
+    "output": "The response carries the random seed so the same batch can be reproduced."
+  },
+  "faq": [
+    {
+      "q": "Is the generated data realistic?",
+      "a": "It is fake: emails always use example.com and numbers are not guaranteed to exist."
+    },
+    {
+      "q": "Can I reproduce a previous batch?",
+      "a": "Yes, the seed in the response is the one used for that batch."
+    }
+  ]
+}

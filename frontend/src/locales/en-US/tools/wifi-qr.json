@@ -1,0 +1,52 @@
+{
+  "name": "Guest WiFi QR Code",
+  "description": "Generate a guest WiFi QR code that phones can scan to join the network.",
+  "category": "Data",
+  "actions": {
+    "run": "Generate"
+  },
+  "fields": {
+    "ssid": "Network name",
+    "password": "Password",
+    "security": "Security",
+    "hidden": "Hidden network",
+    "size": "Image size"
+  },
+  "options": {
+    "security": {
+      "WPA": "WPA / WPA2 / WPA3",
+      "WEP": "WEP",
+      "nopass": "Open"
+    }
+  },
+  "results": {
+    "payload": "QR payload",
+    "png": "PNG image",
+    "svg": "SVG image",
+    "size": "Image size"
+  },
+  "examples": [
+    {
+      "label": "Generate a WPA QR code",
+      "value": "{\"ssid\":\"Guest-Network\",\"password\":\"guest-password\",\"security\":\"WPA\",\"size\":256}"
+    },
+    {
+      "label": "Generate an open-network QR code",
+      "value": "{\"ssid\":\"Open\",\"password\":\"\",\"security\":\"nopass\",\"size\":256}"
+    }
+  ],
+  "hints": {
+    "ssid": "The payload follows the WIFI: convention so phones can join directly after scanning.",
+    "output": "The password is embedded in the payload, so share the code only with guests."
+  },
+  "faq": [
+    {
+      "q": "Is the code generated offline?",
+      "a": "Yes, it is generated entirely on the server with no network access."
+    },
+    {
+      "q": "Do both iOS and Android scan it?",
+      "a": "Yes. The system camera and common scanners such as WeChat all understand the WIFI: format."
+    }
+  ]
+}

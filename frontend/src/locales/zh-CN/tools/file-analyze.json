@@ -1,0 +1,44 @@
+{
+  "name": "文件类型识别",
+  "description": "识别文件类型、提取魔数与摘要，用于核对下载到的文件是否与预期一致。",
+  "category": "数据",
+  "actions": {
+    "run": "分析"
+  },
+  "fields": {
+    "data": "文件内容",
+    "fileName": "文件名",
+    "digestAlgorithm": "摘要算法"
+  },
+  "options": {},
+  "results": {
+    "mimeType": "媒体类型",
+    "extension": "扩展名",
+    "description": "类型说明",
+    "isTextual": "文本类",
+    "magicHex": "文件头",
+    "digest": "摘要",
+    "digestAlgorithm": "摘要算法",
+    "size": "字节数"
+  },
+  "examples": [
+    {
+      "label": "识别 PNG 文件",
+      "value": "{\"fileName\":\"a.png\",\"digestAlgorithm\":\"SHA256\"}"
+    }
+  ],
+  "hints": {
+    "data": "文件内容需用 Base64 传入。",
+    "output": "类型判定基于**内置**的魔数快照，不读取系统 MIME 数据库，也不联网。"
+  },
+  "faq": [
+    {
+      "q": "摘要可以用来核对下载吗？",
+      "a": "可以，把它与来源提供的校验和比对即可。"
+    },
+    {
+      "q": "识别不出类型怎么办？",
+      "a": "会归为 application/octet-stream 并给出扩展名 bin。"
+    }
+  ]
+}

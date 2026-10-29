@@ -1,0 +1,48 @@
+{
+  "name": "Archive Inspector",
+  "description": "Inspect the entry list and content preview of ZIP, TAR, TAR.GZ and GZIP archives.",
+  "category": "Data",
+  "actions": {
+    "run": "Inspect"
+  },
+  "fields": {
+    "data": "Archive data",
+    "format": "Archive format",
+    "includeContent": "Include content preview"
+  },
+  "options": {
+    "format": {
+      "zip": "ZIP",
+      "tar": "TAR",
+      "tarGz": "TAR.GZ",
+      "gzip": "GZIP"
+    }
+  },
+  "results": {
+    "entryCount": "Entry count",
+    "totalSize": "Total uncompressed size",
+    "compressedSize": "Archive size",
+    "entries": "Entries",
+    "truncated": "Truncated"
+  },
+  "examples": [
+    {
+      "label": "Inspect a ZIP archive",
+      "value": "{\"format\":\"zip\"}"
+    }
+  ],
+  "hints": {
+    "data": "The archive is supplied as Base64.",
+    "output": "Entry count and uncompressed size are capped: an archive can declare an enormous size and would otherwise exhaust resources."
+  },
+  "faq": [
+    {
+      "q": "Does it extract the whole archive?",
+      "a": "Only the listing and a preview are read, and the run stops as soon as the total exceeds the limit."
+    },
+    {
+      "q": "Are encrypted archives supported?",
+      "a": "No. Encrypted archives need a passphrase and this tool does not accept one."
+    }
+  ]
+}

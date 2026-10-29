@@ -1,0 +1,55 @@
+{
+  "name": "ID Validator",
+  "description": "Validate Chinese ID numbers, USCC codes, phone numbers, bank cards and postcodes, with normalised output.",
+  "category": "Data",
+  "actions": {
+    "run": "Validate"
+  },
+  "fields": {
+    "type": "Type",
+    "value": "Value"
+  },
+  "options": {
+    "type": {
+      "idCard": "ID card",
+      "uscc": "USCC",
+      "phone": "Phone",
+      "bankCard": "Bank card",
+      "postcode": "Postcode"
+    }
+  },
+  "results": {
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "normalized": "Normalised value",
+    "checkDigit": "Check digit",
+    "region": "Region",
+    "birthday": "Date of birth",
+    "gender": "Gender",
+    "issue": "Reason"
+  },
+  "examples": [
+    {
+      "label": "Validate an ID card number",
+      "value": "{\"type\":\"idCard\",\"value\":\"11010519491231002X\"}"
+    },
+    {
+      "label": "Validate a bank card number",
+      "value": "{\"type\":\"bankCard\",\"value\":\"4111111111111111\"}"
+    }
+  ],
+  "hints": {
+    "value": "Validation runs entirely on the server; on failure only the reason type is returned and the input is never echoed.",
+    "output": "ID cards report province, date of birth and gender; USCC codes report the check character."
+  },
+  "faq": [
+    {
+      "q": "Are 15-digit ID cards supported?",
+      "a": "No, only the 18-digit form with an optional trailing X is validated."
+    },
+    {
+      "q": "Is the check digit algorithm secure?",
+      "a": "The check digit is a fixed-weight checksum against typing errors, not a cryptographic signature, and must not be used for authentication."
+    }
+  ]
+}

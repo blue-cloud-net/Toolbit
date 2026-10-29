@@ -1,0 +1,52 @@
+{
+  "name": "ID Generator",
+  "description": "Generate UUID, ULID, snowflake IDs and NanoID in one place.",
+  "category": "Data",
+  "actions": {
+    "run": "Generate"
+  },
+  "fields": {
+    "format": "ID format",
+    "count": "Count",
+    "length": "Length",
+    "nodeId": "Node ID",
+    "uppercase": "Uppercase"
+  },
+  "options": {
+    "format": {
+      "uuid": "UUID v4",
+      "ulid": "ULID",
+      "snowflake": "Snowflake",
+      "nanoid": "NanoID"
+    }
+  },
+  "results": {
+    "ids": "Generated IDs",
+    "count": "Count",
+    "length": "Length"
+  },
+  "examples": [
+    {
+      "label": "Generate UUIDs",
+      "value": "{\"format\":\"uuid\",\"count\":3}"
+    },
+    {
+      "label": "Generate NanoIDs",
+      "value": "{\"format\":\"nanoid\",\"count\":2,\"length\":10}"
+    }
+  ],
+  "hints": {
+    "format": "UUID suits distributed identifiers, ULID is time-sortable, snowflake IDs fit database keys and NanoID is short with no special characters.",
+    "output": "The random source for UUID and NanoID is the Tongsuo CSPRNG."
+  },
+  "faq": [
+    {
+      "q": "Can snowflake IDs collide?",
+      "a": "Within one node the sequence separates IDs in the same millisecond; use different node IDs across deployments."
+    },
+    {
+      "q": "ULID or UUID?",
+      "a": "Choose ULID when you need time ordering or a readable prefix; choose UUID for uniqueness alone."
+    }
+  ]
+}

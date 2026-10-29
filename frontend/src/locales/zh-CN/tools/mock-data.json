@@ -1,0 +1,49 @@
+{
+  "name": "假数据生成",
+  "description": "按字段类型生成假数据，覆盖字符串、数字、邮箱、手机号、姓名等常见类型。",
+  "category": "数据",
+  "actions": {
+    "run": "生成"
+  },
+  "fields": {
+    "types": "字段类型",
+    "count": "每类数量",
+    "locale": "语言",
+    "prefix": "值前缀"
+  },
+  "options": {
+    "locale": {
+      "zh-CN": "简体中文",
+      "en-US": "English"
+    }
+  },
+  "results": {
+    "fields": "生成结果",
+    "count": "每类数量",
+    "seed": "随机种子"
+  },
+  "examples": [
+    {
+      "label": "生成字符串与整数",
+      "value": "{\"types\":[\"string\",\"int\"],\"count\":3}"
+    },
+    {
+      "label": "生成英文邮箱",
+      "value": "{\"types\":[\"email\"],\"count\":2,\"locale\":\"en-US\"}"
+    }
+  ],
+  "hints": {
+    "types": "不选类型时默认生成全部类型各若干条。",
+    "output": "响应带本次使用的随机种子，便于复现同一批数据。"
+  },
+  "faq": [
+    {
+      "q": "生成的数据是真实的吗？",
+      "a": "是**假数据**：邮箱统一用 example.com，号码不保证真实存在。"
+    },
+    {
+      "q": "能复现上次的结果吗？",
+      "a": "可以，响应里的 seed 就是本次使用的随机种子。"
+    }
+  ]
+}

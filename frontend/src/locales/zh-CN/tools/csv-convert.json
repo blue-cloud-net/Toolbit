@@ -1,0 +1,51 @@
+{
+  "name": "CSV 转换",
+  "description": "在 CSV 与 JSON 之间互转，支持自定义分隔符、表头识别与合法性校验。",
+  "category": "数据",
+  "actions": {
+    "run": "转换"
+  },
+  "fields": {
+    "operation": "转换方向",
+    "input": "输入内容",
+    "delimiter": "分隔符",
+    "hasHeader": "首行为表头",
+    "pretty": "缩进输出"
+  },
+  "options": {
+    "operation": {
+      "csvToJson": "CSV 转 JSON",
+      "jsonToCsv": "JSON 转 CSV"
+    }
+  },
+  "results": {
+    "output": "转换结果",
+    "rowCount": "数据行数",
+    "columnCount": "列数",
+    "columns": "列名"
+  },
+  "examples": [
+    {
+      "label": "CSV 转 JSON",
+      "value": "{\"operation\":\"csvToJson\",\"input\":\"name,age\\nalice,30\\nbob,25\\n\",\"hasHeader\":true}"
+    },
+    {
+      "label": "JSON 转 CSV",
+      "value": "{\"operation\":\"jsonToCsv\",\"input\":\"[{\\\"name\\\":\\\"alice\\\",\\\"age\\\":30}]\",\"hasHeader\":true}"
+    }
+  ],
+  "hints": {
+    "input": "CSV 转 JSON 时，未提供表头会按 column1、column2 这样的序号命名列。",
+    "output": "JSON 转 CSV 时，列名取所有对象的键并集并排序，保证输出稳定。"
+  },
+  "faq": [
+    {
+      "q": "支持 TSV 吗？",
+      "a": "支持，把分隔符设为制表符即可。"
+    },
+    {
+      "q": "为什么 JSON 转 CSV 的列名是排序过的？",
+      "a": "对象是无序的，排序后同一份数据每次都生成同样的表头，便于比对与版本管理。"
+    }
+  ]
+}

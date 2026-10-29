@@ -1,0 +1,51 @@
+{
+  "name": "CSV Converter",
+  "description": "Convert between CSV and JSON with custom delimiters, header detection and validation.",
+  "category": "Data",
+  "actions": {
+    "run": "Convert"
+  },
+  "fields": {
+    "operation": "Direction",
+    "input": "Input",
+    "delimiter": "Delimiter",
+    "hasHeader": "First row is a header",
+    "pretty": "Pretty output"
+  },
+  "options": {
+    "operation": {
+      "csvToJson": "CSV to JSON",
+      "jsonToCsv": "JSON to CSV"
+    }
+  },
+  "results": {
+    "output": "Converted output",
+    "rowCount": "Data rows",
+    "columnCount": "Columns",
+    "columns": "Column names"
+  },
+  "examples": [
+    {
+      "label": "CSV to JSON",
+      "value": "{\"operation\":\"csvToJson\",\"input\":\"name,age\\nalice,30\\nbob,25\\n\",\"hasHeader\":true}"
+    },
+    {
+      "label": "JSON to CSV",
+      "value": "{\"operation\":\"jsonToCsv\",\"input\":\"[{\\\"name\\\":\\\"alice\\\",\\\"age\\\":30}]\",\"hasHeader\":true}"
+    }
+  ],
+  "hints": {
+    "input": "Without a header row, CSV to JSON names the columns column1, column2 and so on.",
+    "output": "For JSON to CSV the columns are the sorted union of all object keys, which keeps the output stable."
+  },
+  "faq": [
+    {
+      "q": "Is TSV supported?",
+      "a": "Yes, set the delimiter to a tab character."
+    },
+    {
+      "q": "Why are the columns sorted?",
+      "a": "Objects are unordered, so sorting keeps the header identical for the same data and makes diffs meaningful."
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "JSON to Types",
+  "description": "Generate TypeScript, Go, Rust or Java type definitions from a JSON sample.",
+  "category": "Data",
+  "actions": {
+    "run": "Generate"
+  },
+  "fields": {
+    "input": "JSON input",
+    "language": "Target language",
+    "rootName": "Root type name"
+  },
+  "options": {
+    "language": {
+      "typescript": "TypeScript",
+      "go": "Go",
+      "rust": "Rust",
+      "java": "Java"
+    }
+  },
+  "results": {
+    "output": "Type definitions",
+    "typeCount": "Type count"
+  },
+  "examples": [
+    {
+      "label": "Generate TypeScript types",
+      "value": "{\"input\":\"{\\\"id\\\":1,\\\"name\\\":\\\"a\\\"}\",\"language\":\"typescript\",\"rootName\":\"User\"}"
+    },
+    {
+      "label": "Generate Go types",
+      "value": "{\"input\":\"{\\\"id\\\":1}\",\"language\":\"go\",\"rootName\":\"Item\"}"
+    }
+  ],
+  "hints": {
+    "input": "This is structural inference, not full schema derivation: the generated types only cover fields present in the sample.",
+    "output": "Numbers are parsed as json.Number, so 1 and 1.0 are not treated as different values."
+  },
+  "faq": [
+    {
+      "q": "Can it generate optional fields?",
+      "a": "No. Fields absent from the sample do not appear in the output."
+    },
+    {
+      "q": "How are array element types determined?",
+      "a": "Each item is inferred and merged; conflicting types become a union."
+    }
+  ]
+}
