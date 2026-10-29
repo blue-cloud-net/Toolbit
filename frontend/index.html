@@ -21,9 +21,49 @@
     <title>Toolbit</title>
     <meta name="description" content="Toolbit —— 蓝云工具箱，70 个纯服务端计算的 IT 工具。" />
     <meta name="color-scheme" content="light dark" />
+    <meta
+      name="theme-color"
+      content="#ffffff"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#111827"
+      media="(prefers-color-scheme: dark)"
+    />
+    <script>
+      /*
+       * 首屏防闪烁：在 CSS 与 Vue 之前同步应用已保存的主题与主色。
+       * prefs.init() 在 onMounted 才执行，若只依赖它，首屏必然先闪一次默认配色。
+       */
+      ;(function () {
+        var d = document.documentElement
+        try {
+          var theme = localStorage.getItem('toolbit.theme') || 'system'
+          var dark =
+            theme === 'dark' ||
+            (theme === 'system' &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches)
+          d.dataset.theme = dark ? 'dark' : 'light'
+          d.dataset.accent = localStorage.getItem('toolbit.accent') || 'indigo'
+        } catch (e) {
+          d.dataset.theme = 'light'
+          d.dataset.accent = 'indigo'
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>
+    <noscript>
+      <div class="tb-noscript">
+        <h1 class="tb-noscript__title">需要启用 JavaScript</h1>
+        <p class="tb-noscript__text">
+          蓝云工具箱是纯前端应用，需要浏览器启用 JavaScript 才能运行。<br />
+          你也可以直接调用 REST API：<code>GET /api/v1/tools</code> 获取工具目录。
+        </p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
