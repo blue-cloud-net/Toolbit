@@ -1,0 +1,55 @@
+{
+  "slug": "regex-validate",
+  "description": "正则校验的契约测试数据。",
+  "cases": [
+    {
+      "name": "合法表达式",
+      "request": {
+        "pattern": "^\\d{3}-\\d{4}$"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "valid": true,
+          "dialect": "RE2"
+        }
+      }
+    },
+    {
+      "name": "非法表达式",
+      "request": {
+        "pattern": "([a-z"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "valid": false
+        }
+      }
+    },
+    {
+      "name": "带标志",
+      "request": {
+        "pattern": "abc",
+        "flags": [
+          "i",
+          "m"
+        ]
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "valid": true
+        }
+      }
+    },
+    {
+      "name": "缺少模式",
+      "request": {},
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

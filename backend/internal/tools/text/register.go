@@ -46,5 +46,50 @@ func Definitions() []tools.Definition {
 				return tools.Result{Data: result}, nil
 			},
 		},
+		{
+			Slug: "text-diff",
+			NewRequest: func() tools.Request {
+				return &TextDiffRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return TextDiff(ctx, req.(*TextDiffRequest))
+			},
+		},
+		{
+			Slug: "regex-validate",
+			NewRequest: func() tools.Request {
+				return &RegexValidateRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return RegexValidate(ctx, req.(*RegexValidateRequest))
+			},
+		},
+		{
+			Slug: "regex-build",
+			NewRequest: func() tools.Request {
+				return &RegexBuildRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return RegexBuild(ctx, req.(*RegexBuildRequest))
+			},
+		},
+		{
+			Slug: "data-mask",
+			NewRequest: func() tools.Request {
+				return &DataMaskRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return DataMask(ctx, req.(*DataMaskRequest))
+			},
+		},
+		{
+			Slug: "text-stats",
+			NewRequest: func() tools.Request {
+				return &TextStatsRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return TextStats(ctx, req.(*TextStatsRequest))
+			},
+		},
 	}
 }

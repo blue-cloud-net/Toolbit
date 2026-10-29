@@ -1,0 +1,94 @@
+{
+  "slug": "text-diff",
+  "description": "文本 / JSON 对比的契约测试数据。",
+  "cases": [
+    {
+      "name": "相同文本",
+      "request": {
+        "mode": "text",
+        "left": {
+          "data": "a\nb\nc\n"
+        },
+        "right": {
+          "data": "a\nb\nc\n"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "mode": "text",
+          "identical": true
+        }
+      }
+    },
+    {
+      "name": "存在差异",
+      "request": {
+        "mode": "text",
+        "left": {
+          "data": "a\nb\nc\n"
+        },
+        "right": {
+          "data": "a\nx\nc\n"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "identical": false,
+          "stat": {
+            "added": 1,
+            "removed": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "JSON 结构化对比",
+      "request": {
+        "mode": "json",
+        "left": {
+          "data": "{\"a\":1,\"b\":{\"c\":2}}"
+        },
+        "right": {
+          "data": "{\"a\":1,\"b\":{\"c\":3}}"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "mode": "json"
+        }
+      }
+    },
+    {
+      "name": "缺少左��",
+      "request": {
+        "mode": "text",
+        "right": {
+          "data": "a\n"
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "不支持的模式",
+      "request": {
+        "mode": "xml",
+        "left": {
+          "data": "a"
+        },
+        "right": {
+          "data": "b"
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "slug": "text-stats",
+  "description": "文本统计的契约测试数据。",
+  "cases": [
+    {
+      "name": "中英混合文本",
+      "request": {
+        "text": "Hello 世界\n第二行"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "lines": 2,
+          "chineseChars": 5,
+          "englishWords": 1
+        }
+      }
+    },
+    {
+      "name": "空文本",
+      "request": {
+        "text": ""
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

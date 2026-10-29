@@ -1,0 +1,69 @@
+{
+  "slug": "regex-build",
+  "description": "正则生成器的契约测试数据。",
+  "cases": [
+    {
+      "name": "基础片段",
+      "request": {
+        "parts": [
+          "digits",
+          "hyphen",
+          "digits"
+        ]
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "valid": true
+        }
+      }
+    },
+    {
+      "name": "带量词与锚点",
+      "request": {
+        "parts": [
+          "letters"
+        ],
+        "quantifier": {
+          "min": 2,
+          "max": 8
+        },
+        "anchored": true
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "valid": true
+        }
+      }
+    },
+    {
+      "name": "未知片段",
+      "request": {
+        "parts": [
+          "not-a-part"
+        ]
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "量词上下界颠倒",
+      "request": {
+        "parts": [
+          "letter"
+        ],
+        "quantifier": {
+          "min": 5,
+          "max": 2
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

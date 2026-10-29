@@ -1,0 +1,79 @@
+{
+  "slug": "data-mask",
+  "description": "数据脱敏的契约测试数据。",
+  "cases": [
+    {
+      "name": "手机号脱敏",
+      "request": {
+        "text": "我的手机号是 13800138000",
+        "types": [
+          "phone"
+        ],
+        "keepCount": 3
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "masked": "我的手机号是 138********"
+        }
+      }
+    },
+    {
+      "name": "邮箱脱敏",
+      "request": {
+        "text": "联系 user@example.com",
+        "types": [
+          "email"
+        ]
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "total": 1
+        }
+      }
+    },
+    {
+      "name": "保留尾部",
+      "request": {
+        "text": "身份证 110101199003078888",
+        "types": [
+          "idCard"
+        ],
+        "position": "keepTail",
+        "keepCount": 3
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "masked": "身份证 ***************888"
+        }
+      }
+    },
+    {
+      "name": "缺少文本",
+      "request": {
+        "types": [
+          "phone"
+        ]
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "未知脱敏类型",
+      "request": {
+        "text": "abc",
+        "types": [
+          "unknown"
+        ]
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}
