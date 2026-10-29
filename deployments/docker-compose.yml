@@ -1,0 +1,92 @@
+name: toolbit
+
+# ============================================================================
+#  Toolbit — 生产编排（单容器）
+# ----------------------------------------------------------------------------
+#  拓扑：
+#      宿主机 :${HTTP_PORT} ──► toolbit（Go 后端 + 前端静态资源 + Tongsuo 运行库）
+#
+#  关键点：
+#    1. 构建上下文是**仓库根目录**（backend/ 与 frontend/ 两个构建单元合成一个镜像）。
+#    2. 对外只映射一个端口；TLS 由宿主机反向代理 / CDN 终止（本服务不内置 TLS，
+#       见 docs/deploy.md §4）。
+#    3. 数据目录用**命名卷**：bind mount 的目录属主通常不是 10001，
+#       容器内会报 unable to open database file（见 docs/deploy.md §6）。
+#    4. 环境变量全部使用 `TOOLBIT_*` 原名，`.env` / 文档 / 编排三处同名，不做二次映射。
+#
+#  用法：
+#      cp deployments/.env.example deployments/.env   # 可选，全部变量都有默认值
+#      make docker-up
+# ============================================================================
+
+services:
+  toolbit:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile
+      args:
+        # 版本信息注入 buildinfo：/api/v1/meta 与 /api/health 会回显
+        VERSION: ${TAG:-local}
+        COMMIT: ${COMMIT:-unknown}
+        BUILD_TIME: ${BUILD_TIME:-unknown}
+    image: bluecloud/toolbit:${TAG:-local}
+    container_name: toolbit
+    restart: unless-stopped
+    # 由 init 进程转发信号，保证容器能收到 SIGTERM 并走优雅退出
+    init: true
+    ports:
+      # 宿主机 ${HTTP_PORT} → 容器 30234（唯一对外入口）
+      - "${HTTP_PORT:-30234}:30234"
+    environment:
+      TOOLBIT_ADDR: ":30234"
+      TOOLBIT_WEB_ROOT: /app/web
+      TOOLBIT_DB_PATH: /app/data/toolbit.db
+      TOOLBIT_LOG_LEVEL: ${TOOLBIT_LOG_LEVEL:-info}
+      # 容器内保持 json，便于日志采集；本地排错可改 text
+      TOOLBIT_LOG_FORMAT: ${TOOLBIT_LOG_FORMAT:-json}
+      TOOLBIT_TRUST_PROXY: ${TOOLBIT_TRUST_PROXY:-false}
+      TOOLBIT_ALLOWED_ORIGINS: ${TOOLBIT_ALLOWED_ORIGINS:-}
+      # 内部端点默认关闭；仅在确认不对公网暴露时才开启
+      TOOLBIT_ENABLE_INTERNAL_ENDPOINTS: ${TOOLBIT_ENABLE_INTERNAL_ENDPOINTS:-false}
+      TOOLBIT_RATE_LIMIT_ENABLED: ${TOOLBIT_RATE_LIMIT_ENABLED:-true}
+      TOOLBIT_STATS_ENABLED: ${TOOLBIT_STATS_ENABLED:-true}
+      TOOLBIT_NETWORK_ENABLED: ${TOOLBIT_NETWORK_ENABLED:-true}
+      TOOLBIT_NETWORK_ALLOWLIST: ${TOOLBIT_NETWORK_ALLOWLIST:-}
+      TOOLBIT_REQUEST_TIMEOUT: ${TOOLBIT_REQUEST_TIMEOUT:-30s}
+      TOOLBIT_MAX_BODY_BYTES: ${TOOLBIT_MAX_BODY_BYTES:-104857600}
+      TOOLBIT_SHUTDOWN_TIMEOUT: ${TOOLBIT_SHUTDOWN_TIMEOUT:-15s}
+      # 未配置时统计详情端点返回 404（不会因为空值而放开）
+      TOOLBIT_STATS_TOKEN: ${TOOLBIT_STATS_TOKEN:-}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      # SQLite 统计库（匿名聚合数据，可丢失；备份方式见 docs/deploy.md §9）
+      - toolbit-data:/app/data
+    healthcheck:
+      # 与镜像内 HEALTHCHECK 同源：内置子命令打 /readyz（docs/api/admin.md §9.1）
+      test: ["CMD", "/app/toolbit", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    # 优雅停机：先摘流量，再等在途请求收尾（≤ TOOLBIT_SHUTDOWN_TIMEOUT）
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          # 单次大文件请求的峰值约为 2×分块大小，1 GB 上限足够（docs/deploy.md §5）
+          memory: ${MEMORY_LIMIT:-1g}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  # 显式命名：`docker compose down` 不删数据，`docker compose down -v` 才删
+  toolbit-data:
+    name: toolbit-data

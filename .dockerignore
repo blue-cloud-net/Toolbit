@@ -1,0 +1,56 @@
+# ============================================================================
+#  .dockerignore —— 构建上下文是**仓库根目录**
+# ----------------------------------------------------------------------------
+#  backend/ 与 frontend/ 是两个独立构建单元，镜像由根目录的
+#  deployments/Dockerfile 合成；上下文必须取根目录才能同时看到二者。
+#
+#  作用：
+#    1. 缩短上下文传输时间；
+#    2. **不**把本地依赖、构建产物与密钥送进构建上下文。
+# ============================================================================
+
+# ---- 版本控制、IDE 与工作树 ----
+.git/
+.gitignore
+.worktrees/
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# ---- 前端依赖与构建产物（镜像内由 frontend 阶段重新生成）----
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+frontend/.pnpm-store/
+**/*.tsbuildinfo
+
+# ---- Go 构建产物与热重载临时目录 ----
+backend/tmp/
+backend/data/
+backend/bin/
+/bin/
+/dist/
+/build/
+/out/
+coverage.txt
+profile.out
+*.test
+
+# ---- 测试代码与夹具（构建不需要，且拖慢上下文传输）----
+**/*_test.go
+backend/testdata/
+
+# ---- 部署编排、文档与脚本（运行时由 compose / 文档提供，不进镜像）----
+deployments/
+docs/
+scripts/
+**/*.md
+Makefile
+
+# ---- 环境与密钥（绝不烘进镜像）----
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
