@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/blue-cloud-net/Toolbit/backend/internal/pkisvc"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/toolerr"
 )
 
@@ -464,4 +465,202 @@ func minInt(a, b int) int {
 		return a
 	}
 	return b
+}
+
+// ── v0.6.0：写侧工具的单元测试 ────────────────────────────────────
+//
+// 覆盖「正例 + 反例」各一，重点在字段校验与错误码映射；
+// 密码学正确性由 pkisvc 的测试与本文件的端到端链路负责。
+
+func TestCSRGenAndParseBack(t *testing.T) {
+	result, err := CSRGen(context.Background(), &CSRGenRequest{
+		CertType: CSRTypeServer,
+		Subject:  SubjectInput{C: "CN", O: "Toolbit Test", CN: "unit.example.com"},
+		Key:      KeyGenInput{Type: "EC", Curve: "P-256"},
+		Sans:     []string{"DNS:unit.example.com"},
+	})
+	if err != nil {
+		t.Fatalf("生成 CSR 失败：%v", err)
+	}
+	out := result.Data.(*CSRGenResult)
+	if out.CsrPem == "" || out.PrivateKeyPem == "" {
+		t.Fatal("CSR 与私钥都应返回")
+	}
+	if !out.Info.SignatureValid {
+		t.Error("刚生成的 CSR 自签名应校验通过")
+	}
+	if out.KeyType != "EC" || out.KeyCurve != "P-256" {
+		t.Errorf("密钥参数 = %s/%s，期望 EC/P-256", out.KeyType, out.KeyCurve)
+	}
+
+	// 用已有私钥生成时**不**返回私钥。
+	existing := CSRGenRequest{
+		Subject:            SubjectInput{CN: "unit2.example.com"},
+		ExistingPrivateKey: &KeyInput{Data: out.PrivateKeyPem, Format: "pem"},
+	}
+	reused, err := CSRGen(context.Background(), &existing)
+	if err != nil {
+		t.Fatalf("用已有私钥生成 CSR 失败：%v", err)
+	}
+	if reused.Data.(*CSRGenResult).PrivateKeyPem != "" {
+		t.Error("使用已有私钥时不应返回私钥")
+	}
+}
+
+func TestCSRGenRejectsUnknownType(t *testing.T) {
+	_, err := CSRGen(context.Background(), &CSRGenRequest{
+		CertType: "unknown",
+		Subject:  SubjectInput{CN: "x.example.com"},
+	})
+	if err == nil {
+		t.Fatal("未知生成类型应报错")
+	}
+}
+
+func TestCertGenSelfSigned(t *testing.T) {
+	result, err := CertGen(context.Background(), &CertGenRequest{
+		SignMode:         pkisvc.SignModeSelf,
+		Subject:          SubjectInput{CN: "self.unit.example.com"},
+		Key:              KeyGenInput{Type: "EC", Curve: "P-256"},
+		NotAfterDays:     30,
+		BasicConstraints: &BasicConstraintsInput{IsCA: true, PathLen: 1},
+	})
+	if err != nil {
+		t.Fatalf("自签证书失败：%v", err)
+	}
+	out := result.Data.(*CertGenResult)
+	if out.Serial == "" || out.PrivateKeyPem == "" {
+		t.Fatal("序列号与私钥都应返回")
+	}
+	if len(out.ChainPem) != 1 {
+		t.Errorf("自签模式的链长度 = %d，期望 1", len(out.ChainPem))
+	}
+}
+
+func TestCertGenRejectsBadSignMode(t *testing.T) {
+	_, err := CertGen(context.Background(), &CertGenRequest{SignMode: "peer"})
+	if err == nil {
+		t.Fatal("未知签发模式应报错")
+	}
+}
+
+func TestCertGenRequiresIssuerForCA(t *testing.T) {
+	_, err := CertGen(context.Background(), &CertGenRequest{
+		SignMode: pkisvc.SignModeCA,
+		Subject:  SubjectInput{CN: "x.example.com"},
+	})
+	if err == nil {
+		t.Fatal("ca 模式缺少 issuer 应报错")
+	}
+}
+
+func TestCRLGenRejectsReservedReason(t *testing.T) {
+	_, err := CRLGen(context.Background(), &CRLGenRequest{
+		IssuerCert: PemBundle{Data: loadFixture(t, "ca.crt.pem"), Format: "pem"},
+		IssuerKey:  KeyInput{Data: "-----BEGIN PRIVATE KEY-----\nAAAA\n-----END PRIVATE KEY-----\n", Format: "pem"},
+		Revoked: []CRLRevokeInput{{
+			Cert:       PemBundle{Data: loadFixture(t, "leaf.crt.pem"), Format: "pem"},
+			ReasonCode: 7,
+		}},
+	})
+	if err == nil {
+		t.Fatal("保留原因码 7 应被拒绝")
+	}
+}
+
+func TestRevocationCheckRejectsGarbage(t *testing.T) {
+	_, err := RevocationCheck(context.Background(), &RevocationCheckRequest{
+		Cert: PemBundle{Data: loadFixture(t, "leaf.crt.pem"), Format: "pem"},
+		Crl:  PemBundle{Data: "not a crl", Format: "pem"},
+	})
+	if err == nil {
+		t.Fatal("非法 CRL 应报错")
+	}
+}
+
+func TestOCSPRequestRejectsUnsupportedHash(t *testing.T) {
+	_, err := OCSPRequest(context.Background(), &OCSPRequestInput{
+		Cert:   PemBundle{Data: loadFixture(t, "leaf.crt.pem"), Format: "pem"},
+		Issuer: PemBundle{Data: loadFixture(t, "inter.crt.pem"), Format: "pem"},
+		Hash:   "sha512",
+	})
+	if err == nil {
+		t.Fatal("不支持的 OCSP 哈希算法应报错")
+	}
+}
+
+func TestP7BPackRejectsEmpty(t *testing.T) {
+	_, err := P7BPack(context.Background(), &P7BPackRequest{})
+	if err == nil {
+		t.Fatal("空证书列表应报错")
+	}
+}
+
+func TestP7BPackAndExtract(t *testing.T) {
+	leaf := loadFixture(t, "leaf.crt.pem")
+	ca := loadFixture(t, "ca.crt.pem")
+
+	packed, err := P7BPack(context.Background(), &P7BPackRequest{
+		Certs: []PemBundle{
+			{Data: leaf, Format: "pem"},
+			{Data: ca, Format: "pem"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("打包 PKCS#7 失败：%v", err)
+	}
+	out := packed.Data.(*P7BOutput)
+	if out.CertCount != 2 {
+		t.Errorf("证书数 = %d，期望 2", out.CertCount)
+	}
+
+	extracted, err := P7BExtract(context.Background(), &P7BExtractRequest{
+		Container: PemBundle{Data: out.Pem, Format: "pem"},
+	})
+	if err != nil {
+		t.Fatalf("提取 PKCS#7 失败：%v", err)
+	}
+	if extracted.Data.(*P7BExtractResult).Count != 2 {
+		t.Errorf("提取证书数 = %d，期望 2", extracted.Data.(*P7BExtractResult).Count)
+	}
+}
+
+func TestP7BExtractRejectsGarbage(t *testing.T) {
+	_, err := P7BExtract(context.Background(), &P7BExtractRequest{
+		Container: PemBundle{Data: "MAM=", Format: "base64"},
+	})
+	if err == nil {
+		t.Fatal("非法 PKCS#7 应报错")
+	}
+}
+
+func TestCAAGenProducesZoneLines(t *testing.T) {
+	result, err := CAAGen(context.Background(), &CAAGenRequest{
+		Domain: "example.com",
+		Ttl:    3600,
+		Records: []CAARecordInput{
+			{Tag: CAATagIssue, Value: "letsencrypt.org"},
+			{Tag: CAATagIodef, Value: "mailto:security@example.com"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("生成 CAA 记录失败：%v", err)
+	}
+	out := result.Data.(*CAAGenResult)
+	if out.Count != 2 {
+		t.Errorf("记录数 = %d，期望 2", out.Count)
+	}
+	if !strings.Contains(out.ZoneLines[0], "CAA 0 issue \"letsencrypt.org\"") {
+		t.Errorf("区域行格式不符：%s", out.ZoneLines[0])
+	}
+}
+
+func TestCAAGenRejectsUnknownTag(t *testing.T) {
+	_, err := CAAGen(context.Background(), &CAAGenRequest{
+		Domain:  "example.com",
+		Records: []CAARecordInput{{Tag: "unknown", Value: "x"}},
+	})
+	if err == nil {
+		t.Fatal("未知 CAA 标签应报错")
+	}
 }
