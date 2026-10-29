@@ -1,0 +1,58 @@
+{
+  "name": "OCSP Response Parser",
+  "description": "Parse an OCSP response to read the certificate status; the response signature is verified when trust roots are supplied.",
+  "category": "Certificates",
+  "actions": {
+    "parse": "Parse"
+  },
+  "fields": {
+    "response": "OCSP response",
+    "cert": "Certificate queried",
+    "issuer": "Issuer certificate",
+    "trustedRoots": "Trust roots"
+  },
+  "options": {
+    "certStatus": {
+      "good": "Good",
+      "revoked": "Revoked",
+      "unknown": "Unknown"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "status": "Response status",
+    "certStatus": "Certificate status",
+    "signatureVerified": "Response signature verified",
+    "producedAt": "Produced at",
+    "thisUpdate": "This update",
+    "nextUpdate": "Next update",
+    "responderCount": "Responder certificates",
+    "revocationTime": "Revoked at",
+    "reason": "Revocation reason"
+  },
+  "examples": [
+    {
+      "label": "Verify a response with the test CA as trust root",
+      "value": "Test certificate + CA certificate"
+    }
+  ],
+  "hints": {
+    "roots": "Without trust roots the signature is **not** checked: the response is only read, not trusted.",
+    "pair": "The queried certificate and its issuer are required: the CertID in the response needs them to locate the target.",
+    "status": "The response status says whether the response itself succeeded; the certificate status is what tells you about revocation."
+  },
+  "faq": [
+    {
+      "q": "What does \"unknown\" mean?",
+      "a": "The responder does not know this certificate, which usually means it is outside that responder's scope."
+    },
+    {
+      "q": "Why does \"verified\" only appear with trust roots?",
+      "a": "The response is signed by the responder; checking it needs a certificate you trust."
+    },
+    {
+      "q": "Can an OCSP request be parsed as a response?",
+      "a": "No, the encodings differ and DER parsing fails."
+    }
+  ]
+}

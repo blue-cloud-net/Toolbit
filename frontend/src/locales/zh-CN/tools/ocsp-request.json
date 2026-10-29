@@ -1,0 +1,44 @@
+{
+  "name": "OCSP 请求生成",
+  "description": "生成 RFC 6960 的 OCSP 请求（DER），可交给 CA 的 OCSP 服务查询吊销状态。",
+  "category": "证书",
+  "actions": {
+    "build": "生成"
+  },
+  "fields": {
+    "cert": "被查询证书",
+    "issuer": "签发者证书",
+    "hash": "CertID 哈希算法"
+  },
+  "options": {},
+  "results": {
+    "output": "请求内容",
+    "hash": "哈希算法",
+    "length": "字节长度"
+  },
+  "examples": [
+    {
+      "label": "为测试叶证书生成 OCSP 请求",
+      "value": "测试证书 + CA 证书"
+    }
+  ],
+  "hints": {
+    "hash": "只支持 SHA-1 / SHA-256 / SM3：这是 CertID 的哈希，不是证书指纹的六种算法。",
+    "pair": "签发者证书必须真的签发了这张证书，否则返回「密钥不匹配」。",
+    "der": "请求是二进制 DER；结果区同时给出 base64 与十六进制两种表示。"
+  },
+  "faq": [
+    {
+      "q": "为什么需要签发者证书？",
+      "a": "OCSP 的 CertID 由「签发者哈希 + 签发者名哈希 + 序列号」组成，没有签发者就算不出请求。"
+    },
+    {
+      "q": "生成的请求能直接发给 CA 吗？",
+      "a": "可以，它是标准 DER 编码；用 `openssl ocsp -reqin` 也能读回。"
+    },
+    {
+      "q": "默认用哪个哈希？",
+      "a": "SHA-256；SHA-1 只为兼容老响应者保留。"
+    }
+  ]
+}

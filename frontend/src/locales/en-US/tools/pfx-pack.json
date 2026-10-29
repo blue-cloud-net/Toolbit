@@ -1,0 +1,44 @@
+{
+  "name": "PKCS#12 Packer",
+  "description": "Pack a certificate, its private key and the CA chain into a single PKCS#12 container (.pfx / .p12).",
+  "category": "Certificates",
+  "actions": {
+    "pack": "Pack"
+  },
+  "fields": {
+    "cert": "Leaf certificate",
+    "key": "Matching private key",
+    "caCerts": "CA chain",
+    "passphrase": "Container passphrase",
+    "friendlyName": "Friendly name"
+  },
+  "options": {},
+  "results": {
+    "output": "Container (base64)"
+  },
+  "examples": [
+    {
+      "label": "Pack the test leaf certificate and key",
+      "value": "Test certificate + key"
+    }
+  ],
+  "hints": {
+    "mismatch": "The private key must match the leaf certificate, otherwise a key mismatch error is returned — the resulting container would be useless.",
+    "passphrase": "An empty passphrase means no encryption: a leaked container exposes the private key.",
+    "binary": "The container is binary, so the result area shows base64 for easy copying."
+  },
+  "faq": [
+    {
+      "q": "What is the difference between PFX and P12?",
+      "a": "None; they are two extensions for the same PKCS#12 standard."
+    },
+    {
+      "q": "Why include the CA chain?",
+      "a": "The importing side needs the intermediates to complete the chain, otherwise it reports an incomplete chain."
+    },
+    {
+      "q": "Can a lost passphrase be recovered?",
+      "a": "No. The passphrase derives the encryption key, so the content is unrecoverable without it."
+    }
+  ]
+}

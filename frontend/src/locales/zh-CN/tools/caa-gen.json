@@ -1,0 +1,43 @@
+{
+  "name": "CAA 生成",
+  "description": "生成 CAA 记录，限定哪些 CA 可以为你的域名签发证书。",
+  "category": "证书",
+  "actions": {
+    "generate": "生成"
+  },
+  "fields": {
+    "domain": "域名",
+    "tag": "标签",
+    "value": "标签值",
+    "ttl": "TTL（秒）"
+  },
+  "options": {},
+  "results": {
+    "output": "区域文件行"
+  },
+  "examples": [
+    {
+      "label": "授权 Let's Encrypt 签发",
+      "value": "example.com / issue"
+    }
+  ],
+  "hints": {
+    "issue": "`issue` 限定可签发普通证书的 CA；`issuewild` 只管通配符证书。",
+    "iodef": "`iodef` 指向违规上报地址，通常填 `mailto:` 邮箱。",
+    "ttl": "TTL 留 0 则输出不带 TTL 的行，由区域默认值决定。"
+  },
+  "faq": [
+    {
+      "q": "CAA 记录会阻止所有其他 CA 吗？",
+      "a": "会。未列入 `issue` 的 CA 不得为该域名签发证书。"
+    },
+    {
+      "q": "通配符证书需要单独授权吗？",
+      "a": "需要。只写 `issue` 时，通配符证书不受该规则约束；要限制请加 `issuewild`。"
+    },
+    {
+      "q": "没有 CAA 记录会怎样？",
+      "a": "任何 CA 都可以签发；加 CAA 是主动收窄范围。"
+    }
+  ]
+}

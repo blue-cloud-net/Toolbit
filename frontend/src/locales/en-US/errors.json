@@ -79,5 +79,6 @@
   "LOSSY_FORMAT": "The conversion is lossy and some information was dropped.",
   "REGEX_DIALECT_DIFFERENCE": "The regular expression dialect differs from the target language, so results may vary.",
   "TIMEZONE_ASSUMED": "A timezone was assumed for the conversion.",
-  "COMMENTS_LOST": "Comments were dropped during the conversion."
+  "COMMENTS_LOST": "Comments were dropped during the conversion.",
+  "CRL_UNVERIFIED": "No issuer certificate was supplied, so the CRL signature was not verified and the revocation status is unconfirmed."
 }

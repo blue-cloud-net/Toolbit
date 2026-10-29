@@ -37,6 +37,18 @@ export const toolRegistry: Record<string, ToolLoader> = {
   'cert-chain-verify': () => import('./certificates/cert-chain-verify/index'),
   'cert-chain-repair': () => import('./certificates/cert-chain-repair/index'),
   'crl-parse': () => import('./certificates/crl-parse/index'),
+  'csr-gen': () => import('./certificates/csr-gen/index'),
+  'cert-gen': () => import('./certificates/cert-gen/index'),
+  'crl-gen': () => import('./certificates/crl-gen/index'),
+  'revocation-check': () => import('./certificates/revocation-check/index'),
+  'ocsp-request': () => import('./certificates/ocsp-request/index'),
+  'ocsp-response': () => import('./certificates/ocsp-response/index'),
+  'pfx-pack': () => import('./certificates/pfx-pack/index'),
+  'pfx-parse': () => import('./certificates/pfx-parse/index'),
+  'pfx-change-password': () => import('./certificates/pfx-change-password/index'),
+  'p7b-pack': () => import('./certificates/p7b-pack/index'),
+  'p7b-extract': () => import('./certificates/p7b-extract/index'),
+  'caa-gen': () => import('./certificates/caa-gen/index'),
 }
 
 /** 已实现的工具 slug 集合。 */

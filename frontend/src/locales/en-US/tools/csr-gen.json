@@ -1,0 +1,62 @@
+{
+  "name": "CSR Generator",
+  "description": "Generate a PKCS#10 certificate signing request, with key usage presets per certificate type.",
+  "category": "Certificates",
+  "actions": {
+    "generate": "Generate"
+  },
+  "fields": {
+    "type": "Certificate type",
+    "cn": "Common name (CN)",
+    "org": "Organization (O)",
+    "country": "Country code (C)",
+    "sans": "Subject alternative names",
+    "challengePassword": "Challenge password",
+    "useExisting": "Use an existing private key",
+    "existingPrivateKey": "Existing private key",
+    "algorithm": "Key algorithm",
+    "curve": "Curve",
+    "bits": "RSA bits"
+  },
+  "options": {
+    "types": {
+      "server": "Server (serverAuth)",
+      "client": "Client (clientAuth)",
+      "email": "Email (emailProtection)",
+      "code-signing": "Code signing (codeSigning)"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "subject": "Subject",
+    "sans": "Subject alternative names",
+    "key": "Key",
+    "signatureValid": "Self-signature check",
+    "fingerprint": "SHA-256 fingerprint"
+  },
+  "examples": [
+    {
+      "label": "Generate a server CSR with an existing test key",
+      "value": "Test private key"
+    }
+  ],
+  "hints": {
+    "san": "One entry per line or comma-separated, for example `DNS:a.example.com` or `IP:10.0.0.1`.",
+    "private": "A newly generated private key is returned **only once** — store it immediately.",
+    "challenge": "The challenge password is only used for verification; the response reports whether it is **present**, never its value."
+  },
+  "faq": [
+    {
+      "q": "Does a CSR expire?",
+      "a": "No. Validity is decided when the CA issues the certificate."
+    },
+    {
+      "q": "Why offer \"use an existing private key\"?",
+      "a": "Renewals normally reuse the key so already deployed trust does not have to be rebuilt."
+    },
+    {
+      "q": "Will the CA honour the SANs in my CSR?",
+      "a": "Most CAs check them, so do not put names that do not belong to you."
+    }
+  ]
+}

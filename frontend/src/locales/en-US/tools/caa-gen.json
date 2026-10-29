@@ -1,0 +1,43 @@
+{
+  "name": "CAA Generator",
+  "description": "Generate CAA records that restrict which CAs may issue certificates for your domain.",
+  "category": "Certificates",
+  "actions": {
+    "generate": "Generate"
+  },
+  "fields": {
+    "domain": "Domain",
+    "tag": "Tag",
+    "value": "Value",
+    "ttl": "TTL (seconds)"
+  },
+  "options": {},
+  "results": {
+    "output": "Zone file lines"
+  },
+  "examples": [
+    {
+      "label": "Authorize Let's Encrypt",
+      "value": "example.com / issue"
+    }
+  ],
+  "hints": {
+    "issue": "`issue` controls ordinary certificates; `issuewild` only controls wildcard ones.",
+    "iodef": "`iodef` points at a reporting address, usually a `mailto:` mailbox.",
+    "ttl": "A TTL of 0 emits lines without a TTL, leaving it to the zone default."
+  },
+  "faq": [
+    {
+      "q": "Does a CAA record block all other CAs?",
+      "a": "Yes. CAs not listed under `issue` must not issue for the domain."
+    },
+    {
+      "q": "Do wildcard certificates need their own authorization?",
+      "a": "Yes. `issue` alone does not constrain wildcards; add `issuewild` to restrict them."
+    },
+    {
+      "q": "What happens without a CAA record?",
+      "a": "Any CA may issue. Adding CAA deliberately narrows that down."
+    }
+  ]
+}
