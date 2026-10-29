@@ -377,7 +377,7 @@ tools:
     enabled: true
     transport: json
     rateClass: standard
-    maxBodyBytes: 8388608
+    maxBodyBytes: 1048576
     timeoutMs: 15000
     sensitive: false
     requiresNetwork: false
