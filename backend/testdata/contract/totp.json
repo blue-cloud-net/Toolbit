@@ -1,0 +1,67 @@
+{
+  "slug": "totp",
+  "description": "TOTP 的契约测试数据。",
+  "cases": [
+    {
+      "name": "RFC 6238 标准向量",
+      "request": {
+        "operation": "generate",
+        "secret": "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+        "algorithm": "SHA1",
+        "digits": 8,
+        "period": 30,
+        "timestamp": 59
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "code": "94287082"
+        }
+      }
+    },
+    {
+      "name": "验证正确验证码",
+      "request": {
+        "operation": "verify",
+        "secret": "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+        "algorithm": "SHA1",
+        "digits": 8,
+        "timestamp": 59,
+        "code": "94287082"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "valid": true
+        }
+      }
+    },
+    {
+      "name": "验证错误验证码",
+      "request": {
+        "operation": "verify",
+        "secret": "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+        "algorithm": "SHA1",
+        "digits": 8,
+        "timestamp": 59,
+        "code": "00000000"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "valid": false
+        }
+      }
+    },
+    {
+      "name": "缺少密钥",
+      "request": {
+        "operation": "generate"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

@@ -85,5 +85,23 @@ func Definitions() []tools.Definition {
 				return SM4FileCrypt(ctx, req.(*SM4FileCryptRequest))
 			},
 		},
+		{
+			Slug: "password-policy",
+			NewRequest: func() tools.Request {
+				return &PasswordPolicyRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return PasswordPolicy(ctx, req.(*PasswordPolicyRequest))
+			},
+		},
+		{
+			Slug: "totp",
+			NewRequest: func() tools.Request {
+				return &TOTPRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return TOTP(ctx, req.(*TOTPRequest))
+			},
+		},
 	}
 }

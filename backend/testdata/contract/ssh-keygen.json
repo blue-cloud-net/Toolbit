@@ -1,0 +1,44 @@
+{
+  "slug": "ssh-keygen",
+  "description": "SSH 密钥生成的契约测试数据。",
+  "cases": [
+    {
+      "name": "生成 Ed25519 密钥",
+      "request": {
+        "algorithm": "Ed25519",
+        "comment": "toolbit@example.com"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "algorithm": "Ed25519"
+        }
+      }
+    },
+    {
+      "name": "生成 RSA 密钥",
+      "request": {
+        "algorithm": "RSA",
+        "bits": 2048,
+        "comment": "toolbit@example.com"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "algorithm": "RSA",
+          "bits": 2048
+        }
+      }
+    },
+    {
+      "name": "不支持的算法",
+      "request": {
+        "algorithm": "DSA"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

@@ -65,5 +65,14 @@ func Definitions() []tools.Definition {
 				return JWKXMLConvert(ctx, req.(*JWKXMLConvertRequest))
 			},
 		},
+		{
+			Slug: "ssh-keygen",
+			NewRequest: func() tools.Request {
+				return &SSHKeygenRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return SSHKeygen(ctx, req.(*SSHKeygenRequest))
+			},
+		},
 	}
 }
