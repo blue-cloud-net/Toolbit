@@ -1,0 +1,40 @@
+{
+  "slug": "csr-parse",
+  "description": "证书签名请求解析的契约测试数据。",
+  "cases": [
+    {
+      "name": "解析 CSR",
+      "request": {
+        "input": {
+          "data": "-----BEGIN CERTIFICATE REQUEST-----\nMIIChDCCAWwCAQAwPzELMAkGA1UEBhMCQ04xFTATBgNVBAoMDFRvb2xiaXQgVGVz\ndDEZMBcGA1UEAwwQbGVhZi5leGFtcGxlLmNvbTCCASIwDQYJKoZIhvcNAQEBBQAD\nggEPADCCAQoCggEBAMGIFCzTq8ozLPmfIoUgM+DUG7r8SXn8tqnS8jMTNOmCbJFQ\nCAbwnRNcdx/XbRHixrduyFIEAa/JPvZE1gKoomkRlNDWZSDI50fhOuN8pm7IB60e\ni7vQoJ+BP4x84twRAk3caK9ktRtpMzhrCH0EZL9DZVE5j6ugTiB/mrSKRvTDGSMI\nMswxakcgAxuPKpH1gJYdb8flD33y/C3HG5APK9D/8X7yAGG4n4ToTQXUbGcQLHAj\nZ6jW9AdFzVT4Bwb1neyx9g/HsOoEUA7FT1OMtGUGa8/dKqYgm7CRDR3RCk3KOT2r\n1+yzAkBiJaeYKIfm3yOqp+Q5N1pAT6GseaeACD8CAwEAAaAAMA0GCSqGSIb3DQEB\nCwUAA4IBAQBdG2n+x5GF4rijzwOfEnA4eIj3H1FNxgzPTx/zFkY5Z1xJwzTaqqPp\nAjyV52lgIbQfJTH1sB+m5w3Q8bkDp+09rs+H97sfb1F5SJuvtIllICP6C72vjeJi\nb9ADTXW9PTlO+nYXWOt3/7Z6CO/BV14sR+lnSwXtmnhF9XZgVHcwHV36SLpBguIa\nlCbsHHms552ErA0Wi/SXl6C/lAkY1usPDWoVKWZwmmIPfF/hPdTAl+JBv/aIs0R0\n96+x/OWbzJx/tVEeZhJXjrGuF8Q13PVhDCgPqUmtv9F1GOmojT3iDyWNHkwOP23L\nqU7O+eSavzMKS0yeEkRu8AretGzzT1ZJ\n-----END CERTIFICATE REQUEST-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "subjectText": "/C=CN/O=Toolbit Test/CN=leaf.example.com",
+          "signatureValid": true,
+          "challengePasswordPresent": false,
+          "publicKey": {
+            "algorithm": "RSA",
+            "bits": 2048
+          }
+        }
+      }
+    },
+    {
+      "name": "非法 CSR",
+      "request": {
+        "input": {
+          "data": "not a csr",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_CSR"
+      }
+    }
+  ]
+}

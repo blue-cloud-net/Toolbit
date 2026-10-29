@@ -1,0 +1,40 @@
+{
+  "slug": "crl-parse",
+  "description": "吊销列表解析的契约测试数据。",
+  "cases": [
+    {
+      "name": "解析 CRL",
+      "request": {
+        "input": {
+          "data": "-----BEGIN X509 CRL-----\nMIIBwzCBrAIBATANBgkqhkiG9w0BAQsFADBDMQswCQYDVQQGEwJDTjEVMBMGA1UE\nCgwMVG9vbGJpdCBUZXN0MR0wGwYDVQQDDBRUb29sYml0IFRlc3QgUm9vdCBDQRcN\nMjYxMDI5MDE1NjE1WhcNMjYxMTI4MDE1NjE1WjA1MDMCFGwPOS44XszVSZAcwQpt\nCrt5I9OMFw0yNjEwMjkwMTU2MTVaMAwwCgYDVR0VBAMKAQEwDQYJKoZIhvcNAQEL\nBQADggEBAAgabPfCvXO8OPyZtVv6CjX0Vbla7hcPb2o+5X628eBto9v+H5nDgcIo\n4AR1K1PkIaOMKyyMyXfv3J9bRVsipytZD0A8KnRdGIPUMoTtCZhIrASVd88KhFG3\nwikBwHLd9nWXIqkghCQ+Eoe7gkf4TZiBonp/p2Ceb279Jw9Y37gFDP6TpO3Pe85t\nqX5lFIPL6/JerSxpEDmDwKXk8jLR8aAboGOWHqOEW1LGWhW8CJJDIcpAlNKHWV3C\n6fjFJPUrCRUnumglmaR177B6r4LDb9YhKsFAaI/9OZekAW7GXZQAGBfl3SnnlUzv\ns4vst2UnepAQ0mXIfWolznA+Sa/ewWg=\n-----END X509 CRL-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "issuerText": "/C=CN/O=Toolbit Test/CN=Toolbit Test Root CA",
+          "revoked": [
+            {
+              "reasonCode": 1,
+              "reasonText": "keyCompromise"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "非法 CRL",
+      "request": {
+        "input": {
+          "data": "not a crl",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_CRL"
+      }
+    }
+  ]
+}
