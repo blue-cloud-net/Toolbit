@@ -9,6 +9,65 @@
 
 尚无变更。
 
+## [0.7.0] - 2026-10-29
+
+网络探测：出网能力就继，SSRF 防护全覆盖。
+**新增 7 个工具**（累计 43 个已实现），`ct-search` 本版未实现。
+
+本版引入统一的出网防护层 `netguard`，并把 `ssl-check` 做成 WebSocket 流式端点。
+
+### Added
+
+- 出网防护层 `backend/internal/netguard/`
+  - 私网 / 回环 / 链路本地 / `0.0.0.0/8` / 运营商级 NAT / 文档与保留网段全部拦截
+  - IPv4-mapped IPv6（`::ffff:127.0.0.1`）先还原再判定，无法绕过
+  - 建连使用**已校验的 IP**（防 DNS rebinding），不二次解析
+  - 端口白名单固定为 43 / 53 / 80 / 443 / 853，用户无法指定任意端口
+  - 重定向逐跳校验，最多 3 跳；禁用环境代理
+  - `TOOLBIT_NETWORK_ALLOWLIST` 支持精确主机名与 `*.suffix`
+- 工具 `cidr-calc`：网段计算、地址范围反推、按前缀拆分；IPv6 大数以十进制字符串表达
+- 工具 `dns-lookup`：`udp` / `tcp` / `dot` / `doh` 四种协议，逐服务器结果与耗时
+- 工具 `dns-tester`：RDAP 优先、whois（TCP 43）回退；DNSSEC 逐级 DS 检查；PTR + 正向复核
+- 工具 `ssl-check`：WebSocket 流式 TLS 探测，四个阶段的进度帧
+- 工具 `cert-chain-fetch`：只呈现服务端实发链，附链摘要与验证结论
+- 工具 `domain-verify`：`dns-txt` / `dns-cname` / `http-file` 三种方式
+- 工具 `websocket-test`：浏览器原生直连，**无**后端端点
+- WebSocket 端点 `GET /api/v1/tools/ssl-check/stream`
+  - 首帧 5 秒超时、心跳 30 秒、空闲 60 秒兜底、总预算 30 秒
+  - 同 IP 同时最多 1 条连接，超出在升级前返回 `429`
+  - 关闭码：`1000` / `1008` / `1011`
+- 前端 8 个工具页与 16 份双语词条；流式页面自带四态状态机
+- 契约测试数据 5 份；`netguard` 与网络工具层单元测试
+
+### Changed
+
+- catalog 传输方式校正
+  - `ssl-check` → `transport: websocket`（此前误标为 `json`）
+  - `websocket-test` → `transport: client`（与「纯前端」的定义对齐）
+  - `cert-chain-fetch` → `transport: json`，请求体上限降到 1 MiB
+- 分发器按 `transport` 分流：`client` 工具返回 `404`，`websocket` 工具的 JSON 通道返回 `405`
+- 端口**白名单**判定从字段校验下移到 `netguard`：字段层只校验范围，越界端口返回
+  `SSRF_BLOCKED`，策略只有一个事实来源
+- `toolset.Definitions` 需要注入出网守卫，进程入口与 API 测试共用同一份装配
+
+### Fixed
+
+- `cidr-calc` 的地址族字段此前返回位宽（32/128），改为 `4` / `6`
+
+### Known limitations
+
+- `ct-search` **未实现**：公开证书透明度日志查询服务没有稳定 SLA，
+  catalog 保留登记，调用返回 `NOT_IMPLEMENTED`
+- TLS 客户端使用 Go 的 `crypto/tls`：仅限出网探测，链验证仍走 `pkisvc.VerifyChain`
+  （条款见 `docs/standards/03-crypto.md`）
+- 本地信任库可能缺失：`ssl-check` 届时只能判定链内自洽，
+  响应里用 `verified` / `implicitTrust` 显式区分
+- 系统解析器（`/etc/resolv.conf`）属运维配置，不做私网校验；
+  用户自定义的 DNS 服务器仍要过出网防护
+- TLS 1.3 的密码套件无法通过配置裁剪
+
+---
+
 ## [0.6.0] - 2026-10-29
 
 PKI 生成、吊销与容器：能签发证书、处理吊销，并读写 PKCS#12 / PKCS#7 容器。
