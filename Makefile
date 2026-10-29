@@ -11,6 +11,8 @@
 #   make build-web    前端生产构建
 #   make check-docs   文档一致性检查
 #   make check-budget 前端体积预算检查
+#   make docker-up    构建镜像并启动（首次会编译 Tongsuo，较慢）
+#   make docker-smoke 容器冒烟检查
 #   make verify       提交前全量校验（vet + test + test-web + lint + build-web + check-budget）
 
 SHELL := /bin/sh
@@ -116,6 +118,68 @@ build-web: ## 前端生产构建
 .PHONY: check-budget
 check-budget: ## 前端体积预算（初始 JS 与单工具 chunk）
 	$(NODE) scripts/check-budget.mjs
+
+# ── Docker（部署）─────────────────────────────────────────────────────
+#
+# 构建上下文是**仓库根目录**：backend/ 与 frontend/ 合成一个镜像。
+# 编排与 Dockerfile 都在 deployments/（见 docs/standards/08-deploy.md §5）。
+COMPOSE      ?= docker compose
+COMPOSE_FILE ?= deployments/docker-compose.yml
+ENV_FILE     ?= deployments/.env
+IMAGE        ?= bluecloud/toolbit
+TAG          ?= local
+HTTP_PORT    ?= 30234
+
+.PHONY: docker-build
+docker-build: ## 构建镜像（首次会编译 Tongsuo，约 5-10 分钟）
+	TAG=$(TAG) COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null || echo unknown) \
+	BUILD_TIME=$(shell date -u +%Y-%m-%dT%H:%M:%SZ) \
+	$(COMPOSE) -f $(COMPOSE_FILE) build
+
+.PHONY: docker-up
+docker-up: ## 构建并后台启动（缺 .env 时用模板生成一份）
+	@if [ ! -f $(ENV_FILE) ]; then \
+		cp $(ENV_FILE).example $(ENV_FILE); \
+		echo "已生成 $(ENV_FILE)（所有变量都有默认值，可直接使用）"; \
+	fi
+	TAG=$(TAG) COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null || echo unknown) \
+	BUILD_TIME=$(shell date -u +%Y-%m-%dT%H:%M:%SZ) \
+	$(COMPOSE) -f $(COMPOSE_FILE) up -d --build
+	@echo "已启动：http://localhost:$(HTTP_PORT)"
+
+.PHONY: docker-smoke
+docker-smoke: ## 冒烟检查（容器状态 / 探针 / 目录 / 前端首页）
+	@$(COMPOSE) -f $(COMPOSE_FILE) ps
+	@curl -fsS "http://127.0.0.1:$(HTTP_PORT)/healthz" >/dev/null && echo "healthz: ok"
+	@curl -fsS "http://127.0.0.1:$(HTTP_PORT)/readyz" >/dev/null && echo "readyz: ok"
+	@curl -fsS "http://127.0.0.1:$(HTTP_PORT)/api/v1/tools" >/dev/null && echo "catalog: ok"
+	@curl -fsS "http://127.0.0.1:$(HTTP_PORT)/" >/dev/null && echo "webui: ok"
+
+.PHONY: docker-logs
+docker-logs: ## 跟踪容器日志
+	$(COMPOSE) -f $(COMPOSE_FILE) logs -f --tail=100
+
+.PHONY: docker-ps
+docker-ps: ## 查看容器状态
+	$(COMPOSE) -f $(COMPOSE_FILE) ps
+
+.PHONY: docker-shell
+docker-shell: ## 进入容器（非 root，UID 10001）
+	$(COMPOSE) -f $(COMPOSE_FILE) exec toolbit /bin/sh
+
+.PHONY: docker-down
+docker-down: ## 停止并删除容器（保留数据卷）
+	$(COMPOSE) -f $(COMPOSE_FILE) down
+
+.PHONY: docker-clean
+docker-clean: ## 停止并**删除数据卷**（统计库一并丢失，需二次确认）
+	@printf "将删除数据卷 toolbit-data（统计库不可恢复），继续？[y/N] "; \
+	read -r ans; \
+	case "$$ans" in \
+		y|Y) $(COMPOSE) -f $(COMPOSE_FILE) down -v ;; \
+		*) echo "已取消" ;; \
+	esac
+
 
 .PHONY: verify
 verify: vet test test-web lint build-web check-budget ## 提交前全量校验
