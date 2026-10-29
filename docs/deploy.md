@@ -10,32 +10,62 @@
 
 ## 1. 方式一：Docker（推荐）
 
+镜像是**单容器**：Go 后端 + 前端静态资源 + Tongsuo 运行库，不需要额外的 nginx、Node 或数据库容器。
+编排与 Dockerfile 都在 `deployments/`，构建上下文是**仓库根目录**。
+
 ### 1.1 快速开始
 
 ```bash
 git clone git@github.com:blue-cloud-net/Toolbit.git
 cd Toolbit
-docker compose up -d
+make docker-up          # 首次会编译 Tongsuo，约 5-10 分钟
 ```
 
+缺 `deployments/.env` 时会自动用 `.env.example` 生成一份（**全部变量都有默认值**，可直接使用）。
 访问 <http://localhost:30234>。
 
-### 1.2 使用预构建镜像
+### 1.2 直接使用 compose
+
+```bash
+cp deployments/.env.example deployments/.env     # 可选，需要改默认值时再建
+docker compose -f deployments/docker-compose.yml up -d --build
+```
+
+### 1.3 使用预构建镜像
 
 ```bash
 docker run -d --name toolbit \
   -p 30234:30234 \
   -v toolbit-data:/app/data \
   --restart unless-stopped \
-  bluecloud/toolbit:0.1.0
+  --cap-drop ALL \
+  --security-opt no-new-privileges:true \
+  --memory 1g \
+  bluecloud/toolbit:0.5.0
 ```
 
-### 1.3 验证
+> 镜像内已设 `TOOLBIT_WEB_ROOT=/app/web` 与 `TOOLBIT_DB_PATH=/app/data/toolbit.db`，
+> 因此 `docker run` **不需要**再传这两个变量。
+
+### 1.4 验证
 
 ```bash
-curl -fsS http://localhost:30234/readyz
-curl -fsS http://localhost:30234/api/v1/tools | head -c 200
+make docker-smoke        # 容器状态 + healthz / readyz / 目录 / 前端首页
+docker exec toolbit /app/toolbit healthcheck; echo $?   # 0 = 就绪
 ```
+
+### 1.5 编排变量
+
+除 `TOOLBIT_*` 之外，编排层还有 6 个变量（见 `deployments/.env.example`）：
+
+| 变量 | 默认 | 说明 |
+| --- | --- | --- |
+| `TAG` | `local` | 镜像标签，同时注入 `buildinfo.Version` |
+| `COMMIT` | `unknown` | 短 commit，注入 `buildinfo.Commit` |
+| `BUILD_TIME` | `unknown` | 构建时间（RFC3339 UTC），注入 `buildinfo.BuildTime` |
+| `HTTP_PORT` | `30234` | 宿主机对外端口 |
+| `TZ` | `Asia/Shanghai` | 容器时区（统计按日聚合依赖它） |
+| `MEMORY_LIMIT` | `1g` | 容器内存上限 |
 
 ---
 
@@ -47,18 +77,23 @@ curl -fsS http://localhost:30234/api/v1/tools | head -c 200
 | --- | --- | --- |
 | Go | 1.25+ | 需要 `CGO_ENABLED=1` |
 | Node.js | 22 LTS | 构建前端 |
-| pnpm | 10+ | 包管理 |
+| pnpm | 12+ | 包管理（`frontend/package.json` 的 `packageManager` 为准） |
 | Tongsuo | 8.4.0 | 提供头文件与运行库 |
+
+> **用 Docker 时不需要在本机安装 Tongsuo**：镜像内由 `tongsuo` 阶段自行编译安装到 `/opt/tongsuo`。
 
 ### 2.2 安装 Tongsuo
 
 ```bash
-# 编译 Tongsuo（启用 shared）
+# 编译 Tongsuo（shared 产出 .so；lib64 与 tongsuo-go 的 cgo 路径一致）
 cd tongsuo
-./config --prefix=/opt/tongsuo --openssl-shared
+./config --prefix=/opt/tongsuo --libdir=lib64 shared enable-ntls
 make -j"$(nproc)"
 sudo make install_sw
 ```
+
+> `--openssl-shared` **不是** Tongsuo 8.4.0 的 config 选项，传了会被透传给 gcc 并报
+> `unrecognized command-line option`。共享库用 `shared` 开启。
 
 ### 2.3 构建
 
@@ -183,6 +218,7 @@ TOOLBIT_TRUST_PROXY=true
 | `ulimit -n` | ≥ 4096 |
 
 **必须**在容器上设置内存上限，避免单次大文件请求触发 OOM。
+`deployments/docker-compose.yml` 已设 `MEMORY_LIMIT`（默认 `1g`），直接 `docker run` 时需自行传 `--memory`。
 
 ---
 
@@ -190,9 +226,9 @@ TOOLBIT_TRUST_PROXY=true
 
 | 内容 | 位置 | 是否必须持久化 |
 | --- | --- | --- |
-| 匿名统计库 | `/app/data/stats.db` | 可选（统计数据） |
+| 匿名统计库 | `/app/data/toolbit.db` | 可选（统计数据） |
 | 前端静态资源 | `/app/web`（镜像内） | 否 |
-| 配置文件 | 外部管理 | 是 |
+| 配置 | 外部环境变量 / `deployments/.env` | 是 |
 
 **必须**使用**命名卷**：
 
@@ -222,9 +258,16 @@ volumes:
 ## 8. 升级
 
 ```bash
-docker compose pull
-docker compose up -d
+docker compose -f deployments/docker-compose.yml pull
+docker compose -f deployments/docker-compose.yml up -d
 curl -fsS http://localhost:30234/readyz
+```
+
+从源码升级（自己构建镜像）：
+
+```bash
+make docker-up            # 重新构建并滚动替换容器
+make docker-smoke         # 确认 /readyz 与目录端点正常
 ```
 
 **必须**：升级**不得**删除数据卷；数据库迁移**必须**向前兼容（只增列 / 加表）。
@@ -240,14 +283,14 @@ curl -fsS http://localhost:30234/readyz
 **必须**用 SQLite 的 `.backup` 或 `VACUUM INTO` 做备份，**禁止**在写入期间直接拷贝文件。
 
 ```bash
-docker exec toolbit sqlite3 /app/data/stats.db ".backup /app/data/backup.db"
+docker exec toolbit sqlite3 /app/data/toolbit.db ".backup /app/data/backup.db"
 docker cp toolbit:/app/data/backup.db ./stats-backup.db
 ```
 
 **恢复注意**：`docker cp` 放入的属主是执行 cp 的宿主机用户，需修正：
 
 ```bash
-docker exec -u 0 toolbit chown 10001:10001 /app/data/stats.db
+docker exec -u 0 toolbit chown 10001:10001 /app/data/toolbit.db
 ```
 
 ---
@@ -256,12 +299,14 @@ docker exec -u 0 toolbit chown 10001:10001 /app/data/stats.db
 
 | 现象 | 原因 | 处理 |
 | --- | --- | --- |
-| `unable to open database file` | 数据卷属主 / 权限 | 改用命名卷；或 `chown 10001:10001` |
-| `Permission denied`（启动即失败） | `jwt.key` 等文件属主不对 | 同上 |
-| `/readyz` 返回 503 | 静态资源未挂载 | 检查 `TOOLBIT_WEB_ROOT` |
+| `unable to open database file` | 数据卷属主 / 权限 | 改用命名卷；或 `docker exec -u 0 toolbit chown -R 10001:10001 /app/data` |
+| 容器启动即退出、日志含 `error while loading shared libraries` | Tongsuo 运行库未随镜像发布 / rpath 失效 | 用本仓库 `deployments/Dockerfile` 构建；`docker run --rm --entrypoint ldd <image>` 应指向 `/opt/tongsuo/lib64` |
+| `/readyz` 返回 503 | 静态资源不可读或统计库不可写 | 检查 `TOOLBIT_WEB_ROOT`（镜像内为 `/app/web`）与数据卷属主 |
+| 容器一直是 `starting` / `unhealthy` | 探针不通过 | `docker exec toolbit /app/toolbit healthcheck; echo $?`，再用 `make docker-logs` 看启动日志 |
 | 429 频繁 | 限流触发 | 检查是否有压测或反代未覆写 `X-Forwarded-For` |
 | 出网工具报 `SSRF_BLOCKED` | 目标是内网地址 | 预期行为；如需放行请显式配置白名单 |
 | 出网工具报 `NETWORK_DISABLED` | 总开关关闭 | 设置 `TOOLBIT_NETWORK_ENABLED=true` |
+| 出网工具报证书错误 | 镜像内缺 CA 根证书（自建镜像时才可能） | 安装 `ca-certificates`，官方镜像已含 |
 | WebSocket 连不上 | 代理未允许 Upgrade | 检查反代配置 |
 
 ---

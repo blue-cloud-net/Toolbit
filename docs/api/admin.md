@@ -303,16 +303,18 @@ toolbit_request_duration_ms_count{slug="base64"} 3820
 ### 9.1 容器内健康检查
 
 ```dockerfile
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD ["/app/toolbit", "healthcheck"]
 ```
 
-`toolbit healthcheck` 子命令**必须**：
+`toolbit healthcheck` 子命令（实现见 `backend/cmd/toolbit/healthcheck.go`）：
 
-- 访问 `http://127.0.0.1:30234/readyz`；
-- 状态非 `200` 时**退出码 1**；
-- 设置 ≤ 3 秒超时；
-- **不**输出敏感信息。
+- 访问 `http://127.0.0.1:<TOOLBIT_ADDR 的端口>/readyz`，端口取自 `TOOLBIT_ADDR`（默认 `:30234`）；
+- 监听地址为 `:port` / `0.0.0.0:port` / `[::]:port` 时，统一探回环地址；
+- 状态非 `200`、连接失败或超时（> 3 秒）时**退出码 1**；
+- 成功时退出码 `0`，stdout 只输出 `ok`；
+- 未知子命令**退出码 2**（不回落到启动服务）；
+- **不**输出敏感信息：不打印响应体、不打印配置值。
 
 ### 9.2 冒烟检查
 

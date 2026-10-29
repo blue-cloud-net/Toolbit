@@ -11,7 +11,16 @@
 | Docker 镜像 | 主力 | 单容器包含前端静态资源 + Go 后端 + Tongsuo 运行库 |
 | 源码构建 | 二次开发 | `make build` 产出 `bin/toolbit` + `frontend/dist` |
 
-**必须**提供 Dockerfile 与 `docker-compose.yml`。
+**必须**提供 Dockerfile 与 `docker-compose.yml`，位置为：
+
+| 文件 | 路径 |
+| --- | --- |
+| Dockerfile | `deployments/Dockerfile` |
+| 编排 | `deployments/docker-compose.yml` |
+| 变量模板 | `deployments/.env.example` |
+| 构建上下文排除 | `.dockerignore`（仓库根） |
+
+编排统一通过 `make docker-*` 目标调用，**不**要求在仓库根直接 `docker compose up`。
 
 **禁止**提供「需要用户在宿主机单独安装 Tongsuo」的部署方式作为唯一路径。
 
@@ -22,26 +31,42 @@
 ### 2.1 多阶段
 
 ```text
-builder-base  →  go build（CGO_ENABLED=1, tongsuo headers/libs）
-                →  pnpm build → frontend/dist
-runtime-base  →  拷贝二进制 + dist + tongsuo 运行库 + CA 证书
+tongsuo   →  编译 Tongsuo 8.4.0 → /opt/tongsuo（--libdir=lib64 shared enable-ntls）
+frontend  →  pnpm install --frozen-lockfile && pnpm build → frontend/dist
+backend   →  go build（CGO_ENABLED=1，链接 /opt/tongsuo）
+runtime   →  拷贝二进制 + dist + Tongsuo 运行库 + CA 证书
 ```
 
 **必须**
 
 - 运行时镜像**不含** Go / Node / 编译工具链；
+- Tongsuo 安装前缀 `/opt/tongsuo`、共享库目录 **`lib64`**：这两位是 `tongsuo-go` 的 cgo 指令
+  与 rpath 里写死的路径，**不是**可自由选择的约定；交叉构建 arm64 时默认会装到 `lib`，
+  因此**必须**显式 `--libdir=lib64`；
 - Tongsuo 共享库用 `-Wl,-rpath,/opt/tongsuo/lib64` 链接（**禁止**依赖 `LD_LIBRARY_PATH`）；
-- 运行时镜像内 Tongsuo 库路径与 rpath **必须**一致；
-- 基础镜像**必须**固定 digest；
+- 运行时镜像内 Tongsuo 库路径与 rpath **必须**一致；连同 `OPENSSLDIR`（`/opt/tongsuo/ssl`）一起拷入运行镜像；
+- 源码包**必须**先按 sha256 校验再解包，**禁止**免校验下载；
+- 基础镜像**必须**固定 digest（三个基础镜像均在 Dockerfile 顶部以 `ARG ...@sha256:...` 声明），
+  升级基础镜像属于独立变更，需重跑构建与冒烟；
 - 非 root 用户：`app`，UID/GID **必须**为 `10001:10001`；
 - `WORKDIR /app`；
 - 数据目录 `/app/data`（统计库），**必须**属主 `10001:10001`；
 - 暴露 `30234`；
-- `ENTRYPOINT ["/app/toolbit"]`（exec 形式，**必须**让进程收到 SIGTERM）。
+- `ENTRYPOINT ["/app/toolbit"]`（exec 形式，**必须**让进程收到 SIGTERM）；
+- `STOPSIGNAL SIGTERM`；
+- `HEALTHCHECK` **必须**调用内置子命令 `/app/toolbit healthcheck`（见 [admin.md §9.1](../api/admin.md)），
+  **禁止**为探活往运行镜像里安装 `curl` / `wget`。
 
 ### 2.2 基础镜像选择
 
+| 阶段 | 基础镜像 | 说明 |
+| --- | --- | --- |
+| `tongsuo` / `backend` | `golang:1.25-bookworm` | 编译 Tongsuo 与后端（需要 cgo 工具链） |
+| `frontend` | `node:22-alpine` | 仅构建阶段，**不进**运行镜像 |
+| `runtime` | `debian:bookworm-slim` | 运行期需要 glibc |
+
 - 运行时基于 **debian slim**（需 `ca-certificates` 与 glibc）；
+- 运行镜像与构建镜像**必须**同一 Debian 代次（`bookworm`），否则 glibc 版本不一致可能导致运行期报错；
 - **禁止**基于 `alpine`（musl 与 tongsuo-go 的 cgo 兼容性风险高）；
 - **禁止**基于 `scratch`（Tongsuo 需要 glibc 与 CA）。
 
@@ -92,17 +117,24 @@ runtime-base  →  拷贝二进制 + dist + tongsuo 运行库 + CA 证书
 
 ## 5. Docker Compose
 
+编排文件：`deployments/docker-compose.yml`（构建上下文为仓库根 `..`）。要点摘录：
+
 ```yaml
 services:
   toolbit:
-    build: .
-    image: bluecloud/toolbit:0.1.0
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile
+      args:
+        VERSION: ${TAG:-local}
+    image: bluecloud/toolbit:${TAG:-local}
     container_name: toolbit
     ports:
-      - "30234:30234"
+      - "${HTTP_PORT:-30234}:30234"
     environment:
       TOOLBIT_ADDR: ":30234"
-      TOOLBIT_DB_PATH: "/app/data/stats.db"
+      TOOLBIT_WEB_ROOT: /app/web
+      TOOLBIT_DB_PATH: /app/data/toolbit.db
     volumes:
       - toolbit-data:/app/data
     restart: unless-stopped
@@ -111,6 +143,7 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+      start_period: 20s
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -123,6 +156,7 @@ volumes:
 **必须**
 
 - **必须**使用**命名卷**（不用 bind mount，避免属主与权限问题，见 §9）；
+- 环境变量保留 `TOOLBIT_*` 原名，**禁止**在编排层再发明一套别名（文档、`.env`、编排三处同名）；
 - `read_only: true` + `tmpfs` 只在确有必要时启用；
 - `cap_drop: ALL`、`no-new-privileges:true`；
 - **禁止**在 compose 中写明文密钥（本项目无密钥需求，但口令类配置**必须**走 `.env` 且 `.env` 已在 `.gitignore`）。
@@ -237,7 +271,7 @@ server {
 
 | 内容 | 位置 | 必要性 |
 | --- | --- | --- |
-| 统计库 | `/app/data/stats.db` | 可选（匿名数据） |
+| 统计库 | `/app/data/toolbit.db` | 可选（匿名数据） |
 | 配置 | 部署环境变量 / `.env` | 必需（外部管理） |
 | 镜像 | 镜像仓库 | 必需 |
 
@@ -249,7 +283,7 @@ server {
 
 ## 12. 禁止清单
 
-- ❌ 基于 `alpine` / `scratch` 构建镜像。
+- ❌ 基于 `alpine` / `scratch` 构建运行镜像。
 - ❌ 依赖 `LD_LIBRARY_PATH` 找 Tongsuo 库。
 - ❌ 容器内以 root 运行服务。
 - ❌ bind mount 数据目录（属主问题）。
@@ -257,3 +291,5 @@ server {
 - ❌ 公开 `/internal/*` 端点。
 - ❌ 升级时删除数据卷。
 - ❌ 在 compose / 仓库中写明文口令。
+- ❌ 跳过 Tongsuo 源码包的 sha256 校验。
+- ❌ 为容器探活往运行镜像里装 `curl` / `wget`（用内置 `healthcheck` 子命令）。
