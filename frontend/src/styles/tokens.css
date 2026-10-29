@@ -99,9 +99,10 @@
   --tb-container-w: 1280px;
 
   /* 侧栏 */
-  --tb-sidebar-w: 260px;
-  --tb-sidebar-rail-w: 56px;
-  --tb-sidebar-chip: 26px;
+  --tb-sidebar-w: 272px;
+  /* 轨道宽 = 左边距 12 + 图标胶囊 28 + 右边距 11 + 右边框 1，图标视觉居中 */
+  --tb-sidebar-rail-w: 52px;
+  --tb-sidebar-chip: 28px;
 
   /*
    * 响应式断点约定：

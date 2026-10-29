@@ -36,7 +36,9 @@
     "breadcrumb": "Breadcrumb",
     "filterTools": "Filter tools",
     "filterPlaceholder": "Filter…",
-    "openSidebar": "Open navigation"
+    "openSidebar": "Open navigation",
+    "collapseAll": "Collapse all categories",
+    "expandAll": "Expand all categories"
   },
   "theme": {
     "label": "Theme",

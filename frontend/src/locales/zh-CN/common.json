@@ -36,7 +36,9 @@
     "breadcrumb": "面包屑",
     "filterTools": "过滤工具",
     "filterPlaceholder": "过滤…",
-    "openSidebar": "打开导航"
+    "openSidebar": "打开导航",
+    "collapseAll": "收起全部分类",
+    "expandAll": "展开全部分类"
   },
   "theme": {
     "label": "主题",
