@@ -1,0 +1,63 @@
+{
+  "name": "GZip / Deflate",
+  "description": "压缩与解压 gzip、zlib 与裸 deflate 数据。",
+  "category": "编码",
+  "actions": {
+    "compress": "压缩",
+    "decompress": "解压"
+  },
+  "fields": {
+    "input": "待处理内容",
+    "inputEncoding": "输入编码",
+    "operation": "操作",
+    "format": "容器格式",
+    "level": "压缩级别",
+    "outputEncoding": "输出编码"
+  },
+  "options": {
+    "operation": {
+      "compress": "压缩",
+      "decompress": "解压"
+    },
+    "format": {
+      "gzip": "gzip（含头部与校验）",
+      "deflate": "zlib（RFC 1950）",
+      "raw": "裸 deflate（RFC 1951）"
+    }
+  },
+  "results": {
+    "output": "结果",
+    "outputHint": "结果可直接复制。",
+    "encoding": "输出编码",
+    "ratio": "压缩比"
+  },
+  "examples": [
+    {
+      "label": "gzip 压缩",
+      "value": "Hello, Toolbit!"
+    },
+    {
+      "label": "gzip 解压",
+      "value": "H4sIAAAAAAAAA/NIzcnJBwCCidH3BQAAAA=="
+    }
+  ],
+  "hints": {
+    "input": "压缩时输入是原始内容；解压时输入是压缩流，请把「输入编码」设为它实际所在的编码。",
+    "format": "gzip、zlib 与裸 deflate 是三种不同的容器，混用会解压失败。",
+    "output": "压缩比是输出字节数与输入字节数之比；解压时它表示还原后的体积倍率。"
+  },
+  "faq": [
+    {
+      "q": "gzip 和 deflate 有什么区别？",
+      "a": "gzip 带文件头与 CRC 校验，zlib（deflate 容器）带两字节头与 Adler-32 校验，裸 deflate 则没有任何包装。"
+    },
+    {
+      "q": "解压为什么失败？",
+      "a": "多数情况是容器格式选错：把 gzip 数据按裸 deflate 解就会失败；其次要确认输入编码与实际存储形式一致。"
+    },
+    {
+      "q": "有大小限制吗？",
+      "a": "有。解压输出超过上限会被拒绝，避免解压炸弹耗尽内存。"
+    }
+  ]
+}

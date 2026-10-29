@@ -1,0 +1,66 @@
+{
+  "slug": "format-convert",
+  "description": "JSON / YAML / TOML / XML 互转的契约测试数据。",
+  "cases": [
+    {
+      "name": "JSON 转 YAML",
+      "request": {
+        "input": { "data": "{\"name\":\"toolbit\",\"count\":3}" },
+        "from": "json",
+        "to": "yaml"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "from": "json", "to": "yaml" }
+      }
+    },
+    {
+      "name": "YAML 转 JSON",
+      "request": {
+        "input": { "data": "name: toolbit\n" },
+        "from": "yaml",
+        "to": "json"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "from": "yaml", "to": "json" }
+      }
+    },
+    {
+      "name": "XML 转 JSON",
+      "request": {
+        "input": { "data": "<root><name>toolbit</name></root>" },
+        "from": "xml",
+        "to": "json"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "from": "xml", "to": "json" }
+      }
+    },
+    {
+      "name": "JSON 语法错误",
+      "request": {
+        "input": { "data": "{not json" },
+        "from": "json",
+        "to": "yaml"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_JSON"
+      }
+    },
+    {
+      "name": "不支持的源格式",
+      "request": {
+        "input": { "data": "x" },
+        "from": "csv",
+        "to": "json"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

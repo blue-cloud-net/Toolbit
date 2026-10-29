@@ -1,0 +1,80 @@
+{
+  "name": "Date Calculator",
+  "description": "Compute date differences, shift dates by days or months, and count working days in a range.",
+  "category": "Data",
+  "actions": {
+    "diff": "Difference in days",
+    "add": "Add",
+    "sub": "Subtract",
+    "workdays": "Count working days"
+  },
+  "fields": {
+    "operation": "Operation",
+    "dateA": "Start date",
+    "dateB": "End date",
+    "days": "Amount",
+    "unit": "Unit",
+    "holidays": "Holiday list"
+  },
+  "options": {
+    "operation": {
+      "diff": "Difference in days",
+      "add": "Add",
+      "sub": "Subtract",
+      "workdays": "Count working days"
+    },
+    "unit": {
+      "day": "Days",
+      "week": "Weeks",
+      "month": "Months",
+      "year": "Years"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "resultDate": "Result date",
+    "diffDays": "Difference in days",
+    "workdays": "Working days",
+    "daysUnit": "days"
+  },
+  "examples": [
+    {
+      "label": "Compute the difference in days",
+      "value": "2024-01-01 → 2024-01-31"
+    },
+    {
+      "label": "Add ten days",
+      "value": "2024-01-01 + 10 days"
+    },
+    {
+      "label": "Subtract two months",
+      "value": "2024-03-15 - 2 months"
+    },
+    {
+      "label": "Count working days in a week",
+      "value": "2024-01-01 → 2024-01-07"
+    }
+  ],
+  "hints": {
+    "dateA": "Accepts `YYYY-MM-DD`, `YYYY/MM/DD` and RFC 3339.",
+    "dateB": "\"Difference in days\" and \"Count working days\" need the end date.",
+    "days": "\"Add\" and \"Subtract\" use this amount; negative values are accepted.",
+    "unit": "The unit decides whether the shift is counted in days or in calendar months and years.",
+    "holidays": "One `YYYY-MM-DD` per line; it only affects \"Count working days\" because no public holidays are built in.",
+    "output": "\"Difference in days\" counts calendar days and ignores the time of day."
+  },
+  "faq": [
+    {
+      "q": "Is the range inclusive?",
+      "a": "Yes. Both the start and the end day count towards working days; weekends and listed holidays do not."
+    },
+    {
+      "q": "Are public holidays built in?",
+      "a": "No. The bundled snapshot only goes down to the province level, so list the holidays yourself in `YYYY-MM-DD` form."
+    },
+    {
+      "q": "What happens when adding a month lands on a short month?",
+      "a": "The shift follows the calendar: `2024-01-31` plus one month gives `2024-02-29`, because February has no 31st."
+    }
+  ]
+}

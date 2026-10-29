@@ -53,12 +53,10 @@ type Base64Request struct {
 // ByteInput 是字节输入。
 //
 // data 始终是字符串，字节序列由 encoding 解释。
-type ByteInput struct {
-	// Data 是数据文本。
-	Data string `json:"data"`
-	// Encoding 是 utf8 或 hex。
-	Encoding string `json:"encoding"`
-}
+//
+// 复用 `tools.Bytes`（跨分类共享的通用输入类型）；
+// 本包只允许 utf8 与 hex 两种编码，由 `Validate` 把关。
+type ByteInput = tools.Bytes
 
 // Base64Result 是 base64 工具的响应。
 type Base64Result struct {

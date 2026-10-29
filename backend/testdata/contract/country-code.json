@@ -1,0 +1,38 @@
+{
+  "slug": "country-code",
+  "description": "国家代码查询的契约测试数据。",
+  "cases": [
+    {
+      "name": "按中文名查询",
+      "request": { "query": "阿富汗" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "countries": [{ "alpha2": "AF", "alpha3": "AFG", "numeric": "004" }] }
+      }
+    },
+    {
+      "name": "按两位码查询",
+      "request": { "query": "JP" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "countries": [{ "alpha2": "JP" }] }
+      }
+    },
+    {
+      "name": "缺省返回全部",
+      "request": {},
+      "expect": {
+        "code": 0,
+        "dataContains": { "total": 249 }
+      }
+    },
+    {
+      "name": "无匹配",
+      "request": { "query": "zzzz-not-a-country" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "countries": [], "total": 0 }
+      }
+    }
+  ]
+}

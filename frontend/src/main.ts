@@ -7,6 +7,7 @@ import { router } from './router'
 import 'virtual:uno.css'
 import './styles/tokens.css'
 import './styles/base.css'
+import './styles/forms.css'
 import './styles/element-overrides.css'
 
 const app = createApp(App)

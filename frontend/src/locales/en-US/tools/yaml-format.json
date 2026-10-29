@@ -1,0 +1,67 @@
+{
+  "name": "YAML Formatter",
+  "description": "Pretty-print, minify or validate YAML text.",
+  "category": "Formatting",
+  "actions": {
+    "format": "Format",
+    "minify": "Minify",
+    "validate": "Validate"
+  },
+  "fields": {
+    "input": "YAML text",
+    "action": "Action",
+    "indent": "Indent width",
+    "sortKeys": "Sort keys"
+  },
+  "options": {
+    "action": {
+      "format": "Format (re-indent)",
+      "minify": "Minify (drop blank lines)",
+      "validate": "Validate (syntax only)"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "outputHint": "The result can be copied directly.",
+    "validity": "Validity",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "position": "Error position",
+    "reason": "Error reason"
+  },
+  "examples": [
+    {
+      "label": "Format YAML",
+      "value": "# comment\nname: toolbit\ntags:\n  - cli\n  - web\n"
+    },
+    {
+      "label": "Minify YAML",
+      "value": "name: toolbit\n\nversion: 1\n"
+    },
+    {
+      "label": "Syntax error sample",
+      "value": "key: [unclosed\n"
+    }
+  ],
+  "hints": {
+    "input": "Indentation is semantic in YAML, so minify only drops blank lines and document separators; it never changes the indentation itself.",
+    "action": "Validate only reports whether the syntax is legal; it does not rewrite the content.",
+    "indent": "The indent width is measured in spaces; 2, 4 and 8 are available.",
+    "sortKeys": "Sorting only affects the key order of mappings; comments and anchors are still preserved.",
+    "output": "Format keeps comments and key order; minify removes redundant blank lines and `---` separators."
+  },
+  "faq": [
+    {
+      "q": "Are comments lost?",
+      "a": "No. The tool re-lays out the node tree, so comments and anchors survive."
+    },
+    {
+      "q": "Why can valid YAML still be rejected?",
+      "a": "YAML is indentation sensitive, so one extra space can change the structure. The tool reports the offending line number to make it easy to find."
+    },
+    {
+      "q": "Are anchors and aliases safe?",
+      "a": "Aliases can expand a document exponentially, so the tool counts aliases and nesting depth before expanding and rejects anything above the limit."
+    }
+  ]
+}

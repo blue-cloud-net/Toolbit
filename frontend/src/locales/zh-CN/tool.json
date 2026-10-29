@@ -78,5 +78,15 @@
     "blocks": "识别到 {count} 个 PEM 块。",
     "hint": "可粘贴 PEM 文本、base64 或十六进制的 DER；多个 PEM 块会按顺序一起处理。",
     "empty": "暂无内容"
+  },
+  "dropzone": {
+    "hint": "拖入文件，或点击选择",
+    "tooLarge": "文件超过 {max} 字节上限。",
+    "readFailed": "文件读取失败。"
+  },
+  "actions": {
+    "copy": "复制",
+    "download": "下载",
+    "clear": "清空"
   }
 }

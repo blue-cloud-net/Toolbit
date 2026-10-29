@@ -1,0 +1,105 @@
+{
+  "slug": "url-codec",
+  "description": "URL 编解码与解析的契约测试数据。",
+  "cases": [
+    {
+      "name": "整体编码保留保留字符",
+      "request": {
+        "operation": "encode",
+        "input": { "data": "https://example.com/a?x=1", "encoding": "utf8" },
+        "component": "full"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "https://example.com/a?x=1" }
+      }
+    },
+    {
+      "name": "整体编码转义空格",
+      "request": {
+        "operation": "encode",
+        "input": { "data": "a b", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "a%20b" }
+      }
+    },
+    {
+      "name": "路径组件编码转义斜杠",
+      "request": {
+        "operation": "encode",
+        "input": { "data": "a/b", "encoding": "utf8" },
+        "component": "path"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "a%2Fb" }
+      }
+    },
+    {
+      "name": "解码还原空格",
+      "request": {
+        "operation": "decode",
+        "input": { "data": "a%20b", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "a b" }
+      }
+    },
+    {
+      "name": "解码时加号视为空格",
+      "request": {
+        "operation": "decode",
+        "input": { "data": "a+b", "encoding": "utf8" },
+        "plusAsSpace": true
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "a b" }
+      }
+    },
+    {
+      "name": "解析 URL 结构",
+      "request": {
+        "operation": "parse",
+        "input": { "data": "https://example.com:8443/a?x=1", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "parsed": {
+            "scheme": "https",
+            "host": "example.com",
+            "port": "8443",
+            "path": "/a",
+            "query": "x=1"
+          }
+        }
+      }
+    },
+    {
+      "name": "非法百分号序列",
+      "request": {
+        "operation": "decode",
+        "input": { "data": "%zz", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_ENCODING"
+      }
+    },
+    {
+      "name": "非法操作",
+      "request": {
+        "operation": "nope",
+        "input": { "data": "x", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

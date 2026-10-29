@@ -1,0 +1,61 @@
+{
+  "name": "UUID Generator",
+  "description": "Generate UUID v1, v4 and v7 in batches, with configurable formatting.",
+  "category": "Data",
+  "actions": {
+    "generate": "Generate"
+  },
+  "fields": {
+    "version": "UUID version",
+    "count": "How many",
+    "uppercase": "Uppercase output",
+    "hyphens": "Keep hyphens",
+    "braces": "Wrap in braces"
+  },
+  "options": {
+    "version": {
+      "1": "v1 (time based)",
+      "4": "v4 (random)",
+      "7": "v7 (time ordered)"
+    }
+  },
+  "results": {
+    "output": "Generated UUIDs",
+    "count": "Generated count",
+    "item": "Item {index}"
+  },
+  "examples": [
+    {
+      "label": "Generate one v4",
+      "value": "version=4, count=1"
+    },
+    {
+      "label": "Batch generate v7",
+      "value": "version=7, count=5"
+    },
+    {
+      "label": "Uppercase without hyphens",
+      "value": "uppercase=true, hyphens=false"
+    }
+  ],
+  "hints": {
+    "version": "v4 is random, v1 is time based, and v7 sorts by time, which makes it a good primary key.",
+    "count": "Up to 1000 UUIDs per run.",
+    "format": "Turning off \"Keep hyphens\" strips the separators, and \"Wrap in braces\" adds `{}`.",
+    "output": "The result can be copied in one click; a batch prints one UUID per line."
+  },
+  "faq": [
+    {
+      "q": "Which version should I pick?",
+      "a": "Use v4 for random identifiers, v7 for primary keys that should keep insertion order, and v1 when an existing system expects the older time based form."
+    },
+    {
+      "q": "Why is v7 a better primary key?",
+      "a": "A v7 starts with a millisecond timestamp, so lexicographic order roughly matches creation order, which keeps index writes friendly."
+    },
+    {
+      "q": "Can the generated UUIDs collide?",
+      "a": "The random bits come from a cryptographically secure source; v1 and v7 additionally use a monotonic clock, so they do not repeat within the same millisecond."
+    }
+  ]
+}

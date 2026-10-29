@@ -1,0 +1,68 @@
+{
+  "slug": "eml-parser",
+  "description": "EML 邮件解析的契约测试数据。",
+  "cases": [
+    {
+      "name": "解析头部与正文",
+      "request": {
+        "input": {
+          "text": "From: sender@example.com\r\nTo: receiver@example.com\r\nSubject: 测试邮件\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n纯文本正文\r\n"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "headerMap": { "subject": "测试邮件", "from": "sender@example.com" },
+          "bodies": [{ "contentType": "text/plain", "text": "纯文本正文\r\n" }]
+        }
+      }
+    },
+    {
+      "name": "解析附件",
+      "request": {
+        "input": {
+          "text": "Subject: 附件\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"B\"\r\n\r\n--B\r\nContent-Type: text/plain\r\n\r\n正文\r\n--B\r\nContent-Type: application/octet-stream\r\nContent-Disposition: attachment; filename=\"a.bin\"\r\n\r\nBYTES\r\n--B--\r\n"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "attachments": [{ "filename": "a.bin", "mime": "application/octet-stream", "size": 5 }]
+        }
+      }
+    },
+    {
+      "name": "附件超限被截断",
+      "request": {
+        "input": {
+          "text": "Subject: 附件\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"B\"\r\n\r\n--B\r\nContent-Type: application/octet-stream\r\nContent-Disposition: attachment; filename=\"a.bin\"\r\n\r\nBYTES\r\n--B--\r\n"
+        },
+        "maxAttachmentBytes": 2
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "attachments": [{ "filename": "a.bin", "truncated": true }]
+        }
+      }
+    },
+    {
+      "name": "缺少输入",
+      "request": {},
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "不是合法邮件",
+      "request": {
+        "input": { "text": "这不是一封邮件" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

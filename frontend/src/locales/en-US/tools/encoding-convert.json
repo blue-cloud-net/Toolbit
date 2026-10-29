@@ -1,0 +1,68 @@
+{
+  "name": "Encoding Converter",
+  "description": "Convert text between common character sets.",
+  "category": "Encoding",
+  "actions": {
+    "convert": "Convert"
+  },
+  "fields": {
+    "input": "Content to convert",
+    "inputEncoding": "Input encoding",
+    "from": "Source charset",
+    "to": "Target charset",
+    "outputEncoding": "Output encoding",
+    "bom": "Write byte order mark"
+  },
+  "options": {
+    "charset": {
+      "auto": "Auto detect",
+      "utf-8": "UTF-8",
+      "utf-16": "UTF-16",
+      "utf-16le": "UTF-16 LE",
+      "utf-16be": "UTF-16 BE",
+      "gbk": "GBK",
+      "big5": "Big5",
+      "shift_jis": "Shift_JIS",
+      "latin-1": "Latin-1"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "outputHint": "The result can be copied directly.",
+    "encoding": "Output encoding",
+    "detected": "Detected source charset"
+  },
+  "examples": [
+    {
+      "label": "GBK to UTF-8",
+      "value": "1tDOxA=="
+    },
+    {
+      "label": "Auto detect the source charset",
+      "value": "hello"
+    },
+    {
+      "label": "UTF-8 to GBK",
+      "value": "中文"
+    }
+  ],
+  "hints": {
+    "input": "The input encoding says how the content is read as bytes; the source charset says what those bytes mean. Do not mix them up.",
+    "bom": "A byte order mark only makes sense for UTF-8 and UTF-16; enabling it writes the mark at the start of the output.",
+    "output": "The output is Base64 by default, which is handy when you need a byte string."
+  },
+  "faq": [
+    {
+      "q": "Why do I see replacement characters?",
+      "a": "Characters that do not exist in the target charset cannot be mapped, so they are replaced by a placeholder and a lossy-conversion warning is raised."
+    },
+    {
+      "q": "Is auto detection reliable?",
+      "a": "It guesses from byte patterns and works well between UTF-8 and single-byte charsets; sibling sets such as GBK and Big5 are easy to confuse, so name the charset explicitly for important data."
+    },
+    {
+      "q": "Why does UTF-16 have two byte orders?",
+      "a": "UTF-16 stores text either little-endian or big-endian. Writing UTF-16 emits a BOM so the reader can tell them apart."
+    }
+  ]
+}

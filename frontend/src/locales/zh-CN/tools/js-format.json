@@ -1,0 +1,72 @@
+{
+  "name": "JavaScript 格式化",
+  "description": "美化、压缩或校验 JavaScript 源码。",
+  "category": "格式化",
+  "actions": {
+    "format": "美化",
+    "minify": "压缩",
+    "validate": "校验"
+  },
+  "fields": {
+    "input": "JavaScript 源码",
+    "action": "操作",
+    "indent": "缩进宽度",
+    "quotes": "引号风格",
+    "semi": "保留分号"
+  },
+  "options": {
+    "action": {
+      "format": "美化（重新排版）",
+      "minify": "压缩（去掉空白）",
+      "validate": "校验（只检查语法）"
+    },
+    "quotes": {
+      "double": "双引号",
+      "single": "单引号"
+    }
+  },
+  "results": {
+    "output": "结果",
+    "outputHint": "结果可直接复制。",
+    "validity": "合法性",
+    "valid": "合法",
+    "invalid": "非法",
+    "position": "错误位置",
+    "reason": "错误原因"
+  },
+  "examples": [
+    {
+      "label": "美化 JavaScript",
+      "value": "function add(a, b) {\n  return a + b;\n}\n"
+    },
+    {
+      "label": "压缩 JavaScript",
+      "value": "function add(a, b) {\n  // 求和\n  return a + b;\n}\n"
+    },
+    {
+      "label": "语法错误示例",
+      "value": "function f( {"
+    }
+  ],
+  "hints": {
+    "input": "工具只解析源码，不会执行任何代码。",
+    "action": "「校验」只判断语法是否合法，不改写内容。",
+    "indent": "缩进宽度以空格计，可选 2、4 或 8。",
+    "semi": "取消勾选会去掉行尾分号；字符串里的分号不受影响。",
+    "output": "「美化」按缩进宽度重排；「压缩」去掉注释与多余空白，但保留变量名。"
+  },
+  "faq": [
+    {
+      "q": "压缩会重命名变量吗？",
+      "a": "不会。压缩只删除注释与空白，标识符原样保留。"
+    },
+    {
+      "q": "换引号会误伤吗？",
+      "a": "工具只转换整行就是一个字符串字面量的情况，代码中其它位置的双引号不会被改动。"
+    },
+    {
+      "q": "支持 TypeScript 吗？",
+      "a": "不支持。工具按 ECMAScript 语法解析，类型标注会被判为语法错误。"
+    }
+  ]
+}

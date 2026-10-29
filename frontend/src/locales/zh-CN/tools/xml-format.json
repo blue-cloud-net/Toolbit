@@ -1,0 +1,67 @@
+{
+  "name": "XML 格式化",
+  "description": "美化、压缩或校验 XML 文本。",
+  "category": "格式化",
+  "actions": {
+    "format": "美化",
+    "minify": "压缩",
+    "validate": "校验"
+  },
+  "fields": {
+    "input": "XML 文本",
+    "action": "操作",
+    "indent": "缩进宽度",
+    "keepComments": "保留注释"
+  },
+  "options": {
+    "action": {
+      "format": "美化（重新排版）",
+      "minify": "压缩（去掉空白）",
+      "validate": "校验（只检查语法）"
+    }
+  },
+  "results": {
+    "output": "结果",
+    "outputHint": "结果可直接复制。",
+    "validity": "合法性",
+    "valid": "合法",
+    "invalid": "非法",
+    "position": "错误位置",
+    "reason": "错误原因"
+  },
+  "examples": [
+    {
+      "label": "美化 XML",
+      "value": "<root><name>toolbit</name><item id=\"1\">first</item></root>"
+    },
+    {
+      "label": "压缩 XML",
+      "value": "<root>\n  <name>toolbit</name>\n</root>"
+    },
+    {
+      "label": "语法错误示例",
+      "value": "<root><a></root>"
+    }
+  ],
+  "hints": {
+    "input": "只含纯文本的元素会保持内联：把文本换到下一行会在内容里插入空白，等于改写数据。",
+    "action": "「校验」只判断语法是否合法，不改写内容。",
+    "indent": "缩进宽度以空格计，可选 2、4 或 8。",
+    "keepComments": "默认丢弃注释；勾选后注释会留在原位置附近。",
+    "output": "「美化」按层级缩进；「压缩」去掉标签之间的空白。"
+  },
+  "faq": [
+    {
+      "q": "属性顺序会变吗？",
+      "a": "不会。工具逐 token 处理，属性按原文顺序输出。"
+    },
+    {
+      "q": "为什么纯文本元素不换行？",
+      "a": "XML 里元素内容中的空白是有意义的。把 `<a>1</a>` 拆成两行会变成 `<a>\\n1\\n</a>`，内容被改写了。"
+    },
+    {
+      "q": "能处理 DTD 与实体吗？",
+      "a": "不能。工具只解析标记与文本，不解析 DTD 声明，也不会展开自定义实体。"
+    }
+  ]
+}

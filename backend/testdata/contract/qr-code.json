@@ -1,0 +1,83 @@
+{
+  "slug": "qr-code",
+  "description": "二维码生成与识别的契约测试数据。",
+  "cases": [
+    {
+      "name": "生成二维码",
+      "request": {
+        "operation": "generate",
+        "text": "https://example.com"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "dimension": 33, "moduleSize": 6 }
+      }
+    },
+    {
+      "name": "自定义颜色与纠错级别",
+      "request": {
+        "operation": "generate",
+        "text": "Toolbit",
+        "options": {
+          "size": 8,
+          "margin": 2,
+          "ecLevel": "H",
+          "fg": "#123456",
+          "bg": "#ffffff"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "dimension": 25, "moduleSize": 8 }
+      }
+    },
+    {
+      "name": "缺少内容",
+      "request": { "operation": "generate" },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "缺少图片",
+      "request": { "operation": "decode" },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "未知操作",
+      "request": { "operation": "render" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "非法颜色",
+      "request": {
+        "operation": "generate",
+        "text": "x",
+        "options": { "fg": "red" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "未知纠错级别",
+      "request": {
+        "operation": "generate",
+        "text": "x",
+        "options": { "ecLevel": "Z" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

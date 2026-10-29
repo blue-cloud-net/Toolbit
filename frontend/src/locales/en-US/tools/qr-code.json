@@ -1,0 +1,74 @@
+{
+  "name": "QR Code Generator",
+  "description": "Render a QR code, or read the content of a QR code from an image.",
+  "category": "Data",
+  "actions": {
+    "generate": "Generate QR code",
+    "decode": "Read QR code"
+  },
+  "fields": {
+    "operation": "Operation",
+    "text": "QR code content",
+    "size": "Module size (pixels)",
+    "margin": "Quiet zone (modules)",
+    "ecLevel": "Error correction level",
+    "fg": "Foreground color",
+    "bg": "Background color",
+    "image": "QR code image"
+  },
+  "options": {
+    "operation": {
+      "generate": "Generate QR code",
+      "decode": "Read QR code"
+    },
+    "ecLevel": {
+      "L": "L (about 7% recovery)",
+      "M": "M (about 15% recovery)",
+      "Q": "Q (about 25% recovery)",
+      "H": "H (about 30% recovery)"
+    }
+  },
+  "results": {
+    "output": "QR code content",
+    "svg": "SVG source",
+    "image": "QR code image",
+    "dimension": "Modules per side",
+    "moduleSize": "Pixels per module",
+    "format": "Image format",
+    "content": "Decoded content",
+    "file": "Selected image"
+  },
+  "examples": [
+    {
+      "label": "Generate a link QR code",
+      "value": "https://example.com"
+    },
+    {
+      "label": "Custom colors and error correction",
+      "value": "Toolbit"
+    }
+  ],
+  "hints": {
+    "text": "The content may be up to 4096 bytes; beyond that the code grows large and scans poorly.",
+    "size": "The module size is between 1 and 40 pixels and defaults to 6.",
+    "margin": "The quiet zone is the blank border, between 0 and 16 modules, defaulting to 4.",
+    "ecLevel": "A higher level tolerates more obstruction and dirt, but the code also gets denser.",
+    "fg": "Foreground and background colors use the `#RRGGBB` form; leave them empty for the default black on white.",
+    "image": "PNG and JPEG are supported, up to 4 MB per image.",
+    "output": "The result ships both a vector SVG and a raster PNG; the SVG source can be copied directly."
+  },
+  "faq": [
+    {
+      "q": "Which error correction level should I use?",
+      "a": "M is fine for ordinary printing; use H when half the code may be covered or carries a logo; use L when the smallest possible code matters."
+    },
+    {
+      "q": "Why did reading the image fail?",
+      "a": "Usually the QR code in the picture is too small, too blurry, or surrounded by noisy patterns. Make sure the file is a PNG or JPEG first."
+    },
+    {
+      "q": "Is my image stored anywhere?",
+      "a": "No. The image is turned into base64 in the browser and posted to the server, which neither writes it to disk nor logs it."
+    }
+  ]
+}

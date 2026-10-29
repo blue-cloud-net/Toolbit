@@ -12,10 +12,15 @@ import (
 	"github.com/blue-cloud-net/Toolbit/backend/internal/netguard"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/crypto"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/data"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/documents"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/encoding"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/formatting"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/keys"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/network"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/pki"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/system"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tools/text"
 )
 
 // Definitions 返回全部已实现工具的定义。
@@ -25,9 +30,14 @@ import (
 //
 // guard 是出网守卫；为 nil 时全部出网工具返回 NETWORK_DISABLED。
 func Definitions(guard *netguard.Guard) []tools.Definition {
-	defs := make([]tools.Definition, 0, 48)
+	defs := make([]tools.Definition, 0, 80)
 	defs = append(defs, encoding.Definitions()...)
+	defs = append(defs, formatting.Definitions()...)
 	defs = append(defs, crypto.Definitions()...)
+	defs = append(defs, text.Definitions()...)
+	defs = append(defs, system.Definitions()...)
+	defs = append(defs, data.Definitions()...)
+	defs = append(defs, documents.Definitions()...)
 	defs = append(defs, keys.Definitions()...)
 	defs = append(defs, pki.Definitions()...)
 	defs = append(defs, network.Definitions(guard)...)

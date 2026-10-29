@@ -1,0 +1,79 @@
+{
+  "slug": "gzip-deflate",
+  "description": "压缩与解压的契约测试数据。",
+  "cases": [
+    {
+      "name": "gzip 压缩",
+      "request": {
+        "operation": "compress",
+        "format": "gzip",
+        "input": { "data": "Hello", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "encoding": "base64" }
+      }
+    },
+    {
+      "name": "gzip 解压",
+      "request": {
+        "operation": "decompress",
+        "format": "gzip",
+        "input": { "data": "H4sIAAAAAAAAA/NIzcnJBwCCidH3BQAAAA==", "encoding": "base64" },
+        "outputEncoding": "utf8"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "Hello", "encoding": "utf8" }
+      }
+    },
+    {
+      "name": "deflate 压缩",
+      "request": {
+        "operation": "compress",
+        "format": "deflate",
+        "input": { "data": "Hello", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "encoding": "base64" }
+      }
+    },
+    {
+      "name": "raw 压缩",
+      "request": {
+        "operation": "compress",
+        "format": "raw",
+        "input": { "data": "Hello", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "encoding": "base64" }
+      }
+    },
+    {
+      "name": "非法压缩流",
+      "request": {
+        "operation": "decompress",
+        "format": "gzip",
+        "input": { "data": "bm90IGd6aXA=", "encoding": "base64" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "DECRYPT_FAILED"
+      }
+    },
+    {
+      "name": "不支持的格式",
+      "request": {
+        "operation": "compress",
+        "format": "lzma",
+        "input": { "data": "x", "encoding": "utf8" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_FORMAT"
+      }
+    }
+  ]
+}

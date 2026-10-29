@@ -9,7 +9,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CertTextInput from '@/components/tool/CertTextInput.vue'
-import CodeEditor from '@/components/tool/CodeEditor.vue'
+import CodeViewer from '@/components/tool/CodeViewer.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -40,7 +40,7 @@ interface ASN1ViewResult {
   hexDump: string
 }
 
-/** 树节点（供 CodeEditor 渲染）。 */
+/** 树节点（供 CodeViewer 渲染）。 */
 interface TreeNode {
   label: string
   detail?: string
@@ -189,7 +189,7 @@ function fillExample(): void {
         >
           {{ summary }}
         </p>
-        <CodeEditor
+        <CodeViewer
           :tree="resultTree"
           :text="data?.hexDump ?? ''"
           :empty="t('tools.asn1-view.results.empty')"

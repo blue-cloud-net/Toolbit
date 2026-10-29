@@ -1,0 +1,63 @@
+{
+  "name": "GZip & Deflate",
+  "description": "Compress and decompress gzip, zlib and raw deflate data.",
+  "category": "Encoding",
+  "actions": {
+    "compress": "Compress",
+    "decompress": "Decompress"
+  },
+  "fields": {
+    "input": "Content to process",
+    "inputEncoding": "Input encoding",
+    "operation": "Operation",
+    "format": "Container format",
+    "level": "Compression level",
+    "outputEncoding": "Output encoding"
+  },
+  "options": {
+    "operation": {
+      "compress": "Compress",
+      "decompress": "Decompress"
+    },
+    "format": {
+      "gzip": "gzip (header and checksum)",
+      "deflate": "zlib (RFC 1950)",
+      "raw": "raw deflate (RFC 1951)"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "outputHint": "The result can be copied directly.",
+    "encoding": "Output encoding",
+    "ratio": "Compression ratio"
+  },
+  "examples": [
+    {
+      "label": "gzip compress",
+      "value": "Hello, Toolbit!"
+    },
+    {
+      "label": "gzip decompress",
+      "value": "H4sIAAAAAAAAA/NIzcnJBwCCidH3BQAAAA=="
+    }
+  ],
+  "hints": {
+    "input": "For compression the input is the original content; for decompression it is the compressed stream, so set the input encoding to the form it is actually stored in.",
+    "format": "gzip, zlib and raw deflate are three different containers; mixing them up makes decompression fail.",
+    "output": "The ratio is output bytes over input bytes; after decompression it shows how large the payload expands."
+  },
+  "faq": [
+    {
+      "q": "What is the difference between gzip and deflate?",
+      "a": "gzip carries a file header and a CRC checksum, zlib (the deflate container) carries a two-byte header and an Adler-32 checksum, and raw deflate has no wrapper at all."
+    },
+    {
+      "q": "Why does decompression fail?",
+      "a": "Usually the container format is wrong: feeding gzip data to the raw deflate reader fails. Also make sure the input encoding matches how the data is actually stored."
+    },
+    {
+      "q": "Is there a size limit?",
+      "a": "Yes. Decompressed output above the limit is rejected so that decompression bombs cannot exhaust memory."
+    }
+  ]
+}

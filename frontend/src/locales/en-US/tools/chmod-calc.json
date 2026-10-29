@@ -1,0 +1,71 @@
+{
+  "name": "Permission Calculator",
+  "description": "Convert between symbolic and octal file permissions and list what each permission class means.",
+  "category": "System",
+  "actions": {
+    "calculate": "Calculate permissions"
+  },
+  "fields": {
+    "mode": "Permission value",
+    "bits": "Permission bits"
+  },
+  "options": {
+    "class": {
+      "user": "Owner (user)",
+      "group": "Group (group)",
+      "other": "Others (other)"
+    },
+    "bit": {
+      "read": "Read (r)",
+      "write": "Write (w)",
+      "execute": "Execute (x)"
+    },
+    "numeric": {
+      "0": "No permissions",
+      "1": "Execute only",
+      "2": "Write only",
+      "3": "Write and execute",
+      "4": "Read only",
+      "5": "Read and execute",
+      "6": "Read and write",
+      "7": "Read, write and execute"
+    }
+  },
+  "results": {
+    "octal": "Octal permissions",
+    "symbolic": "Symbolic form"
+  },
+  "examples": [
+    {
+      "label": "Common octal permissions",
+      "value": "755"
+    },
+    {
+      "label": "Symbolic permissions",
+      "value": "rwxr-x---"
+    },
+    {
+      "label": "Long symbolic permissions",
+      "value": "u=rwx,g=rx,o=r"
+    }
+  ],
+  "hints": {
+    "mode": "Accepts octal such as 755, the nine-character symbolic form such as rwxr-xr-x, or the long form such as u=rwx,g=rx,o=r.",
+    "bits": "Checked bits override the matching class of the permission value; a class with nothing checked keeps the value from the permission value.",
+    "output": "The result gives both the octal and the symbolic form and breaks down read, write and execute for every class."
+  },
+  "faq": [
+    {
+      "q": "Why are setuid, setgid and the sticky bit not handled?",
+      "a": "The tool only covers the low nine permission bits; special bits are out of scope, so 4755 is treated as 755."
+    },
+    {
+      "q": "How do I express \"others have no permissions at all\"?",
+      "a": "The permission-bit interface cannot zero a class — checking nothing means \"keep the permission value\". To clear it, write the symbolic form directly, for example rwxr-x---."
+    },
+    {
+      "q": "Which form should I use?",
+      "a": "Octal is convenient for chmod commands, the symbolic form is easier to read; both forms and the per-class breakdown are always shown."
+    }
+  ]
+}

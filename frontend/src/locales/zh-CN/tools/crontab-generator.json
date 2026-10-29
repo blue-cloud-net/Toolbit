@@ -1,0 +1,71 @@
+{
+  "name": "Crontab 表达式生成",
+  "description": "生成五段式 crontab 表达式，并预览接下来的触发时刻。",
+  "category": "系统",
+  "actions": {
+    "generate": "生成表达式"
+  },
+  "fields": {
+    "preset": "预设",
+    "fields": "时间字段",
+    "minute": "分钟",
+    "hour": "小时",
+    "dayOfMonth": "日",
+    "month": "月",
+    "dayOfWeek": "星期",
+    "timezone": "时区",
+    "count": "预览次数"
+  },
+  "options": {
+    "preset": {
+      "every-minute": "每分钟",
+      "every-5-minutes": "每 5 分钟",
+      "hourly": "每小时",
+      "daily": "每天",
+      "weekly": "每周",
+      "monthly": "每月",
+      "yearly": "每年",
+      "custom": "自定义字段"
+    }
+  },
+  "results": {
+    "expression": "表达式",
+    "description": "含义",
+    "timezone": "使用的时区",
+    "occurrences": "接下来的触发时刻"
+  },
+  "examples": [
+    {
+      "label": "每天午夜执行",
+      "value": "0 0 * * *"
+    },
+    {
+      "label": "每五分钟执行",
+      "value": "*/5 * * * *"
+    },
+    {
+      "label": "每月 15 日凌晨两点半",
+      "value": "30 2 15 * *"
+    }
+  ],
+  "hints": {
+    "preset": "选预设时，五个时间字段会被忽略。",
+    "fields": "字段顺序为 分 时 日 月 星期，支持 *、a、a-b、*/n 与逗号列表。",
+    "timezone": "时区用 IANA 名称（如 Asia/Shanghai）；留空按 UTC 计算。",
+    "output": "触发时刻按所选时区给出，RFC 3339 格式。"
+  },
+  "faq": [
+    {
+      "q": "日和星期同时限定时怎么算？",
+      "a": "按 crontab 的传统语义取并集：两者都满足或只满足其中一个都会触发。"
+    },
+    {
+      "q": "星期可以写 7 吗？",
+      "a": "可以，7 与 0 都表示周日。"
+    },
+    {
+      "q": "这个工具会生成要执行的命令吗？",
+      "a": "不会。它只产出时间表达式，不解释也不评估命令部分，更不做任何安全评估。"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "name": "JWT Codec",
+  "description": "Decode, encode and verify JWT tokens.",
+  "category": "Encoding",
+  "actions": {
+    "decode": "Decode",
+    "encode": "Encode",
+    "verify": "Verify"
+  },
+  "fields": {
+    "token": "Token",
+    "header": "Header (JSON)",
+    "payload": "Payload (JSON)",
+    "secret": "HMAC secret",
+    "operation": "Operation",
+    "algorithm": "Signing algorithm"
+  },
+  "options": {
+    "operation": {
+      "decode": "Decode token",
+      "encode": "Encode token",
+      "verify": "Verify signature"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "outputHint": "The result can be copied directly.",
+    "validity": "Signature verdict",
+    "valid": "Signature is valid",
+    "invalid": "Signature is invalid",
+    "signature": "Signature",
+    "expired": "Expired",
+    "expiredHint": "The exp claim is earlier than the current time.",
+    "notYetValid": "Not yet valid",
+    "notYetValidHint": "The nbf claim is later than the current time."
+  },
+  "examples": [
+    {
+      "label": "Decode a JWT",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0b29sYml0In0.D9MwAs0iXS3XR6s3EQSUnyuDB7oTVqLuabXe20IBKR8"
+    },
+    {
+      "label": "Encode a JWT",
+      "value": "{\"alg\":\"HS256\"}"
+    },
+    {
+      "label": "Verify a signature",
+      "value": "toolbit-demo-secret"
+    }
+  ],
+  "hints": {
+    "input": "Decode and verify need a complete token; encode needs a header and a payload.",
+    "secret": "The secret is sent with the request and never written to browser storage; do not paste production secrets.",
+    "algorithm": "Only the HMAC-SHA family is supported: HS256, HS384 and HS512.",
+    "invalidJson": "Header and payload must be valid JSON objects.",
+    "output": "The decoded view lists the header and the payload; a payload with exp or nbf also gets a time status."
+  },
+  "faq": [
+    {
+      "q": "Why are only HS algorithms supported?",
+      "a": "Verifying RS or ES signatures needs public key material, which is out of scope. For non-HS algorithms the tool reports an unsupported-algorithm error instead of pretending the signature is valid."
+    },
+    {
+      "q": "Can decoding reveal the secret?",
+      "a": "No. The header and the payload are only Base64URL encoded, not encrypted, so anyone holding the token can read them."
+    },
+    {
+      "q": "Is the generated signature trustworthy?",
+      "a": "The signature is computed on the server with Tongsuo; the frontend performs no cryptography. The same secret and input always yield the same signature."
+    }
+  ]
+}

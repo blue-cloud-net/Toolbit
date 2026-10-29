@@ -1,0 +1,63 @@
+{
+  "name": "格式转换",
+  "description": "在 JSON、YAML、TOML 与 XML 之间转换。",
+  "category": "格式化",
+  "actions": {
+    "convert": "转换"
+  },
+  "fields": {
+    "input": "待转换内容",
+    "from": "源格式",
+    "to": "目标格式",
+    "indent": "缩进宽度",
+    "pretty": "美化输出"
+  },
+  "options": {
+    "format": {
+      "json": "JSON",
+      "yaml": "YAML",
+      "toml": "TOML",
+      "xml": "XML"
+    }
+  },
+  "results": {
+    "output": "结果",
+    "outputHint": "结果可直接复制。",
+    "route": "转换路径",
+    "lossy": "信息丢失",
+    "lossyHint": "目标格式无法表达部分内容。"
+  },
+  "examples": [
+    {
+      "label": "JSON 转 YAML",
+      "value": "{\"name\":\"toolbit\",\"count\":3}"
+    },
+    {
+      "label": "YAML 转 JSON",
+      "value": "name: toolbit\ncount: 3\n"
+    },
+    {
+      "label": "XML 转 JSON",
+      "value": "<root><name>toolbit</name></root>"
+    }
+  ],
+  "hints": {
+    "input": "请把「源格式」选成内容真实的格式；格式选错会直接报解析错误。",
+    "pretty": "取消勾选后输出为紧凑形式，适合放进请求体。",
+    "output": "四种格式两两之间都能互转，转换经由统一的中间表示，键序得以保留。"
+  },
+  "faq": [
+    {
+      "q": "为什么提示信息丢失？",
+      "a": "有些结构在目标格式里表达不了，例如 XML 没有原生数组、多重根节点也不合法。工具会标出丢失的原因。"
+    },
+    {
+      "q": "数字会丢精度吗？",
+      "a": "不会。数字按原始字面量传递，不会经过浮点数。"
+    },
+    {
+      "q": "注释能保留吗？",
+      "a": "不能。中间表示只承载结构化数据，注释不属于数据本身。"
+    }
+  ]
+}

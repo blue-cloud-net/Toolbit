@@ -1,0 +1,69 @@
+{
+  "name": "JSON Formatter",
+  "description": "Pretty-print, minify or validate JSON text.",
+  "category": "Formatting",
+  "actions": {
+    "format": "Format",
+    "minify": "Minify",
+    "validate": "Validate"
+  },
+  "fields": {
+    "input": "JSON text",
+    "action": "Action",
+    "indent": "Indent width",
+    "sortKeys": "Sort keys",
+    "escapeUnicode": "Escape non-ASCII characters"
+  },
+  "options": {
+    "action": {
+      "format": "Format (re-indent)",
+      "minify": "Minify (strip whitespace)",
+      "validate": "Validate (syntax only)"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "outputHint": "The result can be copied directly.",
+    "validity": "Validity",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "position": "Error position",
+    "reason": "Error reason"
+  },
+  "examples": [
+    {
+      "label": "Format JSON",
+      "value": "{\"name\":\"toolbit\",\"version\":1}"
+    },
+    {
+      "label": "Minify JSON",
+      "value": "{\n  \"a\" : 1\n}"
+    },
+    {
+      "label": "Duplicate key sample",
+      "value": "{\"a\":1,\"a\":2}"
+    }
+  ],
+  "hints": {
+    "input": "The tool keeps the original order of object keys; duplicate keys are reported as invalid instead of being silently overwritten.",
+    "action": "Validate only reports whether the syntax is legal; it does not rewrite the content.",
+    "indent": "The indent width is measured in spaces; 2, 4 and 8 are available.",
+    "sortKeys": "Sorting only affects the key order of objects; array order never changes.",
+    "escapeUnicode": "Escaping turns Chinese and other characters into \\uXXXX form, which is handy for environments that only accept ASCII.",
+    "output": "Format re-indents with the chosen width; minify removes every unnecessary whitespace character."
+  },
+  "faq": [
+    {
+      "q": "Why are duplicate keys invalid?",
+      "a": "A standard JSON parser lets the later key win, and a duplicate key is almost always a typo, so the tool reports an error instead of silently dropping data."
+    },
+    {
+      "q": "Does the key order change?",
+      "a": "The original order is preserved by default. Only enabling sort keys reorders object keys; array order is always kept."
+    },
+    {
+      "q": "Do large integers lose precision?",
+      "a": "No. Numbers are parsed as their original literal, so values beyond the JavaScript safe integer range are emitted unchanged."
+    }
+  ]
+}

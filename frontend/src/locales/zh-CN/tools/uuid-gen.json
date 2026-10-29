@@ -1,0 +1,61 @@
+{
+  "name": "UUID 生成",
+  "description": "生成 UUID v1、v4、v7，可批量生成并自定义排版。",
+  "category": "数据",
+  "actions": {
+    "generate": "生成"
+  },
+  "fields": {
+    "version": "UUID 版本",
+    "count": "生成数量",
+    "uppercase": "输出大写",
+    "hyphens": "保留连字符",
+    "braces": "加花括号"
+  },
+  "options": {
+    "version": {
+      "1": "v1（基于时间）",
+      "4": "v4（基于随机）",
+      "7": "v7（时间有序）"
+    }
+  },
+  "results": {
+    "output": "生成的 UUID",
+    "count": "生成条数",
+    "item": "第 {index} 条"
+  },
+  "examples": [
+    {
+      "label": "生成一个 v4",
+      "value": "version=4, count=1"
+    },
+    {
+      "label": "批量生成 v7",
+      "value": "version=7, count=5"
+    },
+    {
+      "label": "大写且无连字符",
+      "value": "uppercase=true, hyphens=false"
+    }
+  ],
+  "hints": {
+    "version": "v4 基于随机数，v1 基于时间，v7 按时间排序，适合做数据库主键。",
+    "count": "单次最多生成 1000 条。",
+    "format": "关闭「保留连字符」会去掉分隔符，「加花括号」会包上 `{}`。",
+    "output": "结果可一键复制；批量生成时每条一行。"
+  },
+  "faq": [
+    {
+      "q": "该选哪个版本？",
+      "a": "日常随机标识用 v4；需要按生成顺序排序的主键用 v7；需要与旧系统兼容的基于时间标识用 v1。"
+    },
+    {
+      "q": "为什么 v7 更适合做主键？",
+      "a": "v7 前缀是毫秒级时间戳，按字典序排序时大致等于按时间排序，写入索引更友好。"
+    },
+    {
+      "q": "生成的 UUID 会重复吗？",
+      "a": "随机位来自密码学安全随机源；v1 与 v7 还带单调时钟保证，同一毫秒内也不会重复。"
+    }
+  ]
+}

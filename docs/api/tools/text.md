@@ -20,17 +20,19 @@
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `pattern` | string | 是 | 正则表达式（RE2 语法） |
-| `flags` | string | 否 | `g` `i` `m` `s` 可组合（默认 `g`） |
-| `input` | object | 是 | `{ data, encoding }` |
+| `flags` | array | 否 | 标志名列表：`i` `m` `s` `x` |
+| `input` | object | 是 | `{ data }` |
 | `maxMatches` | int | 否 | 最多返回匹配数，默认 1000 |
+| `groupNames` | array | 否 | 捕获组名称（按顺序对应第 1、2 … 组） |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `matches` | array | `[{ index, value, groups[], start, end }]` |
+| `matches` | array | `[{ index, text, line, column, groups[], names? }]` |
 | `count` | int | 匹配总数 |
 | `truncated` | bool | 是否因上限截断 |
+| `pattern` | string | 实际使用的正则 |
 
 ### 错误
 
@@ -52,33 +54,39 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 是 | `{ data, encoding }` |
-| `action` | string | 是 | 见下表 |
+| `input` | object | 是 | `{ data }` |
+| `style` | string | 否 | 见下表；**空串**表示只用 `separator` 连接 |
+| `separator` | string | 否 | 自定义分隔符；仅在 `style` 为空串时生效 |
 
-| `action` | 结果 |
+| `style` | 结果 |
 | --- | --- |
 | `lower` | 全部小写 |
 | `upper` | 全部大写 |
-| `title` | 单词首字母大写 |
-| `sentence` | 句首大写 |
+| `title` | 单词首字母大写（`Http Server`） |
+| `sentence` | 句首大写（`Http server`） |
 | `camel` | 驼峰（`camelCase`） |
 | `pascal` | 帕斯卡（`PascalCase`） |
 | `snake` | 下划线（`snake_case`） |
 | `kebab` | 短横线（`kebab-case`） |
 | `constant` | 常量（`CONSTANT_CASE`） |
 | `dot` | 点分（`dot.case`） |
+| `path` | 路径（`path/case`） |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `output` | string | 转换结果 |
+| `style` | string | 实际使用的风格 |
+| `words` | array | 切分出的词元 |
 
 ### 错误
 
-`INVALID_FIELD`、`UNSUPPORTED_MODE`。
+`INVALID_FIELD`、`MISSING_FIELD`。
 
-> 单词切分规则：非字母数字字符视为分隔符；连续大写按驼峰规则处理（`HTTPServer` → `http_server`）。
+> 单词切分规则：**仅**非字母数字字符视为分隔符，不做驼峰反向切分。
+> 因此 `HTTPServer` 是一个词元（`snake` 风格下得到 `httpserver`），
+> `http-server` 是两个词元（`http_server`）。
 
 ---
 

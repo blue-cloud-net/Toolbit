@@ -78,5 +78,15 @@
     "blocks": "{count} PEM block(s) detected.",
     "hint": "Accepts PEM text, base64 or hexadecimal DER; multiple PEM blocks are processed in order.",
     "empty": "Nothing to show"
+  },
+  "dropzone": {
+    "hint": "Drop a file here, or click to choose",
+    "tooLarge": "The file exceeds the {max} byte limit.",
+    "readFailed": "Failed to read the file."
+  },
+  "actions": {
+    "copy": "Copy",
+    "download": "Download",
+    "clear": "Clear"
   }
 }

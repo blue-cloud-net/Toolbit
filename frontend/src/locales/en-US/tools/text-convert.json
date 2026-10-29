@@ -1,0 +1,68 @@
+{
+  "name": "Text Converter",
+  "description": "Convert text between letter cases and naming conventions.",
+  "category": "Text",
+  "actions": {
+    "convert": "Convert"
+  },
+  "fields": {
+    "input": "Text to convert",
+    "style": "Target style",
+    "separator": "Custom separator"
+  },
+  "options": {
+    "style": {
+      "upper": "UPPERCASE",
+      "lower": "lowercase",
+      "camel": "camelCase",
+      "pascal": "PascalCase",
+      "snake": "snake_case",
+      "kebab": "kebab-case",
+      "constant": "CONSTANT_CASE",
+      "title": "Title Case",
+      "sentence": "Sentence case",
+      "dot": "dot.case",
+      "path": "path/case",
+      "custom": "Custom separator"
+    }
+  },
+  "results": {
+    "output": "Converted text",
+    "style": "Style applied",
+    "words": "Words detected"
+  },
+  "examples": [
+    {
+      "label": "Kebab case to camel case",
+      "value": "http-server"
+    },
+    {
+      "label": "Convert to snake case",
+      "value": "HTTPServer"
+    },
+    {
+      "label": "Convert to constant case",
+      "value": "user profile setting"
+    }
+  ],
+  "hints": {
+    "input": "Splitting treats every non-alphanumeric character as a separator, so Chinese text is split character by character.",
+    "style": "Every style has a fixed separator and casing rule.",
+    "separator": "With \"Custom separator\" the words are joined by the character you provide; their casing is left untouched.",
+    "output": "The result shows the converted text together with the words that were detected, so you can check the splitting."
+  },
+  "faq": [
+    {
+      "q": "Why does HTTPServer become http_server?",
+      "a": "Only separators split words; runs of capital letters stay together, so HTTPServer is a single word. Spell out the separator to split it."
+    },
+    {
+      "q": "Is Chinese text split into words?",
+      "a": "No. Every non-alphanumeric character is a separator, so Chinese is split per character; there is no linguistic word segmentation."
+    },
+    {
+      "q": "How does the custom separator differ from a fixed style?",
+      "a": "A fixed style brings its own separator and casing rule; the custom separator only joins the words with the character you typed and does not change their case."
+    }
+  ]
+}

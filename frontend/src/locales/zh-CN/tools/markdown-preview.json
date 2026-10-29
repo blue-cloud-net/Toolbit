@@ -1,0 +1,59 @@
+{
+  "name": "Markdown 预览",
+  "description": "把 Markdown 渲染成净化后的 HTML，并生成标题目录。",
+  "category": "文档",
+  "actions": {
+    "render": "渲染"
+  },
+  "fields": {
+    "markdown": "Markdown 源文",
+    "flavor": "方言",
+    "allowHtml": "允许内嵌 HTML",
+    "breaks": "单换行视为换行"
+  },
+  "options": {
+    "flavor": {
+      "gfm": "GitHub Flavored Markdown",
+      "commonmark": "CommonMark"
+    }
+  },
+  "results": {
+    "output": "渲染后的 HTML",
+    "toc": "标题目录",
+    "level": "层级",
+    "text": "标题",
+    "id": "锚点",
+    "empty": "文档中没有标题。"
+  },
+  "examples": [
+    {
+      "label": "标题与表格",
+      "value": "# Toolbit 使用手册"
+    },
+    {
+      "label": "CommonMark 方言",
+      "value": "# CommonMark"
+    }
+  ],
+  "hints": {
+    "markdown": "源文上限 1 MB。",
+    "flavor": "GFM 支持表格、任务列表与删除线；CommonMark 是标准语法。",
+    "allowHtml": "关闭时原始 HTML 会被转义成文本；打开时也仍会剥离脚本与事件属性。",
+    "breaks": "打开后单个换行也会渲染成换行，适合聊天记录。",
+    "output": "输出 HTML **一定**经过服务端净化；页面只把 HTML 当作文本展示，不做页面内渲染。"
+  },
+  "faq": [
+    {
+      "q": "为什么看不到渲染后的效果？",
+      "a": "为避免 XSS，页面不注入 HTML，只展示净化后的源码。需要预览效果请把源码贴到可信的渲染器里。"
+    },
+    {
+      "q": "内嵌 HTML 会被保留吗？",
+      "a": "默认不保留，会被转义成文本。打开「允许内嵌 HTML」后保留排版标签，但脚本、事件属性与 `javascript:` 链接仍会被剥离。"
+    },
+    {
+      "q": "目录锚点是怎么生成的？",
+      "a": "按 GitHub 的规则把标题转成小写短横线锚点，中文标题保留汉字；重复标题会自动追加 `-1`、`-2` 后缀。"
+    }
+  ]
+}

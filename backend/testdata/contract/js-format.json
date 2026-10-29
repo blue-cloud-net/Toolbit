@@ -1,0 +1,39 @@
+{
+  "slug": "js-format",
+  "description": "JavaScript 美化 / 压缩 / 校验的契约测试数据。",
+  "cases": [
+    {
+      "name": "美化",
+      "request": {
+        "input": { "data": "function f(a){return a+1}" },
+        "action": "format",
+        "indent": 2
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true }
+      }
+    },
+    {
+      "name": "压缩并保留变量名",
+      "request": {
+        "input": { "data": "function f(a) {\n  // 注释\n  return a + 1;\n}" },
+        "action": "minify"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true, "output": "function f(a){return a+1}" }
+      }
+    },
+    {
+      "name": "语法错误判为非法",
+      "request": {
+        "input": { "data": "function f( {" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": false }
+      }
+    }
+  ]
+}

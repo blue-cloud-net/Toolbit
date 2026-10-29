@@ -1,0 +1,69 @@
+{
+  "name": "JSON 格式化",
+  "description": "美化、压缩或校验 JSON 文本。",
+  "category": "格式化",
+  "actions": {
+    "format": "美化",
+    "minify": "压缩",
+    "validate": "校验"
+  },
+  "fields": {
+    "input": "JSON 文本",
+    "action": "操作",
+    "indent": "缩进宽度",
+    "sortKeys": "按键排序",
+    "escapeUnicode": "转义非 ASCII 字符"
+  },
+  "options": {
+    "action": {
+      "format": "美化（重新排版）",
+      "minify": "压缩（去掉空白）",
+      "validate": "校验（只检查语法）"
+    }
+  },
+  "results": {
+    "output": "结果",
+    "outputHint": "结果可直接复制。",
+    "validity": "合法性",
+    "valid": "合法",
+    "invalid": "非法",
+    "position": "错误位置",
+    "reason": "错误原因"
+  },
+  "examples": [
+    {
+      "label": "美化 JSON",
+      "value": "{\"name\":\"toolbit\",\"version\":1}"
+    },
+    {
+      "label": "压缩 JSON",
+      "value": "{\n  \"a\" : 1\n}"
+    },
+    {
+      "label": "重复键示例",
+      "value": "{\"a\":1,\"a\":2}"
+    }
+  ],
+  "hints": {
+    "input": "工具保留对象键的原始顺序；重复键会被判为非法而不是静默覆盖。",
+    "action": "「校验」只判断语法是否合法，不改写内容。",
+    "indent": "缩进宽度以空格计，可选 2、4 或 8。",
+    "sortKeys": "排序只影响对象的键顺序，不改变数组顺序。",
+    "escapeUnicode": "转义后中文等内容会变成 \\uXXXX 形式，便于嵌入只接受 ASCII 的环境。",
+    "output": "「美化」按缩进宽度重新排版，「压缩」去掉所有非必要空白。"
+  },
+  "faq": [
+    {
+      "q": "为什么重复键会被判为非法？",
+      "a": "标准 JSON 解析器会让后一个键覆盖前一个，重复键几乎总是拼写错误，因此工具直接报错而不是悄悄丢弃数据。"
+    },
+    {
+      "q": "键的顺序会变吗？",
+      "a": "默认保留原文顺序。勾选「按键排序」后才会按键名排序，数组顺序始终不变。"
+    },
+    {
+      "q": "大整数会丢精度吗？",
+      "a": "不会。工具按原始字面量解析数字，超出 JavaScript 安全整数范围的值也能原样输出。"
+    }
+  ]
+}

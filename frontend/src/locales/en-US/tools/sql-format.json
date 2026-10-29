@@ -1,0 +1,80 @@
+{
+  "name": "SQL Formatter",
+  "description": "Pretty-print, minify or validate SQL statements.",
+  "category": "Formatting",
+  "actions": {
+    "format": "Format",
+    "minify": "Minify",
+    "validate": "Validate"
+  },
+  "fields": {
+    "input": "SQL statement",
+    "action": "Action",
+    "indent": "Indent width",
+    "dialect": "Dialect",
+    "keywordCase": "Keyword case"
+  },
+  "options": {
+    "action": {
+      "format": "Format (re-indent)",
+      "minify": "Minify (strip whitespace)",
+      "validate": "Validate (syntax only)"
+    },
+    "dialect": {
+      "standard": "Standard SQL",
+      "mysql": "MySQL",
+      "pg": "PostgreSQL",
+      "sqlite": "SQLite"
+    },
+    "keywordCase": {
+      "keep": "Keep as is",
+      "upper": "Upper case",
+      "lower": "Lower case"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "outputHint": "The result can be copied directly.",
+    "validity": "Validity",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "position": "Error position",
+    "reason": "Error reason"
+  },
+  "examples": [
+    {
+      "label": "Format SQL",
+      "value": "select id, name from users where id = 1 order by name"
+    },
+    {
+      "label": "Upper case keywords",
+      "value": "select 1 from t"
+    },
+    {
+      "label": "With a string literal",
+      "value": "select 'from where' as x from t"
+    }
+  ],
+  "hints": {
+    "input": "The tool only tokenises and re-lays out whitespace; it never executes SQL and never changes the meaning of a statement.",
+    "action": "Validate only reports whether the statement can be tokenised; it does not rewrite the content.",
+    "indent": "The indent width is measured in spaces; 2, 4 and 8 are available.",
+    "dialect": "The dialect affects how keywords and functions are recognised; name it explicitly for cross-database statements.",
+    "keywordCase": "Only keywords are affected; identifiers and string literals stay untouched.",
+    "output": "Format breaks the main clauses onto separate lines; minify removes all redundant whitespace."
+  },
+  "faq": [
+    {
+      "q": "Are keywords inside strings rewritten?",
+      "a": "No. The tool works on lexical units, so a literal such as `'from where'` keeps its content."
+    },
+    {
+      "q": "Can it check whether a table exists?",
+      "a": "No. It never connects to a database and only tidies the statement locally."
+    },
+    {
+      "q": "Do I still need to review the result?",
+      "a": "Yes. Dialect details still differ, and the tool only guarantees that the token sequence is unchanged."
+    }
+  ]
+}

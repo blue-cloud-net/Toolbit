@@ -1,0 +1,113 @@
+{
+  "slug": "date-calc",
+  "description": "日期计算的契约测试数据。",
+  "cases": [
+    {
+      "name": "相差天数",
+      "request": {
+        "operation": "diff",
+        "dateA": "2024-01-01",
+        "dateB": "2024-01-31"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "diffDays": 30 }
+      }
+    },
+    {
+      "name": "加天数",
+      "request": {
+        "operation": "add",
+        "dateA": "2024-01-01",
+        "days": 10
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "resultDate": "2024-01-11" }
+      }
+    },
+    {
+      "name": "减月份",
+      "request": {
+        "operation": "sub",
+        "dateA": "2024-03-15",
+        "days": 2,
+        "unit": "month"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "resultDate": "2024-01-15" }
+      }
+    },
+    {
+      "name": "工作日数",
+      "request": {
+        "operation": "workdays",
+        "dateA": "2024-01-01",
+        "dateB": "2024-01-07"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "workdays": 5 }
+      }
+    },
+    {
+      "name": "排除节假日",
+      "request": {
+        "operation": "workdays",
+        "dateA": "2024-01-01",
+        "dateB": "2024-01-07",
+        "holidays": ["2024-01-02"]
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "workdays": 4 }
+      }
+    },
+    {
+      "name": "缺少第二个日期",
+      "request": {
+        "operation": "diff",
+        "dateA": "2024-01-01"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "缺少天数",
+      "request": {
+        "operation": "add",
+        "dateA": "2024-01-01"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "非法日期",
+      "request": {
+        "operation": "diff",
+        "dateA": "not-a-date",
+        "dateB": "2024-01-01"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_TIME"
+      }
+    },
+    {
+      "name": "未知操作",
+      "request": {
+        "operation": "multiply",
+        "dateA": "2024-01-01"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

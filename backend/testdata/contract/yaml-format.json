@@ -1,0 +1,39 @@
+{
+  "slug": "yaml-format",
+  "description": "YAML 美化 / 压缩 / 校验的契约测试数据。",
+  "cases": [
+    {
+      "name": "美化并保留注释",
+      "request": {
+        "input": { "data": "# 注释\nname: toolbit\nlist:\n  - a\n  - b\n" },
+        "action": "format",
+        "indent": 2
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true }
+      }
+    },
+    {
+      "name": "校验合法内容",
+      "request": {
+        "input": { "data": "key: value\n" },
+        "action": "validate"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": true }
+      }
+    },
+    {
+      "name": "语法错误判为非法",
+      "request": {
+        "input": { "data": "key: [unclosed\n" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "valid": false }
+      }
+    }
+  ]
+}

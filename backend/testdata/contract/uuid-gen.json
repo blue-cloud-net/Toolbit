@@ -1,0 +1,58 @@
+{
+  "slug": "uuid-gen",
+  "description": "UUID 生成的契约测试数据。",
+  "cases": [
+    {
+      "name": "默认生成 v4",
+      "request": {},
+      "expect": {
+        "code": 0,
+        "dataContains": { "count": 1 }
+      }
+    },
+    {
+      "name": "批量生成 v7",
+      "request": { "version": 7, "count": 5 },
+      "expect": {
+        "code": 0,
+        "dataContains": { "count": 5 }
+      }
+    },
+    {
+      "name": "生成 v1",
+      "request": { "version": 1, "count": 2 },
+      "expect": {
+        "code": 0,
+        "dataContains": { "count": 2 }
+      }
+    },
+    {
+      "name": "大写且无连字符",
+      "request": {
+        "count": 1,
+        "uppercase": true,
+        "hyphens": false
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "count": 1 }
+      }
+    },
+    {
+      "name": "数量超限",
+      "request": { "count": 1001 },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "未知版本",
+      "request": { "version": 5 },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

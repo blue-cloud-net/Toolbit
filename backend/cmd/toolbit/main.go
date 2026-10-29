@@ -16,6 +16,10 @@ import (
 	"syscall"
 	"time"
 
+	// 内嵌 IANA 时区数据库：基础镜像通常不含 zoneinfo，
+	// 而 timestamp / date-calc 需要按 IANA 名解析时区。
+	_ "time/tzdata"
+
 	"github.com/blue-cloud-net/Toolbit/backend/internal/api"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/buildinfo"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/catalog"

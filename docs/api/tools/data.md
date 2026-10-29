@@ -69,6 +69,7 @@ UUID 生成。
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `uuids` | array | 生成的 UUID 列表 |
+| `count` | number | 生成条数 |
 
 ### 错误
 
@@ -124,6 +125,8 @@ UUID 生成。
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `countries` | array | `[{ alpha2, alpha3, numeric, nameZh, nameEn }]` |
+| `total` | number | 匹配条数 |
+| `dataVersion` | string | 数据集版本 |
 
 ### 错误
 
@@ -150,6 +153,8 @@ UUID 生成。
 | --- | --- | --- |
 | `provinces` | array | 省级行政区 |
 | `cities` | array | 地级 / 县级行政区 |
+| `total` | number | 匹配条数 |
+| `dataVersion` | string | 数据集版本 |
 
 ### 错误
 
@@ -170,7 +175,7 @@ UUID 生成。
 | `operation` | string | 是 | `generate` \| `decode` |
 | `text` | string | `generate` 时是 | 二维码内容 |
 | `options` | object | 否 | `{ size, margin, ecLevel, fg, bg }` |
-| `file` | file | `decode` 时是 | 待识别的二维码图片 |
+| `imageBase64` | string | `decode` 时是 | 待识别的二维码图片（base64 的 PNG / JPEG） |
 
 ### 响应
 
@@ -178,7 +183,10 @@ UUID 生成。
 | --- | --- | --- |
 | `svg` | string | 矢量图（`generate`） |
 | `pngBase64` | string | 位图（`generate`） |
+| `dimension` | number | 模块边长，含静默区（`generate`） |
+| `moduleSize` | number | 模块的像素边长（`generate`） |
 | `content` | string | 识别内容（`decode`） |
+| `format` | string | 图片格式（`decode`） |
 
 ### 错误
 

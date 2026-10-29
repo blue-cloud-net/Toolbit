@@ -1,0 +1,72 @@
+{
+  "name": "JavaScript Formatter",
+  "description": "Pretty-print, minify or validate JavaScript source.",
+  "category": "Formatting",
+  "actions": {
+    "format": "Format",
+    "minify": "Minify",
+    "validate": "Validate"
+  },
+  "fields": {
+    "input": "JavaScript source",
+    "action": "Action",
+    "indent": "Indent width",
+    "quotes": "Quote style",
+    "semi": "Keep semicolons"
+  },
+  "options": {
+    "action": {
+      "format": "Format (re-indent)",
+      "minify": "Minify (strip whitespace)",
+      "validate": "Validate (syntax only)"
+    },
+    "quotes": {
+      "double": "Double quotes",
+      "single": "Single quotes"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "outputHint": "The result can be copied directly.",
+    "validity": "Validity",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "position": "Error position",
+    "reason": "Error reason"
+  },
+  "examples": [
+    {
+      "label": "Format JavaScript",
+      "value": "function add(a, b) {\n  return a + b;\n}\n"
+    },
+    {
+      "label": "Minify JavaScript",
+      "value": "function add(a, b) {\n  // sum\n  return a + b;\n}\n"
+    },
+    {
+      "label": "Syntax error sample",
+      "value": "function f( {"
+    }
+  ],
+  "hints": {
+    "input": "The tool only parses the source; it never executes any code.",
+    "action": "Validate only reports whether the syntax is legal; it does not rewrite the content.",
+    "indent": "The indent width is measured in spaces; 2, 4 and 8 are available.",
+    "semi": "Disabling the option removes trailing semicolons; semicolons inside strings are untouched.",
+    "output": "Format re-indents with the chosen width; minify removes comments and redundant whitespace but keeps variable names."
+  },
+  "faq": [
+    {
+      "q": "Does minification rename variables?",
+      "a": "No. Minify only removes comments and whitespace; identifiers are kept as they are."
+    },
+    {
+      "q": "Does the quote swap cause damage?",
+      "a": "Only lines that consist of a single string literal are converted, so double quotes elsewhere in the code are left alone."
+    },
+    {
+      "q": "Is TypeScript supported?",
+      "a": "No. The tool parses ECMAScript syntax, so type annotations are reported as syntax errors."
+    }
+  ]
+}

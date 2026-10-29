@@ -1,0 +1,80 @@
+{
+  "name": "SQL 格式化",
+  "description": "美化、压缩或校验 SQL 语句。",
+  "category": "格式化",
+  "actions": {
+    "format": "美化",
+    "minify": "压缩",
+    "validate": "校验"
+  },
+  "fields": {
+    "input": "SQL 语句",
+    "action": "操作",
+    "indent": "缩进宽度",
+    "dialect": "方言",
+    "keywordCase": "关键字大小写"
+  },
+  "options": {
+    "action": {
+      "format": "美化（重新排版）",
+      "minify": "压缩（去掉空白）",
+      "validate": "校验（只检查语法）"
+    },
+    "dialect": {
+      "standard": "通用 SQL",
+      "mysql": "MySQL",
+      "pg": "PostgreSQL",
+      "sqlite": "SQLite"
+    },
+    "keywordCase": {
+      "keep": "保持原样",
+      "upper": "转成大写",
+      "lower": "转成小写"
+    }
+  },
+  "results": {
+    "output": "结果",
+    "outputHint": "结果可直接复制。",
+    "validity": "合法性",
+    "valid": "合法",
+    "invalid": "非法",
+    "position": "错误位置",
+    "reason": "错误原因"
+  },
+  "examples": [
+    {
+      "label": "美化 SQL",
+      "value": "select id, name from users where id = 1 order by name"
+    },
+    {
+      "label": "关键字转大写",
+      "value": "select 1 from t"
+    },
+    {
+      "label": "含字符串字面量",
+      "value": "select 'from where' as x from t"
+    }
+  ],
+  "hints": {
+    "input": "工具只做分词与重排空白，不执行 SQL，也不改变语句语义。",
+    "action": "「校验」只判断是否能正确分词，不改写内容。",
+    "indent": "缩进宽度以空格计，可选 2、4 或 8。",
+    "dialect": "方言影响关键字与函数的识别，跨库语句建议显式指定。",
+    "keywordCase": "只影响关键字，不影响标识符与字符串字面量。",
+    "output": "「美化」会把主要子句拆行；「压缩」去掉所有多余空白。"
+  },
+  "faq": [
+    {
+      "q": "字符串里的关键字会被改写吗？",
+      "a": "不会。工具按词法单元处理，`'from where'` 这样的字面量内容原样保留。"
+    },
+    {
+      "q": "这个工具能检查表是否存在吗？",
+      "a": "不能。它不连接数据库，只做本地语法层面的整理。"
+    },
+    {
+      "q": "改动后还需要人工复核吗？",
+      "a": "建议复核。不同方言的语法细节仍有差异，工具只保证 token 序列不变。"
+    }
+  ]
+}

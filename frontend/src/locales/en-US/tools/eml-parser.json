@@ -1,0 +1,69 @@
+{
+  "name": "EML Parser",
+  "description": "Parse the headers, body parts and attachments of an EML message.",
+  "category": "Documents",
+  "actions": {
+    "parse": "Parse"
+  },
+  "fields": {
+    "input": "Message source",
+    "file": "Message file",
+    "encoding": "Source charset",
+    "maxAttachmentBytes": "Per attachment byte limit"
+  },
+  "options": {
+    "encoding": {
+      "utf-8": "UTF-8",
+      "gbk": "GBK",
+      "gb2312": "GB2312",
+      "big5": "Big5",
+      "iso-8859-1": "ISO-8859-1"
+    }
+  },
+  "results": {
+    "output": "Message headers",
+    "headers": "Headers",
+    "bodies": "Body parts",
+    "attachments": "Attachments",
+    "name": "Field name",
+    "value": "Field value",
+    "contentType": "Content type",
+    "charset": "Charset",
+    "text": "Text",
+    "filename": "File name",
+    "mime": "Media type",
+    "size": "Size in bytes",
+    "truncated": "Content dropped because it exceeded the limit",
+    "empty": "No body parts or attachments."
+  },
+  "examples": [
+    {
+      "label": "Plain text message",
+      "value": "From: sender@example.com"
+    },
+    {
+      "label": "Message with an attachment",
+      "value": "Content-Type: multipart/mixed; boundary=\"B\""
+    }
+  ],
+  "hints": {
+    "input": "Paste the `.eml` source, or drop a message file to fill it in automatically.",
+    "encoding": "The charset of the source text; body parts are actually decoded with the charset declared in `Content-Type`.",
+    "maxAttachmentBytes": "Per attachment byte limit. 0 uses the server default of 10 MB, and the maximum is 50 MB.",
+    "output": "Headers keep their original order so the `Received` chain stays readable, and RFC 2047 encoded words are decoded."
+  },
+  "faq": [
+    {
+      "q": "Why is the header order preserved?",
+      "a": "The standard library stores headers in a map, which loses the order. The tool parses the raw text itself, so the `Received` chain still reads correctly."
+    },
+    {
+      "q": "Are attachments stored anywhere?",
+      "a": "No. Attachments only come back in the response as base64; the server neither writes them to disk nor logs or caches them."
+    },
+    {
+      "q": "What if the body text looks garbled?",
+      "a": "Body parts are decoded with the charset declared in `Content-Type`. When the declaration is missing or unknown the text is treated as UTF-8, and undecodable bytes become U+FFFD."
+    }
+  ]
+}

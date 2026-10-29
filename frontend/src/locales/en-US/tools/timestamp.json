@@ -1,0 +1,71 @@
+{
+  "name": "Timestamp Converter",
+  "description": "Convert between timestamps and dates, with second, millisecond, microsecond, nanosecond units and IANA time zones.",
+  "category": "Data",
+  "actions": {
+    "toDate": "Convert to date",
+    "toTimestamp": "Convert to timestamp"
+  },
+  "fields": {
+    "value": "Timestamp or date",
+    "operation": "Direction",
+    "unit": "Timestamp unit",
+    "timezone": "Time zone"
+  },
+  "options": {
+    "operation": {
+      "toDate": "Timestamp → date",
+      "toTimestamp": "Date → timestamp"
+    },
+    "unit": {
+      "auto": "Detect automatically",
+      "s": "Seconds (s)",
+      "ms": "Milliseconds (ms)",
+      "us": "Microseconds (us)",
+      "ns": "Nanoseconds (ns)"
+    }
+  },
+  "results": {
+    "output": "Conversion result",
+    "seconds": "Seconds",
+    "milliseconds": "Milliseconds",
+    "iso8601": "ISO 8601",
+    "rfc3339": "RFC 3339",
+    "local": "Local time",
+    "utc": "UTC time"
+  },
+  "examples": [
+    {
+      "label": "Seconds to date",
+      "value": "1700000000"
+    },
+    {
+      "label": "Milliseconds to date",
+      "value": "1700000000123"
+    },
+    {
+      "label": "Date to timestamp",
+      "value": "2023-11-14"
+    }
+  ],
+  "hints": {
+    "value": "Accepts a timestamp or a date string; leave it empty to use the current time.",
+    "unit": "Without an explicit unit the digit count decides: 13 digits are milliseconds, everything else is seconds.",
+    "timezone": "Use an IANA zone name such as `Asia/Shanghai`; when empty the server assumes UTC and emits a warning.",
+    "output": "\"Local time\" follows the selected zone, while \"UTC time\" is always Coordinated Universal Time."
+  },
+  "faq": [
+    {
+      "q": "Why do I see a timezone warning?",
+      "a": "The server never guesses a time zone. Without one it converts as UTC and reports a `TIMEZONE_ASSUMED` warning next to the result."
+    },
+    {
+      "q": "Is automatic unit detection reliable?",
+      "a": "It only looks at the digit count: 13 digits mean milliseconds, everything else means seconds. Pick the unit explicitly when precision matters."
+    },
+    {
+      "q": "Which date formats are accepted?",
+      "a": "RFC 3339, `YYYY-MM-DDTHH:MM:SS`, `YYYY-MM-DD HH:MM:SS` and `YYYY-MM-DD`."
+    }
+  ]
+}

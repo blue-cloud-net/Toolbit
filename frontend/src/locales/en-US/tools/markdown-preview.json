@@ -1,0 +1,59 @@
+{
+  "name": "Markdown Preview",
+  "description": "Render Markdown into sanitized HTML and build a heading table of contents.",
+  "category": "Documents",
+  "actions": {
+    "render": "Render"
+  },
+  "fields": {
+    "markdown": "Markdown source",
+    "flavor": "Flavor",
+    "allowHtml": "Allow inline HTML",
+    "breaks": "Treat single newlines as breaks"
+  },
+  "options": {
+    "flavor": {
+      "gfm": "GitHub Flavored Markdown",
+      "commonmark": "CommonMark"
+    }
+  },
+  "results": {
+    "output": "Rendered HTML",
+    "toc": "Table of contents",
+    "level": "Level",
+    "text": "Heading",
+    "id": "Anchor",
+    "empty": "The document has no headings."
+  },
+  "examples": [
+    {
+      "label": "Headings and a table",
+      "value": "# Toolbit manual"
+    },
+    {
+      "label": "CommonMark flavor",
+      "value": "# CommonMark"
+    }
+  ],
+  "hints": {
+    "markdown": "The source may be up to 1 MB.",
+    "flavor": "GFM adds tables, task lists and strikethrough; CommonMark follows the standard syntax.",
+    "allowHtml": "When off, raw HTML is escaped into text. When on it is still stripped of scripts and event handlers.",
+    "breaks": "Turn this on to render a single newline as a line break, which suits chat transcripts.",
+    "output": "The HTML is **always** sanitized on the server; the page only shows it as text and never renders it in place."
+  },
+  "faq": [
+    {
+      "q": "Why can I not see the rendered result?",
+      "a": "To avoid XSS the page never injects the HTML, it only shows the sanitized source. Paste it into a renderer you trust to see the visual result."
+    },
+    {
+      "q": "Is inline HTML preserved?",
+      "a": "Not by default, it is escaped into text. With \"Allow inline HTML\" the layout tags survive, but scripts, event handlers and `javascript:` links are still removed."
+    },
+    {
+      "q": "How are the anchors generated?",
+      "a": "They follow the GitHub rule of lowercasing the heading and joining words with hyphens, keeping CJK characters. Repeated headings get a `-1`, `-2` suffix."
+    }
+  ]
+}

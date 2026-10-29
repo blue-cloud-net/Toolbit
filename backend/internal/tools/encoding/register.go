@@ -29,5 +29,41 @@ func Definitions() []tools.Definition {
 				return NumberBase(ctx, req.(*NumberBaseRequest))
 			},
 		},
+		{
+			Slug: "url-codec",
+			NewRequest: func() tools.Request {
+				return &URLCodecRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return URLCodec(ctx, req.(*URLCodecRequest))
+			},
+		},
+		{
+			Slug: "jwt-codec",
+			NewRequest: func() tools.Request {
+				return &JWTCodecRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return JWTCodec(ctx, req.(*JWTCodecRequest))
+			},
+		},
+		{
+			Slug: "encoding-convert",
+			NewRequest: func() tools.Request {
+				return &EncodingConvertRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return EncodingConvert(ctx, req.(*EncodingConvertRequest))
+			},
+		},
+		{
+			Slug: "gzip-deflate",
+			NewRequest: func() tools.Request {
+				return &GZipDeflateRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return GZipDeflate(ctx, req.(*GZipDeflateRequest))
+			},
+		},
 	}
 }

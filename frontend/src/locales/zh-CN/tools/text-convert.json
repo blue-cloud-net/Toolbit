@@ -1,0 +1,68 @@
+{
+  "name": "文本转换",
+  "description": "在大小写与命名风格之间转换文本。",
+  "category": "文本",
+  "actions": {
+    "convert": "转换"
+  },
+  "fields": {
+    "input": "待转换文本",
+    "style": "目标风格",
+    "separator": "自定义分隔符"
+  },
+  "options": {
+    "style": {
+      "upper": "全大写（UPPER）",
+      "lower": "全小写（lower）",
+      "camel": "驼峰（camelCase）",
+      "pascal": "帕斯卡（PascalCase）",
+      "snake": "下划线（snake_case）",
+      "kebab": "短横线（kebab-case）",
+      "constant": "常量（CONSTANT_CASE）",
+      "title": "标题（Title Case）",
+      "sentence": "句首大写（Sentence case）",
+      "dot": "点分（dot.case）",
+      "path": "路径（path/case）",
+      "custom": "自定义分隔符"
+    }
+  },
+  "results": {
+    "output": "转换结果",
+    "style": "实际风格",
+    "words": "切分出的词元"
+  },
+  "examples": [
+    {
+      "label": "连字符转驼峰",
+      "value": "http-server"
+    },
+    {
+      "label": "转下划线风格",
+      "value": "HTTPServer"
+    },
+    {
+      "label": "转常量风格",
+      "value": "user profile setting"
+    }
+  ],
+  "hints": {
+    "input": "切分规则是非字母数字字符一律视为分隔符，因此中文会被逐字切开。",
+    "style": "每种风格都有固定的分隔符与大小写规则。",
+    "separator": "选「自定义分隔符」后按填写的分隔符拼接词元，其余词元保持原样。",
+    "output": "结果里同时给出转换后的文本与切分出的词元，便于核对切分是否符合预期。"
+  },
+  "faq": [
+    {
+      "q": "为什么 HTTPServer 变成了 http_server？",
+      "a": "切分只认分隔符，不会拆开连续的大写字母，所以 HTTPServer 是一个词元。要拆开请显式写出分隔符。"
+    },
+    {
+      "q": "中文会按词切分吗？",
+      "a": "不会。规则是非字母数字字符即分隔符，中文按字切开，不做语言学分词。"
+    },
+    {
+      "q": "自定义分隔符和固定风格有什么区别？",
+      "a": "固定风格自带分隔符与大小写规则；自定义分隔符只用你填写的字符拼接词元，不额外改大小写。"
+    }
+  ]
+}

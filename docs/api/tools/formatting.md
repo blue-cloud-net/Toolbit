@@ -23,7 +23,7 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 是 | `{ data, encoding }` |
+| `input` | object | 是 | `{ data }` |
 | `action` | string | 否 | `format`（默认）\| `minify` \| `validate` |
 | `indent` | int | 否 | 缩进宽度，默认 2 |
 
@@ -39,7 +39,7 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 是 | `{ data, encoding }` |
+| `input` | object | 是 | `{ data }` |
 | `action` | string | 否 | `format` \| `minify` \| `validate` |
 | `indent` | int | 否 | 缩进宽度（默认 2）；`minify` 时忽略 |
 | `sortKeys` | bool | 否 | 是否按键排序 |
@@ -65,7 +65,7 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 是 | `{ data, encoding }` |
+| `input` | object | 是 | `{ data }` |
 | `action` | string | 否 | `format` \| `minify` |
 | `indent` | int | 否 | 缩进宽度 |
 | `quotes` | string | 否 | `single` \| `double`（默认） |
@@ -76,13 +76,15 @@
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `output` | string | 结果 |
+| `valid` | bool | 是否合法 |
 | `error` | object | `{ line, column, message }` |
 
 ### 错误
 
-`INVALID_JSON`、`INVALID_FIELD`。
+`INVALID_FIELD`。
 
-> 使用 Go 侧 JS 引擎解析，单次执行**必须**有超时（5 s）与内存上限（64 MB）。超限返回 `TIMEOUT` / `TOO_LARGE`。
+> 解析与打印由 JS 解析器完成（纯语法操作，**不执行**代码）。压缩时保留变量名，
+> 避免改变运行时行为。
 
 ---
 
@@ -92,7 +94,7 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 是 | `{ data, encoding }` |
+| `input` | object | 是 | `{ data }` |
 | `action` | string | 否 | `format` \| `minify` \| `validate` |
 | `dialect` | string | 否 | `standard`（默认）\| `mysql` \| `pg` \| `sqlite` |
 | `keywordCase` | string | 否 | `upper` \| `lower` \| `keep`（默认） |
@@ -103,12 +105,15 @@
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `output` | string | 结果 |
+| `valid` | bool | 是否合法 |
+| `error` | object | `{ line, column, message }` |
 
 ### 错误
 
-`INVALID_FIELD`、`TIMEOUT`。
+`INVALID_FIELD`。
 
-> SQL 格式化是**纯文本**处理，**不**执行 SQL。方言差异**可能**导致语义变化，前端**应当**提示用户复核。
+> SQL 格式化是**纯文本**处理，**不**执行 SQL：只做分词与重排空白，token 文本
+> （除关键字大小写）保持不变。方言差异**可能**导致语义变化，前端**应当**提示用户复核。
 
 ---
 
@@ -118,16 +123,17 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 是 | `{ data, encoding }` |
+| `input` | object | 是 | `{ data }` |
 | `action` | string | 否 | `format` \| `minify` \| `validate` |
 | `indent` | int | 否 | 缩进宽度 |
-| `selfClosing` | bool | 否 | 是否输出自闭合标签 |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `output` | string | 结果 |
+| `valid` | bool | 是否合法 |
+| `error` | object | `{ line, column, message }` |
 
 ### 错误
 
@@ -143,16 +149,18 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 是 | `{ data, encoding }` |
+| `input` | object | 是 | `{ data }` |
 | `action` | string | 否 | `format` \| `minify` \| `validate` |
 | `indent` | int | 否 | 缩进宽度 |
-| `preserveComments` | bool | 否 | 是否保留注释（默认 `true`） |
+| `keepComments` | bool | 否 | 是否保留注释（默认 `true`） |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `output` | string | 结果 |
+| `valid` | bool | 是否合法 |
+| `error` | object | `{ line, column, message }` |
 
 ### 错误
 
@@ -170,14 +178,18 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 是 | `{ data, encoding }` |
-| `action` | string | 否 | `format` \| `validate` |
+| `input` | object | 是 | `{ data }` |
+| `action` | string | 否 | `format` \| `minify` \| `validate` |
+| `indent` | int | 否 | 缩进宽度 |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `output` | string | 结果 |
+| `valid` | bool | 是否合法 |
+| `error` | object | `{ line, column, message }` |
+| `commentsLost` | bool | 注释是否丢失 |
 
 ### 错误
 
@@ -195,7 +207,7 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 是 | `{ data, encoding }` |
+| `input` | object | 是 | `{ data }` |
 | `action` | string | 否 | `format` \| `minify` \| `validate` |
 | `indent` | int | 否 | 缩进宽度 |
 | `sortKeys` | bool | 否 | 是否按键排序 |
@@ -205,6 +217,8 @@
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `output` | string | 结果 |
+| `valid` | bool | 是否合法 |
+| `error` | object | `{ line, column, message }` |
 
 ### 错误
 
@@ -226,9 +240,10 @@ JSON / YAML / TOML / XML 之间的结构转换。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `input` | object | 是 | `{ data, encoding }` |
+| `input` | object | 是 | `{ data }` |
 | `from` | string | 是 | `json` \| `yaml` \| `toml` \| `xml` |
 | `to` | string | 是 | `json` \| `yaml` \| `toml` \| `xml` |
+| `indent` | int | 否 | 缩进宽度，默认 2 |
 | `pretty` | bool | 否 | 是否美化输出（默认 `true`） |
 
 ### 响应
@@ -236,6 +251,10 @@ JSON / YAML / TOML / XML 之间的结构转换。
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `output` | string | 转换结果 |
+| `from` | string | 实际使用的源格式 |
+| `to` | string | 实际使用的目标格式 |
+| `lossy` | bool | 是否有信息丢失 |
+| `lossyReason` | string | 丢失原因 |
 
 ### 错误
 
