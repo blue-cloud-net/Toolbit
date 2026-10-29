@@ -41,7 +41,7 @@
   "hints": {
     "version": "v4 is random, v1 is time based, and v7 sorts by time, which makes it a good primary key.",
     "count": "Up to 1000 UUIDs per run.",
-    "format": "Turning off \"Keep hyphens\" strips the separators, and \"Wrap in braces\" adds `{}`.",
+    "format": "Turning off \"Keep hyphens\" strips the separators, and \"Wrap in braces\" adds `{'{}'}`.",
     "output": "The result can be copied in one click; a batch prints one UUID per line."
   },
   "faq": [
