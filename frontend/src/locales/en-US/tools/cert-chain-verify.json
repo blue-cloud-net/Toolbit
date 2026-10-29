@@ -1,0 +1,50 @@
+{
+  "name": "Certificate Chain Verifier",
+  "description": "Verify whether a certificate chain is trusted and unexpired, with optional hostname matching.",
+  "category": "Certificates",
+  "actions": {
+    "verify": "Verify"
+  },
+  "fields": {
+    "bundle": "Certificate chain",
+    "trustedRoots": "Trusted roots",
+    "host": "Hostname",
+    "atTime": "Verification time"
+  },
+  "options": {},
+  "results": {
+    "info": "Verification result",
+    "valid": "Chain is trusted",
+    "implicitTrust": "Used an implicit trust anchor",
+    "hostnameMatch": "Hostname matches",
+    "hostnameError": "Hostname mismatch reason",
+    "errors": "Failure reasons",
+    "details": "Per-certificate verdicts"
+  },
+  "examples": [
+    {
+      "label": "Verify a chain against the root CA and check the hostname",
+      "value": "Full certificate chain"
+    }
+  ],
+  "hints": {
+    "implicitTrust": "There is **no system trust store** available: when no trusted root is supplied, the self-signed root inside the chain becomes an implicit anchor, so \"chain is trusted\" then only means the chain is internally consistent — not that it is externally trusted.",
+    "result": "A failed verification is a business result: the tool returns 200 with valid: false rather than an error.",
+    "hostname": "Hostname matching only compares names; it does not influence the chain verdict.",
+    "atTime": "Rolling the verification time back lets expired certificates pass; use it only to review historical signatures."
+  },
+  "faq": [
+    {
+      "q": "Can a self-signed certificate pass verification?",
+      "a": "Yes if you supply it as a trusted root; otherwise only the implicit anchor applies, which merely proves internal consistency."
+    },
+    {
+      "q": "How do I verify a certificate from a private internal CA?",
+      "a": "Pass the CA certificate as a trusted root."
+    },
+    {
+      "q": "Does a failed verification return an error?",
+      "a": "No. It returns 200 with valid: false and the reasons in the errors list."
+    }
+  ]
+}

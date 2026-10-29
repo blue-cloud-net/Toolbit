@@ -1,0 +1,46 @@
+{
+  "name": "吊销列表解析",
+  "description": "查看 CRL 的签发者、有效期、签名算法与被吊销的证书序列号。",
+  "category": "证书",
+  "actions": {
+    "parse": "解析"
+  },
+  "fields": {
+    "input": "吊销列表"
+  },
+  "options": {},
+  "results": {
+    "info": "解析结果",
+    "issuer": "签发者",
+    "thisUpdate": "本次更新",
+    "nextUpdate": "下次更新",
+    "signatureAlgorithm": "签名算法",
+    "number": "CRL 编号",
+    "revoked": "吊销条目"
+  },
+  "examples": [
+    {
+      "label": "解析签发者与吊销条目",
+      "value": "吊销列表 PEM"
+    }
+  ],
+  "hints": {
+    "serial": "序列号超过 64 位时可能**为空**：上游用 64 位整数承载序列号，超长时无法表达（见上游缺口登记）。",
+    "readOnly": "本工具只**解析** CRL，不做吊销校验；校验需要签发者证书。",
+    "limit": "吊销条目上限 10000 条。"
+  },
+  "faq": [
+    {
+      "q": "CRL 编号是什么？",
+      "a": "CRL Number 扩展里的单调递增序号，用来判断拿到的是不是更新的吊销列表。"
+    },
+    {
+      "q": "「下次更新」为空说明什么？",
+      "a": "该 CRL 没有给出 nextUpdate，无法判断它何时失效。"
+    },
+    {
+      "q": "吊销原因怎么读？",
+      "a": "reasonText 是原因名，例如 keyCompromise（私钥泄露）。"
+    }
+  ]
+}

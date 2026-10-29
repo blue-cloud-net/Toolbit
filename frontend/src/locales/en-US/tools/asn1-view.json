@@ -1,0 +1,46 @@
+{
+  "name": "ASN.1 Viewer",
+  "description": "Expand DER bytes into a structure tree to debug certificates, keys and signatures.",
+  "category": "Certificates",
+  "actions": {
+    "view": "View"
+  },
+  "fields": {
+    "input": "Input material",
+    "maxDepth": "Maximum expansion depth"
+  },
+  "options": {},
+  "results": {
+    "tree": "Structure tree",
+    "length": "Byte length",
+    "nodeCount": "Node count",
+    "depth": "Actual depth",
+    "maxDepth": "Expansion depth",
+    "empty": "Nothing to show"
+  },
+  "examples": [
+    {
+      "label": "View the DER structure tree of a leaf certificate",
+      "value": "Leaf certificate PEM"
+    }
+  ],
+  "hints": {
+    "maxDepth": "Leave empty or use 0 for the default of 32 levels; the ceiling is 64.",
+    "limit": "The input limit is 1 MB: deeply nested DER is rejected on size before it is parsed.",
+    "safe": "Read-only: only the structure is parsed, the semantics are not validated."
+  },
+  "faq": [
+    {
+      "q": "What does the #2 in front of a tag mean?",
+      "a": "It is the tag number; the following universal / context word is the ASN.1 class."
+    },
+    {
+      "q": "Why does some node say truncated?",
+      "a": "Its children exceed the configured expansion depth and were not expanded further."
+    },
+    {
+      "q": "Can I read the OIDs inside extensions?",
+      "a": "An OID is the dotted identifier of an extension; the viewer shows it together with the raw bytes."
+    }
+  ]
+}

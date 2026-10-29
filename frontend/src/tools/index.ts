@@ -29,6 +29,14 @@ export const toolRegistry: Record<string, ToolLoader> = {
   'key-ops': () => import('./keys/key-ops/index'),
   'key-match': () => import('./keys/key-match/index'),
   'jwk-xml-convert': () => import('./keys/jwk-xml-convert/index'),
+  'cert-parse': () => import('./certificates/cert-parse/index'),
+  'csr-parse': () => import('./certificates/csr-parse/index'),
+  'pem-der': () => import('./certificates/pem-der/index'),
+  'asn1-view': () => import('./certificates/asn1-view/index'),
+  'cert-chain-parse': () => import('./certificates/cert-chain-parse/index'),
+  'cert-chain-verify': () => import('./certificates/cert-chain-verify/index'),
+  'cert-chain-repair': () => import('./certificates/cert-chain-repair/index'),
+  'crl-parse': () => import('./certificates/crl-parse/index'),
 }
 
 /** 已实现的工具 slug 集合。 */

@@ -1,0 +1,56 @@
+{
+  "name": "Certificate Parser",
+  "description": "Parse an X.509 certificate: subject, issuer, validity, extensions, public key and fingerprints.",
+  "category": "Certificates",
+  "actions": {
+    "parse": "Parse"
+  },
+  "fields": {
+    "cert": "Certificate",
+    "fingerprints": "Fingerprint algorithms",
+    "atTime": "Evaluation time"
+  },
+  "options": {},
+  "results": {
+    "info": "Certificate details",
+    "subject": "Subject",
+    "issuer": "Issuer",
+    "serial": "Serial number",
+    "validity": "Validity",
+    "notBefore": "Not before",
+    "notAfter": "Not after",
+    "publicKey": "Public key",
+    "signatureAlgorithm": "Signature algorithm",
+    "selfSigned": "Self-signed",
+    "san": "Subject alternative names",
+    "keyUsage": "Key usage",
+    "extendedKeyUsage": "Extended key usage",
+    "fingerprints": "Fingerprints",
+    "extensions": "Extensions"
+  },
+  "examples": [
+    {
+      "label": "Parse a leaf certificate's subject, extensions and fingerprints",
+      "value": "Leaf certificate"
+    }
+  ],
+  "hints": {
+    "fingerprints": "Several algorithms can be computed at once; md5 and sha1 are weak and only useful for legacy interop.",
+    "atTime": "Leave empty to evaluate against the current time; supply an RFC3339 instant to review historical state.",
+    "safe": "Read-only: the certificate is never modified and never written to disk."
+  },
+  "faq": [
+    {
+      "q": "How do I tell whether a certificate is self-signed?",
+      "a": "The \"Self-signed\" field is true and the issuer matches the subject."
+    },
+    {
+      "q": "What if the certificate is not valid yet?",
+      "a": "Validity reports \"not yet valid\"; fill in the evaluation time to check another instant."
+    },
+    {
+      "q": "Can I use fingerprints to compare certificates?",
+      "a": "Yes. Each algorithm yields a stable value for a given certificate, and distinct certificates practically never collide."
+    }
+  ]
+}

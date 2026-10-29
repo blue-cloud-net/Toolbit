@@ -1,0 +1,47 @@
+{
+  "name": "CSR 解析",
+  "description": "解析 PKCS#10 证书签名请求的主体、公钥、扩展与签名。",
+  "category": "证书",
+  "actions": {
+    "parse": "解析"
+  },
+  "fields": {
+    "csr": "CSR"
+  },
+  "options": {},
+  "results": {
+    "info": "CSR 信息",
+    "subject": "主体",
+    "sans": "主体备用名",
+    "publicKey": "公钥",
+    "signatureAlgorithm": "签名算法",
+    "signatureValid": "签名有效",
+    "fingerprint": "SHA-256 指纹",
+    "challengePassword": "含挑战口令",
+    "extensions": "请求扩展"
+  },
+  "examples": [
+    {
+      "label": "解析 CSR 的主体、公钥与签名",
+      "value": "CSR"
+    }
+  ],
+  "hints": {
+    "challengePassword": "工具只报告「是否携带挑战口令」，**不会**回显口令内容。",
+    "safe": "只读工具：CSR 内容不会被修改，也不会落盘。"
+  },
+  "faq": [
+    {
+      "q": "CSR 里的 SAN 会被 CA 采纳吗？",
+      "a": "多数 CA 会核对，请不要在 CSR 里写与主体不符的域名。"
+    },
+    {
+      "q": "CSR 有有效期吗？",
+      "a": "CSR 本身没有有效期，但部分 CA 会限制重复提交频率。"
+    },
+    {
+      "q": "「签名有效」是什么意思？",
+      "a": "指 CSR 自身的签名能被它携带的公钥验证通过，说明 CSR 没被篡改。"
+    }
+  ]
+}

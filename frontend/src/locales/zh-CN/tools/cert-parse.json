@@ -1,0 +1,56 @@
+{
+  "name": "证书解析",
+  "description": "解析 X.509 证书的主体、签发者、有效期、扩展、公钥与指纹。",
+  "category": "证书",
+  "actions": {
+    "parse": "解析"
+  },
+  "fields": {
+    "cert": "证书",
+    "fingerprints": "指纹算法",
+    "atTime": "判断时刻"
+  },
+  "options": {},
+  "results": {
+    "info": "证书信息",
+    "subject": "主体",
+    "issuer": "签发者",
+    "serial": "序列号",
+    "validity": "有效性",
+    "notBefore": "生效时间",
+    "notAfter": "过期时间",
+    "publicKey": "公钥",
+    "signatureAlgorithm": "签名算法",
+    "selfSigned": "自签名",
+    "san": "主体备用名",
+    "keyUsage": "密钥用途",
+    "extendedKeyUsage": "扩展密钥用途",
+    "fingerprints": "指纹",
+    "extensions": "扩展"
+  },
+  "examples": [
+    {
+      "label": "解析叶证书的主体、扩展与指纹",
+      "value": "叶证书"
+    }
+  ],
+  "hints": {
+    "fingerprints": "可同时计算多种指纹；md5 与 sha1 属弱哈希，仅在与旧系统对齐时使用。",
+    "atTime": "留空则按当前时间判断有效性；填写 RFC3339 时刻可复核历史状态。",
+    "safe": "只读工具：证书内容不会被修改，也不会落盘。"
+  },
+  "faq": [
+    {
+      "q": "怎样确认某张证书是否自签名？",
+      "a": "结果里的「自签名」为 true，且签发者与主体一致。"
+    },
+    {
+      "q": "证书还没到生效时间怎么办？",
+      "a": "有效性会显示「尚未生效」；可填写「判断时刻」指定其它时刻来复核。"
+    },
+    {
+      "q": "指纹可以拿来做比对吗？",
+      "a": "可以。同一张证书的任意算法指纹都是固定的，不同证书几乎不可能撞上。"
+    }
+  ]
+}

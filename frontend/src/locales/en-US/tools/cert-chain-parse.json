@@ -1,0 +1,44 @@
+{
+  "name": "Certificate Chain Parser",
+  "description": "Sort scattered certificates into the correct leaf → intermediate → root order and report whether the root is missing.",
+  "category": "Certificates",
+  "actions": {
+    "parse": "Parse"
+  },
+  "fields": {
+    "bundle": "Certificate chain"
+  },
+  "options": {},
+  "results": {
+    "chain": "Certificate chain",
+    "count": "Certificate count",
+    "ordered": "Input already ordered",
+    "missingRoot": "Root certificate missing",
+    "selfSigned": "Root is self-signed"
+  },
+  "examples": [
+    {
+      "label": "Sort a leaf → intermediate → root chain",
+      "value": "Full certificate chain"
+    }
+  ],
+  "hints": {
+    "order": "Ordering matches AKID ↔ SKID first and falls back to the subject / issuer text; when several candidates sit at the same level the first in input order wins.",
+    "ambiguous": "\"Input already ordered\" being false only means the input had to be reordered — it is not a failure.",
+    "limit": "A chain may hold up to 64 certificates."
+  },
+  "faq": [
+    {
+      "q": "In which order should a chain be?",
+      "a": "Leaf certificate → intermediate CA → root CA."
+    },
+    {
+      "q": "What does \"Root certificate missing\" mean?",
+      "a": "The last certificate in the chain is not self-signed, which means the root was not included."
+    },
+    {
+      "q": "Does the tool download missing certificates?",
+      "a": "No, it is purely local; use the certificate chain fetcher for downloads."
+    }
+  ]
+}
