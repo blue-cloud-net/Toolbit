@@ -277,7 +277,8 @@ async function checkStatusLines() {
   files.push(README);
   for (const file of files) {
     const rel = path.relative(ROOT, file);
-    if (rel.startsWith("docs/_templates")) continue;
+    // 路径分隔符随平台变化，统一成 `/` 再判断，否则 Windows 上跳不过模板目录。
+    if (rel.replace(/\\/g, "/").startsWith("docs/_templates")) continue;
     const text = await readFile(file, "utf8");
     if (!STATUS_LINE.test(text)) {
       fail("status", `${rel} 缺少或不合规的状态行`);
