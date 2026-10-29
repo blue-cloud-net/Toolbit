@@ -1,0 +1,53 @@
+{
+  "name": "Regex Validator",
+  "description": "Validate the syntax of a regular expression and report errors and suggestions.",
+  "category": "Text",
+  "actions": {
+    "run": "Validate"
+  },
+  "fields": {
+    "pattern": "Pattern",
+    "flags": "Flags"
+  },
+  "options": {
+    "flags": {
+      "i": "Ignore case",
+      "m": "Multiline",
+      "s": "Dot matches newline",
+      "x": "Extended"
+    }
+  },
+  "results": {
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "dialect": "Dialect",
+    "error": "Error message",
+    "position": "Error position",
+    "captureGroups": "Capture groups",
+    "suggestions": "Suggestions"
+  },
+  "examples": [
+    {
+      "label": "Validate a phone pattern",
+      "value": "{\"pattern\":\"^1[3-9]\\\\d{9}$\"}"
+    },
+    {
+      "label": "Validate a broken pattern",
+      "value": "{\"pattern\":\"([a-z\"}"
+    }
+  ],
+  "hints": {
+    "pattern": "This tool only validates and never matches, so it accepts no subject text and cannot time out.",
+    "output": "A valid pattern reports the capture group count and suggestions; an invalid one reports the exact position."
+  },
+  "faq": [
+    {
+      "q": "Which flavour is supported?",
+      "a": "The RE2 flavour (Go regular expressions) is used throughout; backreferences and recursion are not supported."
+    },
+    {
+      "q": "How does this differ from the regex tester?",
+      "a": "The regex tester actually matches text and lists every hit; this tool only judges whether the expression itself is valid."
+    }
+  ]
+}

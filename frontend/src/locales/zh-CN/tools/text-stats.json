@@ -1,0 +1,44 @@
+{
+  "name": "文本统计",
+  "description": "统计文本的字数、行数、段落数与字符构成，中英文分别计数。",
+  "category": "文本",
+  "actions": {
+    "run": "统计"
+  },
+  "fields": {
+    "text": "待统计文本"
+  },
+  "options": {},
+  "results": {
+    "characters": "字符总数",
+    "charactersNoSpace": "不含空白",
+    "words": "词数",
+    "chineseChars": "中文字符",
+    "englishWords": "英文单词",
+    "digits": "数字字符",
+    "punctuation": "标点符号",
+    "lines": "行数",
+    "paragraphs": "段落数",
+    "bytes": "字节数"
+  },
+  "examples": [
+    {
+      "label": "统计中英混排文本",
+      "value": "{\"text\":\"Hello 世界\\n第二行\"}"
+    }
+  ],
+  "hints": {
+    "text": "中文按**字**计数，英文按**词**计数，两者相加即为总词数。",
+    "output": "统计全部在服务端完成，文本不会离开后端。"
+  },
+  "faq": [
+    {
+      "q": "中英混排怎么算词数？",
+      "a": "中文部分逐字计数，英文部分按空白与标点切分后按词计数。"
+    },
+    {
+      "q": "行尾换行会多算一行吗？",
+      "a": "不会。末尾空行不计入行数，与多数编辑器一致。"
+    }
+  ]
+}

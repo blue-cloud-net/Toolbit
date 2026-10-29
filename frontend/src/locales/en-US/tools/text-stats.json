@@ -1,0 +1,44 @@
+{
+  "name": "Text Statistics",
+  "description": "Count words, lines, paragraphs and character classes, separating Chinese and English.",
+  "category": "Text",
+  "actions": {
+    "run": "Count"
+  },
+  "fields": {
+    "text": "Text to count"
+  },
+  "options": {},
+  "results": {
+    "characters": "Total characters",
+    "charactersNoSpace": "Without whitespace",
+    "words": "Words",
+    "chineseChars": "Chinese characters",
+    "englishWords": "English words",
+    "digits": "Digits",
+    "punctuation": "Punctuation",
+    "lines": "Lines",
+    "paragraphs": "Paragraphs",
+    "bytes": "Bytes"
+  },
+  "examples": [
+    {
+      "label": "Count mixed Chinese and English",
+      "value": "{\"text\":\"Hello 世界\\n第二行\"}"
+    }
+  ],
+  "hints": {
+    "text": "Chinese is counted per character and English per word; their sum is the total word count.",
+    "output": "All counting happens on the server and the text never leaves the backend."
+  },
+  "faq": [
+    {
+      "q": "How are mixed texts counted?",
+      "a": "Chinese characters are counted individually and English is split on whitespace and punctuation."
+    },
+    {
+      "q": "Does a trailing newline add a line?",
+      "a": "No. A trailing blank line is not counted, matching most editors."
+    }
+  ]
+}

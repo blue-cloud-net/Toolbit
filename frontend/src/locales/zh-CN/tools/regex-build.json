@@ -1,0 +1,62 @@
+{
+  "name": "正则表达式生成",
+  "description": "由结构化选项拼装正则表达式，并给出逐段释义。",
+  "category": "文本",
+  "actions": {
+    "run": "生成"
+  },
+  "fields": {
+    "parts": "组成部分",
+    "prefix": "固定前缀",
+    "suffix": "固定后缀",
+    "minRepeat": "最小重复次数",
+    "maxRepeat": "最大重复次数",
+    "anchored": "首尾加锚点"
+  },
+  "options": {
+    "parts": {
+      "anyChar": "任意字符",
+      "digits": "数字",
+      "letters": "字母",
+      "word": "单词字符",
+      "space": "空白字符",
+      "upper": "大写字母",
+      "lower": "小写字母",
+      "chinese": "中文字符",
+      "hyphen": "连字符",
+      "dot": "点号",
+      "at": "邮箱符号",
+      "slash": "斜杠"
+    }
+  },
+  "results": {
+    "pattern": "生成的表达式",
+    "valid": "语法合法",
+    "explanation": "逐段释义",
+    "error": "错误信息"
+  },
+  "examples": [
+    {
+      "label": "拼接数字与连字符",
+      "value": "{\"parts\":[\"digits\",\"hyphen\",\"digits\"]}"
+    },
+    {
+      "label": "带量词的字母片段",
+      "value": "{\"parts\":[\"letters\"],\"quantifier\":{\"min\":2,\"max\":8}}"
+    }
+  ],
+  "hints": {
+    "parts": "勾选需要的组成部分，生成器会按固定顺序拼装并给出每段的含义说明。",
+    "output": "生成结果会按 RE2 方录校验；非法组合（例如空表达式）会直接标出。"
+  },
+  "faq": [
+    {
+      "q": "生成器能生成任意正则吗？",
+      "a": "不能。它覆盖常见片段，不支持嵌套量词、回溯引用等复杂结构。"
+    },
+    {
+      "q": "固定前缀里的特殊字符会转义吗？",
+      "a": "会。前后缀中的正则元字符会被转义，按字面量匹配。"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "name": "Text Diff",
+  "description": "Compare two texts: line-level diff for text, structured path diff for JSON.",
+  "category": "Text",
+  "actions": {
+    "run": "Compare"
+  },
+  "fields": {
+    "mode": "Diff mode",
+    "left": "Base text",
+    "right": "Compared text",
+    "ignoreWhitespace": "Ignore trailing whitespace"
+  },
+  "options": {
+    "mode": {
+      "text": "Text",
+      "json": "JSON"
+    }
+  },
+  "results": {
+    "identical": "Identical",
+    "added": "Added",
+    "removed": "Removed",
+    "unchanged": "Unchanged",
+    "changes": "Structured changes",
+    "summary": "Diff summary"
+  },
+  "examples": [
+    {
+      "label": "Compare two texts",
+      "value": "{\"left\":{\"data\":\"a\\nb\\nc\\n\"},\"right\":{\"data\":\"a\\nx\\nc\\n\"},\"mode\":\"text\"}"
+    },
+    {
+      "label": "Compare JSON structure",
+      "value": "{\"left\":{\"data\":\"{\\\"a\\\":1,\\\"b\\\":{\\\"c\\\":2}}\"},\"right\":{\"data\":\"{\\\"a\\\":1,\\\"b\\\":{\\\"c\\\":3}}\"},\"mode\":\"json\"}"
+    }
+  ],
+  "hints": {
+    "mode": "Text mode diffs line by line with LCS; JSON mode annotates changes by structured path such as $.items[0].name.",
+    "output": "The result reports added, removed and unchanged counts; in JSON mode every change is listed by path."
+  },
+  "faq": [
+    {
+      "q": "Why is an empty side an error?",
+      "a": "A diff needs both sides; an empty input cannot be compared and is reported as a missing field."
+    },
+    {
+      "q": "How are array length changes handled in JSON mode?",
+      "a": "Items are compared by index: extra elements are marked as inserted and missing ones as deleted."
+    }
+  ]
+}

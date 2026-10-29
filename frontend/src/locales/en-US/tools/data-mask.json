@@ -1,0 +1,51 @@
+{
+  "name": "Data Masker",
+  "description": "Detect and mask phone numbers, ID cards, bank cards, emails and more in text.",
+  "category": "Text",
+  "actions": {
+    "run": "Mask"
+  },
+  "fields": {
+    "text": "Text to mask",
+    "types": "Types",
+    "position": "Keep strategy",
+    "keepCount": "Keep count"
+  },
+  "options": {
+    "position": {
+      "keepHead": "Keep head",
+      "keepTail": "Keep tail",
+      "keepBoth": "Keep both",
+      "hash": "Mask all"
+    }
+  },
+  "results": {
+    "masked": "Masked text",
+    "total": "Total matches",
+    "count": "Match count"
+  },
+  "examples": [
+    {
+      "label": "Mask a phone number",
+      "value": "{\"text\":\"我的手机号是 13800138000\",\"types\":[\"phone\"],\"keepCount\":3}"
+    },
+    {
+      "label": "Mask an ID card keeping the tail",
+      "value": "{\"text\":\"身份证 110101199003078888\",\"types\":[\"idCard\"],\"position\":\"keepTail\",\"keepCount\":3}"
+    }
+  ],
+  "hints": {
+    "text": "Masking runs on the server: the text never leaves the backend and only the masked result and counts come back.",
+    "output": "Samples use placeholders such as 138****8000 and never echo real matched values."
+  },
+  "faq": [
+    {
+      "q": "Could it mask ordinary text?",
+      "a": "The name rule matches two to four Chinese characters, so short sentences may be caught; try it on a small sample first."
+    },
+    {
+      "q": "Is the output production-ready?",
+      "a": "It recognises common formats and may miss unusual ones, so keep validating on the business side."
+    }
+  ]
+}

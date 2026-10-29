@@ -1,0 +1,62 @@
+{
+  "name": "Regex Builder",
+  "description": "Assemble a regular expression from structured options with per-part explanations.",
+  "category": "Text",
+  "actions": {
+    "run": "Build"
+  },
+  "fields": {
+    "parts": "Parts",
+    "prefix": "Fixed prefix",
+    "suffix": "Fixed suffix",
+    "minRepeat": "Min repeat",
+    "maxRepeat": "Max repeat",
+    "anchored": "Anchor both ends"
+  },
+  "options": {
+    "parts": {
+      "anyChar": "Any character",
+      "digits": "Digits",
+      "letters": "Letters",
+      "word": "Word character",
+      "space": "Whitespace",
+      "upper": "Uppercase",
+      "lower": "Lowercase",
+      "chinese": "Chinese character",
+      "hyphen": "Hyphen",
+      "dot": "Dot",
+      "at": "At sign",
+      "slash": "Slash"
+    }
+  },
+  "results": {
+    "pattern": "Generated pattern",
+    "valid": "Valid",
+    "explanation": "Per-part explanation",
+    "error": "Error message"
+  },
+  "examples": [
+    {
+      "label": "Digits and hyphen",
+      "value": "{\"parts\":[\"digits\",\"hyphen\",\"digits\"]}"
+    },
+    {
+      "label": "Letters with quantifier",
+      "value": "{\"parts\":[\"letters\"],\"quantifier\":{\"min\":2,\"max\":8}}"
+    }
+  ],
+  "hints": {
+    "parts": "Tick the parts you need; the generator assembles them in a fixed order and explains each one.",
+    "output": "The result is validated against the RE2 flavour; invalid combinations such as an empty pattern are flagged."
+  },
+  "faq": [
+    {
+      "q": "Can it generate any regular expression?",
+      "a": "No. It covers common fragments and does not handle nested quantifiers, backreferences or other advanced constructs."
+    },
+    {
+      "q": "Are special characters in the prefix escaped?",
+      "a": "Yes. Regex metacharacters in the prefix and suffix are escaped and matched literally."
+    }
+  ]
+}
