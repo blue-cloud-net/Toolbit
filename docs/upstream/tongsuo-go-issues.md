@@ -1,6 +1,6 @@
 # 上游依赖缺口台账（tongsuo-go）
 
-> 状态：Draft ｜ 适用版本：v0.5.0 ｜ 最后更新：2026-10-29
+> 状态：Draft ｜ 适用版本：v0.6.0 ｜ 最后更新：2026-10-29
 
 本文登记 Toolbit 在使用 [`tongsuo-go`](https://github.com/blue-cloud-net/tongsuo-go) 时遇到的**能力缺口**。
 
@@ -40,6 +40,10 @@
 | I-16 | `x509/asn1.Parse` **没有深度 / 节点数上限参数** | `asn1-view` | 0.5.0 |
 | I-17 | `x509.Store` **没有加载系统信任库**的入口 | `cert-chain-verify` | 0.5.0 |
 | I-18 | `x509.RevokedEntry.Serial` 是 `int64`，超 8 字节返回 `-1` | `crl-parse` | 0.5.0 |
+| I-19 | `x509.Extension.Value` 读取时为空，无法「按 DER 添加扩展」 | `cert-gen` | 0.6.0 |
+| I-20 | `x509.CRLBuilder.Revoke` 只接受证书对象 | `crl-gen` | 0.6.0 |
+| I-21 | `x509.CreateCertificate` / `CreateSelfSigned` **立即签名**，之后无法再加扩展 | `cert-gen` | 0.6.0 |
+| I-22 | `pkcs12.ChangePassword` 无法对外部实现产出的容器改密 | `pfx-change-password` | 0.6.0 |
 
 ---
 
@@ -389,6 +393,84 @@ PEM 块标签为 `RSA PUBLIC KEY` 的输入同样被显式拒绝。
 
 **下游影响**　Toolbit 的 `crl-parse` 在序列号为负（溢出标记）时输出**空字符串**，
 **不**输出错误的 `-1`；该行为已写入 API 契约的注意事项。
+
+---
+
+## I-19 `x509.Extension.Value` 读取时为空，无法「按 DER 添加扩展」
+
+**现象**　`Certificate.Extensions()` 返回的 `Extension` 有 `Data`（DER 编码的扩展值）
+与 `Value`（`X509V3_EXT_conf` 配置串）两个字段，但**读取**已有证书时只填 `Data`，
+`Value` 为空。而 `AddExtension` / `AddExtensions` **只接受配置串**，
+没有「直接写入 DER」的入口。
+
+**期望**　要么在读取时为 `Value` 填充等价的配置串
+（`X509V3_EXT_print` 可做到），要么给 `AddExtension` 增加接受 DER 的变体。
+
+**验收**
+
+- 读出一张证书的 `subjectAltName`，用该 `Extension` 重新 `AddExtensions` 后 DER 一致；
+- 或提供 `AddExtensionDER(nid int, critical bool, der []byte) error`。
+
+**下游影响**　Toolbit 的 `cert-gen` 的 `templateCert` **只**复用模板证书的公钥与有效期，
+**不**拷贝扩展；字段语义已在 API 契约与产品文档中显式收窄。
+
+---
+
+## I-20 `x509.CRLBuilder.Revoke` 只接受证书对象
+
+**现象**　`CRLBuilder.Revoke(cert *Certificate, at time.Time, reason RevocationReason)`
+只接受证书对象。而实际运维场景里，CA 常常只掌握「要吊销哪些序列号」
+（原证书已丢失或不在同一台机器上）。
+
+**期望**　补 `RevokeSerial(serial int64, at time.Time, reason RevocationReason) error`，
+或接受字符串 / 大整数序列号以覆盖超过 8 字节的场景（见 I-18）。
+
+**验收**
+
+- 不提供证书、只提供序列号时能生成含该条目的 CRL；
+- 与 `openssl ca -revoke` 生成的条目逐项一致。
+
+**下游影响**　Toolbit 的 `crl-gen` 的 `revoked[]` **只接受证书**，
+契约里没有 `serial` 选项（已在 API 文档与前端提示中写明）。
+
+---
+
+## I-21 `CreateCertificate` / `CreateSelfSigned` **立即签名**，之后无法再加扩展
+
+**现象**　`x509.CreateCertificate` 与 `x509.CreateSelfSigned` 是一次性入口：
+它们在返回前就完成签名，而 `Certificate` 在签名后会**锁定**
+（再调 `Set*` / `Add*` 一律报 `already signed`）。因此用这两个入口
+**无法**在签发时写入 SKID / AKID / SAN / KU 等扩展。
+
+**期望**　提供「分步构建」的便捷入口，或在文档里把
+`NewCertificate()` + `Set*` + `Add*` + `Sign()` 的流程写成首选路径。
+
+**验收**　包文档或示例展示带扩展的签发流程，而不只是最小自签示例。
+
+**下游影响**　Toolbit 的 `cert-gen` **必须**走 `NewCertificate()` 分步构建；
+这已在 `pkisvc` 的实现注释中固定下来，避免后来者改回便捷入口后丢扩展。
+
+---
+
+## I-22 `pkcs12.ChangePassword` 无法对外部实现产出的容器改密
+
+**现象**　`pkcs12.ChangePassword` 对**本库 `Pack` 产出**的容器有效，
+但对 `openssl pkcs12 -export` 产出的容器（无论默认算法还是 `-legacy`
+或显式 `-keypbe / -certpbe / -macalg` 组合）一律报
+`PKCS12_newpass ... mac verify failure`，而同一容器用
+`pkcs12.Parse` + 正确口令**可以正常打开**。
+
+**期望**　让 `ChangePassword` 能处理 OpenSSL 主流实现产出的容器；
+或在包文档中显式写明该限制。
+
+**验收**
+
+- `openssl pkcs12 -export` 产出的容器可以被 `ChangePassword` 改密；
+- 改密后用旧口令 `Parse` 失败、新口令成功。
+
+**下游影响**　Toolbit 的 `pfx-change-password` **只**支持本库打包的容器；
+契约测试数据因此由 Toolbit 自己打包（`TestGenerateToolbitP12`），
+并已在 API 文档与前端提示中显式说明。
 
 ---
 

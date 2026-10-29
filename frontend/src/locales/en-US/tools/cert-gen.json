@@ -1,0 +1,62 @@
+{
+  "name": "Certificate Generator",
+  "description": "Self-sign a certificate, or have a CA issue a leaf certificate from a private key (optionally with a CSR).",
+  "category": "Certificates",
+  "actions": {
+    "issue": "Issue"
+  },
+  "fields": {
+    "signMode": "Signing mode",
+    "issuerCert": "Issuer certificate",
+    "issuerKey": "Issuer private key",
+    "cn": "Common name (CN)",
+    "org": "Organization (O)",
+    "country": "Country code (C)",
+    "sans": "Subject alternative names",
+    "notAfterDays": "Validity (days)",
+    "serial": "Serial (hex)",
+    "isCa": "Issue as a CA certificate",
+    "algorithm": "Key algorithm",
+    "curve": "Curve",
+    "bits": "RSA bits"
+  },
+  "options": {
+    "modes": {
+      "self": "Self-signed (issuer is itself)",
+      "ca": "Issued by a CA"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "subject": "Subject",
+    "issuer": "Issuer",
+    "serial": "Serial",
+    "notBefore": "Not before",
+    "notAfter": "Not after"
+  },
+  "examples": [
+    {
+      "label": "Issue a leaf certificate from the test CA",
+      "value": "Test CA certificate and key"
+    }
+  ],
+  "hints": {
+    "keyid": "SKID / AKID are added automatically: in CA mode the leaf AKID is taken from the issuer certificate.",
+    "mismatch": "In CA mode the issuer key must match the issuer certificate, otherwise a key mismatch error is returned.",
+    "serial": "An empty serial is generated at random; the ceiling is 8 bytes (upstream stores it in a 64-bit integer)."
+  },
+  "faq": [
+    {
+      "q": "What is the difference between self-signed and CA-issued?",
+      "a": "With self-signing the subject and issuer are the same name and the signer is the new certificate's own key."
+    },
+    {
+      "q": "Can the generated certificate go straight into production?",
+      "a": "Self-signed certificates are for internal or test use; public services should use a trusted CA."
+    },
+    {
+      "q": "Why is there a serial length limit?",
+      "a": "Upstream carries the serial in a 64-bit integer, so values longer than 8 bytes cannot be expressed."
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "name": "PKCS#12 Parser",
+  "description": "Read the certificate, private key and CA chain out of a PKCS#12 container.",
+  "category": "Certificates",
+  "actions": {
+    "parse": "Parse"
+  },
+  "fields": {
+    "container": "Container content",
+    "passphrase": "Container passphrase"
+  },
+  "options": {},
+  "results": {
+    "output": "Result",
+    "hasPrivateKey": "Contains a private key",
+    "subject": "Leaf subject",
+    "issuer": "Leaf issuer",
+    "serial": "Serial",
+    "caCount": "CA certificates"
+  },
+  "examples": [
+    {
+      "label": "Parse the test container",
+      "value": "Test container (passphrase test-pass)"
+    }
+  ],
+  "hints": {
+    "sensitive": "The result **contains the private key**: make sure this environment is trusted, and note that it is discarded when you leave the page.",
+    "passphrase": "A wrong passphrase reports \"passphrase incorrect\"; a damaged container reports \"invalid PKCS#12\" — the two are never confused.",
+    "base64": "The container is binary; paste it as base64 or hex and the tool detects the encoding."
+  },
+  "faq": [
+    {
+      "q": "Does parsing modify the container?",
+      "a": "No, it only reads it. Use the password changer to change the passphrase."
+    },
+    {
+      "q": "Why does the result include a private key?",
+      "a": "The container stores the private key by design; you can copy it, but handle it carefully."
+    },
+    {
+      "q": "Can a container without a passphrase be parsed?",
+      "a": "Yes, leave the passphrase empty."
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "name": "PKCS#7 Packer",
+  "description": "Bundle several certificates into one PKCS#7 certificate bag (.p7b) for distribution.",
+  "category": "Certificates",
+  "actions": {
+    "pack": "Pack"
+  },
+  "fields": {
+    "certs": "Certificates to pack"
+  },
+  "options": {},
+  "results": {
+    "output": "Certificate bag (PEM)"
+  },
+  "examples": [
+    {
+      "label": "Pack the leaf and the CA into a P7B",
+      "value": "Test leaf certificate + CA"
+    }
+  ],
+  "hints": {
+    "certsOnly": "Only **certificate bags** are supported: signed or encrypted PKCS#7 containers are out of scope for this version.",
+    "bundle": "Concatenate PEM blocks and the tool picks them up one by one.",
+    "count": "Up to 64 certificates."
+  },
+  "faq": [
+    {
+      "q": "What is the difference between P7B and PFX?",
+      "a": "A P7B holds certificates only (public material); a PFX also holds the private key and needs a passphrase."
+    },
+    {
+      "q": "Can it produce a code-signing container?",
+      "a": "No. This version only builds certificate bags; signed containers need upstream support."
+    },
+    {
+      "q": "Does ordering matter?",
+      "a": "The bag itself is unordered; use the chain parser when you need an ordered chain."
+    }
+  ]
+}

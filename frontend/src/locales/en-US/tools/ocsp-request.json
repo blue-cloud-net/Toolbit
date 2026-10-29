@@ -1,0 +1,44 @@
+{
+  "name": "OCSP Request Builder",
+  "description": "Build an RFC 6960 OCSP request (DER) to query revocation status from a CA responder.",
+  "category": "Certificates",
+  "actions": {
+    "build": "Build"
+  },
+  "fields": {
+    "cert": "Certificate to query",
+    "issuer": "Issuer certificate",
+    "hash": "CertID hash algorithm"
+  },
+  "options": {},
+  "results": {
+    "output": "Request",
+    "hash": "Hash algorithm",
+    "length": "Byte length"
+  },
+  "examples": [
+    {
+      "label": "Build a request for the test leaf certificate",
+      "value": "Test certificate + CA certificate"
+    }
+  ],
+  "hints": {
+    "hash": "Only SHA-1 / SHA-256 / SM3 are supported: this is the CertID hash, not the six certificate fingerprint algorithms.",
+    "pair": "The issuer certificate must really have issued this certificate, otherwise a key mismatch error is returned.",
+    "der": "The request is binary DER; the result area shows both base64 and hexadecimal."
+  },
+  "faq": [
+    {
+      "q": "Why is the issuer certificate required?",
+      "a": "An OCSP CertID combines the issuer hash, the issuer name hash and the serial, so the request cannot be built without the issuer."
+    },
+    {
+      "q": "Can the request be sent to a CA directly?",
+      "a": "Yes, it is standard DER; `openssl ocsp -reqin` reads it back."
+    },
+    {
+      "q": "Which hash is used by default?",
+      "a": "SHA-256; SHA-1 is only kept for older responders."
+    }
+  ]
+}

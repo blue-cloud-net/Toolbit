@@ -1,0 +1,52 @@
+{
+  "slug": "csr-gen",
+  "description": "CSR 生成的契约测试数据。",
+  "cases": [
+    {
+      "name": "生成服务端 CSR",
+      "request": {
+        "certType": "server",
+        "subject": {
+          "C": "CN",
+          "O": "Toolbit Test",
+          "CN": "csr.example.com"
+        },
+        "key": {
+          "type": "EC",
+          "curve": "P-256"
+        },
+        "sans": [
+          "DNS:csr.example.com"
+        ],
+        "challengePassword": "test-only"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "keyType": "EC",
+          "keyCurve": "P-256",
+          "info": {
+            "sans": [
+              "DNS:csr.example.com"
+            ],
+            "challengePasswordPresent": true,
+            "signatureValid": true
+          }
+        }
+      }
+    },
+    {
+      "name": "未知的生成类型",
+      "request": {
+        "certType": "unknown",
+        "subject": {
+          "CN": "csr.example.com"
+        }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

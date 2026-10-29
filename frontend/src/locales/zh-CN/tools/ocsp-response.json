@@ -1,0 +1,58 @@
+{
+  "name": "OCSP 响应解析",
+  "description": "解析 OCSP 响应，读出证书状态；提供信任根时可校验响应签名。",
+  "category": "证书",
+  "actions": {
+    "parse": "解析"
+  },
+  "fields": {
+    "response": "OCSP 响应",
+    "cert": "被查询证书",
+    "issuer": "签发者证书",
+    "trustedRoots": "信任根"
+  },
+  "options": {
+    "certStatus": {
+      "good": "正常",
+      "revoked": "已吊销",
+      "unknown": "未知"
+    }
+  },
+  "results": {
+    "output": "解析结果",
+    "status": "响应级状态",
+    "certStatus": "证书状态",
+    "signatureVerified": "响应签名已验证",
+    "producedAt": "生成时间",
+    "thisUpdate": "本次更新",
+    "nextUpdate": "下次更新",
+    "responderCount": "响应者证书数",
+    "revocationTime": "吊销时间",
+    "reason": "吊销原因"
+  },
+  "examples": [
+    {
+      "label": "用测试 CA 作信任根校验响应",
+      "value": "测试证书 + CA 证书"
+    }
+  ],
+  "hints": {
+    "roots": "不填信任根时**不做**验签：此时只解读响应内容，不能据此相信结论。",
+    "pair": "被查询证书与签发者证书必填：响应里的 CertID 需要它们才能定位到目标证书。",
+    "status": "「响应级状态」是响应本身是否成功；「证书状态」才说明证书是否被吊销。"
+  },
+  "faq": [
+    {
+      "q": "「未知」是什么意思？",
+      "a": "响应者不认识这张证书，通常说明它查询的不是自己签发范围内的证书。"
+    },
+    {
+      "q": "为什么填了信任根才显示「已验签」？",
+      "a": "响应由响应者签名，校验签名必须拿到信任的签发者证书。"
+    },
+    {
+      "q": "可以拿 OCSP 请求当响应解析吗？",
+      "a": "不能，编码不同，会返回 DER 解析失败。"
+    }
+  ]
+}

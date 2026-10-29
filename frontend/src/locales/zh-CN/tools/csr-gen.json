@@ -1,0 +1,62 @@
+{
+  "name": "CSR 生成",
+  "description": "生成 PKCS#10 证书签名请求，可按证书类型自动套用密钥用途与扩展用途。",
+  "category": "证书",
+  "actions": {
+    "generate": "生成"
+  },
+  "fields": {
+    "type": "证书类型",
+    "cn": "通用名（CN）",
+    "org": "组织（O）",
+    "country": "国家代码（C）",
+    "sans": "主体备用名",
+    "challengePassword": "挑战口令",
+    "useExisting": "使用已有私钥",
+    "existingPrivateKey": "已有私钥",
+    "algorithm": "密钥算法",
+    "curve": "曲线",
+    "bits": "RSA 位数"
+  },
+  "options": {
+    "types": {
+      "server": "服务端（serverAuth）",
+      "client": "客户端（clientAuth）",
+      "email": "邮件（emailProtection）",
+      "code-signing": "代码签名（codeSigning）"
+    }
+  },
+  "results": {
+    "output": "生成结果",
+    "subject": "主体",
+    "sans": "主体备用名",
+    "key": "密钥",
+    "signatureValid": "自签名校验",
+    "fingerprint": "SHA-256 指纹"
+  },
+  "examples": [
+    {
+      "label": "用已有测试私钥生成服务端 CSR",
+      "value": "测试私钥"
+    }
+  ],
+  "hints": {
+    "san": "每行或用逗号分隔一个条目，例如 `DNS:a.example.com`、`IP:10.0.0.1`。",
+    "private": "新生成的私钥**只返回一次**，请立刻妥善保存。",
+    "challenge": "挑战口令只用于校验，响应里只报告**是否存在**，不回显口令值。"
+  },
+  "faq": [
+    {
+      "q": "CSR 有有效期吗？",
+      "a": "没有。有效期是 CA 签发证书时才确定的。"
+    },
+    {
+      "q": "为什么可以选「使用已有私钥」？",
+      "a": "续期时通常要复用原私钥，这样已部署的信任链不必重做。"
+    },
+    {
+      "q": "CSR 里的 SAN 会被 CA 采纳吗？",
+      "a": "多数 CA 会核对，**不要**写与主体不符的域名。"
+    }
+  ]
+}

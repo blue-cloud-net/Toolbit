@@ -1,0 +1,56 @@
+{
+  "name": "Revocation Checker",
+  "description": "Decide from a CRL whether a certificate is revoked; the CRL signature is verified when the issuer certificate is supplied.",
+  "category": "Certificates",
+  "actions": {
+    "check": "Check"
+  },
+  "fields": {
+    "cert": "Certificate to check",
+    "crl": "Revocation list",
+    "issuer": "Issuer certificate"
+  },
+  "options": {
+    "status": {
+      "good": "Not revoked (signature verified)",
+      "revoked": "Revoked",
+      "unknown": "Cannot decide",
+      "unverified": "Not verified, no verdict"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "status": "Status",
+    "signatureVerified": "CRL signature verified",
+    "serial": "Certificate serial",
+    "revokedAt": "Revoked at",
+    "reason": "Revocation reason",
+    "crlNumber": "CRL number",
+    "crlNextUpdate": "CRL next update"
+  },
+  "examples": [
+    {
+      "label": "Check a revoked test certificate",
+      "value": "Test certificate + CRL"
+    }
+  ],
+  "hints": {
+    "unverified": "**No issuer certificate supplied**: the CRL signature was not checked, so this page never claims \"not revoked\" — it reports \"unverified\" instead.",
+    "order": "With an issuer certificate the signature is verified first: a bad signature is an error and no revocation verdict is given.",
+    "stale": "A stale CRL is always rejected, regardless of the would-be verdict."
+  },
+  "faq": [
+    {
+      "q": "What is the difference between \"unverified\" and \"not revoked\"?",
+      "a": "\"Unverified\" only means the certificate is absent from the list; nothing proves the list itself is genuine. \"Not revoked\" is a verdict reached after the signature checks out."
+    },
+    {
+      "q": "Why is the issuer certificate needed for verification?",
+      "a": "The CRL is signed by the issuer, so its public key is required to check the signature."
+    },
+    {
+      "q": "What if the CRL has expired?",
+      "a": "Fetch a fresh CRL; an expired list cannot be used as revocation evidence."
+    }
+  ]
+}

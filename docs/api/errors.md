@@ -133,6 +133,7 @@
 | `REGEX_DIALECT_DIFFERENCE` | 正则方言与目标语言存在差异 |
 | `TIMEZONE_ASSUMED` | 时间转换假定了某个时区 |
 | `COMMENTS_LOST` | 注释被丢弃 |
+| `CRL_UNVERIFIED` | 未提供签发者证书，CRL 签名未校验（`revocation-check` 只报 `unverified`） |
 
 ---
 

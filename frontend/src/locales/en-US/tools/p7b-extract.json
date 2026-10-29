@@ -1,0 +1,41 @@
+{
+  "name": "PKCS#7 Extractor",
+  "description": "Pull every certificate out of a PKCS#7 certificate bag.",
+  "category": "Certificates",
+  "actions": {
+    "extract": "Extract"
+  },
+  "fields": {
+    "container": "Certificate bag"
+  },
+  "options": {},
+  "results": {
+    "output": "Result",
+    "count": "Certificate count"
+  },
+  "examples": [
+    {
+      "label": "Extract certificates from the test bag",
+      "value": "Test certificate bag (base64)"
+    }
+  ],
+  "hints": {
+    "certsOnly": "Only **certificate bags** are supported: signed or encrypted containers are rejected rather than yielding an empty result.",
+    "binary": "The bag is binary; paste it as base64, hex or PEM.",
+    "count": "Up to 64 certificates."
+  },
+  "faq": [
+    {
+      "q": "In what order are the certificates returned?",
+      "a": "In container order; use the chain parser when you need an ordered chain."
+    },
+    {
+      "q": "Can it extract a private key?",
+      "a": "No. A P7B holds certificates only; use the PKCS#12 parser for containers with keys."
+    },
+    {
+      "q": "Why does a signed container fail?",
+      "a": "This version implements certificate bags only; signed containers are an upstream gap."
+    }
+  ]
+}

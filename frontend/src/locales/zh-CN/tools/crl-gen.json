@@ -1,0 +1,62 @@
+{
+  "name": "CRL 生成",
+  "description": "用 CA 证书与私钥签发吊销列表，可指定吊销原因。",
+  "category": "证书",
+  "actions": {
+    "generate": "生成"
+  },
+  "fields": {
+    "issuerCert": "签发者证书",
+    "issuerKey": "签发者私钥",
+    "revokedCert": "待吊销证书",
+    "reasonCode": "吊销原因",
+    "nextUpdateDays": "下次更新（天）"
+  },
+  "options": {
+    "reasons": {
+      "unspecified": "未指明",
+      "keyCompromise": "密钥泄露",
+      "cACompromise": "CA 密钥泄露",
+      "affiliationChanged": "归属变更",
+      "superseded": "已被取代",
+      "cessationOfOperation": "停止运营",
+      "certificateHold": "临时挂起",
+      "removeFromCRL": "从 CRL 移除",
+      "privilegeWithdrawn": "权限被撤销",
+      "aACompromise": "属性权威密钥泄露"
+    }
+  },
+  "results": {
+    "output": "生成结果",
+    "issuer": "签发者",
+    "number": "CRL 编号",
+    "thisUpdate": "本次更新",
+    "nextUpdate": "下次更新",
+    "revokedCount": "吊销条目数"
+  },
+  "examples": [
+    {
+      "label": "吊销一张测试叶证书",
+      "value": "测试 CA 与叶证书"
+    }
+  ],
+  "hints": {
+    "certOnly": "只接受**证书**作为吊销项：按序列号吊销需要证书内容才能算出条目。",
+    "reason7": "原因码 7 是 RFC 5280 的保留值，**不可**使用。",
+    "skipVerify": "签发的 CRL 只做签名，不校验有效期；判断吊销前请用「吊销状态检查」。"
+  },
+  "faq": [
+    {
+      "q": "签发者证书需要什么条件？",
+      "a": "必须带 SKID 扩展的 CA 证书——CRL 的 AKID 取自它。"
+    },
+    {
+      "q": "「下次更新」有什么作用？",
+      "a": "过期的 CRL 不能作为吊销依据，判定时会直接报错。"
+    },
+    {
+      "q": "可以一次吊销多张证书吗？",
+      "a": "可以，接口支持多条吊销项；本页示例只填一条。"
+    }
+  ]
+}

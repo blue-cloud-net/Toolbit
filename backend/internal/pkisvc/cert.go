@@ -323,19 +323,28 @@ func describeCertificatePublicKey(c *Certificate) (PublicKeyInfo, error) {
 	}
 	defer func() { _ = asym.Close(pub) }()
 
+	return describeUpstreamPublicKey(pub), nil
+}
+
+// describeUpstreamPublicKey 读取底层公钥句柄的元信息。
+//
+// 句柄的释放由调用方负责：公钥可能来自 `Certificate.PublicKey()`
+// （独立句柄，需 `asym.Close`）或 `PrivateKey.Public()`（与私钥共享的**别名**，
+// 不得单独关闭）。
+func describeUpstreamPublicKey(pub asym.PublicKey) PublicKeyInfo {
 	out := PublicKeyInfo{
 		Algorithm: algorithmFromUpstream(pub.Algorithm().String()),
 	}
 	params, err := asym.Params(pub)
 	if err != nil {
 		// 读不到参数时只保留算法名，不视为致命错误。
-		return out, nil
+		return out
 	}
 	if params != nil {
 		out.Bits = rsaBits(params)
 		out.Curve = curveFromUpstream(params.Curve)
 	}
-	return out, nil
+	return out
 }
 
 // Fingerprints 计算证书的指纹。

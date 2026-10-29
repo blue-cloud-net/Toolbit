@@ -362,3 +362,33 @@ func containsInt(list []int, target int) bool {
 	}
 	return false
 }
+
+// PublicKeyFromCertificate 从证书里取出公钥句柄。
+//
+// 返回的是**独立持有**的句柄（上游 `Certificate.PublicKey()` 已做 Dup），
+// 调用方必须显式 Close。
+func PublicKeyFromCertificate(cert *Certificate) (*PublicKey, error) {
+	if cert == nil || cert.cert == nil {
+		return nil, toolerrInvalidCert("certificate unavailable")
+	}
+	pub, err := cert.cert.PublicKey()
+	if err != nil {
+		return nil, toolerrInvalidCert("cannot read public key")
+	}
+	return &PublicKey{key: pub}, nil
+}
+
+// PublicKeyFromPrivateKey 从私钥派生公钥，返回**独立持有**的句柄。
+//
+// 与 `PrivateKey.MarshalPublicKeyPEM` 的区别是它返回一个可独立释放的对象：
+// 内部经 SPKI PEM 往返重新加载，避免使用与私钥共享句柄的 `priv.Public()`。
+func PublicKeyFromPrivateKey(priv *PrivateKey) (*PublicKey, error) {
+	if priv == nil || priv.key == nil {
+		return nil, toolerrInvalidKey("key already closed")
+	}
+	pemBytes, err := priv.MarshalPublicKeyPEM()
+	if err != nil {
+		return nil, err
+	}
+	return LoadPublicKey(pemBytes)
+}

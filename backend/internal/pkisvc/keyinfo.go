@@ -173,3 +173,25 @@ func hexInt(v *big.Int) string {
 	}
 	return v.Text(16)
 }
+
+// DescribePrivateKey 读取私钥句柄的元信息。
+//
+// 供「已经持有句柄」的调用方（如签发流程）使用：
+// 与 Inspect 的区别是**不**重新解析输入，因此不会多持有一个句柄。
+func DescribePrivateKey(priv *PrivateKey) (*KeyInfo, error) {
+	if priv == nil || priv.key == nil {
+		return nil, toolerrInvalidKey("key already closed")
+	}
+	return describeKey(priv)
+}
+
+// DescribePublicKey 读取公钥句柄的元信息。
+//
+// 供「已经持有句柄」的调用方使用：与 Inspect 的区别是**不**重新解析输入。
+func DescribePublicKey(pub *PublicKey) (*KeyInfo, error) {
+	info, err := describePublicKey(pub)
+	if err != nil {
+		return nil, err
+	}
+	return info, nil
+}

@@ -16,6 +16,9 @@ import (
 // PemBundle 是证书族材料输入（复用 tools 包的共享类型）。
 type PemBundle = tools.PemBundle
 
+// KeyInput 是密钥输入（复用 tools 包的共享类型）。
+type KeyInput = tools.KeyInput
+
 // 输入格式（复用 tools 包的共享定义）。
 const (
 	// FormatAuto 自动识别。

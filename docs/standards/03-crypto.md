@@ -211,6 +211,17 @@ SM2 密文的 `C1C3C2` / `C1C2C3` 顺序与 `04` 前缀在各实现间不统一�
 - CA 签发用 `CreateCertificate`（**必须**手工补 SKID / AKID）。
 - CSR 签发用 `IssueCertificateFromRequest`；`CopyRequestExtensions` **默认 false**；开启时**只**拷贝白名单（SAN / KU / EKU / BC）——这与 `openssl ca` 的 `copy_extensions none` 一致，是防止请求方自选 SAN 的安全底线。
 - 签名前**必须**用 `asym.Match` 校验签发者私钥与证书公钥是否配对。
+- **签发必须走分步构建**：`NewCertificate()` → `SetVersion` / `SetSerial` /
+  `SetIssuer` / `SetSubject` / `SetValidity` / `SetPublicKey` → `Add*` → `Sign`。
+  **禁止**用 `CreateCertificate` / `CreateSelfSigned` / `IssueCertificateFromRequest`
+  签发带扩展的证书：它们在返回前就已签名，签名后的 `Add*` 会被
+  `already signed` 锁拒绝（见 I-21）。
+- CSR 生成同理：用 `NewEmptyCertificateRequest()` + `Add*` + 最后 `Sign`；
+  `NewCertificateRequest` 是「立即签名」的便捷版，不能事后加扩展。
+- SKID / AKID **默认自动补齐**：CA 模式下叶证书的 AKID 取自**签发者证书**的 SKID；
+  自签模式下 AKID 与 SKID 同源。
+- `templateCert` **不**拷贝扩展：上游读取时只给扩展 DER、没有配置串入口（见 I-19）。
+- 序列号**必须**落在 `int64` 的正区间：上游用 64 位整数承载，超长无法表达（见 I-18）。
 
 ### 8.3 链验证
 
@@ -232,6 +243,15 @@ SM2 密文的 `C1C3C2` / `C1C2C3` 顺序与 `04` 前缀在各实现间不统一�
 - CRL 原因码取 RFC 5280 §5.3.1；码值 `7` 为保留值，**禁止**使用。
 - CRL 签发要求 CA 证书带 SKID（CRL 的 AKID 取自该扩展）。
 - OCSP 解析**必须**同时提供 `cert` 与 `issuer`；响应级失败（`Status != 0`）时只展示响应级字段。
+- **吊销判定的顺序是契约的一部分**：给了签发者证书时先验签，验签失败**直接**返回
+  `INVALID_CRL`，**不**给出任何吊销结论。
+- 未提供签发者证书时**禁止**返回 `good`：最多给出 `revoked`（有正面证据）或
+  `unverified`（无结论），并附 `CRL_UNVERIFIED` 警告。
+- 过期的 CRL（当前时间晚于 `nextUpdate`）与尚未生效的 CRL **一律**拒绝。
+- CRL 吊销项**只接受证书**：上游 `CRLBuilder.Revoke` 没有按序列号吊销的入口（见 I-20）。
+- PKCS#12 改密**只**支持本库打包的容器（见 I-22）；口令错误的判据用**操作名**
+  （`PKCS12_parse` / `PKCS12_newpass`），不依赖 OpenSSL 错误栈文本——该栈在成功调用后
+  不会被清空，同进程内可能残留旧条目。
 
 ### 8.5 密钥格式
 
@@ -275,6 +295,10 @@ SM2 密文的 `C1C3C2` / `C1C2C3` 顺序与 `04` 前缀在各实现间不统一�
 | ASN.1 解析深度 | 64 | `TOO_LARGE` |
 | ASN.1 节点数 | 10,000 | `TOO_LARGE` |
 | ASN.1 输入体积 | 1 MB | `TOO_LARGE` |
+| PKCS#7 证书数 | 64 | `TOO_MANY_ITEMS` |
+| PKCS#12 伴随 CA 链 | 64 | `TOO_MANY_ITEMS` |
+| 证书有效期（天） | 1–3650 | `INVALID_FIELD` |
+| CAA 记录数 | 32 | `INVALID_FIELD` |
 
 ---
 

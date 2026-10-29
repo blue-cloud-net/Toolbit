@@ -1,0 +1,62 @@
+{
+  "name": "CRL Generator",
+  "description": "Sign a certificate revocation list with a CA certificate and key, with an explicit revocation reason.",
+  "category": "Certificates",
+  "actions": {
+    "generate": "Generate"
+  },
+  "fields": {
+    "issuerCert": "Issuer certificate",
+    "issuerKey": "Issuer private key",
+    "revokedCert": "Certificate to revoke",
+    "reasonCode": "Revocation reason",
+    "nextUpdateDays": "Next update (days)"
+  },
+  "options": {
+    "reasons": {
+      "unspecified": "Unspecified",
+      "keyCompromise": "Key compromise",
+      "cACompromise": "CA key compromise",
+      "affiliationChanged": "Affiliation changed",
+      "superseded": "Superseded",
+      "cessationOfOperation": "Cessation of operation",
+      "certificateHold": "Certificate hold",
+      "removeFromCRL": "Remove from CRL",
+      "privilegeWithdrawn": "Privilege withdrawn",
+      "aACompromise": "Attribute authority compromise"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "issuer": "Issuer",
+    "number": "CRL number",
+    "thisUpdate": "This update",
+    "nextUpdate": "Next update",
+    "revokedCount": "Revoked entries"
+  },
+  "examples": [
+    {
+      "label": "Revoke a test leaf certificate",
+      "value": "Test CA and leaf certificate"
+    }
+  ],
+  "hints": {
+    "certOnly": "Only **certificates** can be revoked here: revoking by serial alone is not supported upstream.",
+    "reason7": "Reason code 7 is reserved by RFC 5280 and must not be used.",
+    "skipVerify": "The generated CRL is only signed; use the revocation checker to make a revocation decision."
+  },
+  "faq": [
+    {
+      "q": "What does the issuer certificate need?",
+      "a": "It must be a CA certificate carrying a SKID extension — the CRL AKID is taken from it."
+    },
+    {
+      "q": "What is the next update for?",
+      "a": "A stale CRL cannot serve as revocation evidence; the checker rejects it outright."
+    },
+    {
+      "q": "Can several certificates be revoked at once?",
+      "a": "The API accepts multiple entries; this page fills in one."
+    }
+  ]
+}
