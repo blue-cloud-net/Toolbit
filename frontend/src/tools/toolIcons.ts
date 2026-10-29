@@ -21,6 +21,8 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'hmac-gen': 'fingerprint',
   'password-gen': 'asterisk',
   'hash-calc': 'hash',
+  'password-policy': 'shield-check',
+  'totp': 'clock',
 
   // ── 密钥 / Keys ──
   keygen: 'key-plus',
@@ -29,6 +31,7 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'key-ops': 'calculator',
   'key-match': 'link',
   'jwk-xml-convert': 'braces',
+  'ssh-keygen': 'key-plus',
 
   // ── 证书 / Certificates ──
   'cert-parse': 'certificate',
@@ -54,6 +57,7 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'cert-chain-fetch': 'cloud-download',
   'ct-search': 'search',
   'domain-verify': 'globe-check',
+  'cert-lifecycle': 'calendar',
 
   // ── 编码 / Encoding ──
   base64: 'swap',
@@ -62,6 +66,7 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'number-base': 'hash',
   'encoding-convert': 'swap',
   'gzip-deflate': 'archive',
+  'html-escape': 'tag',
 
   // ── 格式化 / Formatting ──
   'json-format': 'braces',
@@ -72,10 +77,16 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'toml-format': 'brackets',
   'yaml-format': 'list',
   'format-convert': 'swap',
+  'color-convert': 'asterisk',
 
   // ── 文本 / Text ──
   'regex-tester': 'regex',
   'text-convert': 'text',
+  'text-diff': 'swap',
+  'regex-validate': 'shield-check',
+  'regex-build': 'braces',
+  'data-mask': 'asterisk',
+  'text-stats': 'text',
 
   // ── 数据 / Data ──
   timestamp: 'clock',
@@ -84,11 +95,23 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'country-code': 'globe',
   'cn-regions': 'map',
   'qr-code': 'qr',
+  'id-validator': 'certificate',
+  'csv-convert': 'data',
+  'json-to-types': 'braces',
+  'mock-data': 'list',
+  'id-generator': 'fingerprint',
+  'archive-inspect': 'archive',
+  'file-analyze': 'file-search',
+  'wifi-qr': 'qr',
 
   // ── 系统 / System ──
   'curl-generator': 'terminal',
   'crontab-generator': 'clock',
   'chmod-calc': 'shield',
+  'lookup-table': 'list',
+  'nginx-config': 'terminal',
+  'firewall-rules': 'shield',
+  'docker-compose-gen': 'box',
 
   // ── 网络 / Network ──
   'cidr-calc': 'sitemap',
@@ -96,11 +119,14 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'dns-lookup': 'globe',
   'dns-tester': 'pulse',
   'websocket-test': 'connection',
+  'ip-range-expand': 'sitemap',
+  'device-headers': 'monitor',
 
   // ── 文档 / Documents ──
   'pdf-sign-verify': 'document-check',
   'markdown-preview': 'markdown',
   'eml-parser': 'mail',
+  'markdown-convert': 'markdown',
 }
 
 /** 取工具图标名；未登记时回落到调用方给出的分类图标。 */
