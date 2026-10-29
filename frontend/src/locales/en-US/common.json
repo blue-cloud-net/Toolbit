@@ -67,6 +67,15 @@
     "navigate": "Select",
     "open": "Open"
   },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "search": "Open the command palette",
+    "focusSearch": "Focus the search box",
+    "run": "Run the current tool",
+    "moveRecent": "Move through recently used",
+    "help": "Show this help",
+    "close": "Close overlays"
+  },
   "locale": {
     "label": "Language"
   },

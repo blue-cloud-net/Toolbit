@@ -7,6 +7,7 @@ import { useI18n } from 'vue-i18n'
 
 import CategoryCard from '@/components/discovery/CategoryCard.vue'
 import ToolCard from '@/components/discovery/ToolCard.vue'
+import { useGlobalHotkeys } from '@/composables/useGlobalHotkeys'
 import { useCatalogStore } from '@/stores/catalog'
 import { isImplemented } from '@/tools'
 
@@ -14,6 +15,12 @@ const { t } = useI18n()
 const catalog = useCatalogStore()
 
 const keyword = ref('')
+const searchInput = ref<HTMLInputElement | null>(null)
+
+/** `/` 聚焦首页搜索框。 */
+useGlobalHotkeys({
+  focusSearch: () => searchInput.value,
+})
 
 /** 是否只显示已上线的工具。 */
 const onlyImplemented = ref(false)
@@ -61,6 +68,7 @@ const isSearching = computed(() => keyword.value.trim() !== '')
       <label class="home__search">
         <span class="tb-sr-only">{{ t('common.actions.search') }}</span>
         <input
+          ref="searchInput"
           v-model="keyword"
           type="search"
           class="home__search-input"

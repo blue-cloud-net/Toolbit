@@ -11,7 +11,9 @@ import { useRoute } from 'vue-router'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
+import ShortcutHelp from '@/components/common/ShortcutHelp.vue'
 import CommandPalette from '@/components/search/CommandPalette.vue'
+import { useGlobalHotkeys } from '@/composables/useGlobalHotkeys'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePrefsStore } from '@/stores/prefs'
 
@@ -19,6 +21,9 @@ const { t } = useI18n()
 const prefs = usePrefsStore()
 const catalog = useCatalogStore()
 const route = useRoute()
+
+// 全局快捷键（`/` 聚焦搜索、`?` 快捷键说明、Alt+↑/↓ 切换最近使用）。
+useGlobalHotkeys()
 
 const sidebarCollapsed = computed(() => prefs.sidebarCollapsed)
 
@@ -49,6 +54,8 @@ onMounted(() => {
     <AppHeader />
 
     <CommandPalette />
+
+    <ShortcutHelp />
 
     <div class="layout__body">
       <AppSidebar :collapsed="sidebarCollapsed" />

@@ -67,6 +67,15 @@
     "navigate": "选择",
     "open": "打开"
   },
+  "shortcuts": {
+    "title": "键盘快捷键",
+    "search": "打开命令面板",
+    "focusSearch": "聚焦搜索框",
+    "run": "运行当前工具",
+    "moveRecent": "在最近使用中切换",
+    "help": "显示本说明",
+    "close": "关闭浮层"
+  },
   "locale": {
     "label": "语言"
   },

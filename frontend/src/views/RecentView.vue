@@ -4,10 +4,11 @@
  *
  * 只记录访问过的工具 slug，**不**记录任何输入内容。
  */
-import { computed } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import ToolCard from '@/components/discovery/ToolCard.vue'
+import { useGlobalHotkeys } from '@/composables/useGlobalHotkeys'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePrefsStore } from '@/stores/prefs'
 
@@ -19,6 +20,22 @@ const prefs = usePrefsStore()
 const tools = computed(() =>
   prefs.recent.map((slug) => catalog.getTool(slug)).filter((tool) => tool !== undefined),
 )
+
+/** 当前高亮的卡片下标。 */
+const activeIndex = ref(0)
+
+/** Alt+↑/↓ 在最近使用列表中移动，并把焦点交给对应卡片。 */
+async function moveRecent(delta: number): Promise<void> {
+  if (tools.value.length === 0) {
+    return
+  }
+  activeIndex.value = (activeIndex.value + delta + tools.value.length) % tools.value.length
+  await nextTick()
+  const links = document.querySelectorAll<HTMLElement>('.list-page__grid a')
+  links[activeIndex.value]?.focus()
+}
+
+useGlobalHotkeys({ moveRecent: (delta) => void moveRecent(delta) })
 </script>
 
 <template>
