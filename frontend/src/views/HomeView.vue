@@ -1,6 +1,8 @@
 <script setup lang="ts">
 /**
- * 首页：搜索 + 分类 + 全部工具。
+ * 首页：搜索 + 按分类分组的全部工具。
+ *
+ * 工具**按分类分组**展示，每个分组的标题可点击，进入该分类的工具列表页。
  */
 import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
 import 'element-plus/es/components/checkbox/style/css'
@@ -9,11 +11,12 @@ import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CategoryCard from '@/components/discovery/CategoryCard.vue'
+import CategoryHeader from '@/components/discovery/CategoryHeader.vue'
 import ToolCard from '@/components/discovery/ToolCard.vue'
 import { useGlobalHotkeys } from '@/composables/useGlobalHotkeys'
 import { useCatalogStore } from '@/stores/catalog'
 import { isImplemented } from '@/tools'
+import type { ToolMeta } from '@/types/tools'
 
 const { t } = useI18n()
 const catalog = useCatalogStore()
@@ -37,23 +40,58 @@ const implementedCount = computed(
 )
 
 /** 按中英文名过滤工具。 */
-const filteredTools = computed(() => {
+function matches(tool: ToolMeta): boolean {
   const q = keyword.value.trim().toLowerCase()
-  let list = [...catalog.tools].sort((a, b) => {
-    if (a.category !== b.category) {
-      return a.category.localeCompare(b.category)
-    }
-    return a.order - b.order
-  })
-  if (onlyImplemented.value) {
-    list = list.filter((tool) => isImplemented(tool.slug))
-  }
   if (q === '') {
-    return list
+    return true
   }
-  return list.filter(
-    (tool) => tool.name.toLowerCase().includes(q) || tool.nameEn.toLowerCase().includes(q),
-  )
+  return tool.name.toLowerCase().includes(q) || tool.nameEn.toLowerCase().includes(q)
+}
+
+/** 命中过滤条件的工具总数（用于标题上的计数）。 */
+const filteredCount = computed(
+  () =>
+    catalog.tools.filter(
+      (tool) => (!onlyImplemented.value || isImplemented(tool.slug)) && matches(tool),
+    ).length,
+)
+
+/**
+ * 按分类分组的工具。
+ *
+ * 分类顺序跟随 catalog 的 `order`；组内按工具自身的 `order` 排列。
+ * 未登记在 catalog 中的工具归入末尾的「其他」分组，避免漏掉。
+ */
+const groupedTools = computed(() => {
+  const groups = sortedCategories.value
+    .map((cat) => ({
+      category: cat,
+      tools: catalog
+        .getToolsByCategory(cat.slug)
+        .filter((tool) => (!onlyImplemented.value || isImplemented(tool.slug)) && matches(tool))
+        .sort((a, b) => a.order - b.order),
+    }))
+    .filter((group) => group.tools.length > 0)
+
+  const known = new Set(sortedCategories.value.map((cat) => cat.slug))
+  const others = catalog.tools
+    .filter((tool) => !known.has(tool.category))
+    .filter((tool) => (!onlyImplemented.value || isImplemented(tool.slug)) && matches(tool))
+    .sort((a, b) => a.order - b.order)
+  if (others.length > 0) {
+    groups.push({
+      category: {
+        slug: '__other__',
+        name: '其他',
+        nameEn: 'Others',
+        order: Number.MAX_SAFE_INTEGER,
+        icon: 'document',
+      },
+      tools: others,
+    })
+  }
+
+  return groups
 })
 
 const isSearching = computed(() => keyword.value.trim() !== '')
@@ -82,26 +120,29 @@ const isSearching = computed(() => keyword.value.trim() !== '')
       </label>
     </section>
 
+    <p
+      v-if="catalog.error"
+      class="home__error"
+    >
+      {{ t('common.states.failed') }}：{{ catalog.error }}
+    </p>
+    <p
+      v-else-if="catalog.loading"
+      class="home__loading"
+    >
+      {{ t('common.states.loading') }}…
+    </p>
+
+    <!-- 分类分组：标题可点进分类页，组内是工具卡片 -->
     <section
-      v-if="!isSearching"
+      v-else
       class="home__section"
     >
-      <h2 class="home__section-title">
-        {{ t('home.categoriesTitle') }}
-      </h2>
-      <div class="home__categories">
-        <CategoryCard
-          v-for="cat in sortedCategories"
-          :key="cat.slug"
-          :category="cat"
-        />
-      </div>
-    </section>
-
-    <section class="home__section">
-      <h2 class="home__section-title">
-        {{ isSearching ? t('home.toolsTitle') : t('home.toolsTitle') }}
-        <span class="home__count">{{ t('home.toolCount', { count: filteredTools.length }) }}</span>
+      <div class="home__section-head">
+        <h2 class="home__section-title">
+          {{ isSearching ? t('home.searchResultTitle') : t('home.toolsTitle') }}
+        </h2>
+        <span class="home__count">{{ t('home.toolCount', { count: filteredCount }) }}</span>
         <span class="home__progress">
           {{ t('home.enabledProgress', { done: implementedCount, total: catalog.tools.length }) }}
         </span>
@@ -111,22 +152,10 @@ const isSearching = computed(() => keyword.value.trim() !== '')
         >
           {{ t('home.enabledOnly') }}
         </ElCheckbox>
-      </h2>
+      </div>
 
       <p
-        v-if="catalog.error"
-        class="home__error"
-      >
-        {{ t('common.states.failed') }}：{{ catalog.error }}
-      </p>
-      <p
-        v-else-if="catalog.loading"
-        class="home__loading"
-      >
-        {{ t('common.states.loading') }}…
-      </p>
-      <p
-        v-else-if="filteredTools.length === 0"
+        v-if="groupedTools.length === 0"
         class="home__empty"
       >
         {{ t('home.searchEmpty') }}
@@ -134,13 +163,25 @@ const isSearching = computed(() => keyword.value.trim() !== '')
 
       <div
         v-else
-        class="home__grid"
+        class="home__groups"
       >
-        <ToolCard
-          v-for="tool in filteredTools"
-          :key="tool.slug"
-          :tool="tool"
-        />
+        <section
+          v-for="group in groupedTools"
+          :key="group.category.slug"
+          class="home__group"
+        >
+          <CategoryHeader
+            :category="group.category"
+            :count="group.tools.length"
+          />
+          <div class="home__grid">
+            <ToolCard
+              v-for="tool in group.tools"
+              :key="tool.slug"
+              :tool="tool"
+            />
+          </div>
+        </section>
       </div>
     </section>
   </div>
@@ -186,7 +227,8 @@ const isSearching = computed(() => keyword.value.trim() !== '')
   gap: var(--tb-space-3);
 }
 
-.home__section-title {
+/* 分组标题行：粘在顶栏下方，滚动时始终可见 */
+.home__section-head {
   position: sticky;
   top: var(--tb-header-h);
   z-index: 5;
@@ -195,9 +237,13 @@ const isSearching = computed(() => keyword.value.trim() !== '')
   gap: var(--tb-space-2);
   margin: 0;
   padding: var(--tb-space-2) 0;
+  background: var(--tb-bg);
+}
+
+.home__section-title {
+  margin: 0;
   font-size: var(--tb-font-lg);
   font-weight: 600;
-  background: var(--tb-bg);
 }
 
 .home__count {
@@ -219,10 +265,17 @@ const isSearching = computed(() => keyword.value.trim() !== '')
   color: var(--tb-text-secondary);
 }
 
-.home__categories {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: var(--tb-space-2);
+/* 分类分组：每个分类一节，节内是工具网格 */
+.home__groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-6);
+}
+
+.home__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-3);
 }
 
 .home__grid {

@@ -1,10 +1,11 @@
 {
   "title": "蓝云工具箱",
-  "subtitle": "70 个 IT 工具，全部在服务端计算，浏览器不保存任何输入。",
+  "subtitle": "72 个 IT 工具，全部在服务端计算，浏览器不保存任何输入。",
   "searchPlaceholder": "搜索工具（支持中英文名）",
   "searchEmpty": "没有匹配的工具。",
-  "categoriesTitle": "分类",
   "toolsTitle": "全部工具",
+  "searchResultTitle": "搜索结果",
+  "viewAll": "查看全部",
   "toolCount": "共 {count} 个工具",
   "countTools": "{count} 个工具",
   "soon": "即将上线",

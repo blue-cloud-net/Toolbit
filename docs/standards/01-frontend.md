@@ -35,7 +35,7 @@ frontend/src/
 ├── components/
 │   ├── common/     # AppIcon / BrandMark / ShortcutHelp
 │   ├── layout/     # Header / Sidebar / Footer / SettingsMenu
-│   ├── discovery/  # ToolCard / CategoryCard
+│   ├── discovery/  # ToolCard / CategoryHeader
 │   ├── search/     # SearchTrigger / CommandPalette
 │   └── tool/       # 工具页专用共享组件（见下方清单）
 ├── composables/    # use* 组合式函数
@@ -133,6 +133,8 @@ ToolPageLayout
   避免被侧栏 `overflow` 裁掉），列出该分类全部工具并显示一句话描述。
   描述**按需加载**，来源是既有 `locales/<lang>/tools/<slug>.json`，**禁止**另建一份文案。
 - 工具页面包屑格式为「首页 / 分类 / 工具名」，中间层可点回分类页。
+- 首页的「全部工具」**必须**按分类分组展示，组标题**必须**可点击进入该分类的工具列表页
+  （`CategoryHeader` → 路由 `category`）；搜索时同样保持分组结构。
 - 顶栏右段固定为 GitHub、全屏、主题、设置四个入口；GitHub 是**外链**
   （新标签页 + `rel="noopener noreferrer"`），地址取 `frontend/src/config/site.ts` 的 `REPO_URL`，
   悬浮提示**必须**说明「可自部署」（局域网 Docker 部署、数据不出内网）。

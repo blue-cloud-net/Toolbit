@@ -1,10 +1,11 @@
 {
   "title": "Blue Cloud Toolbit",
-  "subtitle": "70 IT tools, all computed on the server; the browser never stores your input.",
+  "subtitle": "72 IT tools, all computed on the server; the browser never stores your input.",
   "searchPlaceholder": "Search tools (Chinese and English names)",
   "searchEmpty": "No matching tool.",
-  "categoriesTitle": "Categories",
   "toolsTitle": "All tools",
+  "searchResultTitle": "Search results",
+  "viewAll": "View all",
   "toolCount": "{count} tools in total",
   "countTools": "no tools | 1 tool | {count} tools",
   "soon": "Coming soon",
