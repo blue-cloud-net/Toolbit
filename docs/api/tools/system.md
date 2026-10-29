@@ -1,14 +1,18 @@
 # 系统 API
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
 
-覆盖 **3** 个系统类工具。端点均为 `POST /api/v1/tools/{slug}`，全部为 `light` 档位。
+覆盖 **7** 个系统类工具。端点均为 `POST /api/v1/tools/{slug}`，全部为 `light` 档位。
 
 | slug | 名称 |
 | --- | --- |
 | [curl-generator](#curl-generator) | cURL 命令生成 |
 | [crontab-generator](#crontab-generator) | Crontab 表达式生成 |
 | [chmod-calc](#chmod-calc) | 权限计算 |
+| [nginx-config](#nginx-config) | Nginx 配置生成 |
+| [firewall-rules](#firewall-rules) | 防火墙规则生成 |
+| [docker-compose-gen](#docker-compose-gen) | Compose 配置生成 |
+| [lookup-table](#lookup-table) | 速查表 |
 
 ---
 
@@ -110,6 +114,143 @@ Unix 权限计算与解释。
 `INVALID_CHMOD`、`INVALID_FIELD`、`MISSING_FIELD`。
 
 > 只解释**低 9 位**（`rwx`）；`setuid` / `setgid` / `sticky`（`4xxx` / `2xxx` / `1xxx`）**不在**本工具范围内，输入时会被**忽略**。
+
+---
+
+## nginx-config
+
+生成 Nginx 全局与站点配置（Nginx Config Generator）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `mode` | string | 否 | `global` 全局段 / `site` 站点段，默认 `site` |
+| `serverName` | string | 否 | 站点域名 |
+| `listenPort` | int | 否 | 监听端口，默认 80 |
+| `root` | string | 否 | 站点根目录 |
+| `indexFiles` | array | 否 | 索引文件列表 |
+| `enableSsl` | bool | 否 | 是否启用 HTTPS，默认 `false` |
+| `sslCertificate` | string | 否 | 证书路径 |
+| `sslPrivateKey` | string | 否 | 私钥路径 |
+| `enableProxy` | bool | 否 | 是否启用反向代理，默认 `false` |
+| `proxyPass` | string | 否 | 代理目标 |
+| `proxyPath` | string | 否 | 代理路径前缀 |
+| `enableGzip` | bool | 否 | 是否启用 Gzip，默认 `false` |
+| `enableCORS` | bool | 否 | 是否输出 CORS 段，默认 `false` |
+| `allowOrigin` | string | 否 | 允许的来源，默认 `*` |
+| `enableWebSocket` | bool | 否 | 是否启用 WebSocket 升级，默认 `false` |
+| `enableLoadBalance` | bool | 否 | 是否输出 upstream 段，默认 `false` |
+| `upstreams` | array | 否 | 上游地址列表 |
+| `clientMaxBodySize` | string | 否 | 请求体上限，如 `10m` |
+| `workerProcesses` | int | 否 | `global` 模式下的 worker 进程数 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `mode` | string | 配置模式 |
+| `config` | string | 配置文本 |
+| `sections` | array | 配置段标题 |
+| `warnings` | array | 配置提示 |
+
+### 错误
+
+`INVALID_FIELD`。
+
+> 生成的是**配置片段**，需自行合并到 `nginx.conf`；证书与私钥只输出路径，不输出内容。
+
+---
+
+## firewall-rules
+
+生成 ufw / firewalld / iptables / nftables 规则（Firewall Rule Generator）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `tool` | string | 否 | `ufw` `firewalld` `iptables` `nftables`，默认 `ufw` |
+| `scenario` | string | 否 | `http` `https` `ssh` `database` `denyAll` `allowAll` |
+| `ports` | array | 否 | 端口列表，支持 `8000-8100` 区间写法 |
+| `protocol` | string | 否 | `tcp` `udp` `any`，默认 `tcp` |
+| `source` | string | 否 | 来源地址或网段 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `tool` | string | 防火墙工具 |
+| `scenario` | string | 场景 |
+| `rules` | array | 规则清单 `[{ action, port, protocol, source, description }]` |
+| `commands` | array | 可执行命令 |
+| `notes` | array | 使用提示 |
+
+### 错误
+
+`INVALID_FIELD`。
+
+> 输出的是**待执行命令**，工具**不会**代为执行；上线前请先在测试环境验证。
+
+---
+
+## docker-compose-gen
+
+由服务定义生成 Compose 配置（Docker Compose Generator）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `projectName` | string | 是 | 项目名，用作服务名前缀 |
+| `services` | array | 是 | 服务定义列表，见下表 |
+| `networkName` | string | 否 | 自定义网络名 |
+| `includeVolumes` | bool | 否 | 是否输出具名卷，默认 `false` |
+| `includeNetwork` | bool | 否 | 是否输出自定义网络，默认 `true` |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `compose` | string | Compose 配置文本 |
+| `serviceCount` | int | 服务数量 |
+| `warnings` | array | 配置提示 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> 生成的是 Compose 文本，不含 `build` 段与密钥。
+
+---
+
+## lookup-table
+
+查询端口、退出码与时间戳格式（Lookup Table）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `kind` | string | 否 | `port` `exitcode` `timestamp`，默认 `port` |
+| `key` | string | 是 | 查询词：端口号、退出码或关键字 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `kind` | string | 类别 |
+| `query` | string | 规范化后的查询词 |
+| `matched` | bool | 是否精确命中 |
+| `entry` | object | 命中的条目 `{ kind, key, label, description, extra[] }`；未命中时为 `null` |
+| `candidates` | array | 模糊检索的候选条目 |
+| `dataVersion` | string | 数据集版本 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> 内置数据集离线查询，**不出网**；数据集版本随发布更新。
 
 ---
 

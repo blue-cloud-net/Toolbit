@@ -1,8 +1,9 @@
 # 网络 API
 
-> 状态：Stable ｜ 适用版本：v0.7.0 ｜ 最后更新：2026-10-29
+> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
 
-覆盖 **5** 个网络类工具。其中 4 个**需要出网**，`websocket-test` 为**纯前端**工具（无后端端点）。
+覆盖 **9** 个网络类工具。其中 4 个**需要出网**，`websocket-test` 为**纯前端**工具（无后端端点），
+`mime-lookup` 与 `http-status` 为**纯查表**工具（不出网）。
 
 | slug | 名称 | 传输 | 端点 |
 | --- | --- | --- | --- |
@@ -11,6 +12,10 @@
 | [dns-lookup](#dns-lookup) | DNS 查询 | JSON | `POST /api/v1/tools/dns-lookup` |
 | [dns-tester](#dns-tester) | DNS 多记录测试 | JSON | `POST /api/v1/tools/dns-tester` |
 | [websocket-test](#websocket-test) | WebSocket 测试 | 浏览器原生 | 无 |
+| [mime-lookup](#mime-lookup) | MIME 类型查询 | JSON | `POST /api/v1/tools/mime-lookup` |
+| [http-status](#http-status) | HTTP 状态码查询 | JSON | `POST /api/v1/tools/http-status` |
+| [device-headers](#device-headers) | 设备请求头 | JSON | `POST /api/v1/tools/device-headers` |
+| [ip-range-expand](#ip-range-expand) | IP 段展开 | JSON | `POST /api/v1/tools/ip-range-expand` |
 
 ---
 
@@ -296,6 +301,155 @@ WebSocket 连接测试（**纯前端**，无后端端点）。
 
 > 浏览器**无法**自定义请求头、**无法**使用自定义 TLS 证书、**无法**指定源端口；这些限制**必须**在 UI 上明确说明。
 > 连接**跨域**时遵循浏览器同源策略；本页**不**使用服务端 CORS 配置。
+
+---
+
+## mime-lookup
+
+MIME 媒体类型查询（**不出网**）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `extension` | string | 二选一 | 扩展名；可写 `png`、`.png` 或 `report.png` |
+| `mimeType` | string | 二选一 | 媒体类型；可写 `image/png`，带参数时自动去掉参数 |
+
+> 两个字段**互斥**：同时给出返回 `INVALID_FIELD`，都不给出返回 `MISSING_FIELD`。
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `query` | string | 规范化后的查询词（扩展名小写去点；媒体类型小写去参数） |
+| `kind` | string | 查询方式：`extension` \| `mimeType` |
+| `matched` | bool | 是否命中数据集 |
+| `mimeType` | string | 规范媒体类型；未命中时为空串 |
+| `extensions` | array | 该媒体类型的常用扩展名（小写，不含点） |
+| `category` | string | 顶层类型：`application` \| `audio` \| `font` \| `image` \| `message` \| `model` \| `multipart` \| `text` \| `video` |
+| `isTextual` | bool | 是否是文本类媒体类型 |
+| `charset` | string | 默认字符集；非文本类为空串 |
+| `description` | string | 用途说明 |
+| `aliases` | array | 历史别名与常见变体 |
+| `dataVersion` | string | 数据集版本 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> 数据来自**内置快照**，**不**读取系统 MIME 数据库（各发行版映射表不一致），**不**联网。
+> 扩展名查询按「先到先得」命中：同一扩展名被多个类型描述时，返回数据集中靠前的那一个。
+> 历史别名（如 `image/x-png`）会归一到规范类型，响应里的 `mimeType` 是规范值。
+> 未收录**不是**错误：返回 `200` 与 `matched: false`。
+
+---
+
+## http-status
+
+HTTP 状态码查询（**不出网**）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `code` | number | 二选一 | 状态码，`100`–`599` 的整数 |
+| `query` | string | 二选一 | 关键字；纯数字时按状态码处理 |
+
+> 两个字段**互斥**：同时给出返回 `INVALID_FIELD`，都不给出返回 `MISSING_FIELD`。
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `query` | string | 规范化后的查询词 |
+| `kind` | string | 查询方式：`code` \| `keyword` |
+| `matched` | bool | 是否命中标准状态码 |
+| `code` | number | 状态码；关键字查询取首条命中，未命中为 `0` |
+| `reason` | string | 标准原因短语 |
+| `category` | string | 类别：`informational` \| `success` \| `redirect` \| `clientError` \| `serverError` |
+| `description` | string | 中文含义说明 |
+| `deprecated` | bool | 是否已废弃（如 `305`、`306`） |
+| `matches` | array | 命中的条目 `[{ code, reason, category, description, deprecated }]` |
+| `total` | number | 命中条数 |
+| `dataVersion` | string | 数据集版本 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> 关键字匹配**原因短语**（不区分大小写）、**中文说明**与**类别中文名**，
+> 因此 `not found`、`未找到`、`重定向` 都能命中。
+> 落在 `100`–`599` 但未收录的状态码（如 `299`）**不是**错误：返回 `200`、`matched: false`，
+> 并给出所属 `category`。
+> 越界的状态码（如 `999`）返回 `INVALID_FIELD`，错误**不回显**用户输入。
+
+---
+
+## device-headers
+
+生成客户端请求头并解析 User-Agent（Device Headers）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `mode` | string | 否 | `generate` 生成 / `parseUa` 解析，默认 `generate` |
+| `platform` | string | 否 | `chrome` `firefox` `safari` `edge` `android` `ios` `curl` |
+| `version` | string | 否 | 浏览器版本号 |
+| `os` | string | 否 | 操作系统名称与版本 |
+| `userAgent` | string | 否 | `parseUa` 模式下的 User-Agent 串 |
+| `acceptLanguage` | string | 否 | Accept-Language 头 |
+| `referer` | string | 否 | Referer 头 |
+| `customHeaders` | object | 否 | 额外请求头，键值对 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `mode` | string | 模式 |
+| `headers` | array | 请求头列表 `[{ name, value }]` |
+| `userAgent` | string | User-Agent 串 |
+| `parsed` | object | 解析结果 `{ browser, browserVersion, os, osVersion, deviceType, isBot, engine }` |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> 生成的 UA 是**常见组合**，不代表任何真实浏览器；解析只做结构化识别，不做指纹追踪。
+
+---
+
+## ip-range-expand
+
+IP 段与 CIDR 互转及批量展开（IP Range Expander）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `mode` | string | 否 | `expand` 展开 / `toCidr` 转 CIDR / `toRange` 转区间 |
+| `cidr` | string | 否 | 网段；`expand` 与 `toRange` 模式使用 |
+| `start` | string | 否 | 起始地址；`toCidr` 模式使用 |
+| `end` | string | 否 | 结束地址；`toCidr` 模式使用 |
+| `limit` | int | 否 | 展开条数上限，默认 1024 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `mode` | string | 模式 |
+| `cidrs` | array | 规范化后的 CIDR 列表 |
+| `start` | string | 起始地址 |
+| `end` | string | 结束地址 |
+| `count` | int | 地址总数 |
+| `addresses` | array | 展开的地址列表 |
+| `truncated` | bool | 地址列表是否被上限截断 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> 展开条数上限受 `limit` 约束，超出时 `truncated` 为 `true`。
 
 ---
 

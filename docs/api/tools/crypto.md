@@ -1,8 +1,8 @@
 # 加密 API
 
-> 状态：Draft ｜ 适用版本：v0.3.1 ｜ 最后更新：2026-10-28
+> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
 
-覆盖 **8** 个加密类工具。所有端点为 `POST /api/v1/tools/{slug}`，请求与响应使用[统一信封](../README.md)。
+覆盖 **10** 个加密类工具。所有端点为 `POST /api/v1/tools/{slug}`，请求与响应使用[统一信封](../README.md)。
 
 | slug | 名称 | 传输 | 档位 | 实现状态 |
 | --- | --- | --- | --- | --- |
@@ -14,6 +14,8 @@
 | [password-gen](#password-gen) | 密码生成 | JSON | light | ✅ v0.3.0 |
 | [hash-calc](#hash-calc) | 摘要计算 | JSON | light | ✅ v0.3.0 |
 | [sm4-file-crypt](#sm4-file-crypt) | SM4 文件加解密 | multipart | file | ✅ v0.3.1 |
+| [password-policy](#password-policy) | 口令策略检查 | JSON | light | ✅ v0.8.0 |
+| [totp](#totp) | TOTP 生成校验 | JSON | light | ✅ v0.8.0 |
 
 > **实现状态**列标注该工具的端点是否已交付。
 > 未实现的工具返回 `501 NOT_IMPLEMENTED`，catalog 仍返回全部条目。
@@ -445,6 +447,83 @@ HMAC 计算。
 ### 警告
 
 - `WEAK_HASH` —— 请求中包含 `MD5` / `SHA1`。
+
+---
+
+## password-policy
+
+按策略检查口令合规性（Password Policy Checker）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `password` | string | 是 | 待检查口令 |
+| `preset` | string | 否 | `basic` `medium` `strict`，默认 `medium` |
+| `minLength` | int | 否 | 最小长度；缺省取预设值 |
+| `maxLength` | int | 否 | 最大长度；`0` 表示不限 |
+| `requireUpper` | bool | 否 | 是否要求大写字母 |
+| `requireLower` | bool | 否 | 是否要求小写字母 |
+| `requireDigit` | bool | 否 | 是否要求数字 |
+| `requireSymbol` | bool | 否 | 是否要求符号 |
+| `maxRepeatRun` | int | 否 | 连续重复字符上限；`0` 表示不限 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `preset` | string | 生效的预设 |
+| `compliant` | bool | 是否满足整体策略 |
+| `score` | int | 强度评分（0–100） |
+| `strength` | string | 强度等级 |
+| `checks` | array | 检查项 `[{ check, passed, message }]` |
+| `suggestions` | array | 改进建议 |
+
+### 错误
+
+`INVALID_FIELD`。
+
+> **纯规则检查**：不涉及密码学运算，也不存储口令；常见口令表内置在服务端。
+
+---
+
+## totp
+
+生成与校验 TOTP 动态口令（TOTP Generator）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `operation` | string | 否 | `generate` 生成 / `verify` 校验，默认 `generate` |
+| `secret` | string | 是 | Base32 密钥 |
+| `algorithm` | string | 否 | `SHA1` `SHA256` `SHA512`，默认 `SHA1` |
+| `digits` | int | 否 | 验证码位数，取值 6–10，默认 6 |
+| `period` | int | 否 | 时间步长（秒），取值 1–300，默认 30 |
+| `timestamp` | int | 否 | Unix 时间戳（秒）；`0` 表示当前时间 |
+| `code` | string | 否 | 待校验的验证码；`verify` 模式必填 |
+| `window` | int | 否 | 允许的时间步容差，默认 1 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `operation` | string | 操作 |
+| `code` | string | 验证码 |
+| `valid` | bool | 校验结论；生成模式下为 `null` |
+| `algorithm` | string | 摘要算法 |
+| `digits` | int | 验证码位数 |
+| `period` | int | 时间步长 |
+| `counter` | int | 时间步计数 |
+| `validFrom` | string | 生效起点（RFC 3339） |
+| `validUntil` | string | 失效点（RFC 3339） |
+| `remainingSeconds` | int | 剩余有效秒数 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> HMAC 计算经服务端转调 Tongsuo；标准向量见 RFC 6238。
 
 ---
 

@@ -1,8 +1,8 @@
 # 密钥 API
 
-> 状态：Draft ｜ 适用版本：v0.4.0 ｜ 最后更新：2026-10-29
+> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
 
-覆盖 **6** 个密钥类工具。端点均为 `POST /api/v1/tools/{slug}`。
+覆盖 **7** 个密钥类工具。端点均为 `POST /api/v1/tools/{slug}`。
 
 | slug | 名称 | 档位 |
 | --- | --- | --- |
@@ -12,6 +12,7 @@
 | [key-ops](#key-ops) | 密钥运算 | standard |
 | [key-match](#key-match) | 密钥配对检测 | standard |
 | [jwk-xml-convert](#jwk-xml-convert) | JWK/XML 转换 | standard |
+| [ssh-keygen](#ssh-keygen) | SSH 密钥生成 | light |
 
 ---
 
@@ -210,6 +211,37 @@ JWK / PEM / XML 之间的密钥格式转换。
 > 见 [I-12](../../upstream/tongsuo-go-issues.md#i-12-jwk-不支持-okp-ed25519--x25519-与对称密钥)）。
 >
 > JWK 导出私钥时**必须**包含 `d` 成员，且需显式 `keyType: "private"`。
+
+---
+
+## ssh-keygen
+
+生成 OpenSSH 格式密钥对与指纹（SSH Key Generator）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `algorithm` | string | 否 | `Ed25519` / `RSA`，默认 `Ed25519` |
+| `bits` | string | 否 | RSA 位数；仅 RSA 有效 |
+| `comment` | string | 否 | 密钥注释，单行 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `algorithm` | string | 算法 |
+| `privateKey` | string | OpenSSH 格式私钥 |
+| `publicKey` | string | OpenSSH 格式公钥 |
+| `fingerprint` | string | SHA256 指纹 |
+| `bits` | int | 密钥位数 |
+| `comment` | string | 注释 |
+
+### 错误
+
+`INVALID_FIELD`。
+
+> 产出 OpenSSH 格式（`openssh-key-v1`）；**不含**加密私钥，私钥明文只在响应中出现一次。
 
 ---
 

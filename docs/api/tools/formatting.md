@@ -1,8 +1,8 @@
 # 格式化 API
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
 
-覆盖 **8** 个格式化类工具。端点均为 `POST /api/v1/tools/{slug}`，全部为 `light` 档位。
+覆盖 **9** 个格式化类工具。端点均为 `POST /api/v1/tools/{slug}`，全部为 `light` 档位。
 
 | slug | 名称 |
 | --- | --- |
@@ -14,6 +14,7 @@
 | [toml-format](#toml-format) | TOML 格式化 |
 | [yaml-format](#yaml-format) | YAML 格式化 |
 | [format-convert](#format-convert) | 格式转换 |
+| [color-convert](#color-convert) | 颜色转换 |
 
 ---
 
@@ -263,6 +264,40 @@ JSON / YAML / TOML / XML 之间的结构转换。
 ### 警告
 
 `LOSSY_FORMAT` —— 结构无法完全映射（例如 XML 元素名无法表达为 JSON key，或 TOML 顶层非表结构）。
+
+---
+
+## color-convert
+
+颜色格式转换与对比度检查（Color Converter）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `input` | string | 是 | 颜色值 |
+| `inputFormat` | string | 否 | `hex` `rgb` `hsl` `oklch`，默认 `hex` |
+| `outputFormats` | array | 否 | 需要输出的格式列表，默认全部 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `input` | string | 输入颜色 |
+| `inputFormat` | string | 输入格式 |
+| `hex` | string | 十六进制表示 |
+| `rgb` | string | RGB 表示 |
+| `hsl` | string | HSL 表示 |
+| `oklch` | string | OKLCH 表示 |
+| `contrastOnWhite` | number | 相对白底的对比度 |
+| `contrastOnBlack` | number | 相对黑底的对比度 |
+| `isDark` | bool | 是否为深色 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> 对比度按 WCAG 相对亮度公式计算；只支持 IPv4 / sRGB 色彩空间。
 
 ---
 

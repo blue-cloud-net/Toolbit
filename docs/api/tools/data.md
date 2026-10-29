@@ -1,8 +1,8 @@
 # 数据 API
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
 
-覆盖 **6** 个数据类工具。端点均为 `POST /api/v1/tools/{slug}`。
+覆盖 **14** 个数据类工具。端点均为 `POST /api/v1/tools/{slug}`。
 
 | slug | 名称 | 档位 |
 | --- | --- | --- |
@@ -12,6 +12,14 @@
 | [country-code](#country-code) | 国家代码 | light |
 | [cn-regions](#cn-regions) | 中国行政区划 | light |
 | [qr-code](#qr-code) | 二维码生成 | light |
+| [id-validator](#id-validator) | 号码校验 | light |
+| [csv-convert](#csv-convert) | CSV 转换 | light |
+| [json-to-types](#json-to-types) | JSON 转类型 | light |
+| [mock-data](#mock-data) | 模拟数据 | light |
+| [archive-inspect](#archive-inspect) | 归档查看 | light |
+| [file-analyze](#file-analyze) | 文件识别 | light |
+| [wifi-qr](#wifi-qr) | 访客 WiFi 二维码 | light |
+| [id-generator](#id-generator) | ID 生成 | light |
 
 ---
 
@@ -193,6 +201,258 @@ UUID 生成。
 `INVALID_FIELD`、`MISSING_FIELD`、`TOO_LARGE`。
 
 > `ecLevel` ∈ `L` `M` `Q` `H`（默认 `M`）。生成内容长度上限 4 KB。
+
+---
+
+## id-validator
+
+身份证、信用代码、手机号、银行卡校验位计算（ID Validator）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `type` | string | 是 | `idCard` `uscc` `phone` `bankCard` `postcode` |
+| `value` | string | 是 | 待校验的号码 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `type` | string | 校验类型 |
+| `value` | string | 规范化后的值 |
+| `valid` | bool | 是否通过校验 |
+| `normalized` | string | 规范化结果 |
+| `checkDigit` | string | 校验位 |
+| `region` | string | 归属地区 |
+| `birthday` | string | 出生日期 |
+| `gender` | string | 性别 |
+| `issue` | string | 失败原因；通过时为空串 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> 只做**校验位计算与格式规范化**，不查询任何外部数据库。
+
+---
+
+## csv-convert
+
+CSV 与 JSON 互转（CSV Converter）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `operation` | string | 否 | `csvToJson` / `jsonToCsv`，默认 `csvToJson` |
+| `input` | string | 是 | 源数据文本 |
+| `delimiter` | string | 否 | CSV 分隔符，单字符，默认 `,` |
+| `hasHeader` | bool | 否 | 首行是否为表头，默认 `false` |
+| `pretty` | bool | 否 | 输出是否缩进，默认 `false` |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `operation` | string | 实际使用的转换方向 |
+| `output` | string | 转换结果 |
+| `rowCount` | int | 数据行数 |
+| `columnCount` | int | 列数 |
+| `columns` | array | 列名列表 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> CSV 解析允许宽松引号（`LazyQuotes`）；无表头时列名按 `column1`、`column2` 生成。
+
+---
+
+## json-to-types
+
+由 JSON 样本生成语言类型定义（JSON to Types）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `input` | string | 是 | JSON 样本 |
+| `language` | string | 否 | `typescript` `go` `rust` `java`，默认 `typescript` |
+| `rootName` | string | 否 | 根类型名，默认按结构推断 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `language` | string | 目标语言 |
+| `output` | string | 生成的类型定义 |
+| `typeCount` | int | 类型数量 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> 类型由样本**推断**得出，不保证与真实结构一致。
+
+---
+
+## mock-data
+
+按字段类型生成假数据（Mock Data）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `types` | array | 否 | 字段类型列表，见下表；留空表示全部类型 |
+| `count` | int | 否 | 每种类型的生成条数，默认 3 |
+| `locale` | string | 否 | `zh-CN` / `en-US`，默认 `zh-CN` |
+| `prefix` | string | 否 | 生成值前缀 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `types` | array | 生成的类型列表 |
+| `fields` | array | 生成的字段值 `[{ type, value }]` |
+| `count` | int | 每种类型的条数 |
+| `locale` | string | 语言 |
+| `seed` | string | 本次随机种子 |
+
+### 错误
+
+`INVALID_FIELD`。
+
+> 使用**非密码学**随机源，仅用于演示与占位；**不可**用作真实凭据。
+
+---
+
+## archive-inspect
+
+查看 ZIP / TAR / GZIP 的条目清单（Archive Inspector）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `data` | string | 是 | 归档内容的 Base64 |
+| `format` | string | 否 | `zip` `tar` `tarGz` `gzip`；留空则自动识别 |
+| `includeContent` | bool | 否 | 是否给出条目内容预览，默认 `false` |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `format` | string | 归档格式 |
+| `entryCount` | int | 条目数 |
+| `totalSize` | int | 解压后总大小 |
+| `compressedSize` | int | 归档大小 |
+| `entries` | array | 条目清单 `[{ name, size, compressedSize, isDir, mode, modified, contentPreview }]` |
+| `truncated` | bool | 条目清单是否被截断 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> 条目数上限 5000、单条目解压上限 64 MiB、总解压上限 256 MiB；归档输入上限 32 MiB。
+
+---
+
+## file-analyze
+
+按魔数识别文件类型并给出摘要（File Analyzer）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `data` | string | 是 | 文件内容的 Base64 |
+| `fileName` | string | 否 | 文件名，用于推断扩展名与 MIME |
+| `digestAlgorithm` | string | 否 | 摘要算法，默认 `SHA256` |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `fileName` | string | 文件名 |
+| `size` | int | 字节数 |
+| `mimeType` | string | 媒体类型 |
+| `extension` | string | 扩展名 |
+| `description` | string | 类型说明 |
+| `isTextual` | bool | 是否文本类 |
+| `magicHex` | string | 文件头十六进制 |
+| `digest` | string | 摘要值 |
+| `digestAlgorithm` | string | 摘要算法 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> 类型识别基于**魔数表**，未收录的类型按扩展名与 MIME 回落。
+
+---
+
+## wifi-qr
+
+生成访客 WiFi 接入二维码（Guest WiFi QR Code）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `ssid` | string | 是 | 网络名称 |
+| `password` | string | 否 | 网络口令；开放网络留空 |
+| `security` | string | 否 | `WPA` `WEP` `nopass`，默认 `WPA` |
+| `hidden` | bool | 否 | 是否为隐藏网络，默认 `false` |
+| `size` | int | 否 | 二维码边长（像素），取值 64–1024，默认 256 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `payload` | string | 二维码承载的文本 |
+| `png` | string | PNG 图片的 Base64 |
+| `svg` | string | SVG 图片内容 |
+| `size` | int | 图片边长 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> 载荷遵循 `WIFI:T:…;S:…;P:…;` 格式；口令**不写入**任何存储。
+
+---
+
+## id-generator
+
+生成 UUID / ULID / 雪花 ID / NanoID（ID Generator）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `format` | string | 否 | `uuid` `ulid` `snowflake` `nanoid`，默认 `uuid` |
+| `count` | int | 否 | 生成条数，默认 1 |
+| `length` | int | 否 | NanoID 长度，默认 21 |
+| `epoch` | int | 否 | 雪花 ID 起始纪元（毫秒） |
+| `nodeId` | int | 否 | 雪花 ID 节点号，取值 0–1023 |
+| `uppercase` | bool | 否 | 是否转大写，默认 `false` |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `format` | string | ID 格式 |
+| `ids` | array | 生成的 ID 列表 |
+| `count` | int | 生成条数 |
+| `length` | int | ID 长度 |
+
+### 错误
+
+`INVALID_FIELD`。
+
+> 雪花 ID 的纪元与节点号由请求指定，**不保证**全局唯一。
 
 ---
 

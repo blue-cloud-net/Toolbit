@@ -1,14 +1,15 @@
 # 文档 API
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
 
-覆盖 **3** 个文档类工具。端点均为 `POST /api/v1/tools/{slug}`。
+覆盖 **4** 个文档类工具。端点均为 `POST /api/v1/tools/{slug}`。
 
 | slug | 名称 | 传输 | 档位 |
 | --- | --- | --- | --- |
 | [pdf-sign-verify](#pdf-sign-verify) | PDF 签名校验 | multipart | file |
 | [markdown-preview](#markdown-preview) | Markdown 预览 | JSON | light |
 | [eml-parser](#eml-parser) | EML 邮件解析 | JSON | light |
+| [markdown-convert](#markdown-convert) | Markdown 转换 | JSON | light |
 
 > `pdf-sign-verify` 本版**未实现**，端点返回 `NOT_IMPLEMENTED`（501）。
 > `eml-parser` 本版**只**支持 JSON 输入（`input.text`），**不**支持 multipart 上传。
@@ -106,6 +107,37 @@ Markdown 渲染为 HTML，并生成目录。
 `INVALID_FIELD`、`MISSING_FIELD`、`TOO_LARGE`。
 
 > 附件**必须**按 `maxAttachmentBytes` 截断并在结果中标记；超限附件**不**返回内容，只返回元信息。
+
+---
+
+## markdown-convert
+
+Markdown 与 HTML 互转（Markdown Converter）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `mode` | string | 否 | `toHtml` / `toMarkdown`，默认 `toHtml` |
+| `input` | string | 是 | 源文本 |
+| `gfm` | bool | 否 | 是否启用 GitHub 风格扩展，默认 `false` |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `mode` | string | 转换方向 |
+| `output` | string | 转换结果 |
+| `headingCount` | int | 标题数量 |
+| `linkCount` | int | 链接数量 |
+| `codeBlockCount` | int | 代码块数量 |
+| `wordCount` | int | 词数 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> HTML 转 Markdown 采用**结构化解析**；内联样式与脚本内容会被丢弃。
 
 ---
 

@@ -1,8 +1,8 @@
 # 编码 API
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
 
-覆盖 **6** 个编码类工具。端点均为 `POST /api/v1/tools/{slug}`，全部为 `light` 档位。
+覆盖 **7** 个编码类工具。端点均为 `POST /api/v1/tools/{slug}`，全部为 `light` 档位。
 
 | slug | 名称 |
 | --- | --- |
@@ -12,6 +12,7 @@
 | [number-base](#number-base) | 进制转换 |
 | [encoding-convert](#encoding-convert) | 编码转换 |
 | [gzip-deflate](#gzip-deflate) | GZip/Deflate |
+| [html-escape](#html-escape) | HTML 转义 |
 
 ---
 
@@ -190,6 +191,33 @@ JWT 解码、编码与校验。
 `INVALID_FIELD`、`TOO_LARGE`、`DECRYPT_FAILED`（解压失败统一映射）。
 
 > 解压时对输出有上限保护（默认 400 MB），超出返回 `TOO_LARGE`，防止**解压炸弹**。
+
+---
+
+## html-escape
+
+HTML 实体编解码（HTML Escape）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `mode` | string | 否 | `encode` 转义 / `decode` 反转义，默认 `encode` |
+| `input` | string | 是 | 待处理文本 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `mode` | string | 模式 |
+| `output` | string | 转义 / 反转义结果 |
+| `changedCount` | int | 发生变化的字符数 |
+
+### 错误
+
+`INVALID_FIELD`。
+
+> 只处理命名实体与十进制 / 十六进制数字实体，不做 CSS / JS 上下文转义。
 
 ---
 
