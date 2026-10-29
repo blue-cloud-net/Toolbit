@@ -6,7 +6,6 @@
  */
 import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
 
 import AppFooter from '@/components/layout/AppFooter.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
@@ -20,20 +19,11 @@ import { usePrefsStore } from '@/stores/prefs'
 const { t } = useI18n()
 const prefs = usePrefsStore()
 const catalog = useCatalogStore()
-const route = useRoute()
 
 // 全局快捷键（`/` 聚焦搜索、`?` 快捷键说明、Alt+↑/↓ 切换最近使用）。
 useGlobalHotkeys()
 
 const sidebarCollapsed = computed(() => prefs.sidebarCollapsed)
-
-/**
- * 专注模式。
- *
- * 由 URL 查询参数 `?focus=1` 驱动 —— 参数只承载界面状态，
- * **不承载任何输入内容**（AGENTS.md §4.11）。
- */
-const focusMode = computed(() => route.query.focus === '1')
 
 onMounted(() => {
   prefs.init()
@@ -42,10 +32,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div
-    class="layout"
-    :class="{ 'layout--focus': focusMode }"
-  >
+  <div class="layout">
     <a
       class="tb-skip-link"
       href="#main-content"
@@ -107,16 +94,6 @@ onMounted(() => {
 
 .layout__main:focus {
   outline: none;
-}
-
-/* 专注模式：隐藏侧栏与页脚，只留输入 / 输出。 */
-.layout--focus :deep(.sidebar),
-.layout--focus :deep(.footer) {
-  display: none;
-}
-
-.layout--focus .layout__main {
-  max-width: none;
 }
 
 @media (max-width: 900px) {

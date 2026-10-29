@@ -64,6 +64,7 @@ function openPalette(): void {
   display: inline-flex;
   align-items: center;
   gap: var(--tb-space-2);
+  width: 100%;
   height: 34px;
   padding: 0 var(--tb-space-2) 0 var(--tb-space-3);
   font-size: var(--tb-font-sm);
@@ -82,9 +83,14 @@ function openPalette(): void {
   border-color: var(--tb-border-strong);
 }
 
+/* 文字占满中间，快捷键提示靠右 —— 按钮宽度由顶栏中段给定。 */
 .search-trigger__text {
-  min-width: 72px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
   text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .search-trigger__kbd {
@@ -104,8 +110,8 @@ function openPalette(): void {
   }
 
   .search-trigger {
-    padding: 0;
     width: 34px;
+    padding: 0;
     justify-content: center;
   }
 }

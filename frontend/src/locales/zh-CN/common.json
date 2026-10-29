@@ -1,6 +1,9 @@
 {
-  "appName": "Toolbit",
-  "appTagline": "蓝云工具箱",
+  "appName": "蓝云工具箱",
+  "github": {
+    "label": "GitHub 仓库",
+    "deployHint": "项目开源，可用 Docker 在局域网内自行部署，数据不出内网。"
+  },
   "actions": {
     "run": "运行",
     "reset": "重置",
@@ -13,8 +16,8 @@
     "search": "搜索",
     "close": "关闭",
     "backHome": "返回首页",
-    "exitFocus": "退出专注模式",
-    "enterFocus": "进入专注模式",
+    "exitFullscreen": "退出全屏",
+    "enterFullscreen": "进入全屏",
     "showSecret": "显示内容",
     "hideSecret": "隐藏内容",
     "copyField": "复制 {name}"

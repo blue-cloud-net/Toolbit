@@ -1,6 +1,9 @@
 {
-  "appName": "Toolbit",
-  "appTagline": "Blue Cloud Toolbit",
+  "appName": "Blue Cloud Toolbit",
+  "github": {
+    "label": "GitHub repository",
+    "deployHint": "Open source — deploy it on your own LAN with Docker; no data leaves your network."
+  },
   "actions": {
     "run": "Run",
     "reset": "Reset",
@@ -13,8 +16,8 @@
     "search": "Search",
     "close": "Close",
     "backHome": "Back to home",
-    "exitFocus": "Exit focus mode",
-    "enterFocus": "Enter focus mode",
+    "exitFullscreen": "Exit fullscreen",
+    "enterFullscreen": "Enter fullscreen",
     "showSecret": "Show content",
     "hideSecret": "Hide content",
     "copyField": "Copy {name}"

@@ -1,7 +1,7 @@
 /**
  * Element Plus 覆盖。
  *
- * 只覆盖配色与圆角，不改组件结构。
+ * 只覆盖配色、圆角与提示气泡的内容排版，不改组件结构。
  *
  * 主色梯度从 `--tb-primary` 现场派生（`color-mix`），
  * 比例固定，因此 12 组主色下按钮的层次表现一致。
@@ -10,6 +10,24 @@
  * 组件的 `style/css` 是随组件模块按需引入的，加载时机在 `main.ts` 之后，
  * 同特异度的 `:root` 会被 Element 自带的主题变量盖掉。
  */
+
+/* 顶栏外部链接提示（`.el-popper.tb-hint`）：标题 + 说明两行 */
+.el-popper.tb-hint {
+  max-width: 264px;
+}
+
+.tb-hint__title {
+  margin: 0 0 var(--tb-space-1);
+  font-size: var(--tb-font-sm);
+  font-weight: 600;
+}
+
+.tb-hint__body {
+  margin: 0;
+  font-size: var(--tb-font-xs);
+  line-height: 1.5;
+  opacity: 0.88;
+}
 
 :root:root {
   --el-color-primary: var(--tb-primary);
