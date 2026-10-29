@@ -95,14 +95,13 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `certType` | string | 否 | `server` \| `client` \| `email` \| `code-signing` |
-| `subject` | object | 是 | DN 字段（`CN` `C` `O` `OU` `L` `ST` `emailAddress` 等） |
-| `key` | object | 否 | `{ type, bits, curve }`；缺省生成新密钥 |
-| `existingPrivateKey` | object | 否 | 使用已有私钥（`KeyInput`） |
-| `sans` | array | 否 | 主体备用名 |
+| `certType` | string | 否 | `server`（默认）\| `client` \| `email` \| `code-signing`；决定默认的 KU / EKU |
+| `subject` | object | 是 | DN 字段（`CN` `C` `ST` `L` `O` `OU` `serialNumber` `emailAddress` `title` `DC`）；空字段被跳过 |
+| `key` | object | 否 | `{ type, bits, curve }`；缺省 `RSA` 2048 |
+| `existingPrivateKey` | object | 否 | 使用已有私钥（`KeyInput`）；提供时**不**返回私钥 |
+| `sans` | array | 否 | 主体备用名（`DNS:…` / `IP:…`） |
 | `challengePassword` | string | 否 | 挑战口令 |
-| `keyUsages` | array | 否 | 密钥用途 |
-| `extKeyUsages` | array | 否 | 扩展密钥用途 |
+| `keyUsages` / `extKeyUsages` | array | 否 | 覆盖按 `certType` 推出的默认值 |
 | `basicConstraints` | object | 否 | `{ isCa, pathLen }` |
 
 ### 响应
@@ -110,14 +109,16 @@
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `csrPem` | string | CSR 的 PEM |
-| `privateKeyPem` | string | 新生成时返回私钥 PEM |
-| `keyType` / `keyBits` / `keyCurve` | string / int / string | 密钥信息 |
+| `privateKeyPem` | string | 新生成时的 PKCS#8 私钥；使用已有私钥时为空 |
+| `keyType` / `keyBits` / `keyCurve` | string / int / string | 密钥参数 |
+| `info` | object | `{ subjectText, sans, publicKey, signatureAlgorithm, challengePasswordPresent, signatureValid, fingerprintSha256 }` |
 
 ### 错误
 
-`INVALID_FIELD`、`UNSUPPORTED_ALGORITHM`、`INVALID_KEY`、`KEY_SIZE_MISMATCH`。
+`MISSING_FIELD`、`INVALID_FIELD`、`UNSUPPORTED_ALGORITHM`、`UNSUPPORTED_FORMAT`、`INVALID_KEY`。
 
-> 提供 `existingPrivateKey` 时**不**返回 `privateKeyPem`。DN 字段非法时**不** panic，返回 `INVALID_FIELD`。
+> `challengePasswordPresent` **只报存在性**，口令值绝不回显（见 AGENTS.md §4.5）。
+> 已有私钥仅接受 PEM：DER 形式返回 `UNSUPPORTED_FORMAT`。
 
 ---
 
@@ -323,22 +324,34 @@ ASN.1 结构树可视化。
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `cert` | object | 是 | 待检查证书 |
-| `crl` | object | 是 | CRL（PEM） |
+| `crl` | object | 是 | CRL（`PemBundle`） |
+| `issuer` | object | 否 | 签发者证书；提供时**先验签再判定** |
+| `atTime` | string | 否 | 判定时刻（RFC3339）；为空时按当前时间 |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `status` | string | `good` \| `revoked` \| `unknown` |
-| `revokedAt` | string | 吊销时间 |
-| `reasonCode` | int | 吊销原因码 |
-| `reasonText` | string | 原因文本 |
+| `status` | string | `good` \| `revoked` \| `unknown` \| `unverified` |
+| `signatureVerified` | bool | CRL 签名是否已验证 |
+| `serial` | string | 证书序列号（大写十六进制） |
+| `revokedAt` | string | 吊销时间；未吊销时为零值 |
+| `reasonCode` | int | 吊销原因码；未吊销为 `-1` |
+| `reasonText` | string | 原因名（如 `keyCompromise`） |
+| `crlNumber` | int | CRL Number 扩展值 |
+| `crlThisUpdate` / `crlNextUpdate` | string | CRL 的时间窗 |
 
 ### 错误
 
-`INVALID_CERT`、`INVALID_CRL`。
+`INVALID_CERT`、`INVALID_CRL`、`INVALID_PEM`、`INVALID_TIME`。
 
-> 服务端**必须**先校验 CRL 签名与有效期，再判断吊销状态。
+### 警告
+
+`CRL_UNVERIFIED`（未提供 `issuer` 时）。
+
+> 服务端**必须**先校验 CRL 签名与有效期，再判断吊销状态；验签失败**直接**返回 `INVALID_CRL`，不给任何吊销结论。
+> 未提供 `issuer` 时**绝不**返回 `good`：最多给出 `revoked`（有正面证据）或 `unverified`（无结论）。
+> 过期的 CRL 一律拒绝（`INVALID_CRL`），无论结论是正是负。
 
 ---
 
@@ -380,11 +393,11 @@ ASN.1 结构树可视化。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `issuerCert` | object | 是 | 签发者证书（须为 CA） |
-| `issuerKey` | object | 是 | `{ data, passphrase? }` |
-| `number` | string | 否 | CRL 编号，默认自动生成 |
-| `thisUpdate` / `nextUpdate` | string | 否 | 有效期 |
-| `revoked` | array | 否 | `[{ cert \| serial, revokedAt?, reasonCode }]` |
+| `issuerCert` | object | 是 | 签发者证书（须为带 SKID 的 CA 证书） |
+| `issuerKey` | object | 是 | `{ data, format, passphrase? }` |
+| `number` | string | 否 | CRL 编号（十六进制）；为空时自动生成 |
+| `thisUpdate` / `nextUpdate` | string | 否 | 有效期（RFC3339）；`thisUpdate` 为空时用当前时间 |
+| `revoked` | array | 否 | `[{ cert, revokedAt?, reasonCode }]` |
 
 ### 响应
 
@@ -392,15 +405,19 @@ ASN.1 结构树可视化。
 | --- | --- | --- |
 | `crlPem` | string | CRL 的 PEM |
 | `crlDerBase64` | string | CRL 的 DER（base64） |
-| `issuer` | object | 签发者 |
-| `number` | string | CRL 编号 |
-| `counts` | object | `{ total, revoked }` |
+| `issuerText` | string | 签发者单行文本 |
+| `number` | int | CRL 编号 |
+| `thisUpdate` / `nextUpdate` | string | 实际生效的时间窗 |
+| `revokedCount` | int | 写入的吊销条目数 |
 
 ### 错误
 
-`INVALID_CERT`、`INVALID_KEY`、`KEY_MISMATCH`、`INVALID_FIELD`。
+`INVALID_CERT`、`INVALID_KEY`、`KEY_MISMATCH`、`INVALID_FIELD`、`INVALID_TIME`、`TOO_MANY_ITEMS`。
 
-> 原因码取 RFC 5280 §5.3.1，码值 `7` 为保留值，**禁止**使用。
+> 原因码取 RFC 5280 §5.3.1，码值 `7` 为保留值，**禁止**使用（返回 `INVALID_FIELD`）。
+> 吊销项**只接受证书**：上游 `CRLBuilder.Revoke` 没有「按序列号吊销」的入口（见 I-20）。
+> 签发者证书必须带 SKID，否则返回 `INVALID_CERT`；`nextUpdate` 必须晚于 `thisUpdate`。
+> 吊销条目上限 10000。
 
 ---
 
@@ -439,66 +456,82 @@ ASN.1 结构树可视化。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `response` | object | 是 | `{ auto }`（自动识别 DER / base64） |
+| `response` | object | 是 | `PemBundle`（自动识别 DER / base64 / hex） |
 | `cert` | object | 是 | 被查询证书 |
 | `issuer` | object | 是 | 签发者证书 |
+| `trustedRoots` | array | 否 | 响应签名的信任根；为空时**不验签** |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `status` | string | 响应级状态（`successful` / `malformed` / …） |
+| `status` | int | 响应级状态码（`0` 表示 successful） |
+| `statusText` | string | 响应级状态说明 |
 | `certStatus` | string | `good` \| `revoked` \| `unknown` |
+| `signatureVerified` | bool | 响应签名是否已验证 |
 | `producedAt` / `thisUpdate` / `nextUpdate` | string | 时间 |
 | `revocationTime` | string | 吊销时间 |
-| `reasonCode` | int | 吊销原因码 |
-| `responderCerts` | array | 响应者证书 |
+| `reasonCode` | int | 吊销原因码；无原因时为 `-1` |
+| `reasonText` | string | 原因名 |
+| `responderCount` | int | 响应内嵌的响应者证书数 |
 
 ### 错误
 
-`INVALID_CERT`、`INVALID_DER`、`INVALID_FIELD`。
+`INVALID_CERT`、`INVALID_DER`、`MISSING_FIELD`、`SIGNATURE_INVALID`。
+
+### 警告
+
+`CRL_UNVERIFIED`（未提供 `trustedRoots` 时）。
+
+> 响应签名校验需要 `trustedRoots`：未提供时**不**验签，`signatureVerified` 为 `false`，
+> 此时响应内容只被解读，**不能**据此相信结论。
+> `cert` 与 `issuer` 必填：响应里的 CertID 需要它们才能定位目标证书。
 
 ---
 
 ## cert-gen
 
-签发证书。
+签发证书（自签或由 CA 签发）。
 
 ### 请求
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `signMode` | string | 是 | `self`（自签）\| `ca`（由 CA 签发） |
-| `issuer` | object | `ca` 时是 | `{ cert, key, passphrase? }` |
-| `subject` | object | `self` 时是 | 主体 DN |
-| `csr` | object | 二选一 | 待签发的 CSR |
-| `templateCert` | object | 二选一 | 模板证书（复制其扩展） |
-| `subjectOverride` | object | 否 | 覆盖主体字段 |
+| `issuer` | object | `ca` 时是 | `{ cert, key: { data, format, passphrase? } }` |
+| `subject` | object | `self` 时是 | 主体 DN（用 `csr` / `templateCert` 时可省） |
+| `csr` | object | 二选一 | `PemBundle`；公钥取自 CSR |
+| `templateCert` | object | 二选一 | `PemBundle`；**只**复用其公钥与有效期 |
+| `subjectOverride` | object | 否 | 逐项覆盖主体字段 |
 | `key` | object | 否 | `{ type, bits, curve }` |
 | `existingPrivateKey` | object | 否 | 使用已有私钥 |
-| `notAfterDays` | int | 否 | 有效期天数 |
-| `notAfter` | string | 否 | 绝对失效时间 |
-| `serial` | string | 否 | 序列号（十六进制） |
-| `sans` | array | 否 | 主体备用名 |
-| `keyUsages` / `extKeyUsages` | array | 否 | 用途 |
+| `notAfterDays` | int | 否 | 有效期天数，默认 365 |
+| `notAfter` | string | 否 | 绝对失效时间（RFC3339），优先于 `notAfterDays` |
+| `serial` | string | 否 | 序列号（十六进制）；缺省随机生成 |
+| `sans` / `keyUsages` / `extKeyUsages` | array | 否 | 扩展 |
 | `basicConstraints` | object | 否 | `{ isCa, pathLen }` |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `certPem` | string | 证书 PEM |
-| `privateKeyPem` | string | 新生成密钥时返回 |
-| `chainPem` | array | CA 模式下的完整链 |
-| `serial` | string | 序列号 |
-| `subject` / `issuer` | object | 主体与签发者 |
-| `notBefore` / `notAfter` | string | 有效期 |
+| `certPem` | string | 新证书的 PEM |
+| `privateKeyPem` | string | 新生成密钥时的 PKCS#8 私钥 |
+| `chainPem` | array | `ca` 模式下为「叶 → 签发者」；`self` 模式只有叶证书 |
+| `serial` | string | 序列号（大写十六进制） |
+| `subjectText` / `issuerText` | string | 主体 / 签发者单行文本 |
+| `notBefore` / `notAfter` | string | 有效期（RFC3339） |
+| `keyType` / `keyBits` / `keyCurve` | string / int / string | 新证书公钥参数 |
 
 ### 错误
 
-`INVALID_FIELD`、`INVALID_CERT`、`INVALID_KEY`、`KEY_MISMATCH`、`NOT_AFTER_BEFORE_NOW`、`SERIAL_INVALID`。
+`MISSING_FIELD`、`INVALID_FIELD`、`INVALID_CERT`、`INVALID_KEY`、`KEY_MISMATCH`、
+`NOT_AFTER_BEFORE_NOW`、`SERIAL_INVALID`、`INVALID_TIME`、`UNSUPPORTED_FORMAT`。
 
-> `ca` 模式**必须**校验签发者私钥与证书是否配对（`KEY_MISMATCH`）。
+> `ca` 模式**必须**校验签发者私钥与签发者证书是否配对；`self` 模式校验公钥与签名私钥是否配对。两者不匹配均返回 `KEY_MISMATCH`。
+> SKID / AKID **默认自动补齐**：CA 模式下叶证书的 AKID 取自签发者证书的 SKID。
+> `templateCert` **不**拷贝扩展：上游没有「按 DER 添加扩展」的入口（见 I-19）。
+> `serial` 上限 8 字节：上游用 64 位整数承载序列号，超出返回 `SERIAL_INVALID`（见 I-21）。
 
 ---
 
@@ -511,20 +544,26 @@ ASN.1 结构树可视化。
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `cert` | object | 是 | 叶证书 |
-| `privateKey` | object | 否 | 私钥 |
-| `chain` | array | 否 | 附加证书链 |
-| `password` | string | 是 | 口令 |
-| `alias` | string | 否 | 条目别名 |
+| `key` | object | 是 | 与证书配对的私钥（`KeyInput`） |
+| `caCerts` | array | 否 | 随包的 CA 链（每个一项 `PemBundle`） |
+| `passphrase` | string | 否 | 容器口令；为空表示不加密 |
+| `friendlyName` | string | 否 | 友好名称 |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `pfxBase64` | string | PKCS#12 内容（base64） |
+| `base64` | string | PKCS#12 容器的 DER（base64） |
+| `length` | int | 字节长度 |
+| `encoding` | string | 固定 `base64` |
 
 ### 错误
 
-`INVALID_CERT`、`INVALID_KEY`、`KEY_MISMATCH`、`INVALID_FIELD`。
+`INVALID_CERT`、`INVALID_KEY`、`KEY_MISMATCH`、`INVALID_PKCS12`、`TOO_MANY_ITEMS`。
+
+### 警告
+
+`LOSSY_FORMAT`（口令为空时，容器不受口令保护）。
 
 ---
 
@@ -536,20 +575,22 @@ ASN.1 结构树可视化。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `pfx` | object | 是 | `{ base64 }` |
-| `password` | string | 是 | 口令 |
+| `container` | object | 是 | `PemBundle`（DER / base64 / hex） |
+| `passphrase` | string | 否 | 容器口令 |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `certPem` | string | 主证书 |
-| `chainPem` | array | 附加证书 |
-| `privateKeyPem` | string | 私钥（如存在） |
+| `hasPrivateKey` | bool | 容器是否含私钥 |
+| `certificate` | object | 主证书的元信息（无证书时为 `null`） |
+| `privateKeyPem` | string | 容器内私钥的 PKCS#8 PEM |
+| `caCertificates` | array | 随包 CA 链的元信息 |
+| `caCount` | int | CA 证书数量 |
 
 ### 错误
 
-`INVALID_PKCS12`、`PASSPHRASE_INCORRECT`、`INVALID_CERT`。
+`INVALID_PKCS12`、`PASSPHRASE_INCORRECT`、`INVALID_CERT`、`MISSING_FIELD`。
 
 ---
 
@@ -561,19 +602,24 @@ ASN.1 结构树可视化。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `pfx` | object | 是 | `{ base64 }` |
-| `oldPassword` | string | 是 | 原口令 |
-| `newPassword` | string | 是 | 新口令 |
+| `container` | object | 是 | `PemBundle` |
+| `oldPassphrase` | string | 是 | 原口令 |
+| `newPassphrase` | string | 是 | 新口令 |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `pfxBase64` | string | 改密后的内容（base64） |
+| `base64` | string | 改密后的容器（base64） |
+| `length` | int | 字节长度 |
+| `encoding` | string | 固定 `base64` |
 
 ### 错误
 
 `INVALID_PKCS12`、`PASSPHRASE_INCORRECT`、`MISSING_FIELD`。
+
+> ⚠️ 只支持**本库打包**的容器：上游 `PKCS12_newpass` 无法对外部实现产出的容器改密（见 I-22）。
+> 两个口令都必填：缺任一返回 `MISSING_FIELD`。
 
 ---
 
@@ -585,17 +631,22 @@ ASN.1 结构树可视化。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `chainPem` | array | 是 | 证书链 PEM 列表 |
+| `certs` | array | 是 | 待打包证书（每个一项 `PemBundle`），上限 64 |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `p7bPem` | string | PKCS#7 PEM |
+| `pem` | string | 证书袋的 PEM |
+| `derBase64` | string | 证书袋的 DER（base64） |
+| `length` | int | DER 字节长度 |
+| `certCount` | int | 打包的证书数量 |
 
 ### 错误
 
-`INVALID_CERT`、`INVALID_PKCS7`、`MISSING_FIELD`。
+`INVALID_CERT`、`INVALID_PKCS7`、`MISSING_FIELD`、`TOO_MANY_ITEMS`。
+
+> 只支持**证书袋**：签名 / 加密容器不在本版范围（见 I-11）。
 
 ---
 
@@ -607,17 +658,19 @@ ASN.1 结构树可视化。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `p7b` | object | 是 | `{ auto }` |
+| `container` | object | 是 | `PemBundle`（自动识别 DER / base64 / hex） |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `chainPem` | array | 提取出的证书 PEM |
+| `certificates` | array | 提取出的证书元信息 |
+| `count` | int | 证书数量 |
+| `pems` | array | 提取出的证书 PEM |
 
 ### 错误
 
-`INVALID_PKCS7`、`INVALID_PEM`、`INVALID_DER`。
+`INVALID_PKCS7`、`INVALID_PEM`、`INVALID_DER`、`TOO_MANY_ITEMS`。
 
 ---
 
@@ -630,19 +683,23 @@ ASN.1 结构树可视化。
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `domain` | string | 是 | 域名 |
-| `cas` | array | 否 | `[{ flag, tag, value }]` |
-| `provider` | string | 否 | `bind` \| `route53` \| `dnsmasq` \| `cloudflare` |
-| `ttl` | int | 否 | TTL 秒数 |
+| `records` | array | 是 | `[{ flags?, tag, value }]`；`tag` ∈ `issue` \| `issuewild` \| `iodef` |
+| `ttl` | int | 否 | TTL 秒数；`0` 表示不输出 TTL |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `records` | array | `[{ provider, text }]` |
+| `domain` | string | 域名 |
+| `records` | array | `[{ flags, tag, value, zone }]` |
+| `zoneLines` | array | 可直接粘贴到区域文件的行（含 TTL） |
+| `count` | int | 记录数量 |
 
 ### 错误
 
-`INVALID_DOMAIN`、`INVALID_FIELD`。
+`MISSING_FIELD`、`INVALID_FIELD`。
+
+> 纯字符串拼装，**不**涉及密码学运算；记录数上限 32。
 
 ---
 
