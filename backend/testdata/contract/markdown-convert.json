@@ -1,0 +1,45 @@
+{
+  "slug": "markdown-convert",
+  "description": "Markdown 转换的契约测试数据。",
+  "cases": [
+    {
+      "name": "Markdown 转 HTML",
+      "request": {
+        "mode": "toHtml",
+        "input": "# Title\n\nBody",
+        "gfm": true
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "mode": "toHtml",
+          "headingCount": 1
+        }
+      }
+    },
+    {
+      "name": "HTML 转 Markdown",
+      "request": {
+        "mode": "toMarkdown",
+        "input": "<h1>Title</h1><p>Body</p>"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "mode": "toMarkdown"
+        }
+      }
+    },
+    {
+      "name": "不支持的模式",
+      "request": {
+        "mode": "toPdf",
+        "input": "# a"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

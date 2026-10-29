@@ -1,0 +1,43 @@
+{
+  "slug": "html-escape",
+  "description": "HTML 转义的契约测试数据。",
+  "cases": [
+    {
+      "name": "转义尖括号",
+      "request": {
+        "mode": "encode",
+        "input": "<b>hi</b>"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "output": "&lt;b&gt;hi&lt;/b&gt;"
+        }
+      }
+    },
+    {
+      "name": "反转义实体",
+      "request": {
+        "mode": "decode",
+        "input": "&lt;b&gt;hi&lt;/b&gt;"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "output": "<b>hi</b>"
+        }
+      }
+    },
+    {
+      "name": "不支持的模式",
+      "request": {
+        "mode": "strip",
+        "input": "a"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

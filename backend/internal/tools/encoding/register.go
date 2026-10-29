@@ -65,5 +65,14 @@ func Definitions() []tools.Definition {
 				return GZipDeflate(ctx, req.(*GZipDeflateRequest))
 			},
 		},
+		{
+			Slug: "html-escape",
+			NewRequest: func() tools.Request {
+				return &HTMLEscapeRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return HTMLEscape(ctx, req.(*HTMLEscapeRequest))
+			},
+		},
 	}
 }

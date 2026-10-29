@@ -40,5 +40,14 @@ func Definitions() []tools.Definition {
 				return tools.Result{Data: result}, nil
 			},
 		},
+		{
+			Slug: "markdown-convert",
+			NewRequest: func() tools.Request {
+				return &MarkdownConvertRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return MarkdownConvert(ctx, req.(*MarkdownConvertRequest))
+			},
+		},
 	}
 }

@@ -1,0 +1,49 @@
+{
+  "slug": "color-convert",
+  "description": "颜色格式转换的契约测试数据。",
+  "cases": [
+    {
+      "name": "十六进制转多格式",
+      "request": {
+        "input": "#3B82F6",
+        "inputFormat": "hex",
+        "outputFormats": [
+          "hex",
+          "rgb",
+          "hsl",
+          "oklch"
+        ]
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "hex": "#3B82F6"
+        }
+      }
+    },
+    {
+      "name": "RGB 字符串输入",
+      "request": {
+        "input": "rgb(59, 130, 246)",
+        "inputFormat": "rgb"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "inputFormat": "rgb"
+        }
+      }
+    },
+    {
+      "name": "非法颜色",
+      "request": {
+        "input": "not-a-color",
+        "inputFormat": "hex"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

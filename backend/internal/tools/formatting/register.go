@@ -83,6 +83,15 @@ func Definitions() []tools.Definition {
 				return runFormat(ctx, req.(*FormatConvertRequest), FormatConvert)
 			},
 		},
+		{
+			Slug: "color-convert",
+			NewRequest: func() tools.Request {
+				return &ColorConvertRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return ColorConvert(ctx, req.(*ColorConvertRequest))
+			},
+		},
 	}
 }
 
