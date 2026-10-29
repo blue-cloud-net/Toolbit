@@ -221,8 +221,8 @@ func TestUnknownToolReturns404(t *testing.T) {
 
 func TestUnimplementedToolReturns501(t *testing.T) {
 	h := newTestServer(t)
-	// cert-parse 在 catalog 中已启用，但尚未实现（v0.5.0 交付）。
-	rec := postJSON(t, h, "/api/v1/tools/cert-parse", `{}`)
+	slug := unimplementedSlug(t, catalog.TransportJSON)
+	rec := postJSON(t, h, "/api/v1/tools/"+slug, `{}`)
 
 	if rec.Code != http.StatusNotImplemented {
 		t.Fatalf("状态码 = %d，期望 501；body=%s", rec.Code, rec.Body.String())
@@ -231,6 +231,30 @@ func TestUnimplementedToolReturns501(t *testing.T) {
 	if env.Error == nil || env.Error.Code != "NOT_IMPLEMENTED" {
 		t.Errorf("error = %+v，期望 NOT_IMPLEMENTED", env.Error)
 	}
+}
+
+// unimplementedSlug 返回一个「catalog 中已启用但尚未实现」的工具 slug。
+//
+// 该清单从 catalog **派生**而不是硬编码：
+// 硬编码会在工具落地后失效（v0.4.0 与 v0.5.0 各踩过一次）。
+func unimplementedSlug(t *testing.T, transport catalog.Transport) string {
+	t.Helper()
+	cat, err := catalog.Load()
+	if err != nil {
+		t.Fatalf("加载 catalog 失败：%v", err)
+	}
+	registry := tools.NewRegistry(toolset.Definitions())
+	for _, tool := range cat.EnabledTools() {
+		if tool.Transport != transport {
+			continue
+		}
+		if _, ok := registry.Lookup(tool.Slug); ok {
+			continue
+		}
+		return tool.Slug
+	}
+	t.Fatalf("catalog 中没有「已启用但未实现」的 %s 工具", transport)
+	return ""
 }
 
 func TestMethodNotAllowed(t *testing.T) {
@@ -393,15 +417,12 @@ func TestInternalEndpointsDisabledByDefault(t *testing.T) {
 }
 
 func TestContractDataFilesExist(t *testing.T) {
-	// 契约测试数据必须落档。
-	slugs := []string{
-		"base64", "number-base",
-		"hash-calc", "hmac-gen", "password-gen",
-		"symmetric-crypt", "signature", "asymmetric-crypt", "ecdh",
-		"sm4-file-crypt",
-	}
-	for _, slug := range slugs {
-		path := filepath.Join("..", "..", "testdata", "contract", slug+".json")
+	// 契约测试数据必须落档：**每个已实现工具**都要有一份契约文件。
+	//
+	// 该清单从 toolset.Definitions() 派生，而不是手写：
+	// 手写清单会在新增工具时漏更新（v0.4.0 就漏过一次）。
+	for _, def := range toolset.Definitions() {
+		path := filepath.Join("..", "..", "testdata", "contract", def.Slug+".json")
 		if _, err := os.Stat(path); err != nil {
 			t.Errorf("契约数据缺失：%s", path)
 		}
