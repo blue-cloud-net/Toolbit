@@ -1,0 +1,64 @@
+code,reason,description,deprecated
+100,Continue,请求已收到，客户端可以继续发送请求主体,0
+101,Switching Protocols,服务端同意按 Upgrade 请求头切换协议,0
+102,Processing,服务端已收到并开始处理请求（WebDAV 扩展）,0
+103,Early Hints,服务端在正式响应之前先返回部分提示头,0
+200,OK,请求成功,0
+201,Created,请求成功并在服务端创建了新资源,0
+202,Accepted,请求已被接受，但处理尚未完成,0
+203,Non-Authoritative Information,响应来自转换代理，内容可能与源站不同,0
+204,No Content,请求成功但没有响应主体,0
+205,Reset Content,请求成功，要求客户端重置文档视图,0
+206,Partial Content,服务端成功处理了 Range 请求，只返回部分内容,0
+207,Multi-Status,响应包含多个独立成员的状态（WebDAV）,0
+208,Already Reported,已枚举的成员在响应中重复出现（WebDAV）,0
+226,IM Used,服务端已满足并执行 GET 的实例操作,0
+300,Multiple Choices,请求有多个可选表示，需要客户端选择,0
+301,Moved Permanently,资源已永久移动到新地址,0
+302,Found,资源临时位于另一个地址,0
+303,See Other,应使用 GET 方法访问 Location 指向的地址,0
+304,Not Modified,协商缓存命中，客户端可继续使用本地副本,0
+305,Use Proxy,资源必须通过代理访问,1
+306,Unused,该状态码保留但未使用,1
+307,Temporary Redirect,资源临时位于另一个地址，且必须保持原请求方法,0
+308,Permanent Redirect,资源已永久移动到新地址，且必须保持原请求方法,0
+400,Bad Request,请求语法错误或参数非法,0
+401,Unauthorized,缺少有效的身份认证凭据,0
+402,Payment Required,需要付费，保留给将来使用,0
+403,Forbidden,服务端理解请求但拒绝授权,0
+404,Not Found,服务端找不到请求的资源,0
+405,Method Not Allowed,请求方法不被目标资源允许,0
+406,Not Acceptable,服务端无法生成客户端可接受的响应,0
+407,Proxy Authentication Required,代理服务器要求提供认证凭据,0
+408,Request Timeout,等待请求超时,0
+409,Conflict,请求与资源当前状态冲突,0
+410,Gone,资源已被永久删除且不再可用,0
+411,Length Required,服务端要求请求提供 Content-Length,0
+412,Precondition Failed,请求头中的前置条件不满足,0
+413,Content Too Large,请求体超过服务端允许的上限,0
+414,URI Too Long,请求的 URI 过长,0
+415,Unsupported Media Type,请求体的媒体类型不被支持,0
+416,Range Not Satisfiable,请求的字节范围无法满足,0
+417,Expectation Failed,Expect 请求头中的期望无法满足,0
+418,I'm a teapot,彩蛋响应：该服务器拒绝用茶壶冲泡咖啡,0
+421,Misdirected Request,请求被发往无法处理它的服务器,0
+422,Unprocessable Content,请求语法正确但语义上无法处理,0
+423,Locked,资源处于锁定状态,0
+424,Failed Dependency,请求失败是因为它依赖的前置请求失败,0
+425,Too Early,服务端不愿意处理可能被重放的早期数据,0
+426,Upgrade Required,客户端必须切换到指定的协议版本,0
+428,Precondition Required,服务端要求请求必须携带条件请求头,0
+429,Too Many Requests,用户请求过多，被限流,0
+431,Request Header Fields Too Large,请求头字段过大,0
+451,Unavailable For Legal Reasons,资源因法律原因不可用,0
+500,Internal Server Error,服务端内部错误,0
+501,Not Implemented,服务端不支持完成该请求所需的功能,0
+502,Bad Gateway,网关从上游服务器收到无效响应,0
+503,Service Unavailable,服务暂时不可用，通常是维护或过载,0
+504,Gateway Timeout,网关等待上游服务器响应超时,0
+505,HTTP Version Not Supported,服务端不支持该 HTTP 版本,0
+506,Variant Also Negotiates,透明内容协商导致配置错误,0
+507,Insufficient Storage,存储空间不足,0
+508,Loop Detected,服务器检测到处理请求时陷入无限循环,0
+510,Not Extended,请求的扩展未被支持,0
+511,Network Authentication Required,客户端需要通过网络层认证,0

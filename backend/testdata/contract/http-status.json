@@ -1,0 +1,70 @@
+{
+  "slug": "http-status",
+  "description": "HTTP 状态码查询的契约测试数据。",
+  "cases": [
+    {
+      "name": "按状态码查 404",
+      "request": { "code": 404 },
+      "expect": {
+        "code": 0,
+        "dataContains": { "code": 404, "reason": "Not Found", "category": "clientError" }
+      }
+    },
+    {
+      "name": "按状态码查 301",
+      "request": { "code": 301 },
+      "expect": {
+        "code": 0,
+        "dataContains": { "reason": "Moved Permanently", "category": "redirect" }
+      }
+    },
+    {
+      "name": "数字关键字按状态码处理",
+      "request": { "query": "500" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "code": 500, "reason": "Internal Server Error" }
+      }
+    },
+    {
+      "name": "英文关键字",
+      "request": { "query": "not found" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "matched": true, "code": 404 }
+      }
+    },
+    {
+      "name": "中文关键字",
+      "request": { "query": "重定向" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "matched": true, "category": "redirect" }
+      }
+    },
+    {
+      "name": "未收录的状态码仍给出类别",
+      "request": { "code": 299 },
+      "expect": {
+        "code": 0,
+        "dataContains": { "matched": false, "category": "success" }
+      }
+    },
+    {
+      "name": "越界的状态码",
+      "request": { "code": 999 },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "缺少查询词",
+      "request": {},
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

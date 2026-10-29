@@ -1,0 +1,59 @@
+{
+  "slug": "ip-range-expand",
+  "description": "IP 段展开的契约测试数据。",
+  "cases": [
+    {
+      "name": "展开网段",
+      "request": {
+        "mode": "expand",
+        "cidr": "192.168.1.0/30",
+        "limit": 16
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "mode": "expand",
+          "count": 4
+        }
+      }
+    },
+    {
+      "name": "地址转 CIDR",
+      "request": {
+        "mode": "toCidr",
+        "start": "192.168.1.10",
+        "end": "192.168.1.20"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "mode": "toCidr"
+        }
+      }
+    },
+    {
+      "name": "网段转地址区间",
+      "request": {
+        "mode": "toRange",
+        "cidr": "192.168.1.0/24"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "mode": "toRange"
+        }
+      }
+    },
+    {
+      "name": "非法网段",
+      "request": {
+        "mode": "expand",
+        "cidr": "not-a-cidr"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

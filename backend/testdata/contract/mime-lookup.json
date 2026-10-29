@@ -1,0 +1,70 @@
+{
+  "slug": "mime-lookup",
+  "description": "MIME 类型查询的契约测试数据。",
+  "cases": [
+    {
+      "name": "按扩展名查 PNG",
+      "request": { "extension": "png" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mimeType": "image/png", "category": "image", "matched": true }
+      }
+    },
+    {
+      "name": "按文件名查 PDF",
+      "request": { "extension": "report.pdf" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mimeType": "application/pdf" }
+      }
+    },
+    {
+      "name": "按媒体类型查 JSON",
+      "request": { "mimeType": "application/json" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mimeType": "application/json", "charset": "utf-8", "isTextual": true }
+      }
+    },
+    {
+      "name": "媒体类型带参数时去掉参数",
+      "request": { "mimeType": "text/plain; charset=utf-8" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mimeType": "text/plain" }
+      }
+    },
+    {
+      "name": "历史别名归一到规范类型",
+      "request": { "mimeType": "image/x-png" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mimeType": "image/png" }
+      }
+    },
+    {
+      "name": "未收录的扩展名",
+      "request": { "extension": "zzzz" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "matched": false }
+      }
+    },
+    {
+      "name": "两个查询方式同时给出",
+      "request": { "extension": "png", "mimeType": "image/png" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "缺少查询词",
+      "request": {},
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

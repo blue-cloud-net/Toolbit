@@ -1,0 +1,43 @@
+{
+  "slug": "device-headers",
+  "description": "设备请求头的契约测试数据。",
+  "cases": [
+    {
+      "name": "生成 Chrome 请求头",
+      "request": {
+        "mode": "generate",
+        "platform": "chrome",
+        "version": "120.0.0.0"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "mode": "generate"
+        }
+      }
+    },
+    {
+      "name": "解析 User-Agent",
+      "request": {
+        "mode": "parseUa",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "mode": "parseUa"
+        }
+      }
+    },
+    {
+      "name": "不支持的模式",
+      "request": {
+        "mode": "rewrite"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

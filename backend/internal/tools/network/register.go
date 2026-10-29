@@ -53,5 +53,41 @@ func Definitions(g *netguard.Guard) []tools.Definition {
 				return DomainVerify(ctx, g, req.(*DomainVerifyRequest))
 			},
 		},
+		{
+			Slug: "device-headers",
+			NewRequest: func() tools.Request {
+				return &DeviceHeadersRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return DeviceHeaders(ctx, req.(*DeviceHeadersRequest))
+			},
+		},
+		{
+			Slug: "ip-range-expand",
+			NewRequest: func() tools.Request {
+				return &IPRangeRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return IPRange(ctx, req.(*IPRangeRequest))
+			},
+		},
+		{
+			Slug: "mime-lookup",
+			NewRequest: func() tools.Request {
+				return &MimeLookupRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return MimeLookup(ctx, req.(*MimeLookupRequest))
+			},
+		},
+		{
+			Slug: "http-status",
+			NewRequest: func() tools.Request {
+				return &HttpStatusRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return HttpStatus(ctx, req.(*HttpStatusRequest))
+			},
+		},
 	}
 }
