@@ -217,6 +217,8 @@ DNS 记录查询（需出网）。
 
 > **单台服务器失败不返回错误**：错误记在对应 `perServer[].error` 里，整体仍是 `200`。
 > 默认使用系统解析器；指定 `servers` 时**只**查询指定服务器。
+> 各台服务器**并发**查询（上限 4 路），结果按下标回填、保持请求顺序；
+> 8 台服务器可在工具 20 秒的预算内完成。
 > DoH 需要完整的 `https://` 地址；DoT 固定 `853` 端口。
 > `ANY` 查询可能被上游服务器拒绝，部分服务商已不再支持。
 
@@ -312,35 +314,32 @@ MIME 媒体类型查询（**不出网**）。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `extension` | string | 二选一 | 扩展名；可写 `png`、`.png` 或 `report.png` |
-| `mimeType` | string | 二选一 | 媒体类型；可写 `image/png`，带参数时自动去掉参数 |
+| `query` | string | 否 | 查询词：媒体类型（`image/png`）、扩展名（`png`、`.png`、`report.png`）或用途说明里的关键词（如 `图片`）；空表示**返回全量** |
+| `category` | string | 否 | 顶层类型过滤：`application` \| `audio` \| `font` \| `image` \| `message` \| `model` \| `multipart` \| `text` \| `video`；空表示不过滤 |
 
-> 两个字段**互斥**：同时给出返回 `INVALID_FIELD`，都不给出返回 `MISSING_FIELD`。
+> 两个字段都可省略：都不给时返回**全量**数据集（119 条），供前端默认展示完整列表。
+> `category` 与 `query` 可叠加。
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `query` | string | 规范化后的查询词（扩展名小写去点；媒体类型小写去参数） |
-| `kind` | string | 查询方式：`extension` \| `mimeType` |
-| `matched` | bool | 是否命中数据集 |
-| `mimeType` | string | 规范媒体类型；未命中时为空串 |
-| `extensions` | array | 该媒体类型的常用扩展名（小写，不含点） |
-| `category` | string | 顶层类型：`application` \| `audio` \| `font` \| `image` \| `message` \| `model` \| `multipart` \| `text` \| `video` |
-| `isTextual` | bool | 是否是文本类媒体类型 |
-| `charset` | string | 默认字符集；非文本类为空串 |
-| `description` | string | 用途说明 |
-| `aliases` | array | 历史别名与常见变体 |
+| `query` | string | 规范化后的查询词；全量列表时为空串 |
+| `category` | string | 生效的顶层类型过滤；未过滤时为空串 |
+| `entries` | array | 命中的条目 `[{ mimeType, extensions, category, isTextual, charset, description, aliases }]`；未命中时为空数组 |
+| `total` | number | 命中条数 |
 | `dataVersion` | string | 数据集版本 |
 
 ### 错误
 
-`MISSING_FIELD`、`INVALID_FIELD`。
+`INVALID_FIELD`。
 
 > 数据来自**内置快照**，**不**读取系统 MIME 数据库（各发行版映射表不一致），**不**联网。
-> 扩展名查询按「先到先得」命中：同一扩展名被多个类型描述时，返回数据集中靠前的那一个。
+> 查询词归一化：媒体类型去掉 `;` 之后的参数并转小写；文件名取扩展名（`report.PNG` → `png`）。
+> 匹配范围：媒体类型、扩展名、历史别名、用途说明与顶层类型；精确命中（媒体类型 / 别名 / 扩展名）排在最前。
+> 扩展名按「先到先得」命中：同一扩展名被多个类型描述时，返回数据集中靠前的那一个。
 > 历史别名（如 `image/x-png`）会归一到规范类型，响应里的 `mimeType` 是规范值。
-> 未收录**不是**错误：返回 `200` 与 `matched: false`。
+> 未收录**不是**错误：返回 `200` 与空 `entries`。
 
 ---
 
@@ -352,17 +351,19 @@ HTTP 状态码查询（**不出网**）。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `code` | number | 二选一 | 状态码，`100`–`599` 的整数 |
-| `query` | string | 二选一 | 关键字；纯数字时按状态码处理 |
+| `code` | number | 否 | 状态码，`100`–`599` 的整数 |
+| `query` | string | 否 | 关键字；纯数字时按状态码处理；空表示**返回全量** |
+| `category` | string | 否 | 类别过滤：`informational` \| `success` \| `redirect` \| `clientError` \| `serverError`；空表示不过滤 |
 
-> 两个字段**互斥**：同时给出返回 `INVALID_FIELD`，都不给出返回 `MISSING_FIELD`。
+> `code` 与 `query` **互斥**：同时给出返回 `INVALID_FIELD`；都不给出时返回**全量**列表（63 条）。
+> `category` 可与任一方式叠加。
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `query` | string | 规范化后的查询词 |
-| `kind` | string | 查询方式：`code` \| `keyword` |
+| `kind` | string | 查询方式：`code` \| `keyword` \| `all` |
 | `matched` | bool | 是否命中标准状态码 |
 | `code` | number | 状态码；关键字查询取首条命中，未命中为 `0` |
 | `reason` | string | 标准原因短语 |
@@ -375,7 +376,7 @@ HTTP 状态码查询（**不出网**）。
 
 ### 错误
 
-`MISSING_FIELD`、`INVALID_FIELD`。
+`INVALID_FIELD`。
 
 > 关键字匹配**原因短语**（不区分大小写）、**中文说明**与**类别中文名**，
 > 因此 `not found`、`未找到`、`重定向` 都能命中。

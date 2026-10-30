@@ -9,6 +9,64 @@
 
 部署产物与容器探活子命令：仓库从「文档声明了部署形态」变为「真的能构建、能跑」。
 
+### Changed
+
+- **结果区全面结构化**：28 个此前把多字段压成 `key: value` 文本行的工具改为结构化展示
+  - 新增三个共享组件并登记进 `docs/standards/01-frontend.md` §4.3：
+    `DataTable`（多记录表格：列定义 + 行数据 + 逐行复制 + 滚动区）、
+    `StatGrid`（少量关键指标的卡片网格）、`FilterChips`（可点选的筛选标签组）
+  - **证书类（16 个）**：摘要用 `StatGrid` / `KeyValueTable`，多记录（证书链、吊销条目、
+    CSR 请求扩展、各解析器、逐级校验明细）用 `DataTable`，PEM / DER / 十六进制等**产物**
+    改走独立页签并保留全文复制
+  - **密钥 / 加密类（5 个）**：`key-match`、`keygen`、`ecdh`、`symmetric-crypt`、`hash-calc`
+    改为卡片 + 页签；`hash-calc` 的多算法摘要改为表格
+  - **网络类（2 个）**：`ip-range-expand` 的摘要改为 `StatGrid`（模式 / 地址总数 /
+    起止地址 / 网段数量 / 截断标记），网段与地址列表改为 `DataTable`；
+    `device-headers` 的 UA 解析结果改为 `StatGrid`（浏览器 / 版本 / 系统 / 设备类型 /
+    渲染引擎 / 是否爬虫），请求头列表改为 `DataTable`
+  - **其它**：`caa-gen` 的 CAA 记录改为表格
+  - `docs/standards/01-frontend.md` §10 新增硬规则：多字段结果**禁止**压成文本行，
+    产物与摘要**必须**分离，页签选中项**禁止**持久化
+- **MIME 类型查询与 HTTP 状态码查询改为「默认全量列表 + 即时过滤」**
+  - 后端 `mime-lookup` 请求改为 `{ query, category }`（都可省略，空 = 全量），
+    响应改为列表 `{ query, category, entries[], total, dataVersion }`；
+    `http-status` 允许空请求（`kind: "all"`）并新增 `category` 过滤
+  - 匹配范围扩展到媒体类型、扩展名、历史别名、用途说明与顶层类型；精确命中排在最前
+  - 前端首屏拉全量，搜索与类别筛选在**本地即时完成**（零延迟、无 loading 闪烁）
+  - `useAutoRun` 新增 `immediate` 选项：catalog 加载完成后触发一次首屏运行
+- **DNS 查询改为多服务器对比**
+  - 前端提供 8 家**预设**解析器（Cloudflare / Google / Quad9 / AliDNS / DNSPod /
+    114DNS / OpenDNS 与 DoH 入口，多选）与**自定义**服务器逐台追加，合计上限 8 台；
+    默认选中 Cloudflare、Google 与 AliDNS
+  - 结果用页签呈现：**第一个页签是「汇总」**（成功 / 失败台数、最快 / 最慢、TTL 区间、
+    **记录一致性差异表**），其后每台服务器一个页签（协议、耗时、记录表）
+  - 后端各台服务器改为**并发**查询（上限 4 路，结果按下标回填保持顺序），
+    8 台服务器可在工具 20 秒预算内完成
+- **CIDR 计算改为可视化**
+  - 结果用页签呈现：**概览**（`StatGrid` 统计卡片 + 地址区间条 + 32/128 位前缀位图）
+    与**子网**（标签网格，逐个可复制，超过 64 条折叠）
+  - `cidr-calc` 与 `dns-lookup` 的 catalog `wide` 改为 `true`，宽屏下左右分栏展示
+- **词条悬空键清理**：60 处 `t('tools.<slug>.<path>')` 引用原本在语言包中**查不到**，
+  界面上直接显示原始键名（如 `tools.keygen.views.summary`）
+  - 补齐 26 个**页签**词条（`asn1-view`、`cert-chain-fetch`、`cert-chain-repair`、
+    `cert-gen`、`crl-gen`、`csr-gen`、`keygen`、`ocsp-request`、`p7b-extract`、
+    `pfx-parse`），`keygen` 的 `views` 从误放的 `options.views` 提升到顶层
+  - 补齐 34 处**既有**悬空键（`cert-lifecycle`、`password-policy`、`totp`、
+    `ssh-keygen`、`html-escape`、`device-headers`、`ip-range-expand`、
+    `color-convert`），并把 3 处指向错键名的代码改到正确键上
+  - 新增 `frontend/src/i18n/usage.test.ts`：逐个校验工具页的**字面量**键引用在
+    语言包中真实存在，防止悬空键再次进入主干
+
+### Fixed
+
+- `device-headers` **完全不可用**：前端把 `customHeaders` 当作**字符串**下发，而后端
+  的类型是 `map[string]string`，每次调用都返回 `INVALID_FIELD`；现在前端按
+  「每行一条 `名称: 值`」解析成对象后再提交
+- `ip-range-expand` 的响应字段名与后端不符（前端写 `cidr` / `total`，后端实际返回
+  `cidrs` / `count`），页面的网段与地址总数一直显示为空
+- `ip-range-expand` 与 `device-headers` 在结果区显示与可见内容不一致时不再出现
+  「（空结果）」：复制文本改为按实际模式取值
+
 ### Added
 
 - 工具目录扩容（工具总数 72 → **98**），新增 **26 个工具**，覆盖十个分类：
