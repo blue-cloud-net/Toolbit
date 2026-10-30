@@ -6,12 +6,20 @@
     "search": "Search"
   },
   "fields": {
-    "query": "Name or code keyword"
+    "query": "Name or code keyword",
+    "initial": "Initial filter"
   },
-  "options": {},
+  "options": {
+    "initial": {
+      "all": "All"
+    }
+  },
   "results": {
     "output": "Search result",
+    "title": "Country and region codes",
     "total": "Matches",
+    "datasetTotal": "Dataset entries",
+    "initial": "Initial filter",
     "dataVersion": "Dataset version",
     "alpha2": "Alpha-2",
     "alpha3": "Alpha-3",
@@ -35,7 +43,8 @@
     }
   ],
   "hints": {
-    "query": "Matches the alpha-2, alpha-3, numeric code or the Chinese and English names; leave it empty to list everything.",
+    "query": "Matches the alpha-2, alpha-3, numeric code or the Chinese and English names; typing filters locally, there is nothing to run.",
+    "initial": "Pick an initial chip to keep only the countries and territories starting with that letter; the number on the chip is the entry count under the current conditions.",
     "output": "The dataset is a bundled offline snapshot of ISO 3166-1; the tool never goes online."
   },
   "faq": [

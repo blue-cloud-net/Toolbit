@@ -7,6 +7,19 @@ import (
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
 )
 
+// 区划层级过滤值。
+const (
+	// CNLevelAll 表示不过滤层级，返回全部层级。
+	CNLevelAll = "all"
+)
+
+// CNLevels 返回可用的层级过滤值（顺序稳定）。
+//
+// 空串（未给出）不在其中：它表示「按缺省规则只返回省级」。
+func CNLevels() []string {
+	return []string{LevelProvince, LevelCity, LevelDistrict, CNLevelAll}
+}
+
 // CNRegionsRequest 是 cn-regions 工具的请求。
 type CNRegionsRequest struct {
 	// Query 是名称或编码关键词；缺省返回全部省份。
@@ -14,6 +27,9 @@ type CNRegionsRequest struct {
 	// Province 是指定省级行政区的名称或代码；
 	// 给出时把城市查询范围限定在该省内。
 	Province string `json:"province"`
+	// Level 是层级过滤：province / city / district / all；
+	// 为空表示不过滤层级（缺省只返回省级）。
+	Level string `json:"level"`
 }
 
 // CNRegionsResult 是 cn-regions 工具的响应。
@@ -32,6 +48,10 @@ type CNRegionsResult struct {
 //
 // 数据集是**离线内置快照**，可能滞后于最新区划调整；
 // 版本号随响应返回，便于判断新旧。
+//
+// `level` 控制返回哪些层级：
+//   - 空：缺省只返回省级（除非给了关键词或省份）；
+//   - `all`：返回全部层级（省 + 地级 + 县级），供前端一次性取回后本地筛选。
 func CNRegions(ctx context.Context, req *CNRegionsRequest) (CNRegionsResult, error) {
 	if err := req.Validate(); err != nil {
 		return CNRegionsResult{}, err
@@ -39,10 +59,12 @@ func CNRegions(ctx context.Context, req *CNRegionsRequest) (CNRegionsResult, err
 
 	query := strings.ToLower(strings.TrimSpace(req.Query))
 	provinceFilter := strings.ToLower(strings.TrimSpace(req.Province))
+	level := strings.TrimSpace(req.Level)
 
 	// 缺省（既无关键词也无省份）时**只**返回省级：
 	// 全部地级与县级有三千多条，一次返回既慢又没人看得完。
-	provincesOnly := query == "" && provinceFilter == ""
+	// 显式给出 `level` 时以 `level` 为准，不再走缺省规则。
+	provincesOnly := level == "" && query == "" && provinceFilter == ""
 
 	provinces := []Region{}
 	cities := []Region{}
@@ -50,6 +72,9 @@ func CNRegions(ctx context.Context, req *CNRegionsRequest) (CNRegionsResult, err
 	for _, region := range Regions() {
 		switch region.Level {
 		case LevelProvince:
+			if !includeLevel(level, LevelProvince) {
+				continue
+			}
 			if provinceFilter != "" && !matchesProvince(region, provinceFilter) {
 				continue
 			}
@@ -60,6 +85,9 @@ func CNRegions(ctx context.Context, req *CNRegionsRequest) (CNRegionsResult, err
 
 		case LevelCity, LevelDistrict:
 			if provincesOnly {
+				continue
+			}
+			if !includeLevel(level, region.Level) {
 				continue
 			}
 			if provinceFilter != "" && !provinceMatches(region, provinceFilter) {
@@ -80,6 +108,19 @@ func CNRegions(ctx context.Context, req *CNRegionsRequest) (CNRegionsResult, err
 	}, nil
 }
 
+// includeLevel 判断该层级在当前过滤条件下是否保留。
+//
+// `level` 为空表示不过滤层级；`all` 表示全留；
+// 其余情况只保留与 `level` 相同的层级。
+func includeLevel(level, regionLevel string) bool {
+	switch level {
+	case "", CNLevelAll:
+		return true
+	default:
+		return level == regionLevel
+	}
+}
+
 // Validate 做字段级校验。
 func (r *CNRegionsRequest) Validate() error {
 	if len(r.Query) > 128 {
@@ -87,6 +128,9 @@ func (r *CNRegionsRequest) Validate() error {
 	}
 	if len(r.Province) > 128 {
 		return tools.InvalidField("province", []int{0, 128}, len(r.Province))
+	}
+	if level := strings.TrimSpace(r.Level); level != "" && !containsString(CNLevels(), level) {
+		return tools.InvalidField("level", CNLevels(), len(level))
 	}
 	return nil
 }

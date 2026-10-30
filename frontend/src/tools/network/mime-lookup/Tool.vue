@@ -2,25 +2,24 @@
 /**
  * MIME 类型查询工具页。
  *
- * 默认展示**全量**媒体类型列表；输入搜索词或点选顶层类型后即时收敛，
+ * 默认展示**全量**媒体类型列表；键入搜索词或点选顶层类型后即时收敛，
  * 过滤在**前端本地**完成（数据集已一次性取回），因此输入零延迟。
+ *
+ * 本页**没有运行按钮**：没有需要触发的动作 —— 进页面即取数，键入即筛选。
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
-import { ElInput } from 'element-plus/es/components/input/index'
-import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import FilterChips, { type FilterChipOption } from '@/components/tool/FilterChips.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
-import RunBar from '@/components/tool/RunBar.vue'
+import SearchField from '@/components/tool/SearchField.vue'
 import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
-import { useAutoRun } from '@/composables/useAutoRun'
-import { useToolRun } from '@/composables/useToolRun'
+import { useLiveFilter } from '@/composables/useLiveFilter'
 import { EXAMPLES } from '@/tools/network/mime-lookup/example'
 
 /** 一个媒体类型条目。 */
@@ -79,35 +78,6 @@ const { t, tm } = useI18n()
 const query = ref('')
 const category = ref('')
 
-const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<MimeLookupResult>({
-  slug: 'mime-lookup',
-})
-
-const running = computed(() => state.value === 'loading')
-
-/** 顶层类型筛选项；带各自条目数。 */
-const categoryOptions = computed<FilterChipOption[]>(() => {
-  const counts = new Map<string, number>()
-  for (const entry of data.value?.entries ?? []) {
-    counts.set(entry.category, (counts.get(entry.category) ?? 0) + 1)
-  }
-  const options: FilterChipOption[] = [
-    {
-      value: '',
-      label: t('tools.mime-lookup.options.category.all'),
-      hint: String(data.value?.total ?? 0),
-    },
-  ]
-  for (const name of MIME_CATEGORIES) {
-    options.push({
-      value: name,
-      label: t(`tools.mime-lookup.options.category.${name}`),
-      hint: String(counts.get(name) ?? 0),
-    })
-  }
-  return options
-})
-
 /** 归一化查询词：媒体类型去参数，文件名取扩展名。 */
 function normalizeQuery(raw: string): string {
   const value = raw.trim().toLowerCase()
@@ -152,20 +122,41 @@ function matchRank(entry: MimeEntry, term: string): number {
   return 2
 }
 
-/** 本地过滤结果：搜索词与顶层类型叠加。 */
-const filtered = computed<MimeEntry[]>(() => {
-  const entries = data.value?.entries ?? []
-  const term = normalizeQuery(query.value)
-  const hits = entries.filter((entry) => {
-    if (category.value !== '' && entry.category !== category.value) {
-      return false
-    }
-    return matchesQuery(entry, term)
-  })
-  return hits
-    .map((entry, index) => ({ entry, rank: matchRank(entry, term), index }))
-    .sort((a, b) => (a.rank === b.rank ? a.index - b.index : a.rank - b.rank))
-    .map((item) => item.entry)
+/** 全量数据集 + 本地筛选；进页面自动取数，之后键入即筛选。 */
+const { state, data, meta, error, filtered, counts, reload } = useLiveFilter<
+  MimeEntry,
+  MimeLookupResult
+>({
+  slug: 'mime-lookup',
+  query,
+  select: (result) => result.entries,
+  normalize: normalizeQuery,
+  match: matchesQuery,
+  rank: matchRank,
+  category: (entry) => entry.category,
+  categoryRef: category,
+})
+
+/** 占位提示：直接用示例查询词。 */
+const placeholder = EXAMPLES.map((example) => example.query).join(' / ')
+
+/** 顶层类型筛选项；带各自条目数。 */
+const categoryOptions = computed<FilterChipOption[]>(() => {
+  const options: FilterChipOption[] = [
+    {
+      value: '',
+      label: t('tools.mime-lookup.options.category.all'),
+      hint: String(data.value?.total ?? 0),
+    },
+  ]
+  for (const name of MIME_CATEGORIES) {
+    options.push({
+      value: name,
+      label: t(`tools.mime-lookup.options.category.${name}`),
+      hint: String(counts.value[name] ?? 0),
+    })
+  }
+  return options
 })
 
 /** 结果文本：命中条目逐行给出媒体类型与扩展名。 */
@@ -218,37 +209,6 @@ const rows = computed<DataTableRow[]>(() =>
 )
 
 const faq = computed<FaqItem[]>(() => tm('tools.mime-lookup.faq') as FaqItem[])
-
-/** 拉取全量数据集。 */
-function loadAll(): void {
-  void execute({})
-}
-
-// 首屏拉全量；catalog 加载完成后触发一次。
-useAutoRun({
-  slug: 'mime-lookup',
-  run: loadAll,
-  watch: [],
-  immediate: true,
-})
-
-/** 重置表单与结果。 */
-function reset(): void {
-  query.value = ''
-  category.value = ''
-  resetRun()
-  loadAll()
-}
-
-/** 填入指定示例。 */
-function fillExample(index: number): void {
-  const example = EXAMPLES[index]
-  if (!example) {
-    return
-  }
-  query.value = example.query
-  category.value = ''
-}
 </script>
 
 <template>
@@ -260,16 +220,12 @@ function fillExample(index: number): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <label class="field">
-            <span class="field__label">{{ t('tools.mime-lookup.fields.query') }}</span>
-            <ElInput
-              v-model="query"
-              class="field__input tb-mono"
-              autocomplete="off"
-              placeholder="png / image/png / report.pdf"
-              :aria-label="t('tools.mime-lookup.fields.query')"
-            />
-          </label>
+          <SearchField
+            v-model="query"
+            autofocus
+            :label="t('tools.mime-lookup.fields.query')"
+            :placeholder="placeholder"
+          />
 
           <div class="field">
             <span class="field__label">{{ t('tools.mime-lookup.fields.category') }}</span>
@@ -284,15 +240,6 @@ function fillExample(index: number): void {
             {{ t('tools.mime-lookup.hints.query') }}
           </p>
         </template>
-
-        <template #footer>
-          <RunBar
-            :running="running"
-            @run="loadAll"
-            @reset="reset"
-            @example="fillExample(0)"
-          />
-        </template>
       </ToolPanel>
     </template>
 
@@ -303,7 +250,8 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.mime-lookup.results.list')"
-        @retry="loadAll"
+        hide-text
+        @retry="reload"
       >
         <template
           v-if="data"

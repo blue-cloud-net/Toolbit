@@ -158,6 +158,80 @@ func TestCNRegionsInvalidQuery(t *testing.T) {
 	assertCode(t, err, toolerr.CodeInvalidField)
 }
 
+// TestCNRegionsLevelAll 断言 level=all 返回全部层级。
+func TestCNRegionsLevelAll(t *testing.T) {
+	result, err := CNRegions(context.Background(), &CNRegionsRequest{
+		Level: CNLevelAll,
+	})
+	if err != nil {
+		t.Fatalf("查询失败：%v", err)
+	}
+	if len(result.Provinces) < 30 {
+		t.Errorf("省份数 = %d，期望至少 30", len(result.Provinces))
+	}
+	if len(result.Cities) == 0 {
+		t.Fatal("level=all 没有返回下级行政区")
+	}
+	levels := map[string]int{}
+	for _, r := range result.Cities {
+		levels[r.Level]++
+	}
+	if levels[LevelCity] == 0 {
+		t.Error("level=all 缺少地级数据")
+	}
+	if levels[LevelDistrict] == 0 {
+		t.Error("level=all 缺少县级数据")
+	}
+}
+
+// TestCNRegionsLevelFilter 断言按层级过滤只返回该层级。
+func TestCNRegionsLevelFilter(t *testing.T) {
+	for _, level := range []string{LevelProvince, LevelCity, LevelDistrict} {
+		result, err := CNRegions(context.Background(), &CNRegionsRequest{
+			Level: level,
+		})
+		if err != nil {
+			t.Fatalf("查询失败（%s）：%v", level, err)
+		}
+		for _, r := range append(result.Provinces, result.Cities...) {
+			if r.Level != level {
+				t.Errorf("level=%s 返回了 %s 层级的 %q", level, r.Level, r.Name)
+			}
+		}
+	}
+}
+
+// TestCNRegionsLevelWithProvince 断言层级过滤可与省份限定叠加。
+func TestCNRegionsLevelWithProvince(t *testing.T) {
+	result, err := CNRegions(context.Background(), &CNRegionsRequest{
+		Province: "浙江省",
+		Level:    CNLevelAll,
+	})
+	if err != nil {
+		t.Fatalf("查询失败：%v", err)
+	}
+	if len(result.Provinces) != 1 {
+		t.Fatalf("省份数 = %d，期望 1", len(result.Provinces))
+	}
+	if len(result.Cities) == 0 {
+		t.Fatal("没有返回浙江的下级行政区")
+	}
+	for _, city := range result.Cities {
+		if city.Province != "330000" {
+			t.Errorf("城市 %q 属于 %q，不属于浙江", city.Name, city.Province)
+			break
+		}
+	}
+}
+
+// TestCNRegionsInvalidLevel 断言非法层级报 INVALID_FIELD。
+func TestCNRegionsInvalidLevel(t *testing.T) {
+	_, err := CNRegions(context.Background(), &CNRegionsRequest{
+		Level: "town",
+	})
+	assertCode(t, err, toolerr.CodeInvalidField)
+}
+
 // assertCode 断言错误的错误码。
 func assertCode(t *testing.T, err error, want toolerr.Code) {
 	t.Helper()

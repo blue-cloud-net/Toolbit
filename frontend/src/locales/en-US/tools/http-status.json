@@ -12,11 +12,11 @@
   "options": {
     "category": {
       "all": "All",
-      "informational": "1xx Informational",
-      "success": "2xx Success",
-      "redirect": "3xx Redirection",
-      "clientError": "4xx Client error",
-      "serverError": "5xx Server error"
+      "informational": "Informational",
+      "success": "Success",
+      "redirect": "Redirection",
+      "clientError": "Client error",
+      "serverError": "Server error"
     }
   },
   "results": {

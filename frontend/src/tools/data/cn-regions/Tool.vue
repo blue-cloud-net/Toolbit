@@ -2,20 +2,28 @@
 /**
  * 中国行政区划工具页。
  *
+ * 默认展示**全量**行政区划（约 3400 条）；键入搜索词、点选层级或限定省份后即时收敛，
+ * 过滤在**前端本地**完成（数据集已一次性取回），因此输入零延迟。
+ *
+ * 本页**没有运行按钮**：没有需要触发的动作 —— 进页面即取数，键入即筛选。
+ *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
-import { ElInput } from 'element-plus/es/components/input/index'
-import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import DataTable, {
+  type DataTableCellLevel,
+  type DataTableColumn,
+  type DataTableRow,
+} from '@/components/tool/DataTable.vue'
+import FilterChips, { type FilterChipOption } from '@/components/tool/FilterChips.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
-import RunBar from '@/components/tool/RunBar.vue'
+import SearchField from '@/components/tool/SearchField.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
-import { useAutoRun } from '@/composables/useAutoRun'
-import { useToolRun } from '@/composables/useToolRun'
-import { EXAMPLES } from '@/tools/data/cn-regions/example'
+import { useLiveFilter } from '@/composables/useLiveFilter'
 
 /** 一个行政区划条目。 */
 interface Region {
@@ -49,67 +57,178 @@ interface FaqItem {
   a: string
 }
 
+/** 层级枚举（与后端 `LevelProvince` / `LevelCity` / `LevelDistrict` 对应）。 */
+const LEVELS = ['province', 'city', 'district']
+
 const { t, tm } = useI18n()
 
 const query = ref('')
 const province = ref('')
+const level = ref('')
 
-const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<CNRegionsResult>({
+/** 条目是否命中关键词（名称或六位代码）。 */
+function matchesQuery(region: Region, term: string): boolean {
+  if (term === '') {
+    return true
+  }
+  return region.name.includes(term) || region.code.includes(term)
+}
+
+/** 全量数据集 + 本地筛选；进页面自动取数，之后键入即筛选。 */
+const { state, data, meta, error, entries, filtered, reload } = useLiveFilter<Region, CNRegionsResult>({
   slug: 'cn-regions',
+  query,
+  // 一次性取回全部层级；层级、省份与关键词筛选都在本地完成。
+  payload: () => ({ level: 'all' }),
+  select: (result) => [...result.provinces, ...result.cities],
+  normalize: (raw) => raw.trim(),
+  match: matchesQuery,
+  category: (region) => region.level,
+  categoryRef: level,
 })
 
-const running = computed(() => state.value === 'loading')
-
-/** 结果文本：每行一条。 */
-const resultText = computed(() => {
-  const result = data.value
-  if (!result) {
-    return ''
+/** 省级代码 → 省级名称。 */
+const provinceNameByCode = computed(() => {
+  const map = new Map<string, string>()
+  for (const region of entries.value) {
+    if (region.level === 'province') {
+      map.set(region.code, region.name)
+    }
   }
-  return [...result.provinces, ...result.cities]
-    .map((region) => `${region.code}  ${region.name}  ${region.level}`)
-    .join('\n')
+  return map
+})
+
+/** 条目是否属于指定省份。 */
+function matchesProvince(region: Region, term: string): boolean {
+  if (term === '') {
+    return true
+  }
+  if (region.level === 'province') {
+    return region.name.includes(term) || region.code.includes(term)
+  }
+  const owner = provinceNameByCode.value.get(region.province)
+  if (owner === undefined) {
+    return false
+  }
+  return owner.includes(term) || region.province.includes(term)
+}
+
+/** 省份限定后的条目（层级筛选之前）。 */
+const provinceScoped = computed(() => {
+  const queryTerm = query.value.trim()
+  const provinceTerm = province.value.trim()
+  return entries.value.filter(
+    (region) => matchesQuery(region, queryTerm) && matchesProvince(region, provinceTerm),
+  )
+})
+
+/** 最终可见条目：关键词 + 省份 + 层级。 */
+const visible = computed(() => {
+  const provinceTerm = province.value.trim()
+  return filtered.value.filter((region) => matchesProvince(region, provinceTerm))
+})
+
+/** 各层级的条目数（受关键词与省份影响，不受层级自身影响）。 */
+const levelCounts = computed(() => {
+  const result: Record<string, number> = {}
+  for (const region of provinceScoped.value) {
+    result[region.level] = (result[region.level] ?? 0) + 1
+  }
+  return result
+})
+
+/** 层级筛选项；带各自条目数。 */
+const levelOptions = computed<FilterChipOption[]>(() => {
+  const options: FilterChipOption[] = [
+    {
+      value: '',
+      label: t('tools.cn-regions.options.level.all'),
+      hint: String(provinceScoped.value.length),
+    },
+  ]
+  for (const name of LEVELS) {
+    options.push({
+      value: name,
+      label: t(`tools.cn-regions.options.level.${name}`),
+      hint: String(levelCounts.value[name] ?? 0),
+    })
+  }
+  return options
 })
 
 /** 层级显示文案。 */
-function levelLabel(level: string): string {
-  const key = `tools.cn-regions.options.level.${level}`
+function levelLabel(levelName: string): string {
+  const key = `tools.cn-regions.options.level.${levelName}`
   const translated = t(key)
-  return translated === key ? level : translated
+  return translated === key ? levelName : translated
 }
 
-const faq = computed<FaqItem[]>(() => tm('tools.cn-regions.faq') as FaqItem[])
+/** 结果文本：命中条目逐行给出代码、名称与层级。 */
+const resultText = computed(() =>
+  visible.value
+    .map((region) => `${region.code}\t${region.name}\t${levelLabel(region.level)}`)
+    .join('\n'),
+)
 
-/** 运行当前输入。 */
-function run(): void {
-  void execute({ query: query.value, province: province.value })
-}
-
-/** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
-useAutoRun({
-  slug: 'cn-regions',
-  run,
-  watch: [query, province],
-  enabled: () => query.value !== '' || province.value !== '',
+/** 统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const items: StatGridItem[] = [
+    { label: t('tools.cn-regions.results.total'), value: String(visible.value.length) },
+    {
+      label: t('tools.cn-regions.results.datasetTotal'),
+      value: String(entries.value.length),
+    },
+  ]
+  if (level.value !== '') {
+    items.push({
+      label: t('tools.cn-regions.results.level'),
+      value: levelLabel(level.value),
+    })
+  }
+  items.push({
+    label: t('tools.cn-regions.results.dataVersion'),
+    value: data.value?.dataVersion ?? '-',
+  })
+  return items
 })
 
-/** 重置表单与结果。 */
-function reset(): void {
-  query.value = ''
-  province.value = ''
-  resetRun()
+/** 表格列定义。 */
+const columns = computed<DataTableColumn[]>(() => [
+  { key: 'code', label: t('tools.cn-regions.results.code'), mono: true },
+  { key: 'name', label: t('tools.cn-regions.results.name') },
+  { key: 'level', label: t('tools.cn-regions.results.level') },
+  { key: 'province', label: t('tools.cn-regions.results.provinceName') },
+  { key: 'parent', label: t('tools.cn-regions.results.parent'), mono: true },
+])
+
+/** 层级的标签色：省级 / 地级 / 县级各一色。 */
+const LEVEL_LEVELS: Record<string, DataTableCellLevel> = {
+  province: 'info',
+  city: 'success',
+  district: 'muted',
 }
 
-/** 填入指定示例。 */
-function fillExample(index: number): void {
-  const example = EXAMPLES[index]
-  if (!example) {
-    return
-  }
-  query.value = example.query
-  province.value = example.province
-  resetRun()
-}
+/** 表格行。 */
+const rows = computed<DataTableRow[]>(() =>
+  visible.value.map((region) => ({
+    // 直筒子市（如东莞市）在快照里同时有地级与县级两条记录、代码相同，
+    // 因此行标识**必须**带上层级才唯一，否则 Vue 的 key 冲突会多渲染出行。
+    key: `${region.code}-${region.level}`,
+    cells: {
+      code: region.code,
+      name: region.name,
+      level: levelLabel(region.level),
+      province:
+        region.level === 'province'
+          ? region.name
+          : (provinceNameByCode.value.get(region.province) ?? region.province),
+      parent: region.parent ?? '',
+    },
+    badges: { code: LEVEL_LEVELS[region.level] ?? 'muted' },
+  })),
+)
+
+const faq = computed<FaqItem[]>(() => tm('tools.cn-regions.faq') as FaqItem[])
 </script>
 
 <template>
@@ -121,42 +240,37 @@ function fillExample(index: number): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <label class="field">
-            <span class="field__label">{{ t('tools.cn-regions.fields.query') }}</span>
-            <ElInput
-              v-model="query"
-              class="field__input tb-mono"
-              autocomplete="off"
-              placeholder="杭州"
-              :aria-label="t('tools.cn-regions.fields.query')"
-              @keydown.enter.prevent="run"
-            />
-          </label>
+          <SearchField
+            v-model="query"
+            autofocus
+            :label="t('tools.cn-regions.fields.query')"
+            placeholder="杭州"
+          />
 
-          <label class="field">
-            <span class="field__label">{{ t('tools.cn-regions.fields.province') }}</span>
-            <ElInput
-              v-model="province"
-              class="field__input tb-mono"
-              autocomplete="off"
-              placeholder="浙江省"
-              :aria-label="t('tools.cn-regions.fields.province')"
-              @keydown.enter.prevent="run"
+          <SearchField
+            v-model="province"
+            :label="t('tools.cn-regions.fields.province')"
+            placeholder="浙江省"
+          />
+
+          <div class="field">
+            <span class="field__label">{{ t('tools.cn-regions.fields.level') }}</span>
+            <FilterChips
+              v-model="level"
+              :options="levelOptions"
+              :aria-label="t('tools.cn-regions.fields.level')"
             />
-          </label>
+          </div>
 
           <p class="field__hint">
             {{ t('tools.cn-regions.hints.query') }}
           </p>
-        </template>
-
-        <template #footer>
-          <RunBar
-            :running="running"
-            @run="run"
-            @reset="reset"
-            @example="fillExample(0)"
-          />
+          <p class="field__hint">
+            {{ t('tools.cn-regions.hints.province') }}
+          </p>
+          <p class="field__hint">
+            {{ t('tools.cn-regions.hints.level') }}
+          </p>
         </template>
       </ToolPanel>
     </template>
@@ -167,121 +281,24 @@ function fillExample(index: number): void {
         :text="resultText"
         :meta="meta"
         :error="error"
-        :title="t('tools.cn-regions.results.output')"
-        @retry="run"
+        :title="t('tools.cn-regions.results.title')"
+        hide-text
+        @retry="reload"
       >
         <template
           v-if="data"
           #extra
         >
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>
-                {{ t('tools.cn-regions.results.total') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ data?.total }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>
-                {{ t('tools.cn-regions.results.dataVersion') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ data?.dataVersion }}
-              </dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
 
-          <section
-            v-if="(data?.provinces ?? []).length > 0"
-            class="group"
-          >
-            <h3 class="group__title">
-              {{ t('tools.cn-regions.results.provinces') }}
-            </h3>
-            <div class="table-wrap">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th scope="col">
-                      {{ t('tools.cn-regions.results.code') }}
-                    </th>
-                    <th scope="col">
-                      {{ t('tools.cn-regions.results.name') }}
-                    </th>
-                    <th scope="col">
-                      {{ t('tools.cn-regions.results.level') }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="region in data?.provinces ?? []"
-                    :key="region.code"
-                  >
-                    <td class="tb-mono">
-                      {{ region.code }}
-                    </td>
-                    <td>
-                      {{ region.name }}
-                    </td>
-                    <td>
-                      {{ levelLabel(region.level) }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <section
-            v-if="(data?.cities ?? []).length > 0"
-            class="group"
-          >
-            <h3 class="group__title">
-              {{ t('tools.cn-regions.results.cities') }}
-            </h3>
-            <div class="table-wrap">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th scope="col">
-                      {{ t('tools.cn-regions.results.code') }}
-                    </th>
-                    <th scope="col">
-                      {{ t('tools.cn-regions.results.name') }}
-                    </th>
-                    <th scope="col">
-                      {{ t('tools.cn-regions.results.level') }}
-                    </th>
-                    <th scope="col">
-                      {{ t('tools.cn-regions.results.provinceCode') }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="region in data?.cities ?? []"
-                    :key="region.code"
-                  >
-                    <td class="tb-mono">
-                      {{ region.code }}
-                    </td>
-                    <td>
-                      {{ region.name }}
-                    </td>
-                    <td>
-                      {{ levelLabel(region.level) }}
-                    </td>
-                    <td class="tb-mono">
-                      {{ region.province }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
+          <DataTable
+            class="table"
+            :columns="columns"
+            :rows="rows"
+            :copyable="false"
+            :badge-copy="['code']"
+            :empty="t('tools.cn-regions.results.empty')"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -311,67 +328,8 @@ function fillExample(index: number): void {
 </template>
 
 <style scoped>
-.detail {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-  margin: var(--tb-space-3) 0 0;
-}
-
-.detail__row {
-  display: flex;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-sm);
-}
-
-.detail__row dt {
-  min-width: 96px;
-  color: var(--tb-text-tertiary);
-}
-
-.detail__row dd {
-  margin: 0;
-  word-break: break-all;
-}
-
-.group {
-  margin-top: var(--tb-space-3);
-}
-
-.group__title {
-  margin: 0 0 var(--tb-space-2);
-  font-size: var(--tb-font-sm);
-  font-weight: 600;
-  color: var(--tb-text-secondary);
-}
-
-.table-wrap {
-  max-height: 420px;
-  overflow: auto;
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-}
-
 .table {
-  width: 100%;
-  font-size: var(--tb-font-sm);
-  border-collapse: collapse;
-}
-
-.table th,
-.table td {
-  padding: var(--tb-space-1) var(--tb-space-3);
-  text-align: left;
-  white-space: nowrap;
-  border-bottom: 1px solid var(--tb-border);
-}
-
-.table th {
-  position: sticky;
-  top: 0;
-  font-weight: 600;
-  color: var(--tb-text-secondary);
-  background: var(--tb-bg-sunken);
+  margin-top: var(--tb-space-3);
 }
 
 .prose {

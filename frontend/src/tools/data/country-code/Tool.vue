@@ -2,19 +2,28 @@
 /**
  * 国家代码工具页。
  *
+ * 默认展示**全量**国家与地区列表；键入搜索词或点选首字母后即时收敛，
+ * 过滤在**前端本地**完成（数据集已一次性取回），因此输入零延迟。
+ *
+ * 本页**没有运行按钮**：没有需要触发的动作 —— 进页面即取数，键入即筛选。
+ *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
-import { ElInput } from 'element-plus/es/components/input/index'
-import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import DataTable, {
+  type DataTableCellLevel,
+  type DataTableColumn,
+  type DataTableRow,
+} from '@/components/tool/DataTable.vue'
+import FilterChips, { type FilterChipOption } from '@/components/tool/FilterChips.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
-import RunBar from '@/components/tool/RunBar.vue'
+import SearchField from '@/components/tool/SearchField.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
-import { useAutoRun } from '@/composables/useAutoRun'
-import { useToolRun } from '@/composables/useToolRun'
+import { useLiveFilter } from '@/composables/useLiveFilter'
 import { EXAMPLES } from '@/tools/data/country-code/example'
 
 /** 一个国家与地区条目。 */
@@ -50,50 +59,144 @@ interface FaqItem {
 const { t, tm } = useI18n()
 
 const query = ref('')
+const initial = ref('')
 
-const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<CountryCodeResult>({
+/** 条目是否命中查询词。 */
+function matchesQuery(country: Country, term: string): boolean {
+  if (term === '') {
+    return true
+  }
+  const lowered = term.toLowerCase()
+  return (
+    country.alpha2.toLowerCase().includes(lowered) ||
+    country.alpha3.toLowerCase().includes(lowered) ||
+    country.numeric.includes(term) ||
+    country.nameZh.includes(term) ||
+    country.nameEn.toLowerCase().includes(lowered)
+  )
+}
+
+/** 命中档位：数字越小越靠前。 */
+function matchRank(country: Country, term: string): number {
+  if (term === '') {
+    return 2
+  }
+  const lowered = term.toLowerCase()
+  if (
+    country.alpha2.toLowerCase() === lowered ||
+    country.alpha3.toLowerCase() === lowered ||
+    country.numeric === term ||
+    country.nameZh === term ||
+    country.nameEn.toLowerCase() === lowered
+  ) {
+    return 0
+  }
+  if (
+    country.alpha2.toLowerCase().startsWith(lowered) ||
+    country.alpha3.toLowerCase().startsWith(lowered) ||
+    country.nameEn.toLowerCase().startsWith(lowered)
+  ) {
+    return 1
+  }
+  return 2
+}
+
+/** 全量数据集 + 本地筛选；进页面自动取数，之后键入即筛选。 */
+const { state, data, meta, error, filtered, counts, reload } = useLiveFilter<
+  Country,
+  CountryCodeResult
+>({
   slug: 'country-code',
+  query,
+  select: (result) => result.countries,
+  normalize: (raw) => raw.trim(),
+  match: matchesQuery,
+  rank: matchRank,
+  category: (country) => country.alpha2.slice(0, 1),
+  categoryRef: initial,
 })
 
-const running = computed(() => state.value === 'loading')
+/** 占位提示：直接用示例查询词。 */
+const placeholder = EXAMPLES.map((example) => example.query).join(' / ')
 
-/** 结果文本：每行一条。 */
+/** 首字母筛选项；带各自条目数。 */
+const initialOptions = computed<FilterChipOption[]>(() => {
+  const options: FilterChipOption[] = [
+    {
+      value: '',
+      label: t('tools.country-code.options.initial.all'),
+      hint: String(data.value?.total ?? 0),
+    },
+  ]
+  for (const letter of Object.keys(counts.value).sort()) {
+    options.push({
+      value: letter,
+      label: letter,
+      hint: String(counts.value[letter] ?? 0),
+    })
+  }
+  return options
+})
+
+/** 结果文本：命中条目逐行给出代码与名称。 */
 const resultText = computed(() =>
-  (data.value?.countries ?? [])
-    .map((item) => `${item.alpha2}  ${item.alpha3}  ${item.numeric}  ${item.nameZh}  ${item.nameEn}`)
+  filtered.value
+    .map(
+      (country) =>
+        `${country.alpha2}\t${country.alpha3}\t${country.numeric}\t${country.nameZh}\t${country.nameEn}`,
+    )
     .join('\n'),
 )
 
-const faq = computed<FaqItem[]>(() => tm('tools.country-code.faq') as FaqItem[])
-
-/** 运行当前输入。 */
-function run(): void {
-  void execute({ query: query.value })
-}
-
-/** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
-useAutoRun({
-  slug: 'country-code',
-  run,
-  watch: [query],
-  enabled: () => query.value !== '',
+/** 统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const items: StatGridItem[] = [
+    { label: t('tools.country-code.results.total'), value: String(filtered.value.length) },
+    { label: t('tools.country-code.results.datasetTotal'), value: String(data.value?.total ?? 0) },
+  ]
+  if (initial.value !== '') {
+    items.push({
+      label: t('tools.country-code.results.initial'),
+      value: initial.value,
+    })
+  }
+  items.push({
+    label: t('tools.country-code.results.dataVersion'),
+    value: data.value?.dataVersion ?? '-',
+  })
+  return items
 })
 
-/** 重置表单与结果。 */
-function reset(): void {
-  query.value = ''
-  resetRun()
-}
+/** 表格列定义。 */
+const columns = computed<DataTableColumn[]>(() => [
+  { key: 'alpha2', label: t('tools.country-code.results.alpha2'), mono: true },
+  { key: 'alpha3', label: t('tools.country-code.results.alpha3'), mono: true },
+  { key: 'numeric', label: t('tools.country-code.results.numeric'), mono: true },
+  { key: 'nameZh', label: t('tools.country-code.results.nameZh') },
+  { key: 'nameEn', label: t('tools.country-code.results.nameEn') },
+])
 
-/** 填入指定示例。 */
-function fillExample(index: number): void {
-  const example = EXAMPLES[index]
-  if (!example) {
-    return
-  }
-  query.value = example.query
-  resetRun()
-}
+/** 两位码的标签色：按首字母轮转，用语义令牌区分。 */
+const INITIAL_LEVELS: DataTableCellLevel[] = ['info', 'success', 'warning', 'muted']
+
+/** 表格行。 */
+const rows = computed<DataTableRow[]>(() =>
+  filtered.value.map((country) => ({
+    key: country.alpha2,
+    cells: {
+      alpha2: country.alpha2,
+      alpha3: country.alpha3,
+      numeric: country.numeric,
+      nameZh: country.nameZh,
+      nameEn: country.nameEn,
+    },
+    badges: {
+      alpha2: INITIAL_LEVELS[country.alpha2.charCodeAt(0) % INITIAL_LEVELS.length] ?? 'muted',
+    },
+  })),
+)
+
+const faq = computed<FaqItem[]>(() => tm('tools.country-code.faq') as FaqItem[])
 </script>
 
 <template>
@@ -105,30 +208,28 @@ function fillExample(index: number): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <label class="field">
-            <span class="field__label">{{ t('tools.country-code.fields.query') }}</span>
-            <ElInput
-              v-model="query"
-              class="field__input tb-mono"
-              autocomplete="off"
-              placeholder="中国"
-              :aria-label="t('tools.country-code.fields.query')"
-              @keydown.enter.prevent="run"
+          <SearchField
+            v-model="query"
+            autofocus
+            :label="t('tools.country-code.fields.query')"
+            :placeholder="placeholder"
+          />
+
+          <div class="field">
+            <span class="field__label">{{ t('tools.country-code.fields.initial') }}</span>
+            <FilterChips
+              v-model="initial"
+              :options="initialOptions"
+              :aria-label="t('tools.country-code.fields.initial')"
             />
-          </label>
+          </div>
 
           <p class="field__hint">
             {{ t('tools.country-code.hints.query') }}
           </p>
-        </template>
-
-        <template #footer>
-          <RunBar
-            :running="running"
-            @run="run"
-            @reset="reset"
-            @example="fillExample(0)"
-          />
+          <p class="field__hint">
+            {{ t('tools.country-code.hints.initial') }}
+          </p>
         </template>
       </ToolPanel>
     </template>
@@ -139,77 +240,24 @@ function fillExample(index: number): void {
         :text="resultText"
         :meta="meta"
         :error="error"
-        :title="t('tools.country-code.results.output')"
-        @retry="run"
+        :title="t('tools.country-code.results.title')"
+        hide-text
+        @retry="reload"
       >
         <template
           v-if="data"
           #extra
         >
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>
-                {{ t('tools.country-code.results.total') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ data?.total }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>
-                {{ t('tools.country-code.results.dataVersion') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ data?.dataVersion }}
-              </dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
 
-          <div class="table-wrap">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th scope="col">
-                    {{ t('tools.country-code.results.alpha2') }}
-                  </th>
-                  <th scope="col">
-                    {{ t('tools.country-code.results.alpha3') }}
-                  </th>
-                  <th scope="col">
-                    {{ t('tools.country-code.results.numeric') }}
-                  </th>
-                  <th scope="col">
-                    {{ t('tools.country-code.results.nameZh') }}
-                  </th>
-                  <th scope="col">
-                    {{ t('tools.country-code.results.nameEn') }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="country in data?.countries ?? []"
-                  :key="country.alpha2"
-                >
-                  <td class="tb-mono">
-                    {{ country.alpha2 }}
-                  </td>
-                  <td class="tb-mono">
-                    {{ country.alpha3 }}
-                  </td>
-                  <td class="tb-mono">
-                    {{ country.numeric }}
-                  </td>
-                  <td>
-                    {{ country.nameZh }}
-                  </td>
-                  <td>
-                    {{ country.nameEn }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            class="table"
+            :columns="columns"
+            :rows="rows"
+            :copy-columns="['alpha3', 'numeric']"
+            :badge-copy="['alpha2']"
+            :empty="t('tools.country-code.results.empty')"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -239,57 +287,8 @@ function fillExample(index: number): void {
 </template>
 
 <style scoped>
-.detail {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-  margin: var(--tb-space-3) 0 0;
-}
-
-.detail__row {
-  display: flex;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-sm);
-}
-
-.detail__row dt {
-  min-width: 96px;
-  color: var(--tb-text-tertiary);
-}
-
-.detail__row dd {
-  margin: 0;
-  word-break: break-all;
-}
-
-.table-wrap {
-  max-height: 420px;
-  margin-top: var(--tb-space-3);
-  overflow: auto;
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-}
-
 .table {
-  width: 100%;
-  font-size: var(--tb-font-sm);
-  border-collapse: collapse;
-}
-
-.table th,
-.table td {
-  padding: var(--tb-space-1) var(--tb-space-3);
-  text-align: left;
-  white-space: nowrap;
-  border-bottom: 1px solid var(--tb-border);
-}
-
-.table th {
-  position: sticky;
-  top: 0;
-  font-weight: 600;
-  color: var(--tb-text-secondary);
-  background: var(--tb-bg-sunken);
+  margin-top: var(--tb-space-3);
 }
 
 .prose {

@@ -41,6 +41,30 @@
         "code": 0,
         "dataContains": { "provinces": [], "cities": [] }
       }
+    },
+    {
+      "name": "按层级过滤只返回省级",
+      "request": { "level": "province" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "cities": [], "total": 31 }
+      }
+    },
+    {
+      "name": "按层级过滤只返回地级",
+      "request": { "level": "city" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "provinces": [] }
+      }
+    },
+    {
+      "name": "非法层级报 INVALID_FIELD",
+      "request": { "level": "town" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
     }
   ]
 }

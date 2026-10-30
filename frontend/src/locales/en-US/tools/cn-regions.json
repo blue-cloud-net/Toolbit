@@ -7,10 +7,12 @@
   },
   "fields": {
     "query": "Name or code keyword",
-    "province": "Limit to province"
+    "province": "Limit to province",
+    "level": "Level"
   },
   "options": {
     "level": {
+      "all": "All",
       "province": "Province",
       "city": "Prefecture",
       "district": "County"
@@ -18,7 +20,9 @@
   },
   "results": {
     "output": "Search result",
+    "title": "Administrative region list",
     "total": "Matches",
+    "datasetTotal": "Dataset entries",
     "dataVersion": "Dataset version",
     "provinces": "Provinces",
     "cities": "Lower level regions",
@@ -27,6 +31,7 @@
     "level": "Level",
     "parent": "Parent code",
     "provinceCode": "Province code",
+    "provinceName": "Province",
     "empty": "No matching administrative region."
   },
   "examples": [
@@ -44,14 +49,15 @@
     }
   ],
   "hints": {
-    "query": "Matches the name or the six digit code; leave it empty to list every province.",
-    "province": "After naming a province or its code, only the lower level regions of that province are returned.",
+    "query": "Matches the name or the six digit code; typing filters locally, there is nothing to run.",
+    "province": "After naming a province or its code, only that province and its lower level regions are kept.",
+    "level": "Pick a level chip to keep only provinces, prefectures or counties; the number on the chip is the entry count under the current conditions.",
     "output": "The dataset is a bundled offline snapshot and may lag behind recent changes; the version ships with the result."
   },
   "faq": [
     {
-      "q": "Why does an empty query only return provinces?",
-      "a": "There are more than three thousand prefecture and county level entries, so the default response keeps only the province list to stay fast and readable."
+      "q": "Why does the page list more than three thousand rows right away?",
+      "a": "The full dataset is fetched once when the page opens, and the keyword, province and level filters then run locally, so typing stays instant. The numbers on the chips follow the current filters."
     },
     {
       "q": "How many digits does a code have?",
