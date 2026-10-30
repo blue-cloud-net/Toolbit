@@ -3,6 +3,10 @@
  * 结果面板。
  *
  * 四态齐备；成功时滚动到视野内并通过 `aria-live` 播报。
+ *
+ * 结果以结构化组件（`DataTable` / `StatGrid` 等）呈现且覆盖同样内容时，
+ * 工具页可置 `hide-text` 不再渲染原始文本块；此时 `text` **仅**作为
+ * 复制 / 下载 / 回填的数据源，能力不随之消失。
  */
 import { ElAlert } from 'element-plus/es/components/alert/index'
 import 'element-plus/es/components/alert/style/css'
@@ -84,6 +88,8 @@ const props = withDefaults(
     error?: LocalizedError | null
     /** 是否显示警告区。 */
     showWarnings?: boolean
+    /** 是否隐藏原始文本块；只影响展示，复制 / 下载仍使用 `text`。 */
+    hideText?: boolean
     /** 结论徽章；由可验证类工具传入。 */
     verdict?: Verdict | null
     /** 「作为新输入」回调；工具页用 useToolRun 的 useAsInput 传入。 */
@@ -101,6 +107,7 @@ const props = withDefaults(
     meta: null,
     error: null,
     showWarnings: true,
+    hideText: false,
     verdict: null,
     useAsInput: null,
     downloadFilename: undefined,
@@ -279,11 +286,11 @@ watch(
 
       <template v-else>
         <pre
-          v-if="text !== ''"
+          v-if="!hideText && text !== ''"
           class="result__output"
         ><code>{{ text }}</code></pre>
         <p
-          v-else
+          v-else-if="!hideText"
           class="result__placeholder"
         >
           {{ t('tool.result.emptyOutput') }}

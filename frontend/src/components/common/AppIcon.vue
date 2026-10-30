@@ -24,6 +24,7 @@ export type IconName =
   | 'close'
   | 'check'
   | 'alert'
+  | 'copy'
   | 'external'
   | 'lock'
   | 'key'
@@ -156,6 +157,10 @@ const PATHS: Record<IconName, string[]> = {
   close: ['M6 6l12 12', 'M18 6L6 18'],
   check: ['M5 12.5l4.5 4.5L19 7'],
   alert: ['M12 4.5 21 19H3l9-14.5Z', 'M12 10v3.5', 'M12 16.2v.3'],
+  copy: [
+    'M9.5 9.5h8A1.5 1.5 0 0 1 19 11v8a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 8 19v-8a1.5 1.5 0 0 1 1.5-1.5Z',
+    'M15.5 6.5V5A1.5 1.5 0 0 0 14 3.5H6A1.5 1.5 0 0 0 4.5 5v8A1.5 1.5 0 0 0 6 14.5h2',
+  ],
   external: ['M14 4h6v6', 'M20 4l-9 9', 'M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'],
   lock: [
     'M8 10V7.5a4 4 0 0 1 8 0V10',

@@ -242,6 +242,7 @@ function onKeydown(event: KeyboardEvent): void {
         :error="error"
         :title="t('tools.hash-calc.results.digests')"
         :use-as-input="useAsInput"
+        hide-text
         @retry="run"
       >
         <template

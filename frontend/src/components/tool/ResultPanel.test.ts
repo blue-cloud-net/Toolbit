@@ -35,7 +35,7 @@ describe('ResultPanel', () => {
     })
 
     expect(wrapper.find('pre').text()).toBe('SGVsbG8=')
-    expect(wrapper.text()).toContain('复制')
+    expect(wrapper.find('button[aria-label="复制"]').exists()).toBe(true)
     expect(wrapper.text()).toContain('耗时 4 毫秒')
   })
 
@@ -53,6 +53,31 @@ describe('ResultPanel', () => {
 
     await wrapper.get('button').trigger('click')
     expect(wrapper.emitted('retry')).toHaveLength(1)
+  })
+
+  it('hideText 时不渲染原始文本，但保留复制按钮与结构化内容', () => {
+    const wrapper = mount(ResultPanel, {
+      ...mountOptions,
+      props: { state: 'success', text: '404\tNot Found', hideText: true },
+      slots: {
+        extra: '<table><tbody><tr><td>404</td></tr></tbody></table>',
+      },
+    })
+
+    expect(wrapper.find('pre').exists()).toBe(false)
+    expect(wrapper.find('button[aria-label="复制"]').exists()).toBe(true)
+    expect(wrapper.find('table').exists()).toBe(true)
+  })
+
+  it('hideText 且文本为空时不显示「（空结果）」占位', () => {
+    const wrapper = mount(ResultPanel, {
+      ...mountOptions,
+      props: { state: 'success', text: '', hideText: true },
+      slots: { extra: '<p class="structured">表格空态</p>' },
+    })
+
+    expect(wrapper.text()).not.toContain('空结果')
+    expect(wrapper.text()).toContain('表格空态')
   })
 
   it('success 时展示警告词条', () => {

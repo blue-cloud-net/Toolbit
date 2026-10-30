@@ -295,6 +295,7 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.ip-range-expand.results.addresses')"
+        hide-text
         @retry="run"
       >
         <template #extra>

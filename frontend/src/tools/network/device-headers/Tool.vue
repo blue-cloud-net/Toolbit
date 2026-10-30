@@ -346,6 +346,7 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.device-headers.results.headers')"
+        hide-text
         @retry="run"
       >
         <template #extra>

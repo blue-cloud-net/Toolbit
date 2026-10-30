@@ -1,13 +1,20 @@
 <script setup lang="ts">
 /**
- * 复制按钮。
+ * 复制按钮（图标式）。
  *
- * 优先使用 `navigator.clipboard`，不可用时回退到隐藏 textarea + `execCommand`。
+ * 纯图标 + 顶部 tooltip：文字按钮在表格里占宽、在标题栏里抢镜。
+ * tooltip **固定**为「复制」；复制结果（已复制 / 复制失败）由 `ElMessage` 提示，
+ * 图标则短暂切成打勾 / 警告做为局部反馈。
  */
 import { ElButton } from 'element-plus/es/components/button/index'
 import 'element-plus/es/components/button/style/css'
-import { ref } from 'vue'
+import { ElTooltip } from 'element-plus/es/components/tooltip/index'
+import 'element-plus/es/components/tooltip/style/css'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+
+import AppIcon from '@/components/common/AppIcon.vue'
+import { useCopy } from '@/composables/useCopy'
 
 const props = withDefaults(
   defineProps<{
@@ -22,50 +29,32 @@ const props = withDefaults(
 )
 
 const { t } = useI18n()
+const { copy: copyText } = useCopy()
 const copied = ref(false)
 const failed = ref(false)
 
+/** tooltip 文案：固定为「复制」，不随结果切换。 */
+const tipText = computed(() => props.label ?? t('common.actions.copy'))
+
+/** 图标：默认复制，成功 / 失败短暂切换（全局提示由 `ElMessage` 负责）。 */
+const iconName = computed<'copy' | 'check' | 'alert'>(() => {
+  if (copied.value) {
+    return 'check'
+  }
+  if (failed.value) {
+    return 'alert'
+  }
+  return 'copy'
+})
+
 let timer: ReturnType<typeof setTimeout> | null = null
 
-/** 回退复制实现。 */
-function fallbackCopy(text: string): boolean {
-  if (typeof document === 'undefined') {
-    return false
-  }
-  const area = document.createElement('textarea')
-  area.value = text
-  area.setAttribute('readonly', '')
-  area.style.position = 'fixed'
-  area.style.top = '-1000px'
-  document.body.appendChild(area)
-  area.select()
-  let ok = false
-  try {
-    ok = document.execCommand('copy')
-  } catch {
-    ok = false
-  }
-  document.body.removeChild(area)
-  return ok
-}
-
 /** 执行复制。 */
-async function copy(): Promise<void> {
+async function onCopy(): Promise<void> {
   if (props.text === '') {
     return
   }
-  let ok = false
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(props.text)
-      ok = true
-    } else {
-      ok = fallbackCopy(props.text)
-    }
-  } catch {
-    ok = fallbackCopy(props.text)
-  }
-
+  const ok = await copyText(props.text)
   copied.value = ok
   failed.value = !ok
 
@@ -76,29 +65,57 @@ async function copy(): Promise<void> {
     copied.value = false
     failed.value = false
     timer = null
-  }, 2000)
+  }, 1600)
 }
 </script>
 
 <template>
-  <ElButton
-    class="copy-button"
-    :size="size === 'small' ? 'small' : 'default'"
-    :aria-label="label ?? t('common.actions.copy')"
-    :disabled="text === ''"
-    @click="copy"
+  <ElTooltip
+    :content="tipText"
+    placement="top"
+    :show-after="200"
   >
-    <span
-      v-if="copied"
-      class="copy-button--ok"
-    >{{ t('common.actions.copied') }}</span>
-    <span v-else-if="failed">{{ t('tool.copy.failed') }}</span>
-    <span v-else>{{ t('common.actions.copy') }}</span>
-  </ElButton>
+    <ElButton
+      class="copy-button"
+      :class="{
+        'copy-button--compact': size === 'small',
+        'copy-button--ok': copied,
+        'copy-button--failed': failed && !copied,
+      }"
+      :size="size === 'small' ? 'small' : 'default'"
+      :aria-label="tipText"
+      :disabled="text === ''"
+      @click="onCopy"
+    >
+      <AppIcon
+        :name="iconName"
+        :size="size === 'small' ? 13 : 15"
+      />
+    </ElButton>
+  </ElTooltip>
 </template>
 
 <style scoped>
+/* 图标式按钮：固定正方形，表格里不占额外宽度 */
+.copy-button {
+  justify-content: center;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0;
+}
+
+.copy-button--compact {
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
+}
+
 .copy-button--ok {
   color: var(--tb-success);
+}
+
+.copy-button--failed {
+  color: var(--tb-danger);
 }
 </style>
