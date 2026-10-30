@@ -31,7 +31,20 @@ const (
 	StatusQueryCode = "code"
 	// StatusQueryKeyword 表示按关键字查询。
 	StatusQueryKeyword = "keyword"
+	// StatusQueryAll 表示未给出查询条件，返回全量列表。
+	StatusQueryAll = "all"
 )
+
+// StatusCategories 返回状态码类别（顺序稳定）。
+func StatusCategories() []string {
+	return []string{
+		StatusCategoryInformational,
+		StatusCategorySuccess,
+		StatusCategoryRedirect,
+		StatusCategoryClientError,
+		StatusCategoryServerError,
+	}
+}
 
 // HttpStatusEntry 是一个 HTTP 状态码条目。
 type HttpStatusEntry struct {
@@ -48,11 +61,17 @@ type HttpStatusEntry struct {
 }
 
 // HttpStatusRequest 是 http-status 工具的请求。
+//
+// 三个字段都可以省略：都不给时返回**全量**状态码列表，
+// 便于前端默认展示完整列表、再按输入本地过滤。
 type HttpStatusRequest struct {
 	// Code 是状态码查询（如 404）；`0` 表示未给出。
 	Code int `json:"code"`
 	// Query 是关键字查询（如 `not found`、`重定向`）。
 	Query string `json:"query"`
+	// Category 是类别过滤：informational / success / redirect /
+	// clientError / serverError；为空表示不过滤。
+	Category string `json:"category"`
 }
 
 // HttpStatusResult 是 http-status 工具的响应。
@@ -124,15 +143,20 @@ func parseStatusEntries(r io.Reader) []HttpStatusEntry {
 //
 // 数据集是**离线内置**的快照，**不**出网。
 //
-// 两种查询方式：
+// 三种查询方式：
+//   - 空请求：返回全量列表（列表浏览）；
 //   - 按状态码：给 `code`，或给一个纯数字的 `query`；
 //   - 按关键字：给 `query`，匹配原因短语与中文说明。
+//
+// `category` 可与任一方式叠加，用于收窄到某一档状态码。
 func HttpStatus(_ context.Context, req *HttpStatusRequest) (tools.Result, error) {
 	if err := req.Validate(); err != nil {
 		return tools.Result{}, err
 	}
 
 	loadStatusDataset()
+
+	category := strings.TrimSpace(req.Category)
 
 	result := HttpStatusResult{
 		Matches:     []HttpStatusEntry{},
@@ -155,7 +179,7 @@ func HttpStatus(_ context.Context, req *HttpStatusRequest) (tools.Result, error)
 		result.Kind = StatusQueryCode
 		result.Query = strconv.Itoa(code)
 		fillStatusByCode(&result, code)
-		if entry, ok := statusByCode[code]; ok {
+		if entry, ok := statusByCode[code]; ok && statusInCategory(*entry, category) {
 			result.Matches = []HttpStatusEntry{*entry}
 			result.Total = 1
 		}
@@ -163,15 +187,26 @@ func HttpStatus(_ context.Context, req *HttpStatusRequest) (tools.Result, error)
 	}
 
 	query := strings.TrimSpace(req.Query)
+	if query == "" && category == "" {
+		result.Kind = StatusQueryAll
+		result.Matches = append([]HttpStatusEntry{}, statusEntries...)
+		result.Total = len(result.Matches)
+		return tools.Result{Data: result}, nil
+	}
+
 	result.Kind = StatusQueryKeyword
 	result.Query = query
 
 	matched := []HttpStatusEntry{}
 	lowered := strings.ToLower(query)
 	for _, entry := range statusEntries {
-		if matchesStatus(entry, lowered) {
-			matched = append(matched, entry)
+		if !statusInCategory(entry, category) {
+			continue
 		}
+		if query != "" && !matchesStatus(entry, lowered) {
+			continue
+		}
+		matched = append(matched, entry)
 	}
 
 	result.Matches = matched
@@ -186,6 +221,11 @@ func HttpStatus(_ context.Context, req *HttpStatusRequest) (tools.Result, error)
 		result.Deprecated = first.Deprecated
 	}
 	return tools.Result{Data: result}, nil
+}
+
+// statusInCategory 判断条目是否落在指定类别；空类别一律放行。
+func statusInCategory(entry HttpStatusEntry, category string) bool {
+	return category == "" || entry.Category == category
 }
 
 // fillStatusByCode 按状态码填充响应。
@@ -241,17 +281,20 @@ func statusCategoryLabel(category string) string {
 }
 
 // Validate 做字段级校验。
+//
+// 空请求是合法的 —— 表示「列出全部状态码」。
 func (r *HttpStatusRequest) Validate() error {
 	query := strings.TrimSpace(r.Query)
+	category := strings.TrimSpace(r.Category)
 
-	if r.Code == 0 && query == "" {
-		return tools.MissingField("code")
-	}
 	if r.Code != 0 && query != "" {
 		return tools.InvalidField("query", "only one of code / query", "both provided")
 	}
 	if len(r.Query) > 128 {
 		return tools.InvalidField("query", []int{0, 128}, len(r.Query))
+	}
+	if category != "" && !containsString(StatusCategories(), category) {
+		return tools.InvalidField("category", StatusCategories(), category)
 	}
 
 	if r.Code != 0 {

@@ -23,6 +23,11 @@ const (
 	maxHostLength = 253
 	// maxServers 是一次请求允许的自定义服务器数量。
 	maxServers = 8
+	// maxParallelQueries 是多服务器查询的并发上限。
+	//
+	// 顺序查询在 8 台 × 5s 时会超出工具 20s 的预算；并发取 4
+	// 既能把总时长压到 10s 以内，也不会同时压满上游。
+	maxParallelQueries = 4
 )
 
 // normalizeHost 规范化并校验主机名。

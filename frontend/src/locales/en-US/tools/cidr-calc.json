@@ -3,7 +3,9 @@
   "description": "Compute network address, mask, usable hosts and subnets, or convert an address range back into CIDR blocks.",
   "category": "Network",
   "actions": {
-    "calculate": "Calculate"
+    "calculate": "Calculate",
+    "showAll": "Show all {count}",
+    "collapse": "Collapse"
   },
   "fields": {
     "mode": "Input mode",
@@ -16,8 +18,22 @@
     "modeCidr": "CIDR block",
     "modeRange": "Address range"
   },
+  "views": {
+    "overview": "Overview",
+    "subnets": "Subnets"
+  },
   "results": {
-    "output": "Result"
+    "output": "Result",
+    "network": "Network",
+    "mask": "Subnet mask",
+    "prefix": "Prefix length",
+    "version": "Address family",
+    "broadcast": "Broadcast address",
+    "totalAddresses": "Total addresses",
+    "hostCount": "Usable hosts",
+    "usableRange": "Usable range",
+    "range": "Address range",
+    "prefixBits": "Prefix bitmap"
   },
   "examples": [
     {
@@ -27,7 +43,9 @@
   ],
   "hints": {
     "split": "The split prefix must not be shorter than the original one; at most 256 subnets per call.",
-    "hostCount": "For IPv4 a `/31` counts 2 usable hosts and a `/32` counts 1; IPv6 has no unusable addresses."
+    "hostCount": "For IPv4 a `/31` counts 2 usable hosts and a `/32` counts 1; IPv6 has no unusable addresses.",
+    "bits": "Filled squares are the network bits (the first {prefix} of {bits} bits); hollow squares are host bits.",
+    "subnetTruncated": "Showing the first {shown} of {total}."
   },
   "faq": [
     {

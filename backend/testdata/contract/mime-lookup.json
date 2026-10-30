@@ -4,66 +4,90 @@
   "cases": [
     {
       "name": "按扩展名查 PNG",
-      "request": { "extension": "png" },
+      "request": { "query": "png" },
       "expect": {
         "code": 0,
-        "dataContains": { "mimeType": "image/png", "category": "image", "matched": true }
+        "dataContains": { "query": "png", "total": 2 }
       }
     },
     {
       "name": "按文件名查 PDF",
-      "request": { "extension": "report.pdf" },
+      "request": { "query": "report.pdf" },
       "expect": {
         "code": 0,
-        "dataContains": { "mimeType": "application/pdf" }
+        "dataContains": { "query": "pdf", "total": 1 }
       }
     },
     {
       "name": "按媒体类型查 JSON",
-      "request": { "mimeType": "application/json" },
+      "request": { "query": "application/json" },
       "expect": {
         "code": 0,
-        "dataContains": { "mimeType": "application/json", "charset": "utf-8", "isTextual": true }
+        "dataContains": { "query": "application/json", "total": 1 }
       }
     },
     {
       "name": "媒体类型带参数时去掉参数",
-      "request": { "mimeType": "text/plain; charset=utf-8" },
+      "request": { "query": "text/plain; charset=utf-8" },
       "expect": {
         "code": 0,
-        "dataContains": { "mimeType": "text/plain" }
+        "dataContains": { "query": "text/plain", "total": 1 }
       }
     },
     {
       "name": "历史别名归一到规范类型",
-      "request": { "mimeType": "image/x-png" },
+      "request": { "query": "image/x-png" },
       "expect": {
         "code": 0,
-        "dataContains": { "mimeType": "image/png" }
+        "dataContains": { "query": "image/x-png", "total": 1 }
       }
     },
     {
       "name": "未收录的扩展名",
-      "request": { "extension": "zzzz" },
+      "request": { "query": "zzzz" },
       "expect": {
         "code": 0,
-        "dataContains": { "matched": false }
+        "dataContains": { "query": "zzzz", "total": 0 }
       }
     },
     {
-      "name": "两个查询方式同时给出",
-      "request": { "extension": "png", "mimeType": "image/png" },
+      "name": "空请求返回全量列表",
+      "request": {},
+      "expect": {
+        "code": 0,
+        "dataContains": { "query": "", "category": "", "total": 119 }
+      }
+    },
+    {
+      "name": "按顶层类型过滤",
+      "request": { "category": "image" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "category": "image", "total": 12 }
+      }
+    },
+    {
+      "name": "按扩展名关键词检索",
+      "request": { "query": "png" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "query": "png", "total": 2 }
+      }
+    },
+    {
+      "name": "查询词与顶层类型叠加",
+      "request": { "query": "png", "category": "image" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "query": "png", "category": "image", "total": 2 }
+      }
+    },
+    {
+      "name": "非法顶层类型",
+      "request": { "category": "bogus" },
       "expect": {
         "code": 400,
         "errorCode": "INVALID_FIELD"
-      }
-    },
-    {
-      "name": "缺少查询词",
-      "request": {},
-      "expect": {
-        "code": 400,
-        "errorCode": "MISSING_FIELD"
       }
     }
   ]

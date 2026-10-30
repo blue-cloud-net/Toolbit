@@ -12,7 +12,8 @@
     "os": "Operating system",
     "userAgent": "User-Agent string",
     "acceptLanguage": "Accept-Language",
-    "referer": "Referer"
+    "referer": "Referer",
+    "customHeaders": "Custom headers"
   },
   "options": {
     "mode": {
@@ -38,7 +39,9 @@
     "osVersion": "OS version",
     "deviceType": "Device type",
     "isBot": "Bot",
-    "engine": "Engine"
+    "engine": "Engine",
+    "headerName": "Header Name",
+    "headerValue": "Header Value"
   },
   "examples": [
     {
@@ -52,7 +55,8 @@
   ],
   "hints": {
     "platform": "The first version supports built-in platforms and custom input only; no online UA lookup is used.",
-    "output": "The parse result distinguishes desktop, mobile, tablet and bot, and reports the rendering engine."
+    "output": "The parse result distinguishes desktop, mobile, tablet and bot, and reports the rendering engine.",
+    "customHeaders": "One per line, in `Name: Value` format."
   },
   "faq": [
     {

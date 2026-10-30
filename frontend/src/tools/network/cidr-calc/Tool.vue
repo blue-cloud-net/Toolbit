@@ -2,8 +2,11 @@
 /**
  * CIDR 计算工具页。
  *
- * 纯本地计算，结果由后端返回后按行渲染，便于复制。
+ * 结果用页签呈现：**概览**（统计卡片 + 地址区间条 + 前缀位图）与
+ * **子网**（拆分 / 反推得到的 CIDR 列表）。全文复制仍由 `ResultPanel` 提供。
  */
+import { ElButton } from 'element-plus/es/components/button/index'
+import 'element-plus/es/components/button/style/css'
 import { ElInput } from 'element-plus/es/components/input/index'
 import 'element-plus/es/components/input/style/css'
 import { ElInputNumber } from 'element-plus/es/components/input-number/index'
@@ -13,14 +16,18 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import CopyButton from '@/components/tool/CopyButton.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 
+import AddressRangeBar from './AddressRangeBar.vue'
 import { DEFAULT_EXAMPLE } from './example'
+import PrefixBitmap from './PrefixBitmap.vue'
 
 /** 后端 cidr-calc 工具的响应。 */
 interface CIDRCalcResult {
@@ -44,6 +51,9 @@ interface FaqItem {
   a: string
 }
 
+/** 子网标签网格一次展示的上限；超出折叠。 */
+const SUBNET_PREVIEW = 64
+
 const { t, tm } = useI18n()
 
 const mode = ref<'cidr' | 'range'>(DEFAULT_EXAMPLE.mode)
@@ -52,16 +62,54 @@ const start = ref(DEFAULT_EXAMPLE.start)
 const end = ref(DEFAULT_EXAMPLE.end)
 const split = ref(0)
 
+/** 子网列表是否展开全部。 */
+const showAllSubnets = ref(false)
+
 const { state, data, meta, error, run: execute, reset: resetRun } =
   useToolRun<CIDRCalcResult>({ slug: 'cidr-calc' })
 
 const running = computed(() => state.value === 'loading')
 
-const resultText = computed(() => {
+/** 结果页签：概览 + 子网（仅在有子网时出现）。 */
+const views = computed<ResultView[]>(() => {
+  const list: ResultView[] = [{ id: 'overview', label: t('tools.cidr-calc.views.overview') }]
+  const subnets = subnetList.value
+  if (subnets.length > 0) {
+    list.push({ id: 'subnets', label: t('tools.cidr-calc.views.subnets') })
+  }
+  return list
+})
+
+/** 当前页签。 */
+const activeView = ref('overview')
+
+/** 子网列表：拆分结果优先，否则用范围反推结果。 */
+const subnetList = computed<string[]>(() => {
   if (!data.value) {
+    return []
+  }
+  if (data.value.cidrs.length > 0) {
+    return data.value.cidrs
+  }
+  return data.value.range
+})
+
+/** 是否折叠了子网。 */
+const subnetsTruncated = computed(
+  () => subnetList.value.length > SUBNET_PREVIEW && !showAllSubnets.value,
+)
+
+/** 展示的子网。 */
+const visibleSubnets = computed(() =>
+  subnetsTruncated.value ? subnetList.value.slice(0, SUBNET_PREVIEW) : subnetList.value,
+)
+
+/** 结果文本：结构化摘要 + 子网列表。 */
+const resultText = computed(() => {
+  const value = data.value
+  if (!value) {
     return ''
   }
-  const value = data.value
   const lines = [
     `network: ${value.network}`,
     `mask: ${value.mask}`,
@@ -84,6 +132,33 @@ const resultText = computed(() => {
     lines.push('', ...value.range)
   }
   return lines.join('\n')
+})
+
+/** 概览统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const value = data.value
+  if (!value) {
+    return []
+  }
+  const items: StatGridItem[] = [
+    { label: t('tools.cidr-calc.results.network'), value: value.network },
+    { label: t('tools.cidr-calc.results.mask'), value: value.mask },
+    { label: t('tools.cidr-calc.results.prefix'), value: `/${value.prefix}` },
+    {
+      label: t('tools.cidr-calc.results.version'),
+      value: `IPv${value.version}`,
+    },
+    { label: t('tools.cidr-calc.results.totalAddresses'), value: value.totalAddresses },
+    { label: t('tools.cidr-calc.results.hostCount'), value: value.hostCount },
+  ]
+  if (value.version === 4) {
+    items.push({ label: t('tools.cidr-calc.results.broadcast'), value: value.broadcast })
+  }
+  items.push({
+    label: t('tools.cidr-calc.results.usableRange'),
+    value: `${value.firstUsable} – ${value.lastUsable}`,
+  })
+  return items
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.cidr-calc.faq') as FaqItem[])
@@ -115,6 +190,8 @@ function reset(): void {
   start.value = DEFAULT_EXAMPLE.start
   end.value = DEFAULT_EXAMPLE.end
   split.value = 0
+  showAllSubnets.value = false
+  activeView.value = 'overview'
   resetRun()
 }
 </script>
@@ -124,6 +201,7 @@ function reset(): void {
     slug="cidr-calc"
     name="CIDR 计算"
     name-en="CIDR Calculator"
+    wide
   >
     <template #panel>
       <ToolPanel>
@@ -210,13 +288,91 @@ function reset(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.cidr-calc.results.output')"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'overview'">
+            <StatGrid :items="stats" />
+
+            <section
+              v-if="data"
+              class="section"
+            >
+              <h3 class="section__title">
+                {{ t('tools.cidr-calc.results.range') }}
+              </h3>
+              <AddressRangeBar
+                :version="data.version"
+                :network="data.network"
+                :first-address="data.firstAddress"
+                :last-address="data.lastAddress"
+                :broadcast="data.broadcast"
+                :first-usable="data.firstUsable"
+                :last-usable="data.lastUsable"
+              />
+            </section>
+
+            <section
+              v-if="data"
+              class="section"
+            >
+              <h3 class="section__title">
+                {{ t('tools.cidr-calc.results.prefixBits') }}
+              </h3>
+              <PrefixBitmap
+                :version="data.version"
+                :prefix="data.prefix"
+              />
+              <p class="section__hint">
+                {{ t('tools.cidr-calc.hints.bits', { prefix: data.prefix, bits: data.version === 4 ? 32 : 128 }) }}
+              </p>
+            </section>
+          </template>
+
+          <template v-else>
+            <div class="subnets">
+              <div
+                v-for="item in visibleSubnets"
+                :key="item"
+                class="subnet"
+              >
+                <span class="subnet__value tb-mono">{{ item }}</span>
+                <CopyButton
+                  :text="item"
+                  size="small"
+                />
+              </div>
+            </div>
+
+            <p
+              v-if="subnetsTruncated"
+              class="section__hint"
+            >
+              {{ t('tools.cidr-calc.hints.subnetTruncated', {
+                shown: SUBNET_PREVIEW,
+                total: subnetList.length,
+              }) }}
+            </p>
+
+            <ElButton
+              v-if="subnetsTruncated || (subnetList.length > SUBNET_PREVIEW && showAllSubnets)"
+              size="small"
+              @click="showAllSubnets = !showAllSubnets"
+            >
+              {{ showAllSubnets
+                ? t('tools.cidr-calc.actions.collapse')
+                : t('tools.cidr-calc.actions.showAll', { count: subnetList.length }) }}
+            </ElButton>
+          </template>
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -242,3 +398,67 @@ function reset(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.section {
+  margin-top: var(--tb-space-4);
+}
+
+.section__title {
+  margin: 0 0 var(--tb-space-2);
+  font-size: var(--tb-font-sm);
+  font-weight: 600;
+  color: var(--tb-text-secondary);
+}
+
+.section__hint {
+  margin: var(--tb-space-2) 0 0;
+  font-size: var(--tb-font-xs);
+  color: var(--tb-text-tertiary);
+}
+
+.subnets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--tb-space-1) var(--tb-space-2);
+}
+
+.subnet {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-1) var(--tb-space-2);
+  font-size: var(--tb-font-xs);
+  background: var(--tb-bg-sunken);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-control);
+}
+
+.subnet__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prose {
+  margin: 0;
+  font-size: var(--tb-font-sm);
+  color: var(--tb-text-secondary);
+}
+
+.faq {
+  margin: 0;
+  font-size: var(--tb-font-sm);
+}
+
+.faq__q {
+  font-weight: 600;
+}
+
+.faq__a {
+  margin: 0 0 var(--tb-space-2);
+  color: var(--tb-text-secondary);
+}
+</style>

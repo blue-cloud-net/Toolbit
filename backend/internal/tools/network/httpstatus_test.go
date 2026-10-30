@@ -155,11 +155,53 @@ func TestHttpStatusKeywordNotMatched(t *testing.T) {
 	}
 }
 
+func TestHttpStatusListAll(t *testing.T) {
+	t.Parallel()
+
+	loadStatusDataset()
+
+	out := httpStatus(t, &HttpStatusRequest{})
+	if out.Kind != StatusQueryAll {
+		t.Errorf("kind = %s，期望 %s", out.Kind, StatusQueryAll)
+	}
+	if out.Total != len(statusEntries) {
+		t.Errorf("空请求应返回全量 %d 条，实际 %d", len(statusEntries), out.Total)
+	}
+	if len(out.Matches) != out.Total {
+		t.Errorf("matches 长度 %d 与 total %d 不一致", len(out.Matches), out.Total)
+	}
+}
+
+func TestHttpStatusCategoryFilter(t *testing.T) {
+	t.Parallel()
+
+	out := httpStatus(t, &HttpStatusRequest{Category: StatusCategoryRedirect})
+	if out.Total == 0 {
+		t.Fatal("重定向类别不应为空")
+	}
+	for _, entry := range out.Matches {
+		if entry.Category != StatusCategoryRedirect {
+			t.Errorf("%d 的类别 = %s，期望 %s", entry.Code, entry.Category, StatusCategoryRedirect)
+		}
+	}
+
+	// 类别与关键字可叠加。
+	out = httpStatus(t, &HttpStatusRequest{Query: "redirect", Category: StatusCategoryRedirect})
+	if out.Total == 0 {
+		t.Fatal("关键字 + 类别不应为空")
+	}
+	for _, entry := range out.Matches {
+		if entry.Category != StatusCategoryRedirect {
+			t.Errorf("%d 的类别 = %s，期望 %s", entry.Code, entry.Category, StatusCategoryRedirect)
+		}
+	}
+}
+
 func TestHttpStatusValidate(t *testing.T) {
 	t.Parallel()
 
-	if err := (&HttpStatusRequest{}).Validate(); err == nil {
-		t.Fatal("空请求应当报缺少字段")
+	if err := (&HttpStatusRequest{}).Validate(); err != nil {
+		t.Fatalf("空请求表示全量，不应报错：%v", err)
 	}
 	if err := (&HttpStatusRequest{Code: 404, Query: "404"}).Validate(); err == nil {
 		t.Fatal("两个字段同时给出应当报错")
@@ -173,10 +215,16 @@ func TestHttpStatusValidate(t *testing.T) {
 	if err := (&HttpStatusRequest{Query: "999"}).Validate(); err == nil {
 		t.Fatal("越界的数字关键字应当报错")
 	}
+	if err := (&HttpStatusRequest{Category: "bogus"}).Validate(); err == nil {
+		t.Fatal("非法类别应当报错")
+	}
 	if err := (&HttpStatusRequest{Code: 404}).Validate(); err != nil {
 		t.Fatalf("合法请求不应报错：%v", err)
 	}
 	if err := (&HttpStatusRequest{Query: "not found"}).Validate(); err != nil {
+		t.Fatalf("合法请求不应报错：%v", err)
+	}
+	if err := (&HttpStatusRequest{Category: StatusCategorySuccess}).Validate(); err != nil {
 		t.Fatalf("合法请求不应报错：%v", err)
 	}
 }

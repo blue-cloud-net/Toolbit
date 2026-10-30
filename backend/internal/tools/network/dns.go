@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/miekg/dns"
@@ -199,10 +200,24 @@ func DNSLookup(ctx context.Context, g *netguard.Guard, req *DNSLookupRequest) (t
 		servers = system
 	}
 
-	out := DNSLookupResult{Host: host, Type: typ, PerServer: make([]DNSServerResult, 0, len(servers))}
-	for _, srv := range servers {
-		out.PerServer = append(out.PerServer, queryOneServer(ctx, g, srv, host, qtype, typ, timeout))
+	out := DNSLookupResult{Host: host, Type: typ, PerServer: make([]DNSServerResult, len(servers))}
+
+	// 逐台并发查询：8 台 × 5s 的顺序查询会超出工具 20s 的预算，
+	// 并发上限取 4，兼顾总时限与对上游的礼貌程度。
+	// 结果按下标回填，保持与请求顺序一致。
+	sem := make(chan struct{}, maxParallelQueries)
+	var wg sync.WaitGroup
+	for index, srv := range servers {
+		wg.Add(1)
+		go func(index int, server DNSServerInput) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			out.PerServer[index] = queryOneServer(ctx, g, server, host, qtype, typ, timeout)
+		}(index, srv)
 	}
+	wg.Wait()
+
 	return tools.Result{Data: out}, nil
 }
 

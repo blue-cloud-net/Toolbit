@@ -13,8 +13,10 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
@@ -25,15 +27,15 @@ import { EXAMPLES } from '@/tools/network/ip-range-expand/example'
 interface IPRangeResult {
   /** 模式。 */
   mode: string
-  /** 规范化后的 CIDR。 */
-  cidr: string
+  /** 网段列表；toCidr 模式有值。 */
+  cidrs: string[]
   /** 起始地址。 */
   start: string
   /** 结束地址。 */
   end: string
   /** 地址总数。 */
-  total: number
-  /** 展开的地址列表。 */
+  count: number
+  /** 展开的地址列表；expand 模式有值。 */
   addresses: string[]
   /** 是否被上限截断。 */
   truncated: boolean
@@ -59,8 +61,88 @@ const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<I
 
 const running = computed(() => state.value === 'loading')
 
-/** 结果文本：地址列表。 */
-const resultText = computed(() => data.value?.addresses.join('\n') ?? '')
+/** 结果文本：与当前模式对应的可复制内容。 */
+const resultText = computed(() => {
+  const result = data.value
+  if (!result) {
+    return ''
+  }
+  if (result.cidrs.length > 0) {
+    return result.cidrs.join('\n')
+  }
+  if (result.addresses.length > 0) {
+    return result.addresses.join('\n')
+  }
+  return `${result.start} - ${result.end}`
+})
+
+/** 摘要卡片：模式、规模与边界。 */
+const statItems = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const items: StatGridItem[] = [
+    {
+      label: t('tools.ip-range-expand.results.mode'),
+      value: t(`tools.ip-range-expand.options.mode.${result.mode}`),
+      mono: false,
+    },
+    { label: t('tools.ip-range-expand.results.count'), value: String(result.count) },
+  ]
+  if (result.start) {
+    items.push({ label: t('tools.ip-range-expand.results.start'), value: result.start })
+  }
+  if (result.end) {
+    items.push({ label: t('tools.ip-range-expand.results.end'), value: result.end })
+  }
+  if (result.cidrs.length > 0) {
+    items.push({
+      label: t('tools.ip-range-expand.results.cidrCount'),
+      value: String(result.cidrs.length),
+    })
+  }
+  if (result.truncated) {
+    items.push({
+      label: t('tools.ip-range-expand.results.truncated'),
+      value: t('common.states.yes'),
+      level: 'warning',
+      mono: false,
+    })
+  }
+  return items
+})
+
+/** 列表行：toCidr 模式列网段，expand 模式列地址。 */
+const listRows = computed<DataTableRow[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  if (result.cidrs.length > 0) {
+    return result.cidrs.map((cidr, index) => ({
+      key: `cidr-${index}-${cidr}`,
+      cells: { value: cidr },
+    }))
+  }
+  return result.addresses.map((address, index) => ({
+    key: `addr-${index}-${address}`,
+    cells: { value: address },
+  }))
+})
+
+/** 列表列定义。 */
+const listColumns = computed<DataTableColumn[]>(() => [
+  {
+    key: 'value',
+    label: t(
+      data.value?.cidrs.length
+        ? 'tools.ip-range-expand.results.cidrs'
+        : 'tools.ip-range-expand.results.addresses',
+    ),
+    mono: true,
+  },
+])
 
 const faq = computed<FaqItem[]>(() => tm('tools.ip-range-expand.faq') as FaqItem[])
 
@@ -216,39 +298,14 @@ function fillExample(index: number): void {
         @retry="run"
       >
         <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.ip-range-expand.results.cidr') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.cidr ?? '' }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.ip-range-expand.results.start') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.start ?? '' }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.ip-range-expand.results.end') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.end ?? '' }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.ip-range-expand.results.total') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.total ?? 0 }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.truncated"
-              class="detail__row"
-            >
-              <dt>!</dt>
-              <dd>{{ t('tools.ip-range-expand.results.truncated') }}</dd>
-            </div>
-          </dl>
+          <StatGrid :items="statItems" />
+          <DataTable
+            v-if="listRows.length > 0"
+            class="ip-range-expand__table"
+            :columns="listColumns"
+            :rows="listRows"
+            copy-column="value"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -270,3 +327,9 @@ function fillExample(index: number): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.ip-range-expand__table {
+  margin-top: var(--tb-space-3);
+}
+</style>

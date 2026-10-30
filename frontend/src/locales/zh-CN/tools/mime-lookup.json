@@ -6,16 +6,25 @@
     "lookup": "查询类型"
   },
   "fields": {
-    "kind": "查询方式",
-    "query": "查询内容"
+    "query": "搜索",
+    "category": "顶层类型"
   },
   "options": {
-    "kind": {
-      "extension": "按扩展名",
-      "mimeType": "按媒体类型"
+    "category": {
+      "all": "全部",
+      "application": "应用",
+      "audio": "音频",
+      "font": "字体",
+      "image": "图像",
+      "message": "消息",
+      "model": "模型",
+      "multipart": "多部分",
+      "text": "文本",
+      "video": "视频"
     }
   },
   "results": {
+    "list": "媒体类型列表",
     "mimeType": "媒体类型",
     "category": "顶层类型",
     "charset": "默认字符集",
@@ -23,8 +32,9 @@
     "aliases": "别名与变体",
     "description": "用途说明",
     "dataVersion": "数据集版本",
-    "matched": "已收录",
-    "notMatched": "未收录",
+    "total": "当前命中",
+    "datasetTotal": "数据集总数",
+    "empty": "没有匹配的媒体类型",
     "none": "不适用"
   },
   "examples": [
@@ -42,8 +52,8 @@
     }
   ],
   "hints": {
-    "query": "扩展名可写 png、.png 或 report.png；媒体类型可写 image/png，带参数（如 text/plain; charset=utf-8）时会自动去掉参数。",
-    "output": "结果给出规范媒体类型、顶层类型、默认字符集、常用扩展名与历史别名；未收录时只提示未收录。",
+    "query": "可写扩展名（png、.png、report.png）、媒体类型（image/png）或关键词；带参数（如 text/plain; charset=utf-8）时自动去掉参数。搜索与顶层类型可叠加。",
+    "output": "默认列出全部媒体类型；输入搜索词或点选顶层类型后即时收敛，结果按「媒体类型 / 扩展名 / 顶层类型 / 字符集 / 用途说明」列出，逐行可复制。",
     "note": "数据来自内置快照，不读取系统 MIME 数据库，也不联网。"
   },
   "faq": [

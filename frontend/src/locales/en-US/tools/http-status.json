@@ -6,15 +6,12 @@
     "lookup": "Look up"
   },
   "fields": {
-    "kind": "Lookup by",
-    "query": "Query"
+    "query": "Search",
+    "category": "Category"
   },
   "options": {
-    "kind": {
-      "code": "Status code",
-      "keyword": "Keyword"
-    },
     "category": {
+      "all": "All",
       "informational": "1xx Informational",
       "success": "2xx Success",
       "redirect": "3xx Redirection",
@@ -23,15 +20,16 @@
     }
   },
   "results": {
-    "title": "Status code",
+    "title": "Status code list",
     "code": "Status code",
     "reason": "Reason phrase",
     "category": "Category",
     "description": "Meaning",
-    "total": "Matches",
+    "total": "Current matches",
+    "datasetTotal": "Dataset size",
+    "deprecated": "Deprecated",
     "dataVersion": "Dataset version",
-    "matched": "Found",
-    "notMatched": "Not found"
+    "empty": "No matching status code"
   },
   "examples": [
     {
@@ -48,8 +46,8 @@
     }
   ],
   "hints": {
-    "query": "A status code is an integer between 100 and 599; a keyword matches both the reason phrase (case-insensitive) and the Chinese description.",
-    "output": "The result gives the status code, its reason phrase, its category and its meaning; a keyword lookup lists every matching entry.",
+    "query": "Type a status code (404), a reason phrase (not found) or a Chinese meaning (重定向); the search and the category filter combine.",
+    "output": "Every status code is listed by default; typing a search term or picking a category narrows the list instantly, showing status code / reason phrase / category / meaning, each row copyable.",
     "validCode": "The status code is within the valid range.",
     "invalidCode": "A status code must be an integer between {min} and {max}.",
     "note": "Data comes from a built-in snapshot; nothing is fetched from the network."

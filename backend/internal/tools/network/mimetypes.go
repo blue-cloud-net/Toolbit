@@ -3,19 +3,27 @@ package network
 import (
 	"context"
 	"io"
+	"sort"
 	"strings"
 	"sync"
 
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
 )
 
-// MIME 查询方式。
-const (
-	// MimeQueryExtension 表示按文件扩展名查询。
-	MimeQueryExtension = "extension"
-	// MimeQueryType 表示按媒体类型查询。
-	MimeQueryType = "mimeType"
-)
+// MimeCategories 返回受支持的顶层类型（顺序稳定）。
+func MimeCategories() []string {
+	return []string{
+		"application",
+		"audio",
+		"font",
+		"image",
+		"message",
+		"model",
+		"multipart",
+		"text",
+		"video",
+	}
+}
 
 // MimeEntry 是一个媒体类型条目。
 type MimeEntry struct {
@@ -37,36 +45,27 @@ type MimeEntry struct {
 }
 
 // MimeLookupRequest 是 mime-lookup 工具的请求。
+//
+// 两个字段都可以省略：都不给时返回**全量**数据集，
+// 便于前端默认展示完整列表、再按输入本地过滤。
 type MimeLookupRequest struct {
-	// Extension 是扩展名查询：可写 `png`、`.png` 或 `report.png`。
-	Extension string `json:"extension"`
-	// MimeType 是媒体类型查询：可写 `image/png` 或带参数的
-	// `text/plain; charset=utf-8`。
-	MimeType string `json:"mimeType"`
+	// Query 是查询词，可写媒体类型（`image/png`）、扩展名（`png`、`.png`、
+	// `report.png`）或用途说明里的关键词（如 `图片`）。
+	Query string `json:"query"`
+	// Category 是顶层类型过滤；为空表示不过滤。
+	Category string `json:"category"`
 }
 
 // MimeLookupResult 是 mime-lookup 工具的响应。
 type MimeLookupResult struct {
-	// Query 是规范化后的查询词。
+	// Query 是规范化后的查询词；全量列表时为空串。
 	Query string `json:"query"`
-	// Kind 是查询方式：extension / mimeType。
-	Kind string `json:"kind"`
-	// Matched 是否命中数据集。
-	Matched bool `json:"matched"`
-	// MimeType 是规范媒体类型；未命中时为空串。
-	MimeType string `json:"mimeType"`
-	// Extensions 是该媒体类型的常用扩展名。
-	Extensions []string `json:"extensions"`
-	// Category 是顶层类型。
+	// Category 是生效的顶层类型过滤；未过滤时为空串。
 	Category string `json:"category"`
-	// IsTextual 是否是文本类媒体类型。
-	IsTextual bool `json:"isTextual"`
-	// Charset 是默认字符集。
-	Charset string `json:"charset"`
-	// Description 是用途说明。
-	Description string `json:"description"`
-	// Aliases 是历史别名与常见变体。
-	Aliases []string `json:"aliases"`
+	// Entries 是命中的条目；未命中时为空数组。
+	Entries []MimeEntry `json:"entries"`
+	// Total 是命中条数。
+	Total int `json:"total"`
 	// DataVersion 是数据集版本。
 	DataVersion string `json:"dataVersion"`
 }
@@ -132,10 +131,17 @@ func parseMimeEntries(r io.Reader) []MimeEntry {
 	return out
 }
 
-// MimeLookup 查询文件扩展名或媒体类型对应的 MIME 信息。
+// MimeLookup 查询媒体类型数据集。
 //
 // 数据集是**离线内置**的快照，**不**出网；也**不**读取系统 MIME 数据库，
 // 因为各发行版的映射表并不一致。
+//
+// 三种用法：
+//   - 空请求：返回全量条目（列表浏览）；
+//   - 精确词（媒体类型 / 别名 / 扩展名）：命中项排在最前；
+//   - 其它关键词：在媒体类型、扩展名、别名、用途说明与顶层类型里做子串匹配。
+//
+// `category` 可与任一方式叠加，用于收窄到某一顶层类型。
 func MimeLookup(_ context.Context, req *MimeLookupRequest) (tools.Result, error) {
 	if err := req.Validate(); err != nil {
 		return tools.Result{}, err
@@ -143,78 +149,120 @@ func MimeLookup(_ context.Context, req *MimeLookupRequest) (tools.Result, error)
 
 	loadMimeDataset()
 
-	result := MimeLookupResult{
-		Kind:        MimeQueryExtension,
-		Extensions:  []string{},
-		Aliases:     []string{},
-		DataVersion: MimeTypesVersion,
-	}
+	query := normalizeMimeQuery(req.Query)
+	category := strings.ToLower(strings.TrimSpace(req.Category))
 
-	if strings.TrimSpace(req.Extension) != "" {
-		ext := normalizeExtension(req.Extension)
-		result.Kind = MimeQueryExtension
-		result.Query = ext
-		if entry, ok := mimeByExtension[ext]; ok {
-			fillMimeResult(&result, entry)
+	type scored struct {
+		entry MimeEntry
+		rank  int
+	}
+	hits := make([]scored, 0, len(mimeEntries))
+	for i := range mimeEntries {
+		entry := &mimeEntries[i]
+		if category != "" && entry.Category != category {
+			continue
 		}
-		return tools.Result{Data: result}, nil
+		rank, ok := matchMimeEntry(entry, query)
+		if !ok {
+			continue
+		}
+		hits = append(hits, scored{entry: *entry, rank: rank})
 	}
 
-	mimeType := normalizeMimeType(req.MimeType)
-	result.Kind = MimeQueryType
-	result.Query = mimeType
-	if entry, ok := lookupMimeType(mimeType); ok {
-		fillMimeResult(&result, entry)
+	// 精确命中排前面，其余保持数据集顺序（稳定排序）。
+	sort.SliceStable(hits, func(i, j int) bool { return hits[i].rank < hits[j].rank })
+
+	matched := make([]MimeEntry, 0, len(hits))
+	for _, hit := range hits {
+		matched = append(matched, hit.entry)
 	}
-	return tools.Result{Data: result}, nil
+
+	return tools.Result{Data: MimeLookupResult{
+		Query:       query,
+		Category:    category,
+		Entries:     matched,
+		Total:       len(matched),
+		DataVersion: MimeTypesVersion,
+	}}, nil
 }
 
-// lookupMimeType 按媒体类型查条目：先查规范名，再查历史别名。
-func lookupMimeType(mimeType string) (*MimeEntry, bool) {
-	if entry, ok := mimeByType[mimeType]; ok {
-		return entry, true
-	}
-	entry, ok := mimeByAlias[mimeType]
-	return entry, ok
-}
+// 命中档位：数字越小越靠前。
+const (
+	// mimeRankExact 是媒体类型或别名完全相同。
+	mimeRankExact = 0
+	// mimeRankExtension 是扩展名完全相同。
+	mimeRankExtension = 1
+	// mimeRankKeyword 是子串命中。
+	mimeRankKeyword = 2
+)
 
-// fillMimeResult 把条目内容写进响应。
-func fillMimeResult(result *MimeLookupResult, entry *MimeEntry) {
-	result.Matched = true
-	result.MimeType = entry.MimeType
-	result.Category = entry.Category
-	result.IsTextual = entry.IsTextual
-	result.Charset = entry.Charset
-	result.Description = entry.Description
-	result.Extensions = append([]string{}, entry.Extensions...)
-	result.Aliases = append([]string{}, entry.Aliases...)
+// matchMimeEntry 报告条目是否命中查询词，并给出命中档位。
+//
+// 匹配范围：媒体类型、扩展名、历史别名、用途说明与顶层类型。
+//
+// 精确命中（媒体类型 / 别名 / 扩展名）通过数据集索引判定，
+// 保证「同一个扩展名被多个类型描述」时结果稳定（先到先得）。
+func matchMimeEntry(entry *MimeEntry, query string) (int, bool) {
+	if query == "" {
+		return mimeRankKeyword, true
+	}
+	if found, ok := mimeByType[query]; ok && found == entry {
+		return mimeRankExact, true
+	}
+	if found, ok := mimeByAlias[query]; ok && found == entry {
+		return mimeRankExact, true
+	}
+	if found, ok := mimeByExtension[query]; ok && found == entry {
+		return mimeRankExtension, true
+	}
+	candidates := make([]string, 0, len(entry.Extensions)+len(entry.Aliases)+3)
+	candidates = append(candidates, entry.MimeType, entry.Category, entry.Description)
+	candidates = append(candidates, entry.Extensions...)
+	candidates = append(candidates, entry.Aliases...)
+	for _, candidate := range candidates {
+		if candidate != "" && strings.Contains(strings.ToLower(candidate), query) {
+			return mimeRankKeyword, true
+		}
+	}
+	return 0, false
 }
 
 // Validate 做字段级校验。
+//
+// 查询词是**自由文本**（允许中文关键词），因此只校验长度与顶层类型枚举；
+// 空请求是合法的 —— 表示「列出全部条目」。
 func (r *MimeLookupRequest) Validate() error {
-	ext := strings.TrimSpace(r.Extension)
-	mime := strings.TrimSpace(r.MimeType)
-
-	if ext == "" && mime == "" {
-		return tools.MissingField("extension")
+	if len(r.Query) > 128 {
+		return tools.InvalidField("query", []int{0, 128}, len(r.Query))
 	}
-	if ext != "" && mime != "" {
-		return tools.InvalidField("mimeType", "only one of extension / mimeType", "both provided")
-	}
-	if len(r.Extension) > 128 {
-		return tools.InvalidField("extension", []int{0, 128}, len(r.Extension))
-	}
-	if len(r.MimeType) > 128 {
-		return tools.InvalidField("mimeType", []int{0, 128}, len(r.MimeType))
-	}
-
-	if ext != "" && !isValidExtension(normalizeExtension(r.Extension)) {
-		return tools.InvalidField("extension", "alphanumeric extension", "invalid format")
-	}
-	if mime != "" && !isValidMimeType(normalizeMimeType(r.MimeType)) {
-		return tools.InvalidField("mimeType", "type/subtype", "invalid format")
+	category := strings.ToLower(strings.TrimSpace(r.Category))
+	if category != "" && !containsString(MimeCategories(), category) {
+		return tools.InvalidField("category", MimeCategories(), category)
 	}
 	return nil
+}
+
+// normalizeMimeQuery 归一化查询词。
+//
+//   - 媒体类型：去掉 `;` 之后的参数，统一小写；
+//   - 扩展名：去掉目录前缀与前导点，统一小写（`report.PNG` → `png`）。
+func normalizeMimeQuery(raw string) string {
+	value := strings.ToLower(strings.TrimSpace(raw))
+	if value == "" {
+		return ""
+	}
+	if idx := strings.Index(value, ";"); idx >= 0 {
+		value = strings.TrimSpace(value[:idx])
+	}
+	// 形如 `type/subtype` 且子类型里不含点的，按媒体类型处理；
+	// 否则按文件名 / 路径取扩展名（`dir/report.pdf` → `pdf`）。
+	if strings.Contains(value, "/") {
+		rest := value[strings.LastIndex(value, "/")+1:]
+		if !strings.Contains(rest, ".") {
+			return normalizeMimeType(value)
+		}
+	}
+	return normalizeExtension(value)
 }
 
 // normalizeExtension 把用户输入规整成扩展名。
@@ -238,49 +286,6 @@ func normalizeMimeType(raw string) string {
 		value = value[:idx]
 	}
 	return strings.ToLower(strings.TrimSpace(value))
-}
-
-// isValidExtension 判断规整后的扩展名是否合法。
-func isValidExtension(ext string) bool {
-	if ext == "" || len(ext) > 32 {
-		return false
-	}
-	for _, c := range ext {
-		switch {
-		case c >= 'a' && c <= 'z':
-		case c >= '0' && c <= '9':
-		case c == '+' || c == '-' || c == '_':
-		default:
-			return false
-		}
-	}
-	return true
-}
-
-// isValidMimeType 判断规整后的媒体类型是否形如 `type/subtype`。
-func isValidMimeType(mimeType string) bool {
-	if mimeType == "" || len(mimeType) > 128 {
-		return false
-	}
-	parts := strings.Split(mimeType, "/")
-	if len(parts) != 2 {
-		return false
-	}
-	for _, part := range parts {
-		if part == "" {
-			return false
-		}
-		for _, c := range part {
-			switch {
-			case c >= 'a' && c <= 'z':
-			case c >= '0' && c <= '9':
-			case c == '+' || c == '-' || c == '.' || c == '_':
-			default:
-				return false
-			}
-		}
-	}
-	return true
 }
 
 // mimeCategory 取媒体类型的顶层类型。

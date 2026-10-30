@@ -12,7 +12,8 @@
     "os": "操作系统",
     "userAgent": "User-Agent 串",
     "acceptLanguage": "Accept-Language",
-    "referer": "Referer"
+    "referer": "Referer",
+    "customHeaders": "自定义请求头"
   },
   "options": {
     "mode": {
@@ -38,7 +39,9 @@
     "osVersion": "系统版本",
     "deviceType": "设备类型",
     "isBot": "爬虫",
-    "engine": "渲染引擎"
+    "engine": "渲染引擎",
+    "headerName": "请求头名称",
+    "headerValue": "请求头值"
   },
   "examples": [
     {
@@ -52,7 +55,8 @@
   ],
   "hints": {
     "platform": "首版只支持**内置**的常见平台与自定义填写，**不**引入任何在线 UA 查询。",
-    "output": "解析结果会区分桌面、移动、平板与爬虫，并给出渲染引擎。"
+    "output": "解析结果会区分桌面、移动、平板与爬虫，并给出渲染引擎。",
+    "customHeaders": "每行一条，格式为 `名称: 值`。"
   },
   "faq": [
     {

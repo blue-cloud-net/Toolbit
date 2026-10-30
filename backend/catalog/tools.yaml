@@ -1451,7 +1451,7 @@ tools:
     sensitive: false
     requiresNetwork: false
     autoRun: true
-    wide: false
+    wide: true
     i18nKey: tools.cidr-calc
 
   - slug: ssl-check
@@ -1483,7 +1483,7 @@ tools:
     sensitive: false
     requiresNetwork: true
     autoRun: false
-    wide: false
+    wide: true
     i18nKey: tools.dns-lookup
 
   - slug: dns-tester

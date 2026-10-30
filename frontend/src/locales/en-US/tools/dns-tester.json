@@ -17,7 +17,27 @@
     "ptr": "Reverse DNS"
   },
   "results": {
-    "output": "Result"
+    "output": "Result",
+    "source": "Source",
+    "registrar": "Registrar",
+    "creationDate": "Created",
+    "expirationDate": "Expires",
+    "updatedDate": "Updated",
+    "registrantCountry": "Registrant country",
+    "nameServers": "Name servers",
+    "statusCount": "Status count",
+    "nameServer": "Name server",
+    "statusItem": "Status",
+    "supported": "DNSSEC supported",
+    "dnssecEnabled": "DNSSEC enabled",
+    "dsPresent": "DS present",
+    "sigPresent": "RRSIG present",
+    "chainLevels": "Chain levels",
+    "chainDetail": "Per-level detail",
+    "reverse": "Reverse name",
+    "addresses": "Forward addresses",
+    "names": "Reverse names",
+    "rawJson": "Raw JSON"
   },
   "examples": [
     {

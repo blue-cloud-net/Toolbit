@@ -3,19 +3,43 @@
   "description": "Look up records and compare responses and latency across custom DNS servers.",
   "category": "Network",
   "actions": {
-    "lookup": "Look up"
+    "lookup": "Look up",
+    "add": "Add",
+    "remove": "Remove"
   },
   "fields": {
     "host": "Domain",
     "type": "Record type",
     "proto": "Protocol",
-    "addr": "Server",
+    "addr": "Server address",
+    "presets": "Preset servers",
+    "custom": "Custom servers",
     "timeoutMs": "Timeout (ms)"
   },
   "options": {},
+  "views": {
+    "summary": "Summary"
+  },
   "results": {
     "output": "Answers",
-    "perServer": "Per-server results"
+    "perServer": "Per-server results",
+    "servers": "Servers",
+    "fastest": "Fastest",
+    "ttl": "TTL range",
+    "consistency": "Answer consistency",
+    "consistent": "Consistent",
+    "inconsistent": "Differences found",
+    "record": "Record",
+    "missing": "Servers missing it",
+    "protocol": "Protocol",
+    "latency": "Latency",
+    "recordCount": "Records",
+    "status": "Status",
+    "name": "Name",
+    "type": "Type",
+    "value": "Value",
+    "empty": "Every server returned the same records",
+    "noRecord": "This server returned no records"
   },
   "examples": [
     {
@@ -24,17 +48,23 @@
     }
   ],
   "hints": {
-    "servers": "Leave empty to use the system resolvers; when set, only those servers are queried.",
+    "servers": "Leave every server unselected to use the system resolvers; once presets or custom servers are chosen, only those servers are queried.",
+    "presets": "Click a chip to toggle a server. Cloudflare, Google and AliDNS are selected by default so the first run already compares three resolvers.",
+    "limit": "At most {max} servers per query; {count} selected.",
     "doh": "DoH requires a full `https://` URL."
   },
   "faq": [
     {
       "q": "Why did one server fail?",
-      "a": "A single failure does not fail the request; the error is recorded on that server's `error` field."
+      "a": "A single failure does not fail the request; the error is recorded on that server's `error` field and shown as an error code on its tab."
+    },
+    {
+      "q": "What does \"answer consistency\" mean?",
+      "a": "The answer sets returned by every successful server are compared. When they differ, the summary lists which servers are missing a given record — common with CDN geolocation or DNS round-robin."
     },
     {
       "q": "Are TTLs included?",
-      "a": "Yes. Every answer carries its TTL in seconds."
+      "a": "Yes. Every answer carries its TTL in seconds, and the summary gives the TTL range across servers."
     },
     {
       "q": "May a custom server be an internal address?",

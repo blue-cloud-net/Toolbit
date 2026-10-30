@@ -3,7 +3,9 @@
   "description": "计算网段地址、掩码、可用主机数与拆分结果，也可由地址范围反推 CIDR。",
   "category": "网络",
   "actions": {
-    "calculate": "计算"
+    "calculate": "计算",
+    "showAll": "显示全部 {count} 条",
+    "collapse": "收起"
   },
   "fields": {
     "mode": "输入方式",
@@ -16,8 +18,22 @@
     "modeCidr": "网段",
     "modeRange": "地址范围"
   },
+  "views": {
+    "overview": "概览",
+    "subnets": "子网"
+  },
   "results": {
-    "output": "计算结果"
+    "output": "计算结果",
+    "network": "网段",
+    "mask": "子网掩码",
+    "prefix": "前缀长度",
+    "version": "地址族",
+    "broadcast": "广播地址",
+    "totalAddresses": "地址总数",
+    "hostCount": "可用主机数",
+    "usableRange": "可用地址区间",
+    "range": "地址区间",
+    "prefixBits": "前缀位图"
   },
   "examples": [
     {
@@ -27,7 +43,9 @@
   ],
   "hints": {
     "split": "拆分前缀必须不小于原前缀；一次最多拆出 256 个子网。",
-    "hostCount": "IPv4 的 `/31` 计 2 个可用地址、`/32` 计 1 个；IPv6 全部地址可用。"
+    "hostCount": "IPv4 的 `/31` 计 2 个可用地址、`/32` 计 1 个；IPv6 全部地址可用。",
+    "bits": "实心方块是网络位（共 {bits} 位中的前 {prefix} 位），空心方块是主机位。",
+    "subnetTruncated": "仅显示前 {shown} 条，共 {total} 条。"
   },
   "faq": [
     {

@@ -17,7 +17,27 @@
     "ptr": "反向解析"
   },
   "results": {
-    "output": "检测结果"
+    "output": "检测结果",
+    "source": "数据来源",
+    "registrar": "注册商",
+    "creationDate": "注册时间",
+    "expirationDate": "到期时间",
+    "updatedDate": "更新时间",
+    "registrantCountry": "注册人国家/地区",
+    "nameServers": "名称服务器数",
+    "statusCount": "状态数",
+    "nameServer": "名称服务器",
+    "statusItem": "状态",
+    "supported": "支持 DNSSEC",
+    "dnssecEnabled": "已启用 DNSSEC",
+    "dsPresent": "存在 DS 记录",
+    "sigPresent": "响应带 RRSIG",
+    "chainLevels": "信任链层数",
+    "chainDetail": "逐级结论",
+    "reverse": "反向域名",
+    "addresses": "正向地址",
+    "names": "反向名字",
+    "rawJson": "原始 JSON"
   },
   "examples": [
     {

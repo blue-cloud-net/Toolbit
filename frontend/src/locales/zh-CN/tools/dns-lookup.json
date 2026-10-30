@@ -3,19 +3,43 @@
   "description": "查询指定记录类型，可逐台对比自定义 DNS 服务器的响应与耗时。",
   "category": "网络",
   "actions": {
-    "lookup": "查询"
+    "lookup": "查询",
+    "add": "添加",
+    "remove": "删除"
   },
   "fields": {
     "host": "域名",
     "type": "记录类型",
     "proto": "协议",
-    "addr": "服务器",
+    "addr": "服务器地址",
+    "presets": "预设服务器",
+    "custom": "自定义服务器",
     "timeoutMs": "超时（毫秒）"
   },
   "options": {},
+  "views": {
+    "summary": "汇总"
+  },
   "results": {
     "output": "解析结果",
-    "perServer": "逐服务器结果"
+    "perServer": "逐服务器结果",
+    "servers": "服务器总数",
+    "fastest": "最快",
+    "ttl": "TTL 区间",
+    "consistency": "记录一致性",
+    "consistent": "一致",
+    "inconsistent": "存在差异",
+    "record": "记录",
+    "missing": "缺失该记录的服务器",
+    "protocol": "协议",
+    "latency": "耗时",
+    "recordCount": "记录数",
+    "status": "状态",
+    "name": "记录名",
+    "type": "类型",
+    "value": "值",
+    "empty": "各服务器的解析结果完全一致",
+    "noRecord": "该服务器没有返回记录"
   },
   "examples": [
     {
@@ -24,17 +48,23 @@
     }
   ],
   "hints": {
-    "servers": "留空使用系统配置的解析器；填写后只查询指定服务器。",
+    "servers": "留空使用系统配置的解析器；选择预设或添加自定义服务器后只查询指定服务器。",
+    "presets": "点击标签切换服务器；默认选中 Cloudflare、Google 与 AliDNS 三家，可多选对比。",
+    "limit": "一次最多查询 {max} 台服务器，当前已选 {count} 台。",
     "doh": "DoH 需要填写完整的 `https://` 地址。"
   },
   "faq": [
     {
       "q": "为什么某一台服务器报错？",
-      "a": "单台失败不会影响整体请求，错误记录在对应服务器的 `error` 字段里。"
+      "a": "单台失败不会影响整体请求，错误记录在对应服务器的 `error` 字段里，页签上会显示错误码。"
+    },
+    {
+      "q": "「记录一致性」是什么意思？",
+      "a": "比较各台成功服务器返回的记录集合。若有差异，汇总页会列出「哪些服务器缺少某条记录」，常见于 CDN 就近解析或 DNS 轮询。"
     },
     {
       "q": "能查到 TTL 吗？",
-      "a": "能。每条结果都带 TTL（秒）。"
+      "a": "能。每条结果都带 TTL（秒），汇总页给出各服务器的 TTL 区间。"
     },
     {
       "q": "自定义服务器可以是内网地址吗？",

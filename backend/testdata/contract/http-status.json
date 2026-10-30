@@ -59,11 +59,35 @@
       }
     },
     {
-      "name": "缺少查询词",
+      "name": "空请求返回全量列表",
       "request": {},
       "expect": {
+        "code": 0,
+        "dataContains": { "kind": "all", "total": 63 }
+      }
+    },
+    {
+      "name": "按类别过滤",
+      "request": { "category": "redirect" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "keyword", "total": 9 }
+      }
+    },
+    {
+      "name": "关键字与类别叠加",
+      "request": { "query": "redirect", "category": "redirect" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "total": 2 }
+      }
+    },
+    {
+      "name": "非法类别",
+      "request": { "category": "bogus" },
+      "expect": {
         "code": 400,
-        "errorCode": "MISSING_FIELD"
+        "errorCode": "INVALID_FIELD"
       }
     }
   ]

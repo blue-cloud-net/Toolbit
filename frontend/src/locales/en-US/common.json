@@ -104,7 +104,9 @@
     "empty": "No data",
     "failed": "Failed to load",
     "notFound": "Page not found",
-    "notFoundHint": "There is no page at this address."
+    "notFoundHint": "There is no page at this address.",
+    "yes": "Yes",
+    "no": "No"
   },
   "footer": {
     "builtWith": "Every tool runs on the server; inputs are never stored.",

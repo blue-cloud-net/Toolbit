@@ -25,7 +25,9 @@
     "end": "End address",
     "count": "Total addresses",
     "addresses": "Address list",
-    "truncated": "Truncated"
+    "truncated": "Truncated",
+    "mode": "Mode",
+    "cidrCount": "Subnet count"
   },
   "examples": [
     {
@@ -39,7 +41,8 @@
   ],
   "hints": {
     "mode": "Converting addresses to CIDR yields the minimal set of blocks covering the range.",
-    "output": "Expansion enumerates every address, so a large block would exhaust resources; a count limit applies."
+    "output": "Expansion enumerates every address, so a large block would exhaust resources; a count limit applies.",
+    "limit": "Upper limit for expanded addresses; anything beyond it is truncated."
   },
   "faq": [
     {

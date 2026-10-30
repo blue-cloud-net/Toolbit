@@ -11,8 +11,10 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import DataTable, { type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
@@ -24,17 +26,19 @@ interface DeviceHeadersResult {
   /** 模式。 */
   mode: string
   /** 生成的请求头。 */
-  headers: Record<string, string>
-  /** 解析出的 User-Agent 信息。 */
-  userAgent: {
+  headers: Array<{ name: string; value: string }>
+  /** 生成或解析的 UA 串。 */
+  userAgent: string
+  /** 解析出的 UA 信息；generate 模式为 null。 */
+  parsed: {
     browser: string
-    version: string
+    browserVersion: string
     os: string
-    device: string
+    osVersion: string
+    deviceType: string
     isBot: boolean
+    engine: string
   } | null
-  /** 命中的平台。 */
-  platform: string
 }
 
 /** 常见问题条目。 */
@@ -62,17 +66,91 @@ const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<D
 
 const running = computed(() => state.value === 'loading')
 
-/** 结果文本：请求头文本。 */
+/** 结果文本：生成模式是请求头文本，解析模式是 UA 串。 */
 const resultText = computed(() => {
-  if (!data.value) {
+  const result = data.value
+  if (!result) {
     return ''
   }
-  return Object.entries(data.value.headers)
-    .map(([key, value]) => `${key}: ${value}`)
-    .join('\n')
+  if (result.headers.length > 0) {
+    return result.headers.map((header) => `${header.name}: ${header.value}`).join('\n')
+  }
+  return result.userAgent
 })
 
+/** 摘要卡片：解析模式展示 UA 拆解，生成模式展示 UA 串。 */
+const statItems = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const parsed = result.parsed
+  if (!parsed) {
+    // generate 模式：后端不返回解析结果，只给出 UA 串。
+    return result.userAgent
+      ? [
+          {
+            label: t('tools.device-headers.results.userAgent'),
+            value: result.userAgent,
+          },
+        ]
+      : []
+  }
+  const items: StatGridItem[] = [
+    { label: t('tools.device-headers.results.browser'), value: parsed.browser || '—' },
+    {
+      label: t('tools.device-headers.results.browserVersion'),
+      value: parsed.browserVersion || '—',
+    },
+    { label: t('tools.device-headers.results.os'), value: parsed.os || '—' },
+    { label: t('tools.device-headers.results.osVersion'), value: parsed.osVersion || '—' },
+    { label: t('tools.device-headers.results.deviceType'), value: parsed.deviceType || '—' },
+    { label: t('tools.device-headers.results.engine'), value: parsed.engine || '—' },
+  ]
+  items.push({
+    label: t('tools.device-headers.results.isBot'),
+    value: parsed.isBot ? t('common.states.yes') : t('common.states.no'),
+    level: parsed.isBot ? 'warning' : 'success',
+    mono: false,
+  })
+  return items
+})
+
+/** 请求头表格行。 */
+const headerRows = computed<DataTableRow[]>(() =>
+  (data.value?.headers ?? []).map((header, index) => ({
+    key: `${index}-${header.name}`,
+    cells: { name: header.name, value: header.value },
+  })),
+)
+
 const faq = computed<FaqItem[]>(() => tm('tools.device-headers.faq') as FaqItem[])
+
+/**
+ * 自定义请求头：把「每行一条 `名称: 值`」的文本解析成对象。
+ *
+ * 后端 `customHeaders` 的类型是 `map[string]string`，
+ * 直接把文本发过去会被判 `INVALID_FIELD`，因此这里先做解析。
+ */
+const parsedCustomHeaders = computed<Record<string, string>>(() => {
+  const result: Record<string, string> = {}
+  for (const line of customHeaders.value.split('\n')) {
+    const trimmed = line.trim()
+    if (trimmed === '') {
+      continue
+    }
+    const separator = trimmed.indexOf(':')
+    if (separator <= 0) {
+      continue
+    }
+    const name = trimmed.slice(0, separator).trim()
+    const value = trimmed.slice(separator + 1).trim()
+    if (name !== '') {
+      result[name] = value
+    }
+  }
+  return result
+})
 
 /** 运行当前输入。 */
 function run(): void {
@@ -84,7 +162,7 @@ function run(): void {
     userAgent: userAgent.value,
     acceptLanguage: acceptLanguage.value,
     referer: referer.value,
-    customHeaders: customHeaders.value,
+    customHeaders: parsedCustomHeaders.value,
   })
 }
 
@@ -271,42 +349,17 @@ function fillExample(index: number): void {
         @retry="run"
       >
         <template #extra>
-          <dl class="detail">
-            <div
-              v-if="data?.userAgent"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.device-headers.results.browser') }}</dt>
-              <dd class="tb-mono">
-                {{ data.userAgent.browser }} {{ data.userAgent.version }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.userAgent"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.device-headers.results.os') }}</dt>
-              <dd class="tb-mono">
-                {{ data.userAgent.os }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.userAgent"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.device-headers.results.device') }}</dt>
-              <dd class="tb-mono">
-                {{ data.userAgent.device }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.userAgent?.isBot"
-              class="detail__row"
-            >
-              <dt>!</dt>
-              <dd>{{ t('tools.device-headers.results.isBot') }}</dd>
-            </div>
-          </dl>
+          <StatGrid :items="statItems" />
+          <DataTable
+            v-if="headerRows.length > 0"
+            class="device-headers__table"
+            :columns="[
+              { key: 'name', label: t('tools.device-headers.results.headerName'), mono: true },
+              { key: 'value', label: t('tools.device-headers.results.headerValue'), mono: true },
+            ]"
+            :rows="headerRows"
+            copy-column="value"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -328,3 +381,9 @@ function fillExample(index: number): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.device-headers__table {
+  margin-top: var(--tb-space-3);
+}
+</style>

@@ -6,16 +6,25 @@
     "lookup": "Look up"
   },
   "fields": {
-    "kind": "Lookup by",
-    "query": "Query"
+    "query": "Search",
+    "category": "Top-level type"
   },
   "options": {
-    "kind": {
-      "extension": "Extension",
-      "mimeType": "Media type"
+    "category": {
+      "all": "All",
+      "application": "Application",
+      "audio": "Audio",
+      "font": "Font",
+      "image": "Image",
+      "message": "Message",
+      "model": "Model",
+      "multipart": "Multipart",
+      "text": "Text",
+      "video": "Video"
     }
   },
   "results": {
+    "list": "Media type list",
     "mimeType": "Media type",
     "category": "Top-level type",
     "charset": "Default charset",
@@ -23,8 +32,9 @@
     "aliases": "Aliases and variants",
     "description": "Description",
     "dataVersion": "Dataset version",
-    "matched": "Found",
-    "notMatched": "Not found",
+    "total": "Current matches",
+    "datasetTotal": "Dataset size",
+    "empty": "No matching media type",
     "none": "Not applicable"
   },
   "examples": [
@@ -42,8 +52,8 @@
     }
   ],
   "hints": {
-    "query": "An extension may be written as png, .png or report.pdf; a media type may be written as image/png, and parameters such as text/plain; charset=utf-8 are stripped automatically.",
-    "output": "The result gives the canonical media type, its top-level type, the default charset, the usual extensions and the historical aliases; an unknown query only reports that nothing was found.",
+    "query": "Write an extension (png, .png, report.pdf), a media type (image/png) or a keyword; parameters such as text/plain; charset=utf-8 are stripped automatically. The search and the top-level type filter combine.",
+    "output": "Every media type is listed by default; typing a search term or picking a top-level type narrows the list instantly, showing media type / extensions / top-level type / charset / description, each row copyable.",
     "note": "Data comes from a built-in snapshot; the system MIME database is never read and nothing is fetched from the network."
   },
   "faq": [

@@ -6,15 +6,12 @@
     "lookup": "查询状态码"
   },
   "fields": {
-    "kind": "查询方式",
-    "query": "查询内容"
+    "query": "搜索",
+    "category": "类别"
   },
   "options": {
-    "kind": {
-      "code": "按状态码",
-      "keyword": "按关键字"
-    },
     "category": {
+      "all": "全部",
       "informational": "1xx 信息",
       "success": "2xx 成功",
       "redirect": "3xx 重定向",
@@ -23,15 +20,16 @@
     }
   },
   "results": {
-    "title": "状态码",
+    "title": "状态码列表",
     "code": "状态码",
     "reason": "原因短语",
     "category": "类别",
     "description": "含义",
-    "total": "命中条数",
+    "total": "当前命中",
+    "datasetTotal": "数据集总数",
+    "deprecated": "已废弃",
     "dataVersion": "数据集版本",
-    "matched": "已收录",
-    "notMatched": "未收录"
+    "empty": "没有匹配的状态码"
   },
   "examples": [
     {
@@ -48,8 +46,8 @@
     }
   ],
   "hints": {
-    "query": "状态码可填 100–599 的整数；关键字会同时匹配原因短语（不区分大小写）与中文说明。",
-    "output": "结果给出状态码、原因短语、所属类别与含义说明；关键字查询会列出全部命中条目。",
+    "query": "可填状态码（404）、原因短语（not found）或中文说明（重定向）；搜索与类别可叠加。",
+    "output": "默认列出全部状态码；输入搜索词或点选类别后即时收敛，结果按「状态码 / 原因短语 / 类别 / 含义」列出，逐行可复制。",
     "validCode": "状态码在合法区间内。",
     "invalidCode": "状态码必须是 {min}–{max} 之间的整数。",
     "note": "数据来自内置快照，不联网。"

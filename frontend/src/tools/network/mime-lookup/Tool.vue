@@ -2,31 +2,29 @@
 /**
  * MIME 类型查询工具页。
  *
+ * 默认展示**全量**媒体类型列表；输入搜索词或点选顶层类型后即时收敛，
+ * 过滤在**前端本地**完成（数据集已一次性取回），因此输入零延迟。
+ *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
 import { ElInput } from 'element-plus/es/components/input/index'
 import 'element-plus/es/components/input/style/css'
-import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
-import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
+import FilterChips, { type FilterChipOption } from '@/components/tool/FilterChips.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
-import { EXAMPLES, type MimeQueryKind } from '@/tools/network/mime-lookup/example'
+import { EXAMPLES } from '@/tools/network/mime-lookup/example'
 
-/** 后端 mime-lookup 工具的响应。 */
-interface MimeLookupResult {
-  /** 规范化后的查询词。 */
-  query: string
-  /** 查询方式：extension / mimeType。 */
-  kind: string
-  /** 是否命中数据集。 */
-  matched: boolean
+/** 一个媒体类型条目。 */
+interface MimeEntry {
   /** 规范媒体类型。 */
   mimeType: string
   /** 常用扩展名。 */
@@ -41,6 +39,18 @@ interface MimeLookupResult {
   description: string
   /** 历史别名与常见变体。 */
   aliases: string[]
+}
+
+/** 后端 mime-lookup 工具的响应。 */
+interface MimeLookupResult {
+  /** 规范化后的查询词。 */
+  query: string
+  /** 生效的顶层类型过滤。 */
+  category: string
+  /** 命中的条目。 */
+  entries: MimeEntry[]
+  /** 命中条数。 */
+  total: number
   /** 数据集版本。 */
   dataVersion: string
 }
@@ -51,10 +61,23 @@ interface FaqItem {
   a: string
 }
 
+/** 顶层类型枚举（与后端 `MimeCategories` 对应）。 */
+const MIME_CATEGORIES = [
+  'application',
+  'audio',
+  'font',
+  'image',
+  'message',
+  'model',
+  'multipart',
+  'text',
+  'video',
+]
+
 const { t, tm } = useI18n()
 
-const kind = ref<MimeQueryKind>('extension')
-const input = ref('png')
+const query = ref('')
+const category = ref('')
 
 const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<MimeLookupResult>({
   slug: 'mime-lookup',
@@ -62,47 +85,159 @@ const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<M
 
 const running = computed(() => state.value === 'loading')
 
-/** 结果文本：媒体类型本身。 */
-const resultText = computed(() => data.value?.mimeType ?? '')
-
-/** 结论徽章：命中与否。 */
-const verdict = computed(() => {
-  if (!data.value) {
-    return null
+/** 顶层类型筛选项；带各自条目数。 */
+const categoryOptions = computed<FilterChipOption[]>(() => {
+  const counts = new Map<string, number>()
+  for (const entry of data.value?.entries ?? []) {
+    counts.set(entry.category, (counts.get(entry.category) ?? 0) + 1)
   }
-  return data.value.matched
-    ? { level: 'success' as const, label: t('tools.mime-lookup.results.matched') }
-    : { level: 'info' as const, label: t('tools.mime-lookup.results.notMatched') }
+  const options: FilterChipOption[] = [
+    {
+      value: '',
+      label: t('tools.mime-lookup.options.category.all'),
+      hint: String(data.value?.total ?? 0),
+    },
+  ]
+  for (const name of MIME_CATEGORIES) {
+    options.push({
+      value: name,
+      label: t(`tools.mime-lookup.options.category.${name}`),
+      hint: String(counts.get(name) ?? 0),
+    })
+  }
+  return options
 })
+
+/** 归一化查询词：媒体类型去参数，文件名取扩展名。 */
+function normalizeQuery(raw: string): string {
+  const value = raw.trim().toLowerCase()
+  if (value === '') {
+    return ''
+  }
+  const withoutParams = value.split(';')[0]?.trim() ?? ''
+  if (withoutParams.includes('/')) {
+    const rest = withoutParams.slice(withoutParams.lastIndexOf('/') + 1)
+    if (!rest.includes('.')) {
+      return withoutParams
+    }
+  }
+  const file = withoutParams.slice(Math.max(withoutParams.lastIndexOf('/'), withoutParams.lastIndexOf('\\')) + 1)
+  const dot = file.lastIndexOf('.')
+  return dot >= 0 ? file.slice(dot + 1) : file
+}
+
+/** 条目是否命中查询词。 */
+function matchesQuery(entry: MimeEntry, term: string): boolean {
+  if (term === '') {
+    return true
+  }
+  const haystack = [entry.mimeType, entry.category, entry.description, ...entry.extensions, ...entry.aliases]
+  return haystack.some((value) => value.toLowerCase().includes(term))
+}
+
+/** 命中档位：数字越小越靠前。 */
+function matchRank(entry: MimeEntry, term: string): number {
+  if (term === '') {
+    return 2
+  }
+  if (entry.mimeType === term) {
+    return 0
+  }
+  if (entry.aliases.includes(term)) {
+    return 0
+  }
+  if (entry.extensions.includes(term)) {
+    return 1
+  }
+  return 2
+}
+
+/** 本地过滤结果：搜索词与顶层类型叠加。 */
+const filtered = computed<MimeEntry[]>(() => {
+  const entries = data.value?.entries ?? []
+  const term = normalizeQuery(query.value)
+  const hits = entries.filter((entry) => {
+    if (category.value !== '' && entry.category !== category.value) {
+      return false
+    }
+    return matchesQuery(entry, term)
+  })
+  return hits
+    .map((entry, index) => ({ entry, rank: matchRank(entry, term), index }))
+    .sort((a, b) => (a.rank === b.rank ? a.index - b.index : a.rank - b.rank))
+    .map((item) => item.entry)
+})
+
+/** 结果文本：命中条目逐行给出媒体类型与扩展名。 */
+const resultText = computed(() =>
+  filtered.value
+    .map((entry) => {
+      const extensions = entry.extensions.length > 0 ? entry.extensions.map((ext) => `.${ext}`).join(' ') : '-'
+      return `${entry.mimeType}\t${extensions}\t${entry.description}`
+    })
+    .join('\n'),
+)
+
+/** 统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const items: StatGridItem[] = [
+    { label: t('tools.mime-lookup.results.total'), value: String(filtered.value.length) },
+    { label: t('tools.mime-lookup.results.datasetTotal'), value: String(data.value?.total ?? 0) },
+  ]
+  if (category.value !== '') {
+    items.push({
+      label: t('tools.mime-lookup.results.category'),
+      value: t(`tools.mime-lookup.options.category.${category.value}`),
+    })
+  }
+  items.push({ label: t('tools.mime-lookup.results.dataVersion'), value: data.value?.dataVersion ?? '-' })
+  return items
+})
+
+/** 表格列定义。 */
+const columns = computed<DataTableColumn[]>(() => [
+  { key: 'mimeType', label: t('tools.mime-lookup.results.mimeType'), mono: true },
+  { key: 'extensions', label: t('tools.mime-lookup.results.extensions'), mono: true },
+  { key: 'category', label: t('tools.mime-lookup.results.category') },
+  { key: 'charset', label: t('tools.mime-lookup.results.charset'), mono: true },
+  { key: 'description', label: t('tools.mime-lookup.results.description') },
+])
+
+/** 表格行。 */
+const rows = computed<DataTableRow[]>(() =>
+  filtered.value.map((entry) => ({
+    key: entry.mimeType,
+    cells: {
+      mimeType: entry.mimeType,
+      extensions: entry.extensions.map((ext) => `.${ext}`).join(' '),
+      category: t(`tools.mime-lookup.options.category.${entry.category}`),
+      charset: entry.charset || t('tools.mime-lookup.results.none'),
+      description: entry.description,
+    },
+  })),
+)
 
 const faq = computed<FaqItem[]>(() => tm('tools.mime-lookup.faq') as FaqItem[])
 
-/** 运行当前输入。 */
-function run(): void {
-  const value = input.value.trim()
-  if (value === '') {
-    return
-  }
-  if (kind.value === 'extension') {
-    void execute({ extension: value })
-    return
-  }
-  void execute({ mimeType: value })
+/** 拉取全量数据集。 */
+function loadAll(): void {
+  void execute({})
 }
 
-// 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。
+// 首屏拉全量；catalog 加载完成后触发一次。
 useAutoRun({
   slug: 'mime-lookup',
-  run,
-  watch: [kind, input],
-  enabled: () => input.value.trim() !== '',
+  run: loadAll,
+  watch: [],
+  immediate: true,
 })
 
 /** 重置表单与结果。 */
 function reset(): void {
-  kind.value = 'extension'
-  input.value = 'png'
+  query.value = ''
+  category.value = ''
   resetRun()
+  loadAll()
 }
 
 /** 填入指定示例。 */
@@ -111,9 +246,8 @@ function fillExample(index: number): void {
   if (!example) {
     return
   }
-  kind.value = example.kind
-  input.value = example.kind === 'extension' ? example.extension : example.mimeType
-  resetRun()
+  query.value = example.query
+  category.value = ''
 }
 </script>
 
@@ -126,36 +260,24 @@ function fillExample(index: number): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <div class="row">
-            <label class="field field--kind">
-              <span class="field__label">{{ t('tools.mime-lookup.fields.kind') }}</span>
-              <ElSelect
-                v-model="kind"
-                class="field__input"
-                :aria-label="t('tools.mime-lookup.fields.kind')"
-              >
-                <ElOption
-                  :label="t('tools.mime-lookup.options.kind.extension')"
-                  value="extension"
-                />
-                <ElOption
-                  :label="t('tools.mime-lookup.options.kind.mimeType')"
-                  value="mimeType"
-                />
-              </ElSelect>
-            </label>
+          <label class="field">
+            <span class="field__label">{{ t('tools.mime-lookup.fields.query') }}</span>
+            <ElInput
+              v-model="query"
+              class="field__input tb-mono"
+              autocomplete="off"
+              placeholder="png / image/png / report.pdf"
+              :aria-label="t('tools.mime-lookup.fields.query')"
+            />
+          </label>
 
-            <label class="field field--grow">
-              <span class="field__label">{{ t('tools.mime-lookup.fields.query') }}</span>
-              <ElInput
-                v-model="input"
-                class="field__input tb-mono"
-                autocomplete="off"
-                :placeholder="kind === 'extension' ? 'png' : 'image/png'"
-                :aria-label="t('tools.mime-lookup.fields.query')"
-                @keydown.enter.prevent="run"
-              />
-            </label>
+          <div class="field">
+            <span class="field__label">{{ t('tools.mime-lookup.fields.category') }}</span>
+            <FilterChips
+              v-model="category"
+              :options="categoryOptions"
+              :aria-label="t('tools.mime-lookup.fields.category')"
+            />
           </div>
 
           <p class="field__hint">
@@ -166,7 +288,7 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
-            @run="run"
+            @run="loadAll"
             @reset="reset"
             @example="fillExample(0)"
           />
@@ -180,68 +302,22 @@ function fillExample(index: number): void {
         :text="resultText"
         :meta="meta"
         :error="error"
-        :verdict="verdict"
-        :title="t('tools.mime-lookup.results.mimeType')"
-        @retry="run"
+        :title="t('tools.mime-lookup.results.list')"
+        @retry="loadAll"
       >
         <template
-          v-if="data?.matched"
+          v-if="data"
           #extra
         >
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.mime-lookup.results.category') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.category }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.mime-lookup.results.charset') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.charset || t('tools.mime-lookup.results.none') }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.mime-lookup.results.description') }}</dt>
-              <dd>
-                {{ data?.description }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.mime-lookup.results.dataVersion') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.dataVersion }}
-              </dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
 
-          <div
-            v-if="data?.extensions?.length"
-            class="chips"
-          >
-            <span class="chips__label">{{ t('tools.mime-lookup.results.extensions') }}</span>
-            <span
-              v-for="ext in data?.extensions ?? []"
-              :key="ext"
-              class="chip tb-mono"
-            >
-              .{{ ext }}
-            </span>
-          </div>
-
-          <div
-            v-if="data?.aliases?.length"
-            class="chips"
-          >
-            <span class="chips__label">{{ t('tools.mime-lookup.results.aliases') }}</span>
-            <span
-              v-for="alias in data?.aliases ?? []"
-              :key="alias"
-              class="chip tb-mono"
-            >
-              {{ alias }}
-            </span>
-          </div>
+          <DataTable
+            class="table"
+            :columns="columns"
+            :rows="rows"
+            :copy-column="'mimeType'"
+            :empty="t('tools.mime-lookup.results.empty')"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -271,63 +347,8 @@ function fillExample(index: number): void {
 </template>
 
 <style scoped>
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tb-space-3);
-}
-
-.field--kind {
-  min-width: 160px;
-}
-
-.field--grow {
-  flex: 1 1 200px;
-}
-
-.detail {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-  margin: var(--tb-space-3) 0 0;
-}
-
-.detail__row {
-  display: flex;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-sm);
-}
-
-.detail__row dt {
-  min-width: 96px;
-  color: var(--tb-text-tertiary);
-}
-
-.detail__row dd {
-  margin: 0;
-  word-break: break-all;
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--tb-space-1) var(--tb-space-2);
+.table {
   margin-top: var(--tb-space-3);
-}
-
-.chips__label {
-  font-size: var(--tb-font-xs);
-  color: var(--tb-text-tertiary);
-}
-
-.chip {
-  padding: 0 var(--tb-space-2);
-  font-size: var(--tb-font-xs);
-  color: var(--tb-text-secondary);
-  background: var(--tb-bg-sunken);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-pill);
 }
 
 .prose {
