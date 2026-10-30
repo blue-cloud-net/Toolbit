@@ -51,6 +51,7 @@ const token = ref('')
 const headerText = ref('')
 const payloadText = ref('')
 const secret = ref('')
+const publicKey = ref('')
 const algorithm = ref<Algorithm>('HS256')
 const jsonError = ref('')
 
@@ -116,7 +117,9 @@ function run(): void {
 
   void execute({
     operation: operation.value,
-    token: token.value,
+    // HS 系列取 secret，RS / PS / ES 系列取公钥；服务端按令牌头部的 alg 决定用哪个。
+    secret: operation.value === 'verify' ? secret.value : '',
+    publicKey: operation.value === 'verify' ? publicKey
     secret: operation.value === 'verify' ? secret.value : '',
   })
 }
@@ -128,6 +131,7 @@ function reset(): void {
   headerText.value = ''
   payloadText.value = ''
   secret.value = ''
+  publicKey.value = ''
   algorithm.value = 'HS256'
   jsonError.value = ''
   resetRun()
@@ -143,6 +147,7 @@ function fillExample(index: number): void {
   token.value = example.token
   headerText.value = example.header
   payloadText.value = example.payload
+  publicKey.value = ''
   secret.value = example.secret
   algorithm.value = example.algorithm
   jsonError.value = ''
@@ -289,6 +294,28 @@ function onKeydown(event: KeyboardEvent): void {
             class="field__hint"
           >
             {{ t('tools.jwt-codec.hints.secret') }}
+          </p>
+
+          <label
+            v-if="operation === 'verify'"
+            class="field"
+          >
+            <span class="field__label">{{ t('tools.jwt-codec.fields.publicKey') }}</span>
+            <ElInput
+              v-model="publicKey"
+              type="textarea"
+              class="field__textarea tb-mono"
+              :rows="5"
+              autocomplete="off"
+              spellcheck="false"
+              :aria-label="t('tools.jwt-codec.fields.publicKey')"
+            />
+          </label>
+          <p
+            v-if="operation === 'verify'"
+            class="field__hint"
+          >
+            {{ t('tools.jwt-codec.hints.publicKey') }}
           </p>
 
           <p class="field__hint">

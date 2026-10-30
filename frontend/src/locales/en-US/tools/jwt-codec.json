@@ -12,6 +12,7 @@
     "header": "Header (JSON)",
     "payload": "Payload (JSON)",
     "secret": "HMAC secret",
+    "publicKey": "Public key (PEM)",
     "operation": "Operation",
     "algorithm": "Signing algorithm"
   },
@@ -51,14 +52,15 @@
   "hints": {
     "input": "Decode and verify need a complete token; encode needs a header and a payload.",
     "secret": "The secret is sent with the request and never written to browser storage; do not paste production secrets.",
-    "algorithm": "Only the HMAC-SHA family is supported: HS256, HS384 and HS512.",
+    "publicKey": "RS / PS / ES verification needs a public key; supply either this or the HMAC secret — the token header's alg decides which is used.",
+    "algorithm": "Encoding supports the HMAC-SHA family only (HS256 / HS384 / HS512); verification follows the token header's alg and also accepts RS / PS and ES256.",
     "invalidJson": "Header and payload must be valid JSON objects.",
     "output": "The decoded view lists the header and the payload; a payload with exp or nbf also gets a time status."
   },
   "faq": [
     {
-      "q": "Why are only HS algorithms supported?",
-      "a": "Verifying RS or ES signatures needs public key material, which is out of scope. For non-HS algorithms the tool reports an unsupported-algorithm error instead of pretending the signature is valid."
+      "q": "Which signing algorithms are supported?",
+      "a": "Encoding supports only the HMAC-SHA family (HS256 / HS384 / HS512). Verification also accepts the RS / PS families and ES256, which require a public key. ES384 is not supported yet because the underlying ECDSA digest is fixed to SHA-256."
     },
     {
       "q": "Can decoding reveal the secret?",

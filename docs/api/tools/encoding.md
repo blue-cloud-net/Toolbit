@@ -84,8 +84,22 @@ JWT 解码、编码与校验。
 | `token` | string | `decode` / `verify` 时是 | JWT 字符串 |
 | `header` | object | `encode` 时是 | JWT 头部 |
 | `payload` | object | `encode` 时是 | JWT 载荷 |
-| `secret` | string | `encode` / `verify` 时是 | 密钥（HS 系列） |
-| `algorithm` | string | 否 | `HS256`（默认）\| `HS384` \| `HS512` |
+| `secret` | string | `encode` / `verify`（HS 系列）时是 | 密钥（HMAC 系列） |
+| `publicKey` | string | `verify`（RS / PS / ES 系列）时是 | 公钥（PEM，SPKI 或 PKCS#1） |
+| `algorithm` | string | 否 | 生成时用于 `encode`，默认 `HS256`；见下方支持矩阵 |
+
+**签名算法支持矩阵**
+
+| 算法 | `decode` | `encode` | `verify` |
+| --- | --- | --- | --- |
+| `HS256` `HS384` `HS512` | ✅ | ✅ | ✅ |
+| `RS256` `RS384` `RS512` | ✅ | ❌ | ✅ |
+| `PS256` `PS384` `PS512` | ✅ | ❌ | ✅ |
+| `ES256` | ✅ | ❌ | ✅ |
+| `ES384` | ✅ | ❌ | ❌ |
+
+> `ES384` 受上游限制暂不支持：`cryptosvc` 的 ECDSA 摘要固定为 SHA-256；请求中传入会返回 `UNSUPPORTED_ALGORITHM`。
+> `verify` 用哪个算法由**令牌头部的 `alg`** 决定：HS 系列取 `secret`，RS / PS / ES 系列取 `publicKey`。
 
 ### 响应
 
@@ -100,9 +114,10 @@ JWT 解码、编码与校验。
 
 ### 错误
 
-`INVALID_JWT`、`INVALID_FIELD`、`MISSING_FIELD`。
+`INVALID_JWT`、`INVALID_FIELD`、`MISSING_FIELD`、`UNSUPPORTED_ALGORITHM`。
 
-> **本工具不校验 RS/ES 签名的真实性**（只做结构解码）。`verify` **仅**支持 HS 系列。解码 `exp` / `nbf` 时返回**提示性** `expired` 标记，**不**作为错误。
+> 非对称验签**只做验签**，不复用 `signature` 之外的路径；缺公钥返回 `MISSING_FIELD`。
+> 解码 `exp` / `nbf` 时返回**提示性** `expired` 标记，**不**作为错误。
 
 ---
 
