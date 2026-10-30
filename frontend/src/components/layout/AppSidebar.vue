@@ -157,6 +157,36 @@ function isActiveTool(slug: string): boolean {
   return route.name === 'tool' && route.params.slug === slug
 }
 
+/** 侧栏可滚区；用于把选中项定位到可视区中央。 */
+const scrollBox = ref<HTMLElement | null>(null)
+
+/** 是否已做过首次定位（只在加载 / 刷新时定位一次）。 */
+let initialRevealDone = false
+
+/** 把当前选中项滚到可滚区中央。
+ *
+ * **只在首次加载（含刷新）时执行一次**：之后的路由切换不动滚动位置，
+ * 免得用户手动滑过菜单后被强行拉回。
+ */
+async function revealActiveOnce(): Promise<void> {
+  if (initialRevealDone) {
+    return
+  }
+  await nextTick()
+  const box = scrollBox.value
+  const row = box?.querySelector<HTMLElement>('.sidebar__tool-row--active')
+  if (!box || !row) {
+    return
+  }
+  initialRevealDone = true
+  const boxRect = box.getBoundingClientRect()
+  const rowRect = row.getBoundingClientRect()
+  // 直接算 scrollTop 并赋值：不用 scrollIntoView（它会把整页也一起滚），也不带动画。
+  const centered = box.scrollTop + (rowRect.top - boxRect.top) - box.clientHeight / 2 + rowRect.height / 2
+  const max = Math.max(box.scrollHeight - box.clientHeight, 0)
+  box.scrollTop = Math.min(Math.max(centered, 0), max)
+}
+
 /** 是否有分类处于展开状态。 */
 const hasExpanded = computed(() => expanded.value.length > 0)
 
@@ -276,9 +306,13 @@ watch(
       return
     }
     const meta = catalog.getTool(slug)
-    if (meta && !isExpanded(meta.category)) {
+    if (!meta) {
+      return
+    }
+    if (!isExpanded(meta.category)) {
       expanded.value = [...expanded.value, meta.category]
     }
+    void revealActiveOnce()
   },
   { immediate: true },
 )
@@ -415,6 +449,7 @@ onBeforeUnmount(() => {
 
     <!-- 滚动区：只让分类列表滚动 -->
     <div
+      ref="scrollBox"
       class="sidebar__scroll"
       @scroll="closeFlyout"
     >
