@@ -11,6 +11,7 @@
 #   make build-web    前端生产构建
 #   make check-docs   文档一致性检查
 #   make check-budget 前端体积预算检查
+#   make docker-build 构建镜像（不启动容器；首次会编译 Tongsuo，较慢）
 #   make docker-up    构建镜像并启动（首次会编译 Tongsuo，较慢）
 #   make docker-smoke 容器冒烟检查
 #   make verify       提交前全量校验（vet + test + test-web + lint + build-web + check-budget）
@@ -135,10 +136,15 @@ TAG          ?= local
 HTTP_PORT    ?= 30234
 
 .PHONY: docker-build
-docker-build: ## 构建镜像（首次会编译 Tongsuo，约 5-10 分钟）
+docker-build: ## 构建镜像（不启动容器；缺 .env 时用模板生成一份）
+	@if [ ! -f $(ENV_FILE) ]; then \
+		cp $(ENV_FILE).example $(ENV_FILE); \
+		echo "已生成 $(ENV_FILE)（所有变量都有默认值，可直接使用）"; \
+	fi
 	TAG=$(TAG) COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null || echo unknown) \
 	BUILD_TIME=$(shell date -u +%Y-%m-%dT%H:%M:%SZ) \
 	$(COMPOSE) -f $(COMPOSE_FILE) build
+	@echo "已构建镜像：$(IMAGE):$(TAG)"
 
 .PHONY: docker-up
 docker-up: ## 构建并后台启动（缺 .env 时用模板生成一份）

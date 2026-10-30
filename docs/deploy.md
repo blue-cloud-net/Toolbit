@@ -24,6 +24,12 @@ make docker-up          # 首次会编译 Tongsuo，约 5-10 分钟
 缺 `deployments/.env` 时会自动用 `.env.example` 生成一份（**全部变量都有默认值**，可直接使用）。
 访问 <http://localhost:30234>。
 
+只想构建镜像、暂不启动容器时用：
+
+```bash
+make docker-build       # 构建 bluecloud/toolbit:local，不启动容器
+```
+
 ### 1.2 直接使用 compose
 
 ```bash
@@ -266,6 +272,7 @@ curl -fsS http://localhost:30234/readyz
 从源码升级（自己构建镜像）：
 
 ```bash
+make docker-build         # 可选：先构建镜像，确认无误再启动
 make docker-up            # 重新构建并滚动替换容器
 make docker-smoke         # 确认 /readyz 与目录端点正常
 ```
