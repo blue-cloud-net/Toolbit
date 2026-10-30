@@ -67,7 +67,7 @@
 | `archive-inspect` | 数据 | ZIP / TAR / GZIP 内容查看与条目清单 | 扩充 `gzip-deflate`；**必须**限制条目数与解压体积 | 零新依赖 | M | P2 |
 | `file-analyze` | 数据 | 文件类型识别与元数据提取（魔数、MIME、大小、摘要） | `mimetype` 已在依赖树，提升为直接依赖 | 零新依赖 | S | P2 |
 | `text-stats` | 文本 | 字数 / 行数 / 字符统计，中英文分别计数 | 无 | 零新依赖 | S | P2 |
-| `wifi-qr` | 数据 | 访客 WiFi 批量二维码生成 | 复用 `qr-code` 的生成能力 | 零新依赖 | S | P2 |
+| `wifi-qr` | 数据 | 访客 WiFi 批量二维码生成 | 复用 `qr-code` 的生成能力；**已移除**（能力与 `qr-code` 重叠，且会明文回显含网络口令的载荷，改由 `qr-code` 承担二维码生成） | 零新依赖 | S | P2 |
 | `ip-range-expand` | 网络 | IP 段与 CIDR 互转、批量展开 | 扩充 `cidr-calc` | 零新依赖 | S–M | P2 |
 | `id-generator` | 数据 | UUID / ULID / 雪花 ID / NanoID 统一生成 | 扩充 `uuid-gen` 优于新增 slug | 零新依赖 | S | P2 |
 | `mock-data` | 数据 | 按字段类型生成假数据 | 无 | 零新依赖 | M | P2 |

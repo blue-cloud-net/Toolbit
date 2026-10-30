@@ -8,16 +8,16 @@
 
 | 文件 | 分类 | 工具数 |
 | --- | --- | --- |
-| [crypto.md](tools/crypto.md) | 加密 | 8 |
-| [keys.md](tools/keys.md) | 密钥 | 6 |
-| [certificates.md](tools/certificates.md) | 证书 | 23 |
-| [encoding.md](tools/encoding.md) | 编码 | 6 |
-| [formatting.md](tools/formatting.md) | 格式化 | 8 |
-| [text.md](tools/text.md) | 文本 | 2 |
-| [data.md](tools/data.md) | 数据 | 6 |
-| [system.md](tools/system.md) | 系统 | 3 |
-| [network.md](tools/network.md) | 网络 | 5 |
-| [documents.md](tools/documents.md) | 文档 | 3 |
+| [crypto.md](tools/crypto.md) | 加密 | 10 |
+| [keys.md](tools/keys.md) | 密钥 | 7 |
+| [certificates.md](tools/certificates.md) | 证书 | 24 |
+| [encoding.md](tools/encoding.md) | 编码 | 7 |
+| [formatting.md](tools/formatting.md) | 格式化 | 9 |
+| [text.md](tools/text.md) | 文本 | 7 |
+| [data.md](tools/data.md) | 数据 | 13 |
+| [system.md](tools/system.md) | 系统 | 7 |
+| [network.md](tools/network.md) | 网络 | 9 |
+| [documents.md](tools/documents.md) | 文档 | 4 |
 
 错误码见 [errors.md](errors.md)，管理与运维接口见 [admin.md](admin.md)。
 

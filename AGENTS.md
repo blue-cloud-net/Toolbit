@@ -8,7 +8,7 @@
 
 ## 1. 项目是什么
 
-- 前后端一体的 IT 工具箱网站；v1 交付 **98 个工具**。
+- 前后端一体的 IT 工具箱网站；v1 交付 **97 个工具**。
 - 前端：Vue 3 + TypeScript + Vite + Element Plus（zh-CN / en-US 双语）。
 - 后端：Go 1.25 + Gin；**所有工具在服务端计算**。
 - 密码学：唯一底层实现是 [Tongsuo（铜锁）](https://www.tongsuo.net/)，经 `github.com/blue-cloud-net/tongsuo-go` 封装。

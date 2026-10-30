@@ -27,13 +27,54 @@
   - **其它**：`caa-gen` 的 CAA 记录改为表格
   - `docs/standards/01-frontend.md` §10 新增硬规则：多字段结果**禁止**压成文本行，
     产物与摘要**必须**分离，页签选中项**禁止**持久化
+- **结果区不再重复展示与表格等价的原始文本**
+  - `ResultPanel` 新增 `hideText`：结果已由 `DataTable` / `StatGrid` 覆盖时不再渲染 `<pre>` 文本块，
+    文本仍作复制 / 下载 / 回填的数据源
+  - 首批应用：`mime-lookup`、`http-status`、`hash-calc`、`country-code`、`cn-regions`、
+    `ip-range-expand`、`device-headers`（此前表格被上千行文本压在下方）
+- **多记录结果补表格**：`mock-data`（类型 / 取值）、`archive-inspect`（条目清单）、
+  `password-policy`（检查项）、`eml-parser`（头字段）、`regex-tester`（匹配列表，含捕获组列）、
+  `color-convert`（各格式取值）由文本行 / 卡片改为 `DataTable`，摘要改 `StatGrid`
+- **复制按钮改为图标式**：`CopyButton` 只保留图标，悬停 / 聚焦在**上方**显示 tooltip（固定「复制」），
+  复制结果改由 `ElMessage` 轻提示（已复制 / 复制失败，连续复制合并计数），全站生效；
+  `DataTable` 新增 `copyColumns`（多列内嵌复制，按钮贴值右侧）与 `badgeCopy`（点击彩色徽标即复制，不另加按钮），
+  并取消尾部整行列；`http-status` 的状态码改为点击徽标复制，原因短语与含义各带内嵌复制按钮
+- **HTTP 状态码按类别着色**
+  - `DataTable` 新增 `cellLevels`（按单元格着色）与 `badges`（彩色胶囊标签，浅底 + 同色文字 + 同色描边，
+    只用 `--tb-*` 语义令牌，不引入 `ElTag`）
+  - `http-status` 的状态码以彩色标签呈现（1xx 灰 / 2xx 绿 / 3xx 蓝 / 4xx 橙 / 5xx 红）；
+    废弃条目不整行标黄，改为整行次级文字并在说明里附「已废弃」
+  - 类别筛选项去掉 `1xx` / `2xx` 之类的数字前缀，直接显示「信息 / 成功 / 重定向 / 客户端错误 / 服务端错误」
 - **MIME 类型查询与 HTTP 状态码查询改为「默认全量列表 + 即时过滤」**
   - 后端 `mime-lookup` 请求改为 `{ query, category }`（都可省略，空 = 全量），
     响应改为列表 `{ query, category, entries[], total, dataVersion }`；
     `http-status` 允许空请求（`kind: "all"`）并新增 `category` 过滤
   - 匹配范围扩展到媒体类型、扩展名、历史别名、用途说明与顶层类型；精确命中排在最前
   - 前端首屏拉全量，搜索与类别筛选在**本地即时完成**（零延迟、无 loading 闪烁）
-  - `useAutoRun` 新增 `immediate` 选项：catalog 加载完成后触发一次首屏运行
+  - 新增 `useLiveFilter` 组合式（一次取数 + 本地筛选）与 `SearchField` 组件
+    （自带字段标签、清空按钮、可选自动聚焦），并登记进
+    `docs/standards/01-frontend.md` §2 与 §4.3
+- **查表类工具改为「键入即筛选」**
+  - `mime-lookup` 与 `http-status` **去掉整条运行栏**（运行 / 重置 / 填入示例），
+    页面进入即取数，**键入**搜索词即时收敛，搜索框自带 X 一键清空
+  - 进入页面**自动聚焦**搜索框，落地即可打字
+  - 首屏取数**不再依赖** catalog 的 `autoRun`；`useAutoRun` 移除随之无人使用的
+    `immediate` 选项（`useAutoRun` 仍用于「每次输入都打后端」的工具）
+- **国家代码与中国行政区划改为「默认全量 + 即时筛选」**
+  - `country-code` 与 `cn-regions` 去掉运行栏，改为 `useLiveFilter`、`SearchField`
+    与 `FilterChips`：`country-code` 用**首字母 A–Z** 标签筛选，`cn-regions` 用
+    **层级**（省级 / 地级 / 县级）标签筛选，标签上带当前条件下的条目数
+  - `cn-regions` 的「限定省份」保留为独立输入框，同样在**前端本地**过滤
+  - 后端 `cn-regions` 新增 `level` 请求字段（`province` \| `city` \| `district` \| `all`），
+    缺省行为与响应结构**不变**；`level=all` 返回全部层级供前端一次性取回
+  - 结果区用 `StatGrid`（命中条目 / 数据集条目数 / 数据集版本）+ `DataTable`
+    （代码 / 名称 / 层级 / 所属省份 / 上级代码）呈现，代码列为可点击复制的彩色标签
+- **修复 `DataTable` 滚动容器失效**
+  - UnoCSS 的 `.table` 工具类是 `display: table`，而调用方普遍写
+    `<DataTable class="table">`，导致外层变成 table 盒子：
+    `max-height` 与 `overflow: auto` 双双失效，长表格会撑开整页而不再内部滚动
+  - `DataTable` 的滚动容器改为显式 `display: block`（影响全部 20 个使用方，
+    `http-status` 等页面同样从「撑开整页」变回「面板内滚动」）
 - **DNS 查询改为多服务器对比**
   - 前端提供 8 家**预设**解析器（Cloudflare / Google / Quad9 / AliDNS / DNSPod /
     114DNS / OpenDNS 与 DoH 入口，多选）与**自定义**服务器逐台追加，合计上限 8 台；
@@ -56,6 +97,26 @@
     `color-convert`），并把 3 处指向错键名的代码改到正确键上
   - 新增 `frontend/src/i18n/usage.test.ts`：逐个校验工具页的**字面量**键引用在
     语言包中真实存在，防止悬空键再次进入主干
+- **二维码工具页（`qr-code`）重构**：结果区从「一坨 SVG 源码」改为「预览优先」
+  - 生成模式：结果区用页签呈现——**预览**（白底大图 + PNG 下载）与 **SVG 源码**；
+    摘要用 `StatGrid` 给出模块边长、模块像素边长、图片边长与纠错级别
+  - 识别模式：上传后显示缩略图、文件名与大小；识别结果可**「作为新输入」**回填到生成输入
+  - 前景色 / 背景色改用 `ElColorPicker` 取色器（仍可手输十六进制），非法值即时提示；
+    输入区补上此前写了却从未渲染的尺寸、静默区与纠错级别说明，以及内容字节计数
+  - 切换操作时清空上一次的结果与页签
+  - catalog 的 `wide` 改为 `true`：宽屏下输入在左、二维码在右
+- **`DownloadButton` 支持二进制下载**：新增可选 `base64` 入参（与 `content` 二选一），
+  二进制产物（PNG 等）不必再绕道文本下载；解码逻辑抽到
+  `frontend/src/components/tool/base64.ts` 并附单元测试
+
+### Removed
+
+- **移除 `wifi-qr`（访客 WiFi 二维码）**：工具总数 98 → **97**
+  - 该工具与 `qr-code` 的生成能力完全重叠，且结果区会**明文回显**含网络口令的
+    `WIFI:T:…;S:…;P:…;` 载荷；访客网络应改用 `qr-code` 生成，避免口令在页面上长期可见
+  - 同步删除后端实现与单测、契约测试数据、catalog 条目、前端模块与双语词条；
+    数据分类由 14 个工具变为 13 个
+  - 候选与取舍理由保留在 [docs/tool-candidates.md](docs/tool-candidates.md) §2
 
 ### Fixed
 
@@ -182,7 +243,7 @@
   （「GitHub 仓库」+「项目开源，可用 Docker 在局域网内自行部署，数据不出内网」）；
   地址统一取 `frontend/src/config/site.ts` 的 `REPO_URL`，不另写死链接
 
-### Changed
+### Changed（界面与视觉）
 
 - 图标改为**彩色**：不再统一成一个主色，改为每个分类、每个工具各有各的色调
   - 新增 **12 组固定色调**令牌 `--tb-tone-<名>` / `--tb-tone-<名>-soft`
@@ -206,6 +267,9 @@
 
 - 部署产物目录由文档中的 `deploy/` 统一为 **`deployments/`**（`AGENTS.md`、
   `docs/architecture.md`、`README.md`、`.gitignore` 同步）
+- `Makefile`：`docker-build` 目标补进文件头「常用目标」清单；该目标现在同样会在缺
+  `deployments/.env` 时用模板生成一份，并在结束时回显构建出的镜像名
+  （`docs/deploy.md` §1.1 与 §8 同步）
 - 容器内路径口径统一：前端产物 `/app/web`、统计库 `/app/data/toolbit.db`
   （原先 `deploy.md` 写 `/app/web` + `stats.db`，`architecture.md` 写 `/app/wwwroot` + `toolbit.db`）
 - `docs/standards/08-deploy.md`：阶段表、基础镜像选型、Tongsuo `--libdir=lib64` 约定、

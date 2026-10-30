@@ -183,7 +183,7 @@ CI **必须**执行：
 
 `scripts/check-docs.mjs` **必须**：
 
-- 以 `backend/catalog/tools.yaml` 为准，校验 `docs/api/tools/*.md` 覆盖全部 98 个工具；
+- 以 `backend/catalog/tools.yaml` 为准，校验 `docs/api/tools/*.md` 覆盖全部 97 个工具；
 - 以 `backend/internal/toolerr/registry.go` 为准，校验 `docs/api/errors.md` 覆盖全部错误码；
 - 以 `backend/internal/config` 为准，校验 `docs/deploy.md` 覆盖全部环境变量；
 - 输出**明确的差异清单**（缺什么），**禁止**只输出「失败」。

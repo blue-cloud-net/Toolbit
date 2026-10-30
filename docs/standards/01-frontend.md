@@ -56,13 +56,17 @@ frontend/src/
 `CertTextInput` `CodeEditor` `CodeViewer` `CopyButton` `DownloadButton`
 `EmptyState` `EncodingSelect` `ErrorAlert` `FileDropZone` `FileTextInput`
 `JsonViewer` `KeyInput` `KeyValueTable` `LoadingSkeleton` `ProgressStream`
-`QuickReference` `ResultPanel` `RunBar` `SensitiveInput` `ToolPageLayout`
-`ToolPanel` `ValidationHint`
+`QuickReference` `ResultPanel` `RunBar` `SearchField` `SensitiveInput`
+`ToolPageLayout` `ToolPanel` `ValidationHint`
 
 **组合式函数清单（`composables/`）**
 
 `useAutoRun` `useCommandPalette` `useFileToolRun` `useGlobalHotkeys`
-`useToolRun` `useValidation`
+`useLiveFilter` `useToolRun` `useValidation`
+
+**共享纯函数模块（`components/tool/`）**
+
+`base64`（Base64 → 字节数组，供 `DownloadButton` 下载二进制产物）
 
 **必须**
 
@@ -139,6 +143,12 @@ ToolPageLayout
   （新标签页 + `rel="noopener noreferrer"`），地址取 `frontend/src/config/site.ts` 的 `REPO_URL`，
   悬浮提示**必须**说明「可自部署」（局域网 Docker 部署、数据不出内网）。
 - 移动端运行按钮**必须**吸底。
+- 「一次取回全量、之后纯本地检索」的工具页（查表类）**不设** `RunBar`：
+  页面进入即取数，键入即筛选，没有需要触发的动作。
+  这类页面**必须**用 `useLiveFilter` + `SearchField`：
+  - `SearchField` 自带字段标签、`<label>` 包裹与清空按钮，进入页面**必须**聚焦（`autofocus`）；
+  - 筛选在**前端本地**完成，**禁止**每次输入都打后端；
+  - 此类页面**不注册** `Ctrl/⌘ + Enter` 运行快捷键。
 
 ### 4.3 共享组件清单
 
@@ -151,6 +161,7 @@ ToolPageLayout
 | `FileTextInput` | 文件或文本二选一 |
 | `FileDropZone` | 拖拽上传区，含大小与类型提示 |
 | `CodeEditor` | 等宽多行编辑（Tab 处理、换行开关、可选行号） |
+| `SearchField` | 键入即筛选的搜索框（自带标签、清空按钮、可选自动聚焦） |
 | `JsonViewer` | 折叠树形 JSON 展示 |
 | `ByteView` | 十六进制转储 |
 | `Asn1Tree` | ASN.1 结构树 |
@@ -158,12 +169,17 @@ ToolPageLayout
 | `CertDetailDialog` | 证书详情弹窗 |
 | `KeyValueTable` | 键值对展示（逐字段复制、语义色、可选 `hint` / `mono`） |
 | `StatGrid` | 少量关键指标的卡片网格（网段、掩码、耗时、成败台数） |
-| `DataTable` | 多记录列表表格（列定义 + 行数据 + 逐行复制 + 滚动区） |
-| `CopyButton` / `DownloadButton` | 复制 / 下载 |
+| `DataTable` | 多记录列表表格（列定义 + 行数据 + 逐行复制 + 滚动区 + 语义色 / 彩色标签）；`copyColumns` 指定内嵌复制列（按钮贴值右侧，`copyColumn` 仍然兼容），`badgeCopy` 指定「点击徽标即复制」的列 |
+| `CopyButton` / `DownloadButton` | 复制（**图标式**，tooltip 固定为「复制」，结果用 `ElMessage` 提示） / 下载（文本走 `content`，**二进制产物**如 PNG 走 `base64`，解码逻辑见 `components/tool/base64.ts`） |
 | `EmptyState` / `ErrorAlert` / `LoadingSkeleton` | 状态展示 |
 | `ProgressStream` | 流式进度（ssl-check） |
 
 **禁止**在工具组件内重复实现上述能力。
+
+> `DataTable` 的滚动容器**必须**保持 `display: block`。UnoCSS 的 `.table` 工具类是
+> `display: table`，调用方写 `<DataTable class="table">` 时会命中它；
+> 若滚动容器跟着变成 table 盒子，`max-height` 与 `overflow: auto` 会同时失效，
+> 长表格将撑开整页而不再在面板内滚动。
 
 ---
 
@@ -313,6 +329,7 @@ ToolPageLayout
   且一次按键只触发一次运行。
 - 工具页**禁止**再各自绑定 `Ctrl/⌘ + Enter`；历史上页面级 / `CodeEditor` 内的同名实现会被上述拦截，
   不再执行（`frontend/src/components/tool/RunBar.test.ts` 覆盖该行为）。
+- 查表类工具（键入即筛选、纯本地过滤）**不设** `RunBar`，因此**不注册**该快捷键。
 - 文本域内 `Tab` **必须**插入缩进而不是切换焦点（长文本编辑场景）。
 
 ---
@@ -330,6 +347,11 @@ ToolPageLayout
 - **产物文本与摘要分离。** PEM / DER / 十六进制 / 生成的配置等「产物」放独立页签（`ResultPanel` 的 `views`）
   并提供 `DownloadButton`；默认页签**必须**停在「摘要」。
 - `resultText` 仍然**必须**提供：它是全文复制与下载的数据源，结构化展示**不得**以牺牲复制能力为代价。
+- **结构化已覆盖的内容不再重复展示。** 结果以 `DataTable` / `KeyValueTable` / `StatGrid` 呈现且覆盖同样内容时，
+  原始文本**必须**用 `ResultPanel` 的 `hideText` 隐藏（仍作复制 / 下载数据源）；
+  **禁止**出现「一大段文本 + 下方表格」的堆叠。
+- **语义色只能来自共享组件。** 取值范围是 `DataTable` 的 `cellLevels` / `row.level` / `badges` 与 `StatGrid` 的 `level`；
+  需要「彩色标签」时用 `DataTable` 的 `badges`，**禁止**在工具页自造颜色（如 `#4caf50`），也**不引入** `ElTag`。
 - 页签选中项**禁止**持久化（不写 `localStorage` / `sessionStorage`），刷新后回到默认页签。
 
 ---

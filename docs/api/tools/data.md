@@ -2,7 +2,7 @@
 
 > 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
 
-覆盖 **14** 个数据类工具。端点均为 `POST /api/v1/tools/{slug}`。
+覆盖 **13** 个数据类工具。端点均为 `POST /api/v1/tools/{slug}`。
 
 | slug | 名称 | 档位 |
 | --- | --- | --- |
@@ -18,7 +18,6 @@
 | [mock-data](#mock-data) | 模拟数据 | light |
 | [archive-inspect](#archive-inspect) | 归档查看 | light |
 | [file-analyze](#file-analyze) | 文件识别 | light |
-| [wifi-qr](#wifi-qr) | 访客 WiFi 二维码 | light |
 | [id-generator](#id-generator) | ID 生成 | light |
 
 ---
@@ -141,6 +140,8 @@ UUID 生成。
 `INVALID_FIELD`。
 
 > 数据源为 ISO 3166-1（离线内置，**不**出网）。
+>
+> 缺省请求返回**全量**国家与地区（249 条），供前端一次性取回后在本地筛选。
 
 ---
 
@@ -154,6 +155,7 @@ UUID 生成。
 | --- | --- | --- | --- |
 | `query` | string | 否 | 名称或编码关键词 |
 | `province` | string | 否 | 指定省级行政区，缩小城市查询范围 |
+| `level` | string | 否 | 层级过滤：`province` \| `city` \| `district` \| `all`；为空表示缺省只返回省级 |
 
 ### 响应
 
@@ -169,6 +171,9 @@ UUID 生成。
 `INVALID_FIELD`。
 
 > 数据为**离线内置快照**，含行政区划代码（6 位）。数据版本**必须**在响应元信息中标注。
+>
+> `level=all` 返回全部层级（约 3400 条），供前端一次性取回后在本地筛选；
+> `level` 与 `query` / `province` 可叠加。
 
 ---
 
@@ -390,37 +395,6 @@ CSV 与 JSON 互转（CSV Converter）。
 `MISSING_FIELD`、`INVALID_FIELD`。
 
 > 类型识别基于**魔数表**，未收录的类型按扩展名与 MIME 回落。
-
----
-
-## wifi-qr
-
-生成访客 WiFi 接入二维码（Guest WiFi QR Code）。
-
-### 请求
-
-| 字段 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| `ssid` | string | 是 | 网络名称 |
-| `password` | string | 否 | 网络口令；开放网络留空 |
-| `security` | string | 否 | `WPA` `WEP` `nopass`，默认 `WPA` |
-| `hidden` | bool | 否 | 是否为隐藏网络，默认 `false` |
-| `size` | int | 否 | 二维码边长（像素），取值 64–1024，默认 256 |
-
-### 响应
-
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `payload` | string | 二维码承载的文本 |
-| `png` | string | PNG 图片的 Base64 |
-| `svg` | string | SVG 图片内容 |
-| `size` | int | 图片边长 |
-
-### 错误
-
-`MISSING_FIELD`、`INVALID_FIELD`。
-
-> 载荷遵循 `WIFI:T:…;S:…;P:…;` 格式；口令**不写入**任何存储。
 
 ---
 

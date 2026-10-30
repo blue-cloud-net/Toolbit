@@ -2,7 +2,7 @@
 
 > 状态：Stable ｜ 适用版本：v0.7.0 ｜ 最后更新：2026-10-29
 
-本文面向**最终用户**，介绍 98 个工具的用途、输入输出、默认行为与注意事项。
+本文面向**最终用户**，介绍 97 个工具的用途、输入输出、默认行为与注意事项。
 
 工具的技术契约见 [api/](api/)，工具元数据的事实来源是 [`backend/catalog/tools.yaml`](../backend/catalog/tools.yaml)。
 
@@ -18,7 +18,7 @@
 | [编码](#编码encoding) | 7 | Base64、URL、JWT、进制、编码转换、GZip、HTML 转义 |
 | [格式化](#格式化formatting) | 9 | JSON、JS、SQL、HTML、XML、TOML、YAML、格式转换、颜色转换 |
 | [文本](#文本text) | 7 | 正则测试、文本转换、文本对比、正则校验、正则生成、数据脱敏、文本统计 |
-| [数据](#数据data) | 14 | 时间戳、UUID、日期计算、国家代码、行政区划、二维码、号码校验、CSV 转换、JSON 转类型、模拟数据、归档查看、文件识别、访客 WiFi 二维码、ID 生成 |
+| [数据](#数据data) | 13 | 时间戳、UUID、日期计算、国家代码、行政区划、二维码、号码校验、CSV 转换、JSON 转类型、模拟数据、归档查看、文件识别、ID 生成 |
 | [系统](#系统system) | 7 | cURL、Crontab、权限计算、Nginx 配置生成、防火墙规则生成、Compose 配置生成、速查表 |
 | [网络](#网络network) | 9 | CIDR、SSL 检测、DNS 查询、DNS 测试、WebSocket 测试、MIME 类型、HTTP 状态码、设备请求头、IP 段展开 |
 | [文档](#文档documents) | 4 | PDF 签名校验、Markdown 预览、EML 解析、Markdown 转换 |
@@ -828,8 +828,8 @@
 | 时间戳转换 | `timestamp` | 时间戳 ↔ 日期 |
 | UUID 生成 | `uuid-gen` | 批量生成 UUID |
 | 日期计算 | `date-calc` | 日期差与加减 |
-| 国家代码 | `country-code` | ISO 3166 查询 |
-| 中国行政区划 | `cn-regions` | 省市查询 |
+| 国家代码 | `country-code` | ISO 3166 查询（首字母筛选） |
+| 中国行政区划 | `cn-regions` | 省市区县查询（层级筛选） |
 | 二维码生成 | `qr-code` | 生成 / 识别二维码 |
 | 号码校验 | `id-validator` | 身份证、信用代码、手机号、银行卡校验位计算 |
 | CSV 转换 | `csv-convert` | CSV 与 JSON 互转 |
@@ -837,7 +837,6 @@
 | 模拟数据 | `mock-data` | 按字段类型生成假数据 |
 | 归档查看 | `archive-inspect` | 查看 ZIP / TAR / GZIP 的条目清单 |
 | 文件识别 | `file-analyze` | 按魔数识别文件类型并给出摘要 |
-| 访客 WiFi 二维码 | `wifi-qr` | 生成访客 WiFi 接入二维码 |
 | ID 生成 | `id-generator` | 生成 UUID / ULID / 雪花 ID / NanoID |
 
 ### 时间戳转换（Timestamp Converter）
@@ -903,9 +902,10 @@
 ### 二维码生成（QR Code Generator）
 
 - **用途**：生成二维码图片，或识别已有二维码。
-- **输入**：操作、文本、尺寸、边距、纠错级别、前景 / 背景色、base64 图片。
+- **输入**：操作、文本、模块边长、静默区、纠错级别、前景 / 背景色、base64 图片。
 - **输出**：SVG / PNG（生成）或内容（识别）。
-- **默认**：纠错级别 `M`。
+- **默认**：纠错级别 `M`，模块边长 6 像素，静默区 4 个模块。
+- **下载**：生成结果可下载 `.svg`（矢量）与 `.png`（位图）；识别结果可复制或回填为新输入。
 - **安全提示**：二维码内容**明文**可见，**不要**放入密码或令牌。
 
 **常见问题**
@@ -974,8 +974,8 @@
 | DNS 查询 | `dns-lookup` | 多服务器对比查询各类 DNS 记录 |
 | DNS 多记录测试 | `dns-tester` | whois / DNSSEC / PTR 检测 |
 | WebSocket 测试 | `websocket-test` | 浏览器直连测试 |
-| MIME 类型查询 | `mime-lookup` | 媒体类型全集浏览与检索 |
-| HTTP 状态码查询 | `http-status` | 状态码全集浏览与检索 |
+| MIME 类型查询 | `mime-lookup` | 媒体类型全集浏览与检索（键入即时筛选） |
+| HTTP 状态码查询 | `http-status` | 状态码全集浏览与检索（键入即时筛选） |
 | 设备请求头 | `device-headers` | 生成客户端请求头并解析 User-Agent |
 | IP 段展开 | `ip-range-expand` | IP 段与 CIDR 互转及批量展开 |
 
