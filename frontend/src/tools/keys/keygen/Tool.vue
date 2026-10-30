@@ -14,8 +14,9 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -87,6 +88,56 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.keygen.faq') as FaqItem[])
+
+/** 结果页签：摘要 / 私钥 / 公钥。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.keygen.views.summary') },
+  { id: 'private', label: t('tools.keygen.views.private') },
+  { id: 'public', label: t('tools.keygen.views.public') },
+])
+
+/** 当前页签。 */
+const activeView = ref('summary')
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const items: StatGridItem[] = [
+    { label: t('tools.keygen.results.algorithm'), value: result.algorithm },
+  ]
+  if (result.curve) {
+    items.push({ label: t('tools.keygen.results.curve'), value: result.curve })
+  } else if (result.bits) {
+    items.push({ label: t('tools.keygen.results.bits'), value: `${result.bits} bit` })
+  }
+  items.push({
+    label: t('tools.keygen.results.privateFormat'),
+    value: privateFormat.value,
+  })
+  items.push({
+    label: t('tools.keygen.results.publicFormat'),
+    value: publicFormat.value,
+  })
+  return items
+})
+
+/** 某个页签对应的产物文本。 */
+function productText(viewId: string): string {
+  const result = data.value
+  if (!result) {
+    return ''
+  }
+  if (viewId === 'private') {
+    return result.privateKey.pem
+  }
+  if (viewId === 'public') {
+    return result.publicKey.pem
+  }
+  return ''
+}
 
 /** 运行当前输入。 */
 function run(): void {
@@ -290,13 +341,26 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.keygen.results.keys')"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary'"
+            :items="stats"
+          />
+          <pre
+            v-else-if="productText(viewId) !== ''"
+            class="product"
+          ><code>{{ productText(viewId) }}</code></pre>
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -322,3 +386,19 @@ function fillExample(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.product {
+  margin: 0;
+  padding: var(--tb-space-3);
+  overflow-x: auto;
+  font-family: var(--tb-font-mono);
+  font-size: var(--tb-font-sm);
+  line-height: 1.6;
+  color: var(--tb-text);
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--tb-bg-sunken);
+  border-radius: var(--tb-radius-control);
+}
+</style>

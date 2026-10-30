@@ -23,7 +23,13 @@
     }
   },
   "results": {
-    "digests": "摘要结果"
+    "digests": "摘要结果",
+    "algorithm": "算法",
+    "length": "摘要长度",
+    "value": "摘要值",
+    "count": "算法数",
+    "inputBytes": "输入字节数",
+    "empty": "没有计算摘要"
   },
   "examples": [
     {

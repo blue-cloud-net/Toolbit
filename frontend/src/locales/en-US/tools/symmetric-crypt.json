@@ -49,7 +49,10 @@
   "results": {
     "output": "Output",
     "tag": "Authentication tag",
-    "iv": "Generated nonce"
+    "iv": "Generated nonce",
+    "algorithm": "Algorithm",
+    "mode": "Mode",
+    "padding": "Padding"
   },
   "examples": [
     {

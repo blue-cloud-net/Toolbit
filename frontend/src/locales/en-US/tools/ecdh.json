@@ -33,7 +33,8 @@
   },
   "results": {
     "sharedSecret": "Shared secret",
-    "derivedKey": "Derived key"
+    "derivedKey": "Derived key",
+    "curve": "Curve"
   },
   "examples": [
     {

@@ -12,8 +12,10 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import EncodingSelect from '@/components/tool/EncodingSelect.vue'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
@@ -67,6 +69,37 @@ const resultText = computed(() =>
 )
 
 const faq = computed<FaqItem[]>(() => tm('tools.hash-calc.faq') as FaqItem[])
+
+/** 摘要表格列定义。 */
+const digestColumns = computed<DataTableColumn[]>(() => [
+  { key: 'algorithm', label: t('tools.hash-calc.results.algorithm'), mono: true },
+  { key: 'length', label: t('tools.hash-calc.results.length'), mono: true, align: 'right' },
+  { key: 'value', label: t('tools.hash-calc.results.value'), mono: true },
+])
+
+/** 摘要表格行。 */
+const digestRows = computed<DataTableRow[]>(() =>
+  (data.value?.digests ?? []).map((digest) => ({
+    key: digest.algorithm,
+    cells: {
+      algorithm: digest.algorithm,
+      length: `${digest.value.length / 2} B`,
+      value: digest.value,
+    },
+  })),
+)
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    { label: t('tools.hash-calc.results.count'), value: String(result.digests.length) },
+    { label: t('tools.hash-calc.results.inputBytes'), value: `${result.inputBytes} B` },
+  ]
+})
 
 /** 切换某个算法是否参与计算。 */
 function toggleAlgorithm(name: string): void {
@@ -210,7 +243,22 @@ function onKeydown(event: KeyboardEvent): void {
         :title="t('tools.hash-calc.results.digests')"
         :use-as-input="useAsInput"
         @retry="run"
-      />
+      >
+        <template
+          v-if="data"
+          #extra
+        >
+          <StatGrid :items="stats" />
+
+          <DataTable
+            class="table"
+            :columns="digestColumns"
+            :rows="digestRows"
+            :copy-column="'value'"
+            :empty="t('tools.hash-calc.results.empty')"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -238,6 +286,10 @@ function onKeydown(event: KeyboardEvent): void {
 </template>
 
 <style scoped>
+.table {
+  margin-top: var(--tb-space-3);
+}
+
 .algorithm-list {
   display: flex;
   flex-wrap: wrap;

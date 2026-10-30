@@ -19,6 +19,7 @@ import EncodingSelect from '@/components/tool/EncodingSelect.vue'
 import KeyInput from '@/components/tool/KeyInput.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -84,6 +85,22 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.ecdh.faq') as FaqItem[])
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const d = data.value
+  if (!d) {
+    return []
+  }
+  const items: StatGridItem[] = [
+    { label: t('tools.ecdh.results.curve'), value: d.curve },
+    { label: t('tools.ecdh.results.sharedSecret'), value: d.sharedSecret },
+  ]
+  if (d.derivedKey) {
+    items.push({ label: t('tools.ecdh.results.derivedKey'), value: d.derivedKey })
+  }
+  return items
+})
 
 /** 运行当前输入。 */
 function run(): void {
@@ -265,7 +282,14 @@ function fillExample(): void {
         :error="error"
         :title="t('tools.ecdh.results.sharedSecret')"
         @retry="run"
-      />
+      >
+        <template
+          v-if="data"
+          #extra
+        >
+          <StatGrid :items="stats" />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

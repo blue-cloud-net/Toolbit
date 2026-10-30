@@ -11,6 +11,7 @@ import { useI18n } from 'vue-i18n'
 import KeyInput from '@/components/tool/KeyInput.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -63,6 +64,27 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.key-match.faq') as FaqItem[])
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    {
+      label: t('tools.key-match.results.match'),
+      value: result.match ? t('tool.verdict.pass') : t('tool.verdict.fail'),
+      level: result.match ? ('success' as const) : ('danger' as const),
+    },
+    {
+      label: t('tools.key-match.results.reason'),
+      value: t(`tools.key-match.options.reasons.${result.reason}`),
+    },
+    { label: t('tools.key-match.results.aFingerprint'), value: result.aFingerprint },
+    { label: t('tools.key-match.results.bFingerprint'), value: result.bFingerprint },
+  ]
+})
 
 /** 结论徽章：一眼看到两把密钥是否匹配。 */
 const verdict = computed(() => {
@@ -144,7 +166,14 @@ function fillExample(): void {
         :verdict="verdict"
         :title="t('tools.key-match.results.result')"
         @retry="run"
-      />
+      >
+        <template
+          v-if="data"
+          #extra
+        >
+          <StatGrid :items="stats" />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

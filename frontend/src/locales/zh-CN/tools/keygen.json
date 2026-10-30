@@ -29,7 +29,12 @@
   "results": {
     "keys": "生成的密钥",
     "privateKey": "私钥",
-    "publicKey": "公钥"
+    "publicKey": "公钥",
+    "algorithm": "算法",
+    "curve": "曲线",
+    "bits": "位数",
+    "privateFormat": "私钥格式",
+    "publicFormat": "公钥格式"
   },
   "examples": [
     {
@@ -58,5 +63,10 @@
       "q": "SM2 和 EC 有什么区别？",
       "a": "SM2 是国密算法，默认配合 SM3 摘要与国密证书体系使用；EC 是通用椭圆曲线算法。"
     }
-  ]
+  ],
+  "views": {
+    "summary": "摘要",
+    "private": "私钥",
+    "public": "公钥"
+  }
 }

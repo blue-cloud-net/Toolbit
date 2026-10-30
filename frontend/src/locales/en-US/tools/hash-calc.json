@@ -23,7 +23,13 @@
     }
   },
   "results": {
-    "digests": "Digests"
+    "digests": "Digests",
+    "algorithm": "Algorithm",
+    "length": "Digest length",
+    "value": "Digest",
+    "count": "Algorithms",
+    "inputBytes": "Input size",
+    "empty": "No digest computed"
   },
   "examples": [
     {

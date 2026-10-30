@@ -29,7 +29,12 @@
   "results": {
     "keys": "Generated keys",
     "privateKey": "Private key",
-    "publicKey": "Public key"
+    "publicKey": "Public key",
+    "algorithm": "Algorithm",
+    "curve": "Curve",
+    "bits": "Bits",
+    "privateFormat": "Private format",
+    "publicFormat": "Public format"
   },
   "examples": [
     {
@@ -58,5 +63,10 @@
       "q": "How do SM2 and EC differ?",
       "a": "SM2 is the Chinese national standard, typically paired with SM3 and the national PKI stack; EC is the generic elliptic curve algorithm."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "private": "Private Key",
+    "public": "Public Key"
+  }
 }

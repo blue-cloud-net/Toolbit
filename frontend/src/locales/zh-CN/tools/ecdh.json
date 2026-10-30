@@ -33,7 +33,8 @@
   },
   "results": {
     "sharedSecret": "共享密钥",
-    "derivedKey": "派生密钥"
+    "derivedKey": "派生密钥",
+    "curve": "曲线"
   },
   "examples": [
     {

@@ -14,6 +14,7 @@ import { useI18n } from 'vue-i18n'
 import EncodingSelect from '@/components/tool/EncodingSelect.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -115,6 +116,26 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.symmetric-crypt.faq') as FaqItem[])
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const d = data.value
+  if (!d) {
+    return []
+  }
+  const items: StatGridItem[] = [
+    { label: t('tools.symmetric-crypt.results.algorithm'), value: d.algorithm },
+    { label: t('tools.symmetric-crypt.results.mode'), value: d.mode },
+    { label: t('tools.symmetric-crypt.results.padding'), value: d.padding },
+  ]
+  if (d.tag) {
+    items.push({ label: t('tools.symmetric-crypt.results.tag'), value: d.tag })
+  }
+  if (d.iv) {
+    items.push({ label: t('tools.symmetric-crypt.results.iv'), value: d.iv })
+  }
+  return items
+})
 
 /** 切换算法时校正模式与填充。 */
 function onAlgorithmChange(): void {
@@ -384,7 +405,14 @@ function fillExample(): void {
         :title="t('tools.symmetric-crypt.results.output')"
         :use-as-input="useAsInput"
         @retry="run"
-      />
+      >
+        <template
+          v-if="data"
+          #extra
+        >
+          <StatGrid :items="stats" />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
