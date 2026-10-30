@@ -117,10 +117,10 @@ function run(): void {
 
   void execute({
     operation: operation.value,
+    token: token.value,
     // HS 系列取 secret，RS / PS / ES 系列取公钥；服务端按令牌头部的 alg 决定用哪个。
     secret: operation.value === 'verify' ? secret.value : '',
-    publicKey: operation.value === 'verify' ? publicKey
-    secret: operation.value === 'verify' ? secret.value : '',
+    publicKey: operation.value === 'verify' ? publicKey.value : '',
   })
 }
 
