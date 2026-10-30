@@ -29,10 +29,13 @@
     "rgb": "RGB 表示",
     "hsl": "HSL 表示",
     "oklch": "OKLCH 表示",
+    "formatName": "格式",
+    "formatValue": "取值",
     "contrastOnWhite": "与白色对比度",
     "contrastOnBlack": "与黑色对比度",
     "isDark": "深色",
-    "colors": "颜色结果"
+    "colors": "颜色结果",
+    "empty": "没有可展示的颜色格式"
   },
   "examples": [
     {

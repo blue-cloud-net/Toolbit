@@ -34,7 +34,8 @@
     "mime": "媒体类型",
     "size": "字节数",
     "truncated": "内容超限被截断",
-    "empty": "没有正文或附件。"
+    "empty": "没有正文或附件。",
+    "headersEmpty": "没有头字段。"
   },
   "examples": [
     {

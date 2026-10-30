@@ -34,7 +34,8 @@
     "mime": "Media type",
     "size": "Size in bytes",
     "truncated": "Content dropped because it exceeded the limit",
-    "empty": "No body parts or attachments."
+    "empty": "No body parts or attachments.",
+    "headersEmpty": "No header field."
   },
   "examples": [
     {

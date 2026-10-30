@@ -20,7 +20,10 @@
   "results": {
     "fields": "生成结果",
     "count": "每类数量",
-    "seed": "随机种子"
+    "seed": "随机种子",
+    "type": "字段类型",
+    "value": "生成值",
+    "empty": "没有生成任何字段"
   },
   "examples": [
     {

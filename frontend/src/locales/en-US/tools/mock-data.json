@@ -20,7 +20,10 @@
   "results": {
     "fields": "Generated fields",
     "count": "Count per type",
-    "seed": "Random seed"
+    "seed": "Random seed",
+    "type": "Field type",
+    "value": "Generated value",
+    "empty": "No field was generated"
   },
   "examples": [
     {

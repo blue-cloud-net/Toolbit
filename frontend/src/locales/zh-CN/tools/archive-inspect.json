@@ -23,6 +23,14 @@
     "totalSize": "解压总大小",
     "compressedSize": "归档大小",
     "entries": "条目清单",
+    "name": "条目名",
+    "entryType": "类型",
+    "entrySize": "大小（字节）",
+    "modified": "修改时间",
+    "preview": "内容预览",
+    "entryDir": "目录",
+    "entryFile": "文件",
+    "empty": "归档内没有可展示的条目",
     "truncated": "已截断"
   },
   "examples": [

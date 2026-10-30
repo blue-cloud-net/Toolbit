@@ -13,34 +13,36 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/formatting/color-convert/example'
 
-/** 后端 color-convert 工具的响应。 */
+/** 后端 color-convert 工具的响应（扁平字段）。 */
 interface ColorConvertResult {
-  /** 输入颜色。 */
+  /** 规范化后的输入值。 */
   input: string
-  /** 输入格式。 */
+  /** 识别出的输入格式。 */
   inputFormat: string
-  /** 转换结果。 */
-  colors: Record<string, string>
-  /** 对比度（相对白底与黑底）。 */
-  contrast: {
-    onWhite: number
-    onBlack: number
-  }
-  /** WCAG 等级。 */
-  wcag: {
-    onWhite: string
-    onBlack: string
-  }
-  /** 是否为纯色。 */
-  isValid: boolean
+  /** 十六进制表示。 */
+  hex: string
+  /** RGB 表示。 */
+  rgb: string
+  /** HSL 表示。 */
+  hsl: string
+  /** OKLCH 表示。 */
+  oklch: string
+  /** 与白色的对比度。 */
+  contrastOnWhite: number
+  /** 与黑色的对比度。 */
+  contrastOnBlack: number
+  /** 是否是深色。 */
+  isDark: boolean
 }
 
 /** 常见问题条目。 */
@@ -50,6 +52,11 @@ interface FaqItem {
 }
 
 const { t, tm } = useI18n()
+
+/** 结果里可能出现的格式键（与后端字段同名）。 */
+const FORMATS = ['hex', 'rgb', 'hsl', 'oklch'] as const
+
+type ColorFormat = (typeof FORMATS)[number]
 
 const input = ref('#3366ff')
 const inputFormat = ref('hex')
@@ -63,15 +70,53 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本：各格式的颜色值。 */
 const resultText = computed(() => {
-  if (!data.value) {
+  const result = data.value
+  if (!result) {
     return ''
   }
-  return Object.entries(data.value.colors)
-    .map(([format, value]) => `${format}\t${value}`)
+  return FORMATS.filter((format) => result[format] !== '')
+    .map((format) => `${format}\t${result[format]}`)
     .join('\n')
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.color-convert.faq') as FaqItem[])
+
+/** 统计卡片：对比度与深色标记。 */
+const stats = computed<StatGridItem[]>(() => [
+  {
+    label: t('tools.color-convert.results.contrastOnWhite'),
+    value: String(data.value?.contrastOnWhite ?? 0),
+  },
+  {
+    label: t('tools.color-convert.results.contrastOnBlack'),
+    value: String(data.value?.contrastOnBlack ?? 0),
+  },
+  {
+    label: t('tools.color-convert.results.isDark'),
+    value: data.value?.isDark ? t('common.states.yes') : t('common.states.no'),
+  },
+])
+
+/** 表格列定义。 */
+const columns = computed<DataTableColumn[]>(() => [
+  { key: 'format', label: t('tools.color-convert.results.formatName'), mono: true },
+  { key: 'value', label: t('tools.color-convert.results.formatValue'), mono: true },
+])
+
+/** 表格行；格式名按 `options.format.*` 本地化，请求未包含的格式不出现。 */
+const rows = computed<DataTableRow[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return FORMATS.filter((format: ColorFormat) => result[format] !== '').map((format) => ({
+    key: format,
+    cells: {
+      format: t(`tools.color-convert.options.format.${format}`),
+      value: result[format],
+    },
+  }))
+})
 
 /** 运行当前输入。 */
 function run(): void {
@@ -195,23 +240,19 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.color-convert.results.colors')"
+        hide-text
         @retry="run"
       >
         <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.color-convert.results.contrastOnWhite') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.contrast.onWhite ?? 0 }} ({{ data?.wcag.onWhite ?? '-' }})
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.color-convert.results.contrastOnBlack') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.contrast.onBlack ?? 0 }} ({{ data?.wcag.onBlack ?? '-' }})
-              </dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
+
+          <DataTable
+            class="table"
+            :columns="columns"
+            :rows="rows"
+            :copy-column="'value'"
+            :empty="t('tools.color-convert.results.empty')"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -233,3 +274,9 @@ function fillExample(index: number): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.table {
+  margin-top: var(--tb-space-3);
+}
+</style>

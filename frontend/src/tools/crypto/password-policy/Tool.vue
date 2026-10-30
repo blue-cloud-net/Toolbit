@@ -15,8 +15,10 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
@@ -103,6 +105,32 @@ const verdict = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.password-policy.faq') as FaqItem[])
+
+/** 统计卡片。 */
+const stats = computed<StatGridItem[]>(() => [
+  { label: t('tools.password-policy.results.score'), value: String(data.value?.score ?? 0) },
+  { label: t('tools.password-policy.results.strength'), value: data.value?.strength ?? '-' },
+])
+
+/** 表格列定义。 */
+const columns = computed<DataTableColumn[]>(() => [
+  { key: 'result', label: t('tools.password-policy.results.checkResult') },
+  { key: 'item', label: t('tools.password-policy.results.checks') },
+])
+
+/** 表格行；通过与否用彩色标签表达。 */
+const rows = computed<DataTableRow[]>(() =>
+  (data.value?.checks ?? []).map((check) => ({
+    key: check.code,
+    cells: {
+      result: check.passed
+        ? t('tools.password-policy.results.passed')
+        : t('tools.password-policy.results.failed'),
+      item: check.message,
+    },
+    badges: { result: check.passed ? 'success' : 'danger' },
+  })),
+)
 
 /** 运行当前输入。 */
 function run(): void {
@@ -294,31 +322,31 @@ function fillExample(index: number): void {
         :error="error"
         :verdict="verdict"
         :title="t('tools.password-policy.results.checks')"
+        hide-text
         @retry="run"
       >
         <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.password-policy.results.score') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.score ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.password-policy.results.strength') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.strength ?? '' }}
-              </dd>
-            </div>
-            <div
+          <StatGrid :items="stats" />
+
+          <DataTable
+            class="table"
+            :columns="columns"
+            :rows="rows"
+            :copy-column="'item'"
+            :empty="t('tools.password-policy.results.empty')"
+          />
+
+          <ul
+            v-if="(data?.suggestions ?? []).length > 0"
+            class="suggestions"
+          >
+            <li
               v-for="suggestion in data?.suggestions ?? []"
               :key="suggestion"
-              class="detail__row"
             >
-              <dt>!</dt>
-              <dd>{{ suggestion }}</dd>
-            </div>
-          </dl>
+              {{ suggestion }}
+            </li>
+          </ul>
         </template>
       </ResultPanel>
     </template>
@@ -340,3 +368,16 @@ function fillExample(index: number): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.table {
+  margin-top: var(--tb-space-3);
+}
+
+.suggestions {
+  margin: var(--tb-space-3) 0 0;
+  padding-left: var(--tb-space-4);
+  font-size: var(--tb-font-sm);
+  color: var(--tb-text-secondary);
+}
+</style>

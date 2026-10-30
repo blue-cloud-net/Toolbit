@@ -23,6 +23,14 @@
     "totalSize": "Total uncompressed size",
     "compressedSize": "Archive size",
     "entries": "Entries",
+    "name": "Entry name",
+    "entryType": "Type",
+    "entrySize": "Size in bytes",
+    "modified": "Modified",
+    "preview": "Content preview",
+    "entryDir": "Directory",
+    "entryFile": "File",
+    "empty": "The archive has no displayable entry",
     "truncated": "Truncated"
   },
   "examples": [

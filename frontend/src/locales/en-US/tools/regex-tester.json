@@ -23,6 +23,10 @@
   "results": {
     "matches": "Matches",
     "count": "Number of matches",
+    "no": "#",
+    "matchText": "Matched text",
+    "groups": "Groups",
+    "empty": "No match",
     "truncated": "The result was truncated at the limit; more matches may exist.",
     "position": "Position",
     "offset": "Byte offset",

@@ -23,6 +23,10 @@
   "results": {
     "matches": "匹配结果",
     "count": "匹配条数",
+    "no": "序号",
+    "matchText": "匹配文本",
+    "groups": "捕获组",
+    "empty": "没有匹配",
     "truncated": "结果已按上限截断，可能还有更多匹配。",
     "position": "位置",
     "offset": "字节偏移",

@@ -13,6 +13,7 @@ import { useI18n } from 'vue-i18n'
 
 import CodeEditor from '@/components/tool/CodeEditor.vue'
 import Base64FileInput, { type LoadedFile } from '@/components/tool/Base64FileInput.vue'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -95,6 +96,20 @@ const resultText = computed(() =>
 
 const bodies = computed<EMLBody[]>(() => data.value?.bodies ?? [])
 const attachments = computed<EMLAttachment[]>(() => data.value?.attachments ?? [])
+
+/** 头字段表格列定义。 */
+const headerColumns = computed<DataTableColumn[]>(() => [
+  { key: 'name', label: t('tools.eml-parser.results.name'), mono: true },
+  { key: 'value', label: t('tools.eml-parser.results.value') },
+])
+
+/** 头字段表格行；保持邮件中的原始顺序。 */
+const headerRows = computed<DataTableRow[]>(() =>
+  (data.value?.headers ?? []).map((header, index) => ({
+    key: `${header.name}-${index}`,
+    cells: { name: header.name, value: header.value },
+  })),
+)
 
 const faq = computed<FaqItem[]>(() => tm('tools.eml-parser.faq') as FaqItem[])
 
@@ -260,12 +275,21 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.eml-parser.results.output')"
+        hide-text
         @retry="run"
       >
         <template
           v-if="data"
           #extra
         >
+          <DataTable
+            class="table"
+            :columns="headerColumns"
+            :rows="headerRows"
+            :copy-column="'value'"
+            :empty="t('tools.eml-parser.results.headersEmpty')"
+          />
+
           <section
             v-if="bodies.length > 0"
             class="group"
@@ -347,6 +371,10 @@ function fillExample(index: number): void {
 </template>
 
 <style scoped>
+.table {
+  margin-top: var(--tb-space-3);
+}
+
 .group {
   margin-top: var(--tb-space-3);
 }

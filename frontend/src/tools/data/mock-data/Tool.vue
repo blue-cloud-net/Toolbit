@@ -17,8 +17,10 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
@@ -75,6 +77,26 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.mock-data.faq') as FaqItem[])
+
+/** 统计卡片。 */
+const stats = computed<StatGridItem[]>(() => [
+  { label: t('tools.mock-data.results.count'), value: String(data.value?.count ?? 0) },
+  { label: t('tools.mock-data.results.seed'), value: data.value?.seed ?? '-' },
+])
+
+/** 表格列定义。 */
+const columns = computed<DataTableColumn[]>(() => [
+  { key: 'type', label: t('tools.mock-data.results.type'), mono: true },
+  { key: 'value', label: t('tools.mock-data.results.value'), mono: true },
+])
+
+/** 表格行。 */
+const rows = computed<DataTableRow[]>(() =>
+  (data.value?.fields ?? []).map((field, index) => ({
+    key: `${field.type}-${index}`,
+    cells: { type: field.type, value: field.value },
+  })),
+)
 
 /** 运行当前输入。 */
 function run(): void {
@@ -237,23 +259,18 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.mock-data.results.fields')"
+        hide-text
         @retry="run"
       >
         <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.mock-data.results.count') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.count ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.mock-data.results.seed') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.seed ?? '' }}
-              </dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
+
+          <DataTable
+            class="table"
+            :columns="columns"
+            :rows="rows"
+            :empty="t('tools.mock-data.results.empty')"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -275,3 +292,9 @@ function fillExample(index: number): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.table {
+  margin-top: var(--tb-space-3);
+}
+</style>

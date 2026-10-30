@@ -29,10 +29,13 @@
     "rgb": "RGB",
     "hsl": "HSL",
     "oklch": "OKLCH",
+    "formatName": "Format",
+    "formatValue": "Value",
     "contrastOnWhite": "Contrast on white",
     "contrastOnBlack": "Contrast on black",
     "isDark": "Dark",
-    "colors": "Colors"
+    "colors": "Colors",
+    "empty": "No color format to display"
   },
   "examples": [
     {

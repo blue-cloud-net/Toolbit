@@ -14,6 +14,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CodeEditor from '@/components/tool/CodeEditor.vue'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import QuickReference from '@/components/tool/QuickReference.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
@@ -114,6 +115,31 @@ const maxMatchesValue = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.regex-tester.faq') as FaqItem[])
+
+/** 表格列定义。 */
+const matchColumns = computed<DataTableColumn[]>(() => [
+  { key: 'no', label: t('tools.regex-tester.results.no'), mono: true, align: 'right' },
+  { key: 'position', label: t('tools.regex-tester.results.position'), mono: true },
+  { key: 'offset', label: t('tools.regex-tester.results.offset'), mono: true, align: 'right' },
+  { key: 'text', label: t('tools.regex-tester.results.matchText'), mono: true },
+  { key: 'groups', label: t('tools.regex-tester.results.groups'), mono: true },
+])
+
+/** 表格行；捕获组多组时按「组名=值」拼在一列。 */
+const matchRows = computed<DataTableRow[]>(() =>
+  matches.value.map((match, index) => ({
+    key: String(index),
+    cells: {
+      no: String(index + 1),
+      position: `${match.line}:${match.column}`,
+      offset: String(match.index),
+      text: match.text,
+      groups: match.groups
+        .map((group, groupIndex) => `${groupLabel(groupIndex)}=${group || '—'}`)
+        .join('; '),
+    },
+  })),
+)
 
 /** 切换某个标志。 */
 function toggleFlag(name: string): void {
@@ -296,6 +322,7 @@ function fillExample(index: number): void {
         :error="error"
         :title="t('tools.regex-tester.results.matches')"
         :use-as-input="useAsInput"
+        hide-text
         @retry="run"
       >
         <template
@@ -316,46 +343,13 @@ function fillExample(index: number): void {
             {{ t('tools.regex-tester.results.truncated') }}
           </p>
 
-          <ol
-            v-if="matches.length > 0"
-            class="matches"
-          >
-            <li
-              v-for="(match, index) in matches"
-              :key="index"
-              class="match"
-            >
-              <div class="match__head">
-                <span class="match__no">
-                  #{{ index + 1 }}
-                </span>
-                <span class="match__pos">
-                  {{ t('tools.regex-tester.results.position') }} {{ match.line }}:{{ match.column }}
-                </span>
-                <span class="match__offset">
-                  {{ t('tools.regex-tester.results.offset') }} {{ match.index }}
-                </span>
-              </div>
-
-              <pre class="match__text tb-mono">{{ match.text }}</pre>
-
-              <dl
-                v-if="match.groups.length > 0"
-                class="match__groups"
-              >
-                <div
-                  v-for="(group, groupIndex) in match.groups"
-                  :key="groupIndex"
-                  class="match__group"
-                >
-                  <dt>{{ groupLabel(groupIndex) }}</dt>
-                  <dd class="tb-mono">
-                    {{ group || '—' }}
-                  </dd>
-                </div>
-              </dl>
-            </li>
-          </ol>
+          <DataTable
+            class="table"
+            :columns="matchColumns"
+            :rows="matchRows"
+            :copy-column="'text'"
+            :empty="t('tools.regex-tester.results.empty')"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -427,68 +421,8 @@ function fillExample(index: number): void {
   color: var(--tb-warning);
 }
 
-.matches {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-2);
-  margin: var(--tb-space-3) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.match {
-  padding: var(--tb-space-2) var(--tb-space-3);
-  background: var(--tb-bg-sunken);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-}
-
-.match__head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-xs);
-  color: var(--tb-text-tertiary);
-}
-
-.match__no {
-  color: var(--tb-text-secondary);
-}
-
-.match__text {
-  margin: var(--tb-space-2) 0 0;
-  padding: var(--tb-space-2);
-  overflow-x: auto;
-  font-family: var(--tb-font-mono);
-  font-size: var(--tb-font-sm);
-  color: var(--tb-text);
-  white-space: pre-wrap;
-  word-break: break-all;
-  background: var(--tb-bg-elevated);
-  border-radius: var(--tb-radius-control);
-}
-
-.match__groups {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-  margin: var(--tb-space-2) 0 0;
-}
-
-.match__group {
-  display: flex;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-xs);
-}
-
-.match__group dt {
-  min-width: 88px;
-  color: var(--tb-text-tertiary);
-}
-
-.match__group dd {
-  margin: 0;
-  word-break: break-all;
+.table {
+  margin-top: var(--tb-space-3);
 }
 
 .prose {

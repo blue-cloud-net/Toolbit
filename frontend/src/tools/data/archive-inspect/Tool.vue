@@ -11,9 +11,11 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import FileDropZone from '@/components/tool/FileDropZone.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -80,6 +82,41 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.archive-inspect.faq') as FaqItem[])
+
+/** 统计卡片。 */
+const stats = computed<StatGridItem[]>(() => [
+  { label: t('tools.archive-inspect.results.entryCount'), value: String(data.value?.entryCount ?? 0) },
+  { label: t('tools.archive-inspect.results.totalSize'), value: String(data.value?.totalSize ?? 0) },
+  {
+    label: t('tools.archive-inspect.results.compressedSize'),
+    value: String(data.value?.compressedSize ?? 0),
+  },
+])
+
+/** 表格列定义。 */
+const columns = computed<DataTableColumn[]>(() => [
+  { key: 'name', label: t('tools.archive-inspect.results.name'), mono: true },
+  { key: 'type', label: t('tools.archive-inspect.results.entryType') },
+  { key: 'size', label: t('tools.archive-inspect.results.entrySize'), mono: true, align: 'right' },
+  { key: 'modified', label: t('tools.archive-inspect.results.modified'), mono: true },
+  { key: 'preview', label: t('tools.archive-inspect.results.preview') },
+])
+
+/** 表格行。 */
+const rows = computed<DataTableRow[]>(() =>
+  (data.value?.entries ?? []).map((entry, index) => ({
+    key: `${entry.name}-${index}`,
+    cells: {
+      name: entry.name,
+      type: entry.isDir
+        ? t('tools.archive-inspect.results.entryDir')
+        : t('tools.archive-inspect.results.entryFile'),
+      size: String(entry.size),
+      modified: entry.modified || '—',
+      preview: entry.contentPreview || '—',
+    },
+  })),
+)
 
 /** 读取文件并转成 Base64。 */
 function readAsBase64(target: File): Promise<string> {
@@ -207,29 +244,19 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.archive-inspect.results.entries')"
+        hide-text
         @retry="run"
       >
         <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.archive-inspect.results.entryCount') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.entryCount ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.archive-inspect.results.totalSize') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.totalSize ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.archive-inspect.results.compressedSize') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.compressedSize ?? 0 }}
-              </dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
+
+          <DataTable
+            class="table"
+            :columns="columns"
+            :rows="rows"
+            :copy-column="'name'"
+            :empty="t('tools.archive-inspect.results.empty')"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -251,3 +278,9 @@ function fillExample(index: number): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.table {
+  margin-top: var(--tb-space-3);
+}
+</style>
