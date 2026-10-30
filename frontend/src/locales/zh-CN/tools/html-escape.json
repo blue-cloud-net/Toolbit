@@ -17,7 +17,8 @@
   },
   "results": {
     "output": "转换结果",
-    "changedCount": "替换字符数"
+    "changedCount": "替换字符数",
+    "entityCount": "实体数量"
   },
   "examples": [
     {

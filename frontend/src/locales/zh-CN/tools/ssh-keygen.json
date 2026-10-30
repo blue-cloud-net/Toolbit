@@ -21,7 +21,8 @@
     "publicKey": "公钥",
     "fingerprint": "指纹",
     "bits": "RSA 位数",
-    "comment": "注释"
+    "comment": "注释",
+    "authorizedKey": "authorized_keys 条目"
   },
   "examples": [
     {
@@ -35,7 +36,8 @@
   ],
   "hints": {
     "algorithm": "首版**只支持未加密私钥**：口令加密变体需要 bcrypt KDF，属上游能力缺口，暂不提供。",
-    "output": "私钥请妥善保管；指纹可用于核对两端是否一致。"
+    "output": "私钥请妥善保管；指纹可用于核对两端是否一致。",
+    "privateKey": "私钥仅在响应中返回，不写入服务器或浏览器存储。"
   },
   "faq": [
     {

@@ -7,10 +7,17 @@
   },
   "fields": {
     "input": "颜色值",
-    "inputFormat": "输入格式"
+    "inputFormat": "输入格式",
+    "outputFormats": "输出格式"
   },
   "options": {
     "inputFormat": {
+      "hex": "HEX",
+      "rgb": "RGB",
+      "hsl": "HSL",
+      "oklch": "OKLCH"
+    },
+    "format": {
       "hex": "HEX",
       "rgb": "RGB",
       "hsl": "HSL",
@@ -24,7 +31,8 @@
     "oklch": "OKLCH 表示",
     "contrastOnWhite": "与白色对比度",
     "contrastOnBlack": "与黑色对比度",
-    "isDark": "深色"
+    "isDark": "深色",
+    "colors": "颜色结果"
   },
   "examples": [
     {

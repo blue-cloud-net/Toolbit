@@ -7,10 +7,17 @@
   },
   "fields": {
     "input": "Colour value",
-    "inputFormat": "Input format"
+    "inputFormat": "Input format",
+    "outputFormats": "Output formats"
   },
   "options": {
     "inputFormat": {
+      "hex": "HEX",
+      "rgb": "RGB",
+      "hsl": "HSL",
+      "oklch": "OKLCH"
+    },
+    "format": {
       "hex": "HEX",
       "rgb": "RGB",
       "hsl": "HSL",
@@ -24,7 +31,8 @@
     "oklch": "OKLCH",
     "contrastOnWhite": "Contrast on white",
     "contrastOnBlack": "Contrast on black",
-    "isDark": "Dark"
+    "isDark": "Dark",
+    "colors": "Colors"
   },
   "examples": [
     {

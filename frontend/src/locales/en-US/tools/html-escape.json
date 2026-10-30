@@ -17,7 +17,8 @@
   },
   "results": {
     "output": "Converted output",
-    "changedCount": "Replaced characters"
+    "changedCount": "Replaced characters",
+    "entityCount": "Entity count"
   },
   "examples": [
     {

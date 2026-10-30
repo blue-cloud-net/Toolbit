@@ -32,7 +32,10 @@
     "counter": "时间步计数器",
     "validFrom": "生效时间",
     "validUntil": "失效时间",
-    "remainingSeconds": "剩余秒数"
+    "remainingSeconds": "剩余秒数",
+    "uri": "otpauth URI",
+    "remaining": "剩余有效秒数",
+    "invalid": "无效"
   },
   "examples": [
     {

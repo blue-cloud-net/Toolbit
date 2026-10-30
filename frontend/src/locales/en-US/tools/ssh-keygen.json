@@ -21,7 +21,8 @@
     "publicKey": "Public key",
     "fingerprint": "Fingerprint",
     "bits": "RSA bits",
-    "comment": "Comment"
+    "comment": "Comment",
+    "authorizedKey": "authorized_keys entry"
   },
   "examples": [
     {
@@ -35,7 +36,8 @@
   ],
   "hints": {
     "algorithm": "The first version supports unencrypted private keys only: the passphrase-encrypted variant needs a bcrypt KDF that the upstream library does not yet provide.",
-    "output": "Keep the private key safe; the fingerprint lets you confirm both ends match."
+    "output": "Keep the private key safe; the fingerprint lets you confirm both ends match.",
+    "privateKey": "Private keys are returned in the response only; never written to the server or browser storage."
   },
   "faq": [
     {

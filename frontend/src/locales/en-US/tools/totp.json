@@ -32,7 +32,10 @@
     "counter": "Counter",
     "validFrom": "Valid from",
     "validUntil": "Valid until",
-    "remainingSeconds": "Seconds remaining"
+    "remainingSeconds": "Seconds remaining",
+    "uri": "otpauth URI",
+    "remaining": "Seconds remaining",
+    "invalid": "Invalid"
   },
   "examples": [
     {
