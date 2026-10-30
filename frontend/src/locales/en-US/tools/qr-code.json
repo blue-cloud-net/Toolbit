@@ -34,9 +34,19 @@
     "image": "QR code image",
     "dimension": "Modules per side",
     "moduleSize": "Pixels per module",
+    "pixels": "Image edge",
+    "pixelsHint": "Modules per side × pixels per module",
+    "ecLevel": "Error correction",
+    "bytes": "Byte count",
     "format": "Image format",
     "content": "Decoded content",
-    "file": "Selected image"
+    "file": "Selected image",
+    "downloadPng": "Download PNG"
+  },
+  "views": {
+    "preview": "Preview",
+    "svg": "SVG source",
+    "content": "Decoded content"
   },
   "examples": [
     {
@@ -50,6 +60,7 @@
   ],
   "hints": {
     "text": "The content may be up to 4096 bytes; beyond that the code grows large and scans poorly.",
+    "textTooLong": "The content exceeds 4096 bytes. Shorten it before generating.",
     "size": "The module size is between 1 and 40 pixels and defaults to 6.",
     "margin": "The quiet zone is the blank border, between 0 and 16 modules, defaulting to 4.",
     "ecLevel": "A higher level tolerates more obstruction and dirt, but the code also gets denser.",

@@ -1195,7 +1195,7 @@ tools:
     sensitive: false
     requiresNetwork: false
     autoRun: false
-    wide: false
+    wide: true
     i18nKey: tools.qr-code
 
   - slug: id-validator

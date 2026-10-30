@@ -42,6 +42,13 @@
   color: var(--tb-text-tertiary);
 }
 
+/* 输入旁的计数器（如字节数），与提示文案同行。 */
+.field__counter {
+  margin-left: var(--tb-space-1);
+  font-family: var(--tb-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
 .field-row {
   display: flex;
   flex-wrap: wrap;

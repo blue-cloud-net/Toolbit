@@ -34,9 +34,19 @@
     "image": "二维码图片",
     "dimension": "模块边长",
     "moduleSize": "模块像素边长",
+    "pixels": "图片边长",
+    "pixelsHint": "模块边长 × 模块像素边长",
+    "ecLevel": "纠错级别",
+    "bytes": "字节数",
     "format": "图片格式",
     "content": "识别出的内容",
-    "file": "已选图片"
+    "file": "已选图片",
+    "downloadPng": "下载 PNG"
+  },
+  "views": {
+    "preview": "预览",
+    "svg": "SVG 源码",
+    "content": "识别内容"
   },
   "examples": [
     {
@@ -50,6 +60,7 @@
   ],
   "hints": {
     "text": "内容最长 4096 字节；超出后二维码会变得很大，扫描体验急剧下降。",
+    "textTooLong": "内容超过 4096 字节，请缩短后再生成。",
     "size": "模块边长在 1 到 40 像素之间，默认为 6。",
     "margin": "静默区是四周留白，模块数在 0 到 16 之间，默认为 4。",
     "ecLevel": "纠错级别越高，越能容忍遮挡与污损，但二维码也更密。",

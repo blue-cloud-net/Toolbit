@@ -54,7 +54,8 @@
     "base64Ok": "Valid Base64 character set",
     "base64Invalid": "Contains invalid Base64 characters",
     "uuidOk": "Valid UUID format",
-    "uuidInvalid": "Invalid UUID format"
+    "uuidInvalid": "Invalid UUID format",
+    "colorInvalid": "Color must use the #RRGGBB format"
   },
   "cert": {
     "detail": "Certificate details",
@@ -85,6 +86,9 @@
   "copy": {
     "success": "Copied to the clipboard",
     "failed": "Copy failed. Please select the text manually."
+  },
+  "download": {
+    "failed": "Download failed. Please try again."
   },
   "related": {
     "title": "Related tools"

@@ -54,7 +54,8 @@
     "base64Ok": "Base64 字符集正确",
     "base64Invalid": "含非法 Base64 字符",
     "uuidOk": "UUID 格式正确",
-    "uuidInvalid": "UUID 格式错误"
+    "uuidInvalid": "UUID 格式错误",
+    "colorInvalid": "颜色需为 #RRGGBB 格式"
   },
   "cert": {
     "detail": "证书详情",
@@ -85,6 +86,9 @@
   "copy": {
     "success": "已复制到剪贴板",
     "failed": "复制失败，请手动选择文本。"
+  },
+  "download": {
+    "failed": "下载失败，请重试。"
   },
   "related": {
     "title": "相关工具"
