@@ -9,8 +9,9 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CertTextInput from '@/components/tool/CertTextInput.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -66,6 +67,36 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.cert-chain-repair.faq') as FaqItem[])
+
+/** 结果页签：摘要 / 补全后的链。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.cert-chain-repair.views.summary') },
+  { id: 'chain', label: t('tools.cert-chain-repair.views.chain') },
+])
+
+/** 当前页签。 */
+const activeView = ref('summary')
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    { label: t('tools.cert-chain-repair.results.addedCount'), value: String(result.addedCount) },
+    {
+      label: t('tools.cert-chain-repair.results.addedFroms'),
+      value: result.addedFroms.join(', ') || '-',
+    },
+    {
+      label: t('tools.cert-chain-repair.results.reachedRoot'),
+      value: result.reachedRoot ? t('common.states.yes') : t('common.states.no'),
+      level: result.reachedRoot ? ('success' as const) : ('warning' as const),
+    },
+    { label: t('tools.cert-chain-repair.results.note'), value: result.note },
+  ]
+})
 
 /** 运行当前输入。 */
 function run(): void {
@@ -152,13 +183,26 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.cert-chain-repair.results.chain')"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary'"
+            :items="stats"
+          />
+          <pre
+            v-else-if="data"
+            class="product"
+          ><code>{{ data.chainPem.join('\n') }}</code></pre>
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -184,3 +228,19 @@ function fillExample(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.product {
+  margin: 0;
+  padding: var(--tb-space-3);
+  overflow-x: auto;
+  font-family: var(--tb-font-mono);
+  font-size: var(--tb-font-sm);
+  line-height: 1.6;
+  color: var(--tb-text);
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--tb-bg-sunken);
+  border-radius: var(--tb-radius-control);
+}
+</style>

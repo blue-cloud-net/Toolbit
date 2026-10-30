@@ -13,7 +13,14 @@
   },
   "options": {},
   "results": {
-    "output": "Zone file lines"
+    "output": "Zone file lines",
+    "domain": "Domain",
+    "count": "Records",
+    "tag": "Tag",
+    "value": "Value",
+    "flags": "Flags",
+    "zone": "Zone",
+    "empty": "No CAA record"
   },
   "examples": [
     {

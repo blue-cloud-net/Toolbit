@@ -18,7 +18,12 @@
     "signatureValid": "Signature valid",
     "fingerprint": "SHA-256 fingerprint",
     "challengePassword": "Has challenge password",
-    "extensions": "Requested extensions"
+    "extensions": "Requested extensions",
+    "extensionName": "Extension",
+    "extensionOid": "OID",
+    "extensionCritical": "Critical",
+    "extensionValue": "Value",
+    "noExtensions": "This CSR requests no extension"
   },
   "examples": [
     {

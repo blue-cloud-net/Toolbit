@@ -15,8 +15,9 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import KeyInput from '@/components/tool/KeyInput.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -109,6 +110,57 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.csr-gen.faq') as FaqItem[])
+
+/** 结果页签：摘要 / CSR / 私钥。 */
+const views = computed<ResultView[]>(() => {
+  const list: ResultView[] = [{ id: 'summary', label: t('tools.csr-gen.views.summary') }]
+  list.push({ id: 'csr', label: t('tools.csr-gen.views.csr') })
+  if ((data.value?.privateKeyPem ?? '') !== '') {
+    list.push({ id: 'key', label: t('tools.csr-gen.views.key') })
+  }
+  return list
+})
+
+/** 当前页签。 */
+const activeView = ref('summary')
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const key = result.keyCurve ? `${result.keyType} ${result.keyCurve}` : `${result.keyType} ${result.keyBits}`
+  return [
+    { label: t('tools.csr-gen.results.subject'), value: result.info.subjectText },
+    {
+      label: t('tools.csr-gen.results.sans'),
+      value: result.info.sans.join(', ') || '-',
+    },
+    { label: t('tools.csr-gen.results.key'), value: key },
+    {
+      label: t('tools.csr-gen.results.signatureValid'),
+      value: result.info.signatureValid ? t('tool.verdict.pass') : t('tool.verdict.fail'),
+      level: result.info.signatureValid ? ('success' as const) : ('danger' as const),
+    },
+    { label: t('tools.csr-gen.results.fingerprint'), value: result.info.fingerprintSha256 },
+  ]
+})
+
+/** 某个页签对应的产物文本。 */
+function productText(viewId: string): string {
+  const result = data.value
+  if (!result) {
+    return ''
+  }
+  if (viewId === 'csr') {
+    return result.csrPem
+  }
+  if (viewId === 'key') {
+    return result.privateKeyPem
+  }
+  return ''
+}
 
 /** 运行当前输入。 */
 function run(): void {
@@ -320,13 +372,26 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.csr-gen.results.output')"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary'"
+            :items="stats"
+          />
+          <pre
+            v-else-if="productText(viewId) !== ''"
+            class="product"
+          ><code>{{ productText(viewId) }}</code></pre>
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -352,3 +417,19 @@ function fillExample(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.product {
+  margin: 0;
+  padding: var(--tb-space-3);
+  overflow-x: auto;
+  font-family: var(--tb-font-mono);
+  font-size: var(--tb-font-sm);
+  line-height: 1.6;
+  color: var(--tb-text);
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--tb-bg-sunken);
+  border-radius: var(--tb-radius-control);
+}
+</style>

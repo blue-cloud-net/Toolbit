@@ -9,8 +9,10 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CertTextInput from '@/components/tool/CertTextInput.vue'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -85,6 +87,49 @@ const resultText = computed(() => {
   }
   return head.join('\n')
 })
+
+/** 统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    { label: t('tools.crl-parse.results.issuer'), value: result.issuerText },
+    { label: t('tools.crl-parse.results.thisUpdate'), value: result.thisUpdate },
+    { label: t('tools.crl-parse.results.nextUpdate'), value: result.nextUpdate },
+    {
+      label: t('tools.crl-parse.results.signatureAlgorithm'),
+      value: result.signatureAlgorithm,
+      hint: result.signatureAlgorithmOid,
+    },
+    { label: t('tools.crl-parse.results.number'), value: String(result.number) },
+    {
+      label: t('tools.crl-parse.results.revokedCount'),
+      value: String(result.revoked.length),
+      level: result.revoked.length > 0 ? ('warning' as const) : ('success' as const),
+    },
+  ]
+})
+
+/** 吊销条目表格列定义。 */
+const revokedColumns = computed<DataTableColumn[]>(() => [
+  { key: 'serial', label: t('tools.crl-parse.results.serial'), mono: true },
+  { key: 'revokedAt', label: t('tools.crl-parse.results.revokedAt'), mono: true },
+  { key: 'reason', label: t('tools.crl-parse.results.reason') },
+])
+
+/** 吊销条目表格行。 */
+const revokedRows = computed<DataTableRow[]>(() =>
+  (data.value?.revoked ?? []).map((item, index) => ({
+    key: `${item.serial}-${index}`,
+    cells: {
+      serial: item.serial || '?',
+      revokedAt: item.revokedAt,
+      reason: item.reasonText || String(item.reasonCode),
+    },
+  })),
+)
 
 const faq = computed<FaqItem[]>(() => tm('tools.crl-parse.faq') as FaqItem[])
 
@@ -164,7 +209,22 @@ function fillExample(): void {
         :title="t('tools.crl-parse.results.info')"
         :use-as-input="useAsInput"
         @retry="run"
-      />
+      >
+        <template
+          v-if="data"
+          #extra
+        >
+          <StatGrid :items="stats" />
+
+          <DataTable
+            class="table"
+            :columns="revokedColumns"
+            :rows="revokedRows"
+            :copy-column="'serial'"
+            :empty="t('tools.crl-parse.results.noRevoked')"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -190,3 +250,9 @@ function fillExample(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.table {
+  margin-top: var(--tb-space-3);
+}
+</style>

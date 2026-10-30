@@ -42,5 +42,10 @@
       "q": "Can I read the OIDs inside extensions?",
       "a": "An OID is the dotted identifier of an extension; the viewer shows it together with the raw bytes."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "tree": "Tree",
+    "hex": "Hex"
+  }
 }

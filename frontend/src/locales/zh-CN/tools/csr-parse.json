@@ -18,7 +18,12 @@
     "signatureValid": "签名有效",
     "fingerprint": "SHA-256 指纹",
     "challengePassword": "含挑战口令",
-    "extensions": "请求扩展"
+    "extensions": "请求扩展",
+    "extensionName": "扩展名",
+    "extensionOid": "OID",
+    "extensionCritical": "关键扩展",
+    "extensionValue": "值",
+    "noExtensions": "该 CSR 没有请求扩展"
   },
   "examples": [
     {

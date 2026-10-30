@@ -8,13 +8,24 @@
   "fields": {
     "bundle": "Certificate chain"
   },
-  "options": {},
+  "options": {
+    "views": {
+      "summary": "Summary",
+      "list": "Certificates"
+    }
+  },
   "results": {
     "chain": "Certificate chain",
     "count": "Certificate count",
     "ordered": "Input already ordered",
     "missingRoot": "Root certificate missing",
-    "selfSigned": "Root is self-signed"
+    "selfSigned": "Root is self-signed",
+    "index": "#",
+    "subject": "Subject",
+    "issuer": "Issuer",
+    "serial": "Serial",
+    "notAfter": "Not after",
+    "empty": "The chain has no certificate"
   },
   "examples": [
     {

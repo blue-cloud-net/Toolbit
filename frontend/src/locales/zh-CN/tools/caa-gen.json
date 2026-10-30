@@ -13,7 +13,14 @@
   },
   "options": {},
   "results": {
-    "output": "区域文件行"
+    "output": "区域文件行",
+    "domain": "域名",
+    "count": "记录数",
+    "tag": "标签",
+    "value": "值",
+    "flags": "标志位",
+    "zone": "区域",
+    "empty": "没有 CAA 记录"
   },
   "examples": [
     {

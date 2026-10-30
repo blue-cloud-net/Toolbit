@@ -9,8 +9,10 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CertTextInput from '@/components/tool/CertTextInput.vue'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -87,6 +89,57 @@ const resultText = computed(() => {
 
 const faq = computed<FaqItem[]>(() => tm('tools.csr-parse.faq') as FaqItem[])
 
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    { label: t('tools.csr-parse.results.subject'), value: result.subjectText },
+    {
+      label: t('tools.csr-parse.results.publicKey'),
+      value: `${result.publicKey.algorithm} ${result.publicKey.bits}`,
+    },
+    { label: t('tools.csr-parse.results.signatureAlgorithm'), value: result.signatureAlgorithm },
+    {
+      label: t('tools.csr-parse.results.signatureValid'),
+      value: result.signatureValid ? t('tool.verdict.pass') : t('tool.verdict.fail'),
+      level: result.signatureValid ? ('success' as const) : ('danger' as const),
+    },
+    { label: t('tools.csr-parse.results.fingerprint'), value: result.fingerprintSha256 },
+    {
+      label: t('tools.csr-parse.results.challengePassword'),
+      value: result.challengePasswordPresent ? t('common.states.yes') : t('common.states.no'),
+    },
+    {
+      label: t('tools.csr-parse.results.sans'),
+      value: result.sans.join(', ') || '-',
+    },
+  ]
+})
+
+/** 请求扩展表格列定义。 */
+const extensionColumns = computed<DataTableColumn[]>(() => [
+  { key: 'name', label: t('tools.csr-parse.results.extensionName'), mono: true },
+  { key: 'oid', label: t('tools.csr-parse.results.extensionOid'), mono: true },
+  { key: 'critical', label: t('tools.csr-parse.results.extensionCritical') },
+  { key: 'value', label: t('tools.csr-parse.results.extensionValue'), mono: true },
+])
+
+/** 请求扩展表格行。 */
+const extensionRows = computed<DataTableRow[]>(() =>
+  (data.value?.extensions ?? []).map((ext, index) => ({
+    key: `${ext.oid}-${index}`,
+    cells: {
+      name: ext.name || ext.oid,
+      oid: ext.oid,
+      critical: ext.critical ? t('common.states.yes') : t('common.states.no'),
+      value: ext.value,
+    },
+  })),
+)
+
 /** 运行当前输入。 */
 function run(): void {
   void execute({
@@ -145,7 +198,22 @@ function fillExample(): void {
         :error="error"
         :title="t('tools.csr-parse.results.info')"
         @retry="run"
-      />
+      >
+        <template
+          v-if="data"
+          #extra
+        >
+          <StatGrid :items="stats" />
+
+          <DataTable
+            class="table"
+            :columns="extensionColumns"
+            :rows="extensionRows"
+            :copy-column="'value'"
+            :empty="t('tools.csr-parse.results.noExtensions')"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -171,3 +239,9 @@ function fillExample(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.table {
+  margin-top: var(--tb-space-3);
+}
+</style>

@@ -12,8 +12,9 @@ import { useI18n } from 'vue-i18n'
 
 import CertTextInput from '@/components/tool/CertTextInput.vue'
 import CodeViewer from '@/components/tool/CodeViewer.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -107,19 +108,29 @@ function toTree(node: ASN1Node): TreeNode {
 /** 结果树。 */
 const resultTree = computed<TreeNode | null>(() => (data.value ? toTree(data.value.tree) : null))
 
-/** 概要文本。 */
-const summary = computed(() => {
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
   const result = data.value
   if (!result) {
-    return ''
+    return []
   }
   return [
-    `${t('tools.asn1-view.results.length')}: ${result.length}`,
-    `${t('tools.asn1-view.results.nodeCount')}: ${result.nodeCount}`,
-    `${t('tools.asn1-view.results.depth')}: ${result.depth}`,
-    `${t('tools.asn1-view.results.maxDepth')}: ${result.maxDepth}`,
-  ].join('\n')
+    { label: t('tools.asn1-view.results.length'), value: `${result.length} B` },
+    { label: t('tools.asn1-view.results.nodeCount'), value: String(result.nodeCount) },
+    { label: t('tools.asn1-view.results.depth'), value: String(result.depth) },
+    { label: t('tools.asn1-view.results.maxDepth'), value: String(result.maxDepth) },
+  ]
 })
+
+/** 结果页签：摘要 / 结构树 / 十六进制。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.asn1-view.views.summary') },
+  { id: 'tree', label: t('tools.asn1-view.views.tree') },
+  { id: 'hex', label: t('tools.asn1-view.views.hex') },
+])
+
+/** 当前页签。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.asn1-view.faq') as FaqItem[])
 
@@ -191,25 +202,33 @@ function fillExample(): void {
 
     <template #result>
       <div class="asn1-view">
-        <p
-          v-if="summary"
-          class="asn1-view__summary tb-mono"
-        >
-          {{ summary }}
-        </p>
-        <CodeViewer
-          :tree="resultTree"
-          :text="data?.hexDump ?? ''"
-          :empty="t('tools.asn1-view.results.empty')"
-        />
         <ResultPanel
+          v-model:active-view="activeView"
           :state="state"
           :meta="meta"
           :error="error"
           :title="t('tools.asn1-view.results.tree')"
           :use-as-input="useAsInput"
+          :views="views"
           @retry="run"
-        />
+        >
+          <template #view="{ viewId }">
+            <StatGrid
+              v-if="viewId === 'summary'"
+              :items="stats"
+            />
+            <CodeViewer
+              v-else-if="viewId === 'tree'"
+              :tree="resultTree"
+              :empty="t('tools.asn1-view.results.empty')"
+            />
+            <CodeViewer
+              v-else
+              :text="data?.hexDump ?? ''"
+              :empty="t('tools.asn1-view.results.empty')"
+            />
+          </template>
+        </ResultPanel>
       </div>
     </template>
 

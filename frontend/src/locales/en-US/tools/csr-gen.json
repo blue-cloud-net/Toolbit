@@ -58,5 +58,10 @@
       "q": "Will the CA honour the SANs in my CSR?",
       "a": "Most CAs check them, so do not put names that do not belong to you."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "csr": "CSR",
+    "key": "Private Key"
+  }
 }

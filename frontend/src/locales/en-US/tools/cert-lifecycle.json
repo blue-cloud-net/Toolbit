@@ -22,7 +22,11 @@
     "isCa": "CA certificate",
     "keyAlgorithm": "Key algorithm",
     "san": "Subject alternative names",
-    "recommendations": "Recommendations"
+    "recommendations": "Recommendations",
+    "valid": "Valid",
+    "expired": "Expired",
+    "expiring": "Expiring Soon",
+    "validity": "Certificate Validity"
   },
   "examples": [
     {

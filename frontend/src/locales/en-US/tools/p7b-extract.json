@@ -11,7 +11,11 @@
   "options": {},
   "results": {
     "output": "Result",
-    "count": "Certificate count"
+    "count": "Certificate count",
+    "subject": "Subject",
+    "issuer": "Issuer",
+    "serial": "Serial",
+    "empty": "The container has no certificate"
   },
   "examples": [
     {
@@ -37,5 +41,10 @@
       "q": "Why does a signed container fail?",
       "a": "This version implements certificate bags only; signed containers are an upstream gap."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "list": "Certificates",
+    "pem": "PEM Content"
+  }
 }

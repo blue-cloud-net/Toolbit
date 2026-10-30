@@ -8,13 +8,24 @@
   "fields": {
     "bundle": "证书链"
   },
-  "options": {},
+  "options": {
+    "views": {
+      "summary": "摘要",
+      "list": "证书清单"
+    }
+  },
   "results": {
     "chain": "证书链",
     "count": "证书数量",
     "ordered": "输入已有序",
     "missingRoot": "缺少根证书",
-    "selfSigned": "根证书自签名"
+    "selfSigned": "根证书自签名",
+    "index": "序号",
+    "subject": "主体",
+    "issuer": "签发者",
+    "serial": "序列号",
+    "notAfter": "失效时间",
+    "empty": "链中没有证书"
   },
   "examples": [
     {

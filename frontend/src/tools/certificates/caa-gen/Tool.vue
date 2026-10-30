@@ -13,8 +13,10 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -57,6 +59,39 @@ const resultText = computed(() =>
 )
 
 const faq = computed<FaqItem[]>(() => tm('tools.caa-gen.faq') as FaqItem[])
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    { label: t('tools.caa-gen.results.domain'), value: result.domain },
+    { label: t('tools.caa-gen.results.count'), value: String(result.count) },
+  ]
+})
+
+/** 记录表格列定义。 */
+const recordColumns = computed<DataTableColumn[]>(() => [
+  { key: 'tag', label: t('tools.caa-gen.results.tag'), mono: true },
+  { key: 'value', label: t('tools.caa-gen.results.value'), mono: true },
+  { key: 'flags', label: t('tools.caa-gen.results.flags'), mono: true, align: 'right' },
+  { key: 'zone', label: t('tools.caa-gen.results.zone'), mono: true },
+])
+
+/** 记录表格行。 */
+const recordRows = computed<DataTableRow[]>(() =>
+  (data.value?.records ?? []).map((record, index) => ({
+    key: `${record.tag}-${index}`,
+    cells: {
+      tag: record.tag,
+      value: record.value,
+      flags: String(record.flags),
+      zone: record.zone,
+    },
+  })),
+)
 
 function run(): void {
   void execute({
@@ -156,7 +191,22 @@ function fillExample(): void {
         :error="error"
         :title="t('tools.caa-gen.results.output')"
         @retry="run"
-      />
+      >
+        <template
+          v-if="data"
+          #extra
+        >
+          <StatGrid :items="stats" />
+
+          <DataTable
+            class="table"
+            :columns="recordColumns"
+            :rows="recordRows"
+            :copy-column="'value'"
+            :empty="t('tools.caa-gen.results.empty')"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -182,3 +232,9 @@ function fillExample(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.table {
+  margin-top: var(--tb-space-3);
+}
+</style>

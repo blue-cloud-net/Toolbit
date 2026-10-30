@@ -14,7 +14,15 @@
   "options": {},
   "results": {
     "output": "Chain PEM",
-    "summary": "Chain summary"
+    "summary": "Chain summary",
+    "target": "Target",
+    "count": "Certificates",
+    "subject": "Subject",
+    "issuer": "Issuer",
+    "validity": "Validity",
+    "chainValid": "Chain valid",
+    "verified": "Verified against system roots",
+    "chainErrors": "Chain errors"
   },
   "examples": [
     {
@@ -39,5 +47,9 @@
       "q": "Are fetched certificates stored?",
       "a": "No. Responses are discarded immediately and never written to storage or logs."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "pem": "PEM Certificates"
+  }
 }

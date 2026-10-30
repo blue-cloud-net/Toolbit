@@ -22,7 +22,11 @@
     "isCa": "CA 证书",
     "keyAlgorithm": "公钥算法",
     "san": "主体备用名",
-    "recommendations": "续期建议"
+    "recommendations": "续期建议",
+    "valid": "有效",
+    "expired": "已过期",
+    "expiring": "即将过期",
+    "validity": "证书有效期"
   },
   "examples": [
     {

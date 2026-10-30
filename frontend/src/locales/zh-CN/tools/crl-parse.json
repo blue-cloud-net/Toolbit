@@ -16,7 +16,12 @@
     "nextUpdate": "下次更新",
     "signatureAlgorithm": "签名算法",
     "number": "CRL 编号",
-    "revoked": "吊销条目"
+    "revoked": "吊销条目",
+    "revokedCount": "吊销条目数",
+    "serial": "序列号",
+    "revokedAt": "吊销时间",
+    "reason": "吊销原因",
+    "noRevoked": "该 CRL 没有吊销条目"
   },
   "examples": [
     {

@@ -9,8 +9,10 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CertTextInput from '@/components/tool/CertTextInput.vue'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -89,6 +91,54 @@ const resultText = computed(() => {
 
 const faq = computed<FaqItem[]>(() => tm('tools.cert-chain-parse.faq') as FaqItem[])
 
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    { label: t('tools.cert-chain-parse.results.count'), value: String(result.count) },
+    {
+      label: t('tools.cert-chain-parse.results.ordered'),
+      value: result.ordered ? t('common.states.yes') : t('common.states.no'),
+      level: result.ordered ? ('success' as const) : ('warning' as const),
+    },
+    {
+      label: t('tools.cert-chain-parse.results.missingRoot'),
+      value: result.missingRoot ? t('common.states.yes') : t('common.states.no'),
+      level: result.missingRoot ? ('warning' as const) : ('success' as const),
+    },
+    {
+      label: t('tools.cert-chain-parse.results.selfSigned'),
+      value: result.selfSigned ? t('common.states.yes') : t('common.states.no'),
+    },
+  ]
+})
+
+/** 链上证书表格列定义。 */
+const chainColumns = computed<DataTableColumn[]>(() => [
+  { key: 'index', label: t('tools.cert-chain-parse.results.index'), align: 'right' },
+  { key: 'subject', label: t('tools.cert-chain-parse.results.subject'), mono: true },
+  { key: 'issuer', label: t('tools.cert-chain-parse.results.issuer'), mono: true },
+  { key: 'serial', label: t('tools.cert-chain-parse.results.serial'), mono: true },
+  { key: 'notAfter', label: t('tools.cert-chain-parse.results.notAfter'), mono: true },
+])
+
+/** 链上证书表格行。 */
+const chainRows = computed<DataTableRow[]>(() =>
+  (data.value?.chain ?? []).map((cert, index) => ({
+    key: `${cert.info.serial}-${index}`,
+    cells: {
+      index: String(index),
+      subject: cert.info.subjectText,
+      issuer: cert.info.issuerText,
+      serial: cert.info.serial,
+      notAfter: cert.info.notAfter,
+    },
+  })),
+)
+
 /** 运行当前输入。 */
 function run(): void {
   void execute({
@@ -149,7 +199,22 @@ function fillExample(): void {
         :title="t('tools.cert-chain-parse.results.chain')"
         :use-as-input="useAsInput"
         @retry="run"
-      />
+      >
+        <template
+          v-if="data"
+          #extra
+        >
+          <StatGrid :items="stats" />
+
+          <DataTable
+            class="table"
+            :columns="chainColumns"
+            :rows="chainRows"
+            :copy-column="'subject'"
+            :empty="t('tools.cert-chain-parse.results.empty')"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -175,3 +240,9 @@ function fillExample(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.table {
+  margin-top: var(--tb-space-3);
+}
+</style>

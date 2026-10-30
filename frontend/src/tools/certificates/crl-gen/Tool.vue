@@ -14,8 +14,9 @@ import { useI18n } from 'vue-i18n'
 
 import CertTextInput from '@/components/tool/CertTextInput.vue'
 import KeyInput from '@/components/tool/KeyInput.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -96,6 +97,30 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.crl-gen.faq') as FaqItem[])
+
+/** 结果页签：摘要 / CRL。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.crl-gen.views.summary') },
+  { id: 'crl', label: t('tools.crl-gen.views.crl') },
+])
+
+/** 当前页签。 */
+const activeView = ref('summary')
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    { label: t('tools.crl-gen.results.issuer'), value: result.issuerText },
+    { label: t('tools.crl-gen.results.number'), value: String(result.number) },
+    { label: t('tools.crl-gen.results.thisUpdate'), value: result.thisUpdate },
+    { label: t('tools.crl-gen.results.nextUpdate'), value: result.nextUpdate },
+    { label: t('tools.crl-gen.results.revokedCount'), value: String(result.revokedCount) },
+  ]
+})
 
 /** 运行当前输入。 */
 function run(): void {
@@ -214,13 +239,26 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.crl-gen.results.output')"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary'"
+            :items="stats"
+          />
+          <pre
+            v-else-if="data"
+            class="product"
+          ><code>{{ data.crlPem }}</code></pre>
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -246,3 +284,19 @@ function fillExample(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.product {
+  margin: 0;
+  padding: var(--tb-space-3);
+  overflow-x: auto;
+  font-family: var(--tb-font-mono);
+  font-size: var(--tb-font-sm);
+  line-height: 1.6;
+  color: var(--tb-text);
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--tb-bg-sunken);
+  border-radius: var(--tb-radius-control);
+}
+</style>

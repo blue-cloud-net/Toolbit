@@ -14,7 +14,15 @@
   "options": {},
   "results": {
     "output": "证书链 PEM",
-    "summary": "链摘要"
+    "summary": "链摘要",
+    "target": "目标",
+    "count": "证书数量",
+    "subject": "主体",
+    "issuer": "签发者",
+    "validity": "有效期",
+    "chainValid": "链校验",
+    "verified": "已通过系统信任验证",
+    "chainErrors": "链错误"
   },
   "examples": [
     {
@@ -39,5 +47,9 @@
       "q": "会保存我抓的证书吗？",
       "a": "不会。响应即用即弃，不落库也不写日志。"
     }
-  ]
+  ],
+  "views": {
+    "summary": "摘要",
+    "pem": "PEM 证书"
+  }
 }

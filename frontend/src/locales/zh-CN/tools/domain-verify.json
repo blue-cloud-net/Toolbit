@@ -20,7 +20,18 @@
   },
   "results": {
     "output": "验证结果",
-    "perResolver": "逐解析器结果"
+    "perResolver": "逐解析器结果",
+    "domain": "域名",
+    "expected": "期望值",
+    "matched": "是否匹配",
+    "resolvers": "解析器数",
+    "httpStatus": "HTTP 状态",
+    "resolver": "解析器",
+    "state": "状态",
+    "values": "取值",
+    "match": "命中",
+    "noMatch": "未命中",
+    "empty": "没有解析器结果"
   },
   "examples": [
     {

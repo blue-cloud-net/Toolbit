@@ -11,8 +11,9 @@ import 'element-plus/es/components/input-number/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -75,6 +76,52 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.cert-chain-fetch.faq') as FaqItem[])
+
+/** 结果页签：摘要 / 证书链 PEM。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.cert-chain-fetch.views.summary') },
+  { id: 'pem', label: t('tools.cert-chain-fetch.views.pem') },
+])
+
+/** 当前页签。 */
+const activeView = ref('summary')
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const summary = result.chainSummary
+  const items: StatGridItem[] = [
+    { label: t('tools.cert-chain-fetch.results.target'), value: `${result.host}:${result.port}` },
+    { label: t('tools.cert-chain-fetch.results.count'), value: String(summary.count) },
+    { label: t('tools.cert-chain-fetch.results.subject'), value: summary.subject },
+    { label: t('tools.cert-chain-fetch.results.issuer'), value: summary.issuer },
+    {
+      label: t('tools.cert-chain-fetch.results.validity'),
+      value: `${summary.notBefore} → ${summary.notAfter}`,
+    },
+    {
+      label: t('tools.cert-chain-fetch.results.chainValid'),
+      value: summary.chainValid ? t('tool.verdict.pass') : t('tool.verdict.fail'),
+      level: summary.chainValid ? ('success' as const) : ('danger' as const),
+    },
+    {
+      label: t('tools.cert-chain-fetch.results.verified'),
+      value: summary.verified ? t('common.states.yes') : t('common.states.no'),
+      level: summary.verified ? ('success' as const) : ('warning' as const),
+    },
+  ]
+  if (summary.chainErrors.length > 0) {
+    items.push({
+      label: t('tools.cert-chain-fetch.results.chainErrors'),
+      value: summary.chainErrors.join(', '),
+      level: 'danger',
+    })
+  }
+  return items
+})
 
 /** 结论徽章：拉到的链是否验证通过。 */
 const verdict = computed(() => {
@@ -163,14 +210,27 @@ function reset(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :verdict="verdict"
         :title="t('tools.cert-chain-fetch.results.output')"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary'"
+            :items="stats"
+          />
+          <pre
+            v-else-if="data"
+            class="product"
+          ><code>{{ data.chainPem }}</code></pre>
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -196,3 +256,19 @@ function reset(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.product {
+  margin: 0;
+  padding: var(--tb-space-3);
+  overflow-x: auto;
+  font-family: var(--tb-font-mono);
+  font-size: var(--tb-font-sm);
+  line-height: 1.6;
+  color: var(--tb-text);
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--tb-bg-sunken);
+  border-radius: var(--tb-radius-control);
+}
+</style>

@@ -11,6 +11,7 @@ import { useI18n } from 'vue-i18n'
 import CertTextInput from '@/components/tool/CertTextInput.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -80,6 +81,42 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.revocation-check.faq') as FaqItem[])
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const items: StatGridItem[] = [
+    {
+      label: t('tools.revocation-check.results.status'),
+      value: t(`tools.revocation-check.options.status.${result.status}`),
+      level:
+        result.status === 'good'
+          ? ('success' as const)
+          : result.status === 'revoked'
+            ? ('danger' as const)
+            : ('warning' as const),
+    },
+    {
+      label: t('tools.revocation-check.results.signatureVerified'),
+      value: result.signatureVerified ? t('common.states.yes') : t('common.states.no'),
+      level: result.signatureVerified ? ('success' as const) : ('danger' as const),
+    },
+    { label: t('tools.revocation-check.results.serial'), value: result.serial },
+    { label: t('tools.revocation-check.results.crlNumber'), value: String(result.crlNumber) },
+    { label: t('tools.revocation-check.results.crlNextUpdate'), value: result.crlNextUpdate },
+  ]
+  if (result.status === 'revoked') {
+    items.push({ label: t('tools.revocation-check.results.revokedAt'), value: result.revokedAt })
+    items.push({
+      label: t('tools.revocation-check.results.reason'),
+      value: result.reasonText || String(result.reasonCode),
+    })
+  }
+  return items
+})
 
 /** 结论徽章：按 CRL 状态给出结论。 */
 const verdict = computed(() => {
@@ -177,7 +214,14 @@ function fillExample(): void {
         :verdict="verdict"
         :title="t('tools.revocation-check.results.output')"
         @retry="run"
-      />
+      >
+        <template
+          v-if="data"
+          #extra
+        >
+          <StatGrid :items="stats" />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

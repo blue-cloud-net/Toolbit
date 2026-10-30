@@ -42,5 +42,9 @@
       "q": "Can a container without a passphrase be parsed?",
       "a": "Yes, leave the passphrase empty."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "key": "Private Key"
+  }
 }

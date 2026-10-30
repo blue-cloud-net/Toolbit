@@ -11,8 +11,10 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -79,6 +81,61 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.domain-verify.faq') as FaqItem[])
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const items: StatGridItem[] = [
+    { label: t('tools.domain-verify.results.domain'), value: result.domain },
+    { label: t('tools.domain-verify.results.expected'), value: result.expected },
+    {
+      label: t('tools.domain-verify.results.matched'),
+      value: result.matched ? t('tool.verdict.pass') : t('tool.verdict.fail'),
+      level: result.matched ? ('success' as const) : ('danger' as const),
+    },
+    {
+      label: t('tools.domain-verify.results.resolvers'),
+      value: String(result.perResolver.length),
+    },
+  ]
+  if (result.type === 'http-file') {
+    items.push({
+      label: t('tools.domain-verify.results.httpStatus'),
+      value: String(result.httpStatus),
+    })
+  }
+  return items
+})
+
+/** 解析器表格列定义。 */
+const resolverColumns = computed<DataTableColumn[]>(() => [
+  { key: 'resolver', label: t('tools.domain-verify.results.resolver'), mono: true },
+  {
+    key: 'state',
+    label: t('tools.domain-verify.results.state'),
+  },
+  { key: 'values', label: t('tools.domain-verify.results.values'), mono: true },
+])
+
+/** 解析器表格行。 */
+const resolverRows = computed<DataTableRow[]>(() =>
+  (data.value?.perResolver ?? []).map((outcome) => ({
+    key: outcome.resolver,
+    level: outcome.error ? ('danger' as const) : outcome.matched ? ('success' as const) : undefined,
+    cells: {
+      resolver: outcome.resolver,
+      state: outcome.error
+        ? outcome.error.code
+        : outcome.matched
+          ? t('tools.domain-verify.results.match')
+          : t('tools.domain-verify.results.noMatch'),
+      values: outcome.values.join(' | ') || '-',
+    },
+  })),
+)
 
 /** 汇总：各解析器的成功 / 失败数。 */
 const summary = computed(() => {
@@ -226,6 +283,26 @@ function reset(): void {
           <span>{{ t('tool.result.summary.succeeded') }} {{ summary.succeeded }} / {{ summary.total }}</span>
           <span v-if="summary.failed > 0">{{ t('tool.result.summary.failed') }} {{ summary.failed }}</span>
         </template>
+
+        <template
+          v-if="data"
+          #extra
+        >
+          <StatGrid :items="stats" />
+
+          <DataTable
+            class="table"
+            :columns="resolverColumns"
+            :rows="resolverRows"
+            :copy-column="'values'"
+            :empty="t('tools.domain-verify.results.empty')"
+          />
+
+          <pre
+            v-if="data.type === 'http-file' && data.bodyPreview !== ''"
+            class="product"
+          ><code>{{ data.bodyPreview }}</code></pre>
+        </template>
       </ResultPanel>
     </template>
 
@@ -252,3 +329,23 @@ function reset(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.table {
+  margin-top: var(--tb-space-3);
+}
+
+.product {
+  margin: var(--tb-space-3) 0 0;
+  padding: var(--tb-space-3);
+  overflow-x: auto;
+  font-family: var(--tb-font-mono);
+  font-size: var(--tb-font-sm);
+  line-height: 1.6;
+  color: var(--tb-text);
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--tb-bg-sunken);
+  border-radius: var(--tb-radius-control);
+}
+</style>

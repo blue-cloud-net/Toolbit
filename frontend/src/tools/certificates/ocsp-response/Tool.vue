@@ -10,6 +10,7 @@ import { useI18n } from 'vue-i18n'
 import CertTextInput from '@/components/tool/CertTextInput.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -82,6 +83,51 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.ocsp-response.faq') as FaqItem[])
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const items: StatGridItem[] = [
+    {
+      label: t('tools.ocsp-response.results.status'),
+      value: `${result.statusText} (${result.status})`,
+      level: result.status === 0 ? ('success' as const) : ('warning' as const),
+    },
+    {
+      label: t('tools.ocsp-response.results.certStatus'),
+      value: t(`tools.ocsp-response.options.certStatus.${result.certStatus}`),
+      level:
+        result.certStatus === 'good'
+          ? ('success' as const)
+          : result.certStatus === 'revoked'
+            ? ('danger' as const)
+            : ('warning' as const),
+    },
+    {
+      label: t('tools.ocsp-response.results.signatureVerified'),
+      value: result.signatureVerified ? t('common.states.yes') : t('common.states.no'),
+      level: result.signatureVerified ? ('success' as const) : ('danger' as const),
+    },
+    { label: t('tools.ocsp-response.results.producedAt'), value: result.producedAt },
+    { label: t('tools.ocsp-response.results.thisUpdate'), value: result.thisUpdate },
+    { label: t('tools.ocsp-response.results.nextUpdate'), value: result.nextUpdate },
+    {
+      label: t('tools.ocsp-response.results.responderCount'),
+      value: String(result.responderCount),
+    },
+  ]
+  if (result.certStatus === 'revoked') {
+    items.push({ label: t('tools.ocsp-response.results.revocationTime'), value: result.revocationTime })
+    items.push({
+      label: t('tools.ocsp-response.results.reason'),
+      value: result.reasonText || String(result.reasonCode),
+    })
+  }
+  return items
+})
 
 function run(): void {
   const roots = trustedRoots.value.trim()
@@ -170,7 +216,14 @@ function fillExample(): void {
         :error="error"
         :title="t('tools.ocsp-response.results.output')"
         @retry="run"
-      />
+      >
+        <template
+          v-if="data"
+          #extra
+        >
+          <StatGrid :items="stats" />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

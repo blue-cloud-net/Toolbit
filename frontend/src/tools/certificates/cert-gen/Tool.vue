@@ -18,8 +18,9 @@ import { useI18n } from 'vue-i18n'
 
 import CertTextInput from '@/components/tool/CertTextInput.vue'
 import KeyInput from '@/components/tool/KeyInput.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -119,6 +120,57 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.cert-gen.faq') as FaqItem[])
+
+/** 结果页签：摘要 / 证书 / 链 / 私钥。 */
+const views = computed<ResultView[]>(() => {
+  const list: ResultView[] = [{ id: 'summary', label: t('tools.cert-gen.views.summary') }]
+  list.push({ id: 'cert', label: t('tools.cert-gen.views.cert') })
+  if ((data.value?.chainPem.length ?? 0) > 0) {
+    list.push({ id: 'chain', label: t('tools.cert-gen.views.chain') })
+  }
+  if ((data.value?.privateKeyPem ?? '') !== '') {
+    list.push({ id: 'key', label: t('tools.cert-gen.views.key') })
+  }
+  return list
+})
+
+/** 当前页签。 */
+const activeView = ref('summary')
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const key = result.keyCurve ? `${result.keyType} ${result.keyCurve}` : `${result.keyType} ${result.keyBits}`
+  return [
+    { label: t('tools.cert-gen.results.subject'), value: result.subjectText },
+    { label: t('tools.cert-gen.results.issuer'), value: result.issuerText },
+    { label: t('tools.cert-gen.results.serial'), value: result.serial },
+    { label: t('tools.cert-gen.results.notBefore'), value: result.notBefore },
+    { label: t('tools.cert-gen.results.notAfter'), value: result.notAfter },
+    { label: t('tools.cert-gen.results.key'), value: key },
+  ]
+})
+
+/** 某个页签对应的产物文本。 */
+function productText(viewId: string): string {
+  const result = data.value
+  if (!result) {
+    return ''
+  }
+  if (viewId === 'cert') {
+    return result.certPem
+  }
+  if (viewId === 'chain') {
+    return result.chainPem.join('\n')
+  }
+  if (viewId === 'key') {
+    return result.privateKeyPem
+  }
+  return ''
+}
 
 /** 运行当前输入。 */
 function run(): void {
@@ -355,13 +407,26 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.cert-gen.results.output')"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary'"
+            :items="stats"
+          />
+          <pre
+            v-else-if="productText(viewId) !== ''"
+            class="product"
+          ><code>{{ productText(viewId) }}</code></pre>
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -387,3 +452,19 @@ function fillExample(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.product {
+  margin: 0;
+  padding: var(--tb-space-3);
+  overflow-x: auto;
+  font-family: var(--tb-font-mono);
+  font-size: var(--tb-font-sm);
+  line-height: 1.6;
+  color: var(--tb-text);
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--tb-bg-sunken);
+  border-radius: var(--tb-radius-control);
+}
+</style>

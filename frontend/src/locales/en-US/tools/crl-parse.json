@@ -16,7 +16,12 @@
     "nextUpdate": "Next update",
     "signatureAlgorithm": "Signature algorithm",
     "number": "CRL number",
-    "revoked": "Revoked entries"
+    "revoked": "Revoked entries",
+    "revokedCount": "Revoked entries",
+    "serial": "Serial",
+    "revokedAt": "Revoked at",
+    "reason": "Reason",
+    "noRevoked": "This CRL has no revoked entries"
   },
   "examples": [
     {

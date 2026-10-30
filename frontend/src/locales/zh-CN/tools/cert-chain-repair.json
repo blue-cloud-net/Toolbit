@@ -42,5 +42,9 @@
       "q": "补充来源里写的是什么？",
       "a": "每张补充证书的来源：intermediates 或 trustedRoots。"
     }
-  ]
+  ],
+  "views": {
+    "summary": "摘要",
+    "chain": "证书链"
+  }
 }

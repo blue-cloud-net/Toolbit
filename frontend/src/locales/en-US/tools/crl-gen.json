@@ -58,5 +58,9 @@
       "q": "Can several certificates be revoked at once?",
       "a": "The API accepts multiple entries; this page fills in one."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "crl": "CRL File"
+  }
 }

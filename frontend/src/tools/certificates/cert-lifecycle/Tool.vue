@@ -152,9 +152,9 @@ function fillExample(index: number): void {
           <label class="field field--check">
             <ElCheckbox
               v-model="isPEM"
-              :aria-label="t('tools.cert-lifecycle.fields.isPEM')"
+              :aria-label="t('tools.cert-lifecycle.fields.isPem')"
             >
-              {{ t('tools.cert-lifecycle.fields.isPEM') }}
+              {{ t('tools.cert-lifecycle.fields.isPem') }}
             </ElCheckbox>
           </label>
 

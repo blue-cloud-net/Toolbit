@@ -11,8 +11,10 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CertTextInput from '@/components/tool/CertTextInput.vue'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -96,6 +98,85 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.cert-chain-verify.faq') as FaqItem[])
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const items: StatGridItem[] = [
+    {
+      label: t('tools.cert-chain-verify.results.valid'),
+      value: result.valid ? t('tool.verdict.pass') : t('tool.verdict.fail'),
+      level: result.valid ? ('success' as const) : ('danger' as const),
+    },
+    {
+      label: t('tools.cert-chain-verify.results.hostnameMatch'),
+      value: result.hostnameMatch ? t('common.states.yes') : t('common.states.no'),
+      level: result.hostnameMatch ? ('success' as const) : ('danger' as const),
+    },
+    {
+      label: t('tools.cert-chain-verify.results.implicitTrust'),
+      value: result.implicitTrust ? t('common.states.yes') : t('common.states.no'),
+      level: result.implicitTrust ? ('warning' as const) : undefined,
+    },
+    {
+      label: t('tools.cert-chain-verify.results.errorCount'),
+      value: String(result.errors.length),
+      level: result.errors.length > 0 ? ('danger' as const) : ('success' as const),
+    },
+  ]
+  if (result.hostnameError) {
+    items.push({
+      label: t('tools.cert-chain-verify.results.hostnameError'),
+      value: result.hostnameError,
+      level: 'danger',
+    })
+  }
+  return items
+})
+
+/** 错误表格列定义。 */
+const errorColumns = computed<DataTableColumn[]>(() => [
+  { key: 'depth', label: t('tools.cert-chain-verify.results.depth'), mono: true, align: 'right' },
+  { key: 'code', label: t('tools.cert-chain-verify.results.code'), mono: true },
+  { key: 'message', label: t('tools.cert-chain-verify.results.message') },
+])
+
+/** 错误表格行。 */
+const errorRows = computed<DataTableRow[]>(() =>
+  (data.value?.errors ?? []).map((item, index) => ({
+    key: `${item.depth}-${index}`,
+    level: 'danger' as const,
+    cells: {
+      depth: String(item.depth),
+      code: item.code,
+      message: item.message,
+    },
+  })),
+)
+
+/** 逐级明细表格列定义。 */
+const detailColumns = computed<DataTableColumn[]>(() => [
+  { key: 'subject', label: t('tools.cert-chain-verify.results.subject'), mono: true },
+  { key: 'issuer', label: t('tools.cert-chain-verify.results.issuer'), mono: true },
+  { key: 'valid', label: t('tools.cert-chain-verify.results.valid') },
+  { key: 'reason', label: t('tools.cert-chain-verify.results.reason') },
+])
+
+/** 逐级明细表格行。 */
+const detailRows = computed<DataTableRow[]>(() =>
+  (data.value?.details ?? []).map((item, index) => ({
+    key: `${item.subject}-${index}`,
+    cells: {
+      subject: item.subject,
+      issuer: item.issuer,
+      valid: item.valid ? t('tool.verdict.pass') : t('tool.verdict.fail'),
+      reason: item.reason || '-',
+    },
+  })),
+)
 
 /** 结论徽章：一眼看到「过不过」。 */
 const verdict = computed(() => {
@@ -219,7 +300,30 @@ function fillExample(): void {
         :title="t('tools.cert-chain-verify.results.info')"
         :use-as-input="useAsInput"
         @retry="run"
-      />
+      >
+        <template
+          v-if="data"
+          #extra
+        >
+          <StatGrid :items="stats" />
+
+          <DataTable
+            v-if="errorRows.length > 0"
+            class="table"
+            :columns="errorColumns"
+            :rows="errorRows"
+            :copy-column="'message'"
+          />
+
+          <DataTable
+            v-if="detailRows.length > 0"
+            class="table"
+            :columns="detailColumns"
+            :rows="detailRows"
+            :copy-column="'subject'"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -251,3 +355,9 @@ function fillExample(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.table {
+  margin-top: var(--tb-space-3);
+}
+</style>

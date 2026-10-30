@@ -42,5 +42,9 @@
       "q": "What is listed under \"sources of the additions\"?",
       "a": "Where each added certificate came from: intermediates or trustedRoots."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "chain": "Certificate Chain"
+  }
 }

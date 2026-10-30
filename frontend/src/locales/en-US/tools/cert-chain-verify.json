@@ -19,7 +19,14 @@
     "hostnameMatch": "Hostname matches",
     "hostnameError": "Hostname mismatch reason",
     "errors": "Failure reasons",
-    "details": "Per-certificate verdicts"
+    "details": "Per-certificate verdicts",
+    "errorCount": "Errors",
+    "depth": "Depth",
+    "code": "Code",
+    "message": "Message",
+    "subject": "Subject",
+    "issuer": "Issuer",
+    "reason": "Reason"
   },
   "examples": [
     {

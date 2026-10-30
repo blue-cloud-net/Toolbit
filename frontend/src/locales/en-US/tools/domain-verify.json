@@ -20,7 +20,18 @@
   },
   "results": {
     "output": "Result",
-    "perResolver": "Per-resolver results"
+    "perResolver": "Per-resolver results",
+    "domain": "Domain",
+    "expected": "Expected",
+    "matched": "Matched",
+    "resolvers": "Resolvers",
+    "httpStatus": "HTTP status",
+    "resolver": "Resolver",
+    "state": "State",
+    "values": "Values",
+    "match": "Match",
+    "noMatch": "No match",
+    "empty": "No resolver results"
   },
   "examples": [
     {

@@ -8,8 +8,10 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CertTextInput from '@/components/tool/CertTextInput.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -52,6 +54,46 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.p7b-extract.faq') as FaqItem[])
+
+/** 结果页签：摘要 / 证书清单 / PEM。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.p7b-extract.views.summary') },
+  { id: 'list', label: t('tools.p7b-extract.views.list') },
+  { id: 'pem', label: t('tools.p7b-extract.views.pem') },
+])
+
+/** 当前页签。 */
+const activeView = ref('summary')
+
+/** 摘要统计卡片。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    { label: t('tools.p7b-extract.results.count'), value: String(result.count) },
+  ]
+})
+
+/** 证书表格列定义。 */
+const certColumns = computed<DataTableColumn[]>(() => [
+  { key: 'subject', label: t('tools.p7b-extract.results.subject'), mono: true },
+  { key: 'issuer', label: t('tools.p7b-extract.results.issuer'), mono: true },
+  { key: 'serial', label: t('tools.p7b-extract.results.serial'), mono: true },
+])
+
+/** 证书表格行。 */
+const certRows = computed<DataTableRow[]>(() =>
+  (data.value?.certificates ?? []).map((cert, index) => ({
+    key: `${cert.serial}-${index}`,
+    cells: {
+      subject: cert.subjectText,
+      issuer: cert.issuerText,
+      serial: cert.serial,
+    },
+  })),
+)
 
 function run(): void {
   void execute({
@@ -103,13 +145,33 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.p7b-extract.results.output')"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary'"
+            :items="stats"
+          />
+          <DataTable
+            v-else-if="viewId === 'list'"
+            :columns="certColumns"
+            :rows="certRows"
+            :copy-column="'serial'"
+            :empty="t('tools.p7b-extract.results.empty')"
+          />
+          <pre
+            v-else-if="data"
+            class="product"
+          ><code>{{ data.pems.join('\n') }}</code></pre>
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>
@@ -135,3 +197,19 @@ function fillExample(): void {
     </template>
   </ToolPageLayout>
 </template>
+
+<style scoped>
+.product {
+  margin: 0;
+  padding: var(--tb-space-3);
+  overflow-x: auto;
+  font-family: var(--tb-font-mono);
+  font-size: var(--tb-font-sm);
+  line-height: 1.6;
+  color: var(--tb-text);
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--tb-bg-sunken);
+  border-radius: var(--tb-radius-control);
+}
+</style>

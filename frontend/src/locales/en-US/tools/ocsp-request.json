@@ -40,5 +40,9 @@
       "q": "Which hash is used by default?",
       "a": "SHA-256; SHA-1 is only kept for older responders."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "der": "DER Response"
+  }
 }

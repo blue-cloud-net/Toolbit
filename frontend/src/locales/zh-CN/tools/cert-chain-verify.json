@@ -19,7 +19,14 @@
     "hostnameMatch": "主机名匹配",
     "hostnameError": "主机名不匹配原因",
     "errors": "失败原因",
-    "details": "逐张证书的结论"
+    "details": "逐张证书的结论",
+    "errorCount": "错误数",
+    "depth": "层级",
+    "code": "错误码",
+    "message": "说明",
+    "subject": "主体",
+    "issuer": "签发者",
+    "reason": "原因"
   },
   "examples": [
     {
