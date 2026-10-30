@@ -18,6 +18,8 @@ export interface KeyValueRow {
   value: string
   /** 语义级别；用于给值上色。 */
   level?: 'success' | 'danger' | 'warning' | 'info' | 'muted'
+  /** 值下方的补充说明；用于单位、来源、换算等。 */
+  hint?: string
 }
 
 withDefaults(
@@ -26,10 +28,12 @@ withDefaults(
     rows: KeyValueRow[]
     /** 是否显示逐字段复制按钮。 */
     copyable?: boolean
+    /** 值是否用等宽字体；说明性文案可传 `false`。 */
+    mono?: boolean
     /** 无数据时的提示。 */
     empty?: string
   }>(),
-  { copyable: true, empty: '' },
+  { copyable: true, mono: true, empty: '' },
 )
 
 const { t } = useI18n()
@@ -49,13 +53,20 @@ const { t } = useI18n()
     >
       <span
         class="kv-table__value"
-        :class="row.level ? `kv-table__value--${row.level}` : ''"
+        :class="[
+          row.level ? `kv-table__value--${row.level}` : '',
+          mono ? '' : 'kv-table__value--text',
+        ]"
       >{{ row.value }}</span>
       <CopyButton
         v-if="copyable && row.value !== ''"
         :text="row.value"
         size="small"
       />
+      <span
+        v-if="row.hint"
+        class="kv-table__hint"
+      >{{ row.hint }}</span>
     </ElDescriptionsItem>
   </ElDescriptions>
   <p
@@ -96,6 +107,17 @@ const { t } = useI18n()
 }
 
 .kv-table__value--muted {
+  color: var(--tb-text-tertiary);
+}
+
+.kv-table__value--text {
+  font-family: inherit;
+}
+
+.kv-table__hint {
+  display: block;
+  margin-top: var(--tb-space-1);
+  font-size: var(--tb-font-2xs);
   color: var(--tb-text-tertiary);
 }
 

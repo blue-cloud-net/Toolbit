@@ -156,7 +156,9 @@ ToolPageLayout
 | `Asn1Tree` | ASN.1 结构树 |
 | `CertChainTable` | 证书链表格（主题 / 签发者 / 有效期 / 类型 / 指纹） |
 | `CertDetailDialog` | 证书详情弹窗 |
-| `KeyValueTable` | 键值对展示 |
+| `KeyValueTable` | 键值对展示（逐字段复制、语义色、可选 `hint` / `mono`） |
+| `StatGrid` | 少量关键指标的卡片网格（网段、掩码、耗时、成败台数） |
+| `DataTable` | 多记录列表表格（列定义 + 行数据 + 逐行复制 + 滚动区） |
 | `CopyButton` / `DownloadButton` | 复制 / 下载 |
 | `EmptyState` / `ErrorAlert` / `LoadingSkeleton` | 状态展示 |
 | `ProgressStream` | 流式进度（ssl-check） |
@@ -317,6 +319,13 @@ ToolPageLayout
 - 错误**必须**内联展示（`ErrorAlert`）：错误码 chip + 本地化文案 + 重试按钮；**禁止**只用弹窗。
 - 结果**必须**提供复制；文件类结果**必须**提供下载并显示文件名与大小。
 - `meta.warnings` **必须**以醒目的非阻断提示展示（如 `INSECURE_ECB`）。
+- **多字段结果禁止压成文本。** 少量字段（网段、掩码、指纹、结论……）**必须**用 `KeyValueTable`
+  或 `StatGrid`；多条记录（证书链、吊销条目、DNS 记录、扩展、各解析器）**必须**用 `DataTable`
+  或 `CertChainTable`。**禁止**在 `resultText` 里拼 `key: value` 行再把结构化信息塞进单一文本块。
+- **产物文本与摘要分离。** PEM / DER / 十六进制 / 生成的配置等「产物」放独立页签（`ResultPanel` 的 `views`）
+  并提供 `DownloadButton`；默认页签**必须**停在「摘要」。
+- `resultText` 仍然**必须**提供：它是全文复制与下载的数据源，结构化展示**不得**以牺牲复制能力为代价。
+- 页签选中项**禁止**持久化（不写 `localStorage` / `sessionStorage`），刷新后回到默认页签。
 
 ---
 

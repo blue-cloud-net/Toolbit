@@ -38,6 +38,14 @@ export interface UseAutoRunOptions {
   debounceMs?: number
   /** 额外的启用条件；返回 false 时不自动运行。 */
   enabled?: () => boolean
+  /**
+   * 是否在进入页面时先运行一次。
+   *
+   * 用于「默认输出全量列表」的查表类工具（MIME、HTTP 状态码等）：
+   * catalog 是异步加载的，必须等 `catalog.loaded` 之后才知道该工具是否开启
+   * `autoRun`，因此首次运行挂在 `loaded` 的 watcher 上，只触发一次。
+   */
+  immediate?: boolean
 }
 
 export function useAutoRun(options: UseAutoRunOptions): void {
@@ -45,6 +53,7 @@ export function useAutoRun(options: UseAutoRunOptions): void {
   const debounceMs = options.debounceMs ?? AUTO_RUN_DEBOUNCE_MS
 
   let timer: ReturnType<typeof setTimeout> | null = null
+  let initialDone = false
 
   function clearTimer(): void {
     if (timer !== null) {
@@ -73,8 +82,30 @@ export function useAutoRun(options: UseAutoRunOptions): void {
     { deep: true },
   )
 
+  /** catalog 就绪后补一次首屏运行。 */
+  const stopInitial = options.immediate
+    ? watch(
+        () => catalog.loaded,
+        (loaded) => {
+          if (!loaded || initialDone) {
+            return
+          }
+          initialDone = true
+          if (!catalog.getTool(options.slug)?.autoRun) {
+            return
+          }
+          if (options.enabled && !options.enabled()) {
+            return
+          }
+          options.run()
+        },
+        { immediate: true },
+      )
+    : null
+
   onScopeDispose(() => {
     clearTimer()
     stop()
+    stopInitial?.()
   })
 }
