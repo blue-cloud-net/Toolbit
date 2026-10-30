@@ -136,7 +136,6 @@ export const TOOL_TONES: Record<string, Tone> = {
   'mock-data': 'rose',
   'archive-inspect': 'lime',
   'file-analyze': 'slate',
-  'wifi-qr': 'green',
   'id-generator': 'violet',
 
   // ── 系统 / System ──

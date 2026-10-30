@@ -102,7 +102,6 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'id-generator': 'fingerprint',
   'archive-inspect': 'archive',
   'file-analyze': 'file-search',
-  'wifi-qr': 'qr',
 
   // ── 系统 / System ──
   'curl-generator': 'terminal',

@@ -153,15 +153,6 @@ func Definitions() []tools.Definition {
 			},
 		},
 		{
-			Slug: "wifi-qr",
-			NewRequest: func() tools.Request {
-				return &WiFiQRRequest{}
-			},
-			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
-				return WiFiQR(ctx, req.(*WiFiQRRequest))
-			},
-		},
-		{
 			Slug: "id-generator",
 			NewRequest: func() tools.Request {
 				return &IDGeneratorRequest{}

@@ -108,7 +108,6 @@ export const toolRegistry: Record<string, ToolLoader> = {
   'id-generator': () => import('./data/id-generator/index'),
   'archive-inspect': () => import('./data/archive-inspect/index'),
   'file-analyze': () => import('./data/file-analyze/index'),
-  'wifi-qr': () => import('./data/wifi-qr/index'),
 
   // ── 系统 / System ──
   'curl-generator': () => import('./system/curl-generator/index'),

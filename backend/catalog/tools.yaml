@@ -1294,25 +1294,9 @@ tools:
     wide: false
     i18nKey: tools.file-analyze
 
-  - slug: wifi-qr
-    category: data
-    order: 13
-    name: 访客 WiFi 二维码
-    nameEn: Guest WiFi QR Code
-    enabled: true
-    transport: json
-    rateClass: light
-    maxBodyBytes: 1048576
-    timeoutMs: 5000
-    sensitive: false
-    requiresNetwork: false
-    autoRun: true
-    wide: false
-    i18nKey: tools.wifi-qr
-
   - slug: id-generator
     category: data
-    order: 14
+    order: 13
     name: ID 生成
     nameEn: ID Generator
     enabled: true
