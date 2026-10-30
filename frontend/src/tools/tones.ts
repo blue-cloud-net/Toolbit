@@ -156,6 +156,8 @@ export const TOOL_TONES: Record<string, Tone> = {
   'websocket-test': 'violet',
   'device-headers': 'amber',
   'ip-range-expand': 'orange',
+  'mime-lookup': 'indigo',
+  'http-status': 'cyan',
 
   // ── 文档 / Documents ──
   'pdf-sign-verify': 'rose',

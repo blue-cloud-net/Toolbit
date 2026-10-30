@@ -121,6 +121,8 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'websocket-test': 'connection',
   'ip-range-expand': 'sitemap',
   'device-headers': 'monitor',
+  'mime-lookup': 'tag',
+  'http-status': 'globe-check',
 
   // ── 文档 / Documents ──
   'pdf-sign-verify': 'document-check',
