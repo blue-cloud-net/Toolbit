@@ -35,7 +35,8 @@
 | 文档 | 说明 |
 | --- | --- |
 | [architecture.md](architecture.md) | 系统上下文、分层、关键决策 D1–D11 |
-| [tools.md](tools.md) | 70 个工具的产品规格与使用说明 |
+| [tools.md](tools.md) | 98 个工具的产品规格与使用说明 |
+| [tool-candidates.md](tool-candidates.md) | 候选工具清单、边界与落地状态 |
 | [roadmap.md](roadmap.md) | 阶段计划、v1.1 展望、风险对策 |
 | [glossary.md](glossary.md) | 术语表 |
 
