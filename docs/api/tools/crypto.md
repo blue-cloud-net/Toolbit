@@ -403,6 +403,10 @@ HMAC 计算。
 | `excludeAmbiguous` | bool | 否 | 排除 `0O1lI` 等易混字符 |
 | `requireEachClass` | bool | 否 | 每类字符至少出现一次 |
 | `customCharset` | string | 否 | 自定义字符集（覆盖 `charsets`） |
+| `template` | string | 否 | 策略模板：`simple` \| `strong` \| `pin` \| `passphrase`；留空表示不套模板 |
+| `separator` | string | 否 | `passphrase` 模板下单词之间的分隔符，默认 `-`（≤16 字符） |
+| `excludeChars` | string | 否 | 额外排除的字符（≤64 字符），在 `excludeAmbiguous` 之后应用 |
+| `wordCount` | int | 否 | `passphrase` 模板下的单词数，默认 3（0–12） |
 
 ### 响应
 
@@ -410,6 +414,8 @@ HMAC 计算。
 | --- | --- | --- |
 | `passwords` | array | 生成的密码列表 |
 | `entropyBits` | number | 单个密码的估算熵（bit） |
+| `template` | string | 实际套用的策略模板；未套用时为空串 |
+| `poolSize` | int | 字符池大小（剔除排除字符后的基数） |
 
 ### 错误
 
@@ -418,6 +424,18 @@ HMAC 计算。
 > `customCharset` 与 `requireEachClass` **互斥**：同时提供返回 `INVALID_FIELD`。
 > 随机源是 Tongsuo 的 CSPRNG，字符选择使用**拒绝采样**避免模偏差。
 > **禁止**用 `math/rand`。
+
+**策略模板**只填充**未显式指定**的字段，用户显式给出的值优先：
+
+| 模板 | 字符集默认值 | `requireEachClass` 默认值 |
+| --- | --- | --- |
+| `simple` | `lower` `upper` `digit` | false |
+| `strong` | `lower` `upper` `digit` `symbol` | true |
+| `pin` | `digit` | false |
+| `passphrase` | 不使用字符池，改由内置单词表拼装 | 不适用 |
+
+> `passphrase` 模板下 `length` 必须落在 8–64，且熵主要来自 `wordCount` 而非字符池；
+> 此时 `entropyBits` 仍按字符池口径估算，**不应**作为该模板的强度依据。
 
 ---
 

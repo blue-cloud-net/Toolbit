@@ -11,6 +11,8 @@ import { ElInput } from 'element-plus/es/components/input/index'
 import 'element-plus/es/components/input/style/css'
 import { ElInputNumber } from 'element-plus/es/components/input-number/index'
 import 'element-plus/es/components/input-number/style/css'
+import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
+import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -25,6 +27,8 @@ import { DEFAULT_EXAMPLE } from '@/tools/crypto/password-gen/example'
 interface PasswordGenResult {
   passwords: string[]
   entropyBits: number
+  template?: string
+  poolSize?: number
 }
 
 /** 常见问题条目。 */
@@ -33,9 +37,14 @@ interface FaqItem {
   a: string
 }
 
+/** 策略模板；空串表示不套模板。 */
+type Template = '' | 'simple' | 'strong' | 'pin' | 'passphrase'
+
 const { t, tm } = useI18n()
 
 const CHARSETS = ['lower', 'upper', 'digit', 'symbol'] as const
+const TEMPLATES: Exclude<Template, ''>[] = ['simple', 'strong', 'pin', 'passphrase']
+const SEPARATORS = ['-', '.', '_'] as const
 
 const length = ref(16)
 const count = ref(1)
@@ -43,6 +52,14 @@ const charsets = ref<string[]>(['lower', 'upper', 'digit', 'symbol'])
 const excludeAmbiguous = ref(false)
 const requireEachClass = ref(true)
 const customCharset = ref('')
+const template = ref<Template>('')
+const wordCount = ref(3)
+const separator = ref<string>('-')
+const excludeChars = ref('')
+
+/** 只有「不套模板且未自定义字符集」时才由界面决定字符集。 */
+const charsetSelectable = computed(() => template.value === '' && customCharset.value === '')
+const isPassphrase = computed(() => template.value === 'passphrase')
 
 const {
   state,
@@ -55,11 +72,19 @@ const {
 
 const running = computed(() => state.value === 'loading')
 const resultText = computed(() => (data.value?.passwords ?? []).join('\n'))
-const entropyText = computed(() =>
-  typeof data.value?.entropyBits === 'number'
-    ? `${t('tools.password-gen.results.entropy')}: ${data.value.entropyBits.toFixed(1)} bit`
-    : '',
-)
+const entropyText = computed(() => {
+  const parts: string[] = []
+  if (typeof data.value?.entropyBits === 'number' && data.value.entropyBits > 0) {
+    parts.push(`${t('tools.password-gen.results.entropy')}: ${data.value.entropyBits.toFixed(1)} bit`)
+  }
+  if (data.value?.template) {
+    parts.push(`${t('tools.password-gen.results.template')}: ${t(`tools.password-gen.options.templates.${data.value.template}`)}`)
+  }
+  if (typeof data.value?.poolSize === 'number' && data.value.poolSize > 0) {
+    parts.push(`${t('tools.password-gen.results.poolSize')}: ${data.value.poolSize}`)
+  }
+  return parts.join(' · ')
+})
 
 const faq = computed<FaqItem[]>(() => tm('tools.password-gen.faq') as FaqItem[])
 
@@ -75,13 +100,19 @@ function toggleCharset(name: string): void {
 
 /** 运行当前输入。 */
 function run(): void {
+  const passphrase = isPassphrase.value
   void execute({
     length: length.value,
     count: count.value,
-    charsets: charsets.value,
+    // 套用模板时把字符集与「每类至少一个」交给后端决定（模板只填充未显式给出的值）。
+    charsets: charsetSelectable.value ? charsets.value : [],
     excludeAmbiguous: excludeAmbiguous.value,
-    requireEachClass: requireEachClass.value,
-    customCharset: customCharset.value,
+    requireEachClass: charsetSelectable.value ? requireEachClass.value : false,
+    customCharset: template.value === '' ? customCharset.value : '',
+    template: template.value,
+    wordCount: passphrase ? wordCount.value : 0,
+    separator: passphrase ? separator.value : '',
+    excludeChars: excludeChars.value,
   })
 }
 
@@ -93,6 +124,10 @@ function reset(): void {
   excludeAmbiguous.value = false
   requireEachClass.value = true
   customCharset.value = ''
+  template.value = ''
+  wordCount.value = 3
+  separator.value = '-'
+  excludeChars.value = ''
   resetRun()
 }
 
@@ -104,6 +139,10 @@ function fillExample(): void {
   excludeAmbiguous.value = DEFAULT_EXAMPLE.excludeAmbiguous
   requireEachClass.value = DEFAULT_EXAMPLE.requireEachClass
   customCharset.value = ''
+  template.value = ''
+  wordCount.value = 3
+  separator.value = '-'
+  excludeChars.value = ''
   resetRun()
 }
 </script>
@@ -142,23 +181,94 @@ function fillExample(): void {
           </div>
 
           <label class="field">
+            <span class="field__label">{{ t('tools.password-gen.fields.template') }}</span>
+            <ElSelect
+              v-model="template"
+              class="field__select"
+              :disabled="customCharset !== ''"
+              :aria-label="t('tools.password-gen.fields.template')"
+            >
+              <ElOption
+                :label="t('tools.password-gen.options.templates.none')"
+                value=""
+              />
+              <ElOption
+                v-for="name in TEMPLATES"
+                :key="name"
+                :label="t(`tools.password-gen.options.templates.${name}`)"
+                :value="name"
+              />
+            </ElSelect>
+          </label>
+          <p class="field__hint">
+            {{ t('tools.password-gen.hints.template') }}
+          </p>
+
+          <label class="field">
             <span class="field__label">{{ t('tools.password-gen.fields.customCharset') }}</span>
             <ElInput
               v-model="customCharset"
               class="field__input tb-mono"
               autocomplete="off"
+              :disabled="template !== ''"
               :aria-label="t('tools.password-gen.fields.customCharset')"
             />
           </label>
           <p class="field__hint">
             {{ t('tools.password-gen.hints.customCharset') }}
           </p>
+
+          <label class="field">
+            <span class="field__label">{{ t('tools.password-gen.fields.excludeChars') }}</span>
+            <ElInput
+              v-model="excludeChars"
+              class="field__input tb-mono"
+              autocomplete="off"
+              :maxlength="64"
+              :aria-label="t('tools.password-gen.fields.excludeChars')"
+            />
+          </label>
+          <p class="field__hint">
+            {{ t('tools.password-gen.hints.excludeChars') }}
+          </p>
+
+          <div
+            v-if="isPassphrase"
+            class="field-row"
+          >
+            <label class="field">
+              <span class="field__label">{{ t('tools.password-gen.fields.wordCount') }}</span>
+              <ElInputNumber
+                v-model="wordCount"
+                class="field__input"
+                :min="1"
+                :max="12"
+                :aria-label="t('tools.password-gen.fields.wordCount')"
+              />
+            </label>
+
+            <label class="field">
+              <span class="field__label">{{ t('tools.password-gen.fields.separator') }}</span>
+              <ElSelect
+                v-model="separator"
+                class="field__select"
+                :aria-label="t('tools.password-gen.fields.separator')"
+              >
+                <ElOption
+                  v-for="name in SEPARATORS"
+                  :key="name"
+                  :label="name"
+                  :value="name"
+                />
+              </ElSelect>
+            </label>
+          </div>
         </template>
 
         <template #options>
           <fieldset
             class="field"
-            :disabled="customCharset !== ''"
+            :disabled="!charsetSelectable"
           >
             <legend class="field__label">
               {{ t('tools.password-gen.fields.charsets') }}
