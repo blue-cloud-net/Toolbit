@@ -122,7 +122,7 @@ func decode(t *testing.T, rec *httptest.ResponseRecorder) envelope {
 	return env
 }
 
-func TestCatalogEndpointReturns70Tools(t *testing.T) {
+func TestCatalogEndpointReturns98Tools(t *testing.T) {
 	h := newTestServer(t)
 	rec := get(t, h, "/api/v1/tools")
 
