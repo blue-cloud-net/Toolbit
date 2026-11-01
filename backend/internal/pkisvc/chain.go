@@ -13,6 +13,16 @@ type ChainCertificate struct {
 	PEM string `json:"pem"`
 	// Info 是证书的元信息。
 	Info *CertInfo `json:"info"`
+	// Role 是证书在链中的角色（见 ChainRole* 常量）。
+	Role string `json:"role"`
+	// Link 描述该证书与其上一级之间的连接方式与断链原因。
+	Link ChainLink `json:"link"`
+	// Validity 是该证书在当前时刻的有效性判定。
+	Validity ValidityInfo `json:"validity"`
+	// FingerprintSHA256 是该证书的 SHA-256 指纹（小写十六进制）。
+	FingerprintSHA256 string `json:"fingerprintSha256"`
+	// PublicKey 是该证书公钥的展开视图；读取失败时为空。
+	PublicKey *PublicKeyDetail `json:"publicKey,omitempty"`
 
 	// cert 是底层证书句柄。
 	//
@@ -90,14 +100,20 @@ func OrderChain(certs []*Certificate) (*ChainInfo, error) {
 	}
 
 	leaf := pickLeaf(nodes)
-	ordered := buildChain(nodes, leaf)
+	ordered, mainLen, links := buildChain(nodes, leaf)
 
 	result := &ChainInfo{
 		Count: len(nodes),
 		Chain: make([]ChainCertificate, 0, len(nodes)),
 	}
 
-	for _, node := range ordered {
+	// 自签名只看**主链链尾**（mainLen-1），不看排序结果的最后一张：
+	// 无法接入主链的多余证书排在末尾，用它判定会把断链的链
+	// 误报成「链尾自签名、不缺根」。
+	mainTail := ordered[mainLen-1]
+	selfSigned := mainTail.subject == mainTail.issuer
+
+	for i, node := range ordered {
 		info, err := Describe(node.cert, zeroTime, nil)
 		if err != nil {
 			return nil, err
@@ -106,18 +122,48 @@ func OrderChain(certs []*Certificate) (*ChainInfo, error) {
 		if err != nil {
 			return nil, err
 		}
-		result.Chain = append(result.Chain, ChainCertificate{
-			PEM:  string(pemBytes),
-			Info: info,
-			cert: node.cert,
-		})
+
+		item := ChainCertificate{
+			PEM:      string(pemBytes),
+			Info:     info,
+			Role:     chainRole(i, mainLen, selfSigned),
+			Link:     links[i],
+			Validity: CheckValidity(node.cert, zeroTime),
+			cert:     node.cert,
+		}
+
+		if fps, err := Fingerprints(node.cert, []string{FingerprintSHA256}); err == nil && len(fps) > 0 {
+			item.FingerprintSHA256 = fps[0].Value
+		}
+		if detail, err := PublicKeyDetailOf(node.cert); err == nil {
+			item.PublicKey = detail
+		}
+
+		result.Chain = append(result.Chain, item)
 	}
 
 	result.Ordered = sameOrder(nodes, ordered)
-	result.SelfSigned = len(ordered) > 0 && ordered[len(ordered)-1].subject == ordered[len(ordered)-1].issuer
+	result.SelfSigned = selfSigned
 	result.MissingRoot = !result.SelfSigned
 
 	return result, nil
+}
+
+// chainRole 判定证书在链中的角色。
+//
+// i 是证书在排序结果中的下标；mainLen 是主链长度
+// （其后为无法接入主链的多余证书）。
+func chainRole(i, mainLen int, selfSigned bool) string {
+	switch {
+	case i >= mainLen:
+		return ChainRoleUnlinked
+	case selfSigned && i == mainLen-1:
+		return ChainRoleRoot
+	case i == 0:
+		return ChainRoleLeaf
+	default:
+		return ChainRoleIntermediate
+	}
 }
 
 // pickLeaf 选出链的起点（叶证书）。
@@ -140,33 +186,61 @@ func pickLeaf(nodes []*chainNode) *chainNode {
 // buildChain 从叶子出发逐级向上拼链。
 //
 // 返回的切片包含**全部**证书：主链在前，无法接入的排在末尾。
-func buildChain(nodes []*chainNode, leaf *chainNode) []*chainNode {
+//
+// mainLen 是主链长度（其后为多余证书）；links 与 out **等长**，
+// 逐项描述该证书与其上一级的连接方式与断链原因。
+func buildChain(nodes []*chainNode, leaf *chainNode) ([]*chainNode, int, []ChainLink) {
 	visited := make(map[int]bool, len(nodes))
 	out := make([]*chainNode, 0, len(nodes))
+	links := make([]ChainLink, 0, len(nodes))
 
 	current := leaf
 	for current != nil && !visited[current.index] {
 		visited[current.index] = true
 		out = append(out, current)
-		current = findParent(nodes, current, visited)
+		links = append(links, ChainLink{Method: ChainLinkLeaf, OK: true})
+
+		parent, link := findParent(nodes, current, visited)
+		links[len(links)-1] = link
+		if parent == nil {
+			break
+		}
+		current = parent
+	}
+
+	mainLen := len(out)
+
+	// 链尾自签名的证书没有上一级：它就是链的终点（根）。
+	if mainLen > 0 {
+		last := out[mainLen-1]
+		if last.subject == last.issuer {
+			links[mainLen-1] = ChainLink{Method: ChainLinkSelf, OK: true}
+		}
 	}
 
 	for _, node := range nodes {
 		if !visited[node.index] {
 			visited[node.index] = true
 			out = append(out, node)
+			links = append(links, ChainLink{Method: ChainLinkLeaf, OK: false, Reason: ChainReasonUnlinked})
 		}
 	}
-	return out
+	return out, mainLen, links
 }
 
-// findParent 找出当前证书的上一级（签发者）。
+// findParent 找出当前证书的上一级（签发者），并给出连接诊断。
 //
 // 先按 AKID ↔ SKID 精确匹配；匹配不到再退回 subject / issuer 文本匹配。
 // 多个候选时取输入顺序的第一个。
-func findParent(nodes []*chainNode, current *chainNode, visited map[int]bool) *chainNode {
+//
+// 找不到父节点时 link.OK 为 false，link.Reason 说明原因：
+//
+//   - 主体匹配的候选存在但密钥标识符对不上 → keyid_mismatch；
+//   - 主体匹配的候选根本不存在 → missing_intermediate。
+func findParent(nodes []*chainNode, current *chainNode, visited map[int]bool) (*chainNode, ChainLink) {
 	var byKeyID *chainNode
 	var byName *chainNode
+	nameMatched := false
 
 	for _, node := range nodes {
 		if visited[node.index] || node == current {
@@ -175,6 +249,7 @@ func findParent(nodes []*chainNode, current *chainNode, visited map[int]bool) *c
 		if node.subject != current.issuer {
 			continue
 		}
+		nameMatched = true
 		if current.akid != "" && node.skid != "" {
 			if current.akid == node.skid {
 				if byKeyID == nil {
@@ -190,10 +265,16 @@ func findParent(nodes []*chainNode, current *chainNode, visited map[int]bool) *c
 		}
 	}
 
-	if byKeyID != nil {
-		return byKeyID
+	switch {
+	case byKeyID != nil:
+		return byKeyID, ChainLink{Method: ChainLinkKeyID, OK: true}
+	case byName != nil:
+		return byName, ChainLink{Method: ChainLinkName, OK: true}
+	case nameMatched:
+		return nil, ChainLink{Method: ChainLinkLeaf, OK: false, Reason: ChainReasonKeyIDMismatch}
+	default:
+		return nil, ChainLink{Method: ChainLinkLeaf, OK: false, Reason: ChainReasonMissingIntermediate}
 	}
-	return byName
 }
 
 // SplitChain 把排序后的链拆成「叶证书 + 中间证书」。

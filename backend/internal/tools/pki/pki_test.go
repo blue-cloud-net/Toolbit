@@ -89,6 +89,36 @@ func TestCertParse(t *testing.T) {
 	if data.RawDerBase64 == "" {
 		t.Error("RawDerBase64 为空")
 	}
+	if !strings.HasPrefix(data.Pem, "-----BEGIN CERTIFICATE-----") {
+		t.Errorf("Pem = %q，期望证书 PEM", data.Pem)
+	}
+	if data.PublicKey == nil {
+		t.Fatal("PublicKey 为空")
+	}
+	if data.PublicKey.Algorithm != "RSA" {
+		t.Errorf("公钥算法 = %q，期望 RSA", data.PublicKey.Algorithm)
+	}
+	if data.PublicKey.Modulus == "" {
+		t.Error("公钥模数为空")
+	}
+	if data.TextView == "" {
+		t.Error("TextView 为空")
+	}
+	if !strings.Contains(data.TextView, "Subject: /C=CN/O=Toolbit Test/CN=leaf.example.com") {
+		t.Errorf("TextView 缺少主体行：%s", data.TextView)
+	}
+	sanFound := false
+	for _, ext := range data.Certificate.Extensions {
+		if ext.OID == "2.5.29.17" {
+			sanFound = true
+			if !strings.Contains(ext.Text, "DNS:leaf.example.com") {
+				t.Errorf("SAN 扩展文本 = %q，期望包含 DNS:leaf.example.com", ext.Text)
+			}
+		}
+	}
+	if !sanFound {
+		t.Error("扩展列表缺少 subjectAltName")
+	}
 }
 
 func TestCertParseAllFingerprintAlgorithms(t *testing.T) {
@@ -301,6 +331,94 @@ func TestChainParse(t *testing.T) {
 	}
 	if data.MissingRoot {
 		t.Error("MissingRoot = true，期望 false")
+	}
+
+	roles := []string{"leaf", "intermediate", "root"}
+	for i, want := range roles {
+		if data.Chain[i].Role != want {
+			t.Errorf("第 %d 张的角色 = %q，期望 %q", i, data.Chain[i].Role, want)
+		}
+	}
+	for i, cert := range data.Chain {
+		if !cert.Link.Ok {
+			t.Errorf("第 %d 张的连接异常：%+v", i, cert.Link)
+		}
+		if cert.Link.Method != "keyid" && i < 2 {
+			t.Errorf("第 %d 张的连接方式 = %q，期望 keyid", i, cert.Link.Method)
+		}
+		if len(cert.FingerprintSha256) != 64 {
+			t.Errorf("第 %d 张的指纹长度 = %d，期望 64", i, len(cert.FingerprintSha256))
+		}
+		if cert.PublicKey == nil || cert.PublicKey.Modulus == "" {
+			t.Errorf("第 %d 张缺少公钥细节", i)
+		}
+	}
+	if data.Chain[2].Link.Method != "self" {
+		t.Errorf("根证书的连接方式 = %q，期望 self", data.Chain[2].Link.Method)
+	}
+	if data.Chain[0].Validity.Status != "valid" {
+		t.Errorf("叶证书有效性 = %q，期望 valid", data.Chain[0].Validity.Status)
+	}
+}
+
+func TestChainParseReportsBrokenLink(t *testing.T) {
+	// 只给叶证书：签发者不在输入里 → 缺中间 CA。
+	res, err := ChainParse(context.Background(), &ChainParseRequest{
+		Bundle: PemBundle{Data: loadFixture(t, "leaf.crt.pem"), Format: "pem"},
+	})
+	if err != nil {
+		t.Fatalf("ChainParse 失败：%v", err)
+	}
+	data := res.Data.(*ChainParseResult)
+	if data.MissingRoot != true {
+		t.Error("MissingRoot = false，期望 true")
+	}
+	if len(data.Chain) != 1 {
+		t.Fatalf("链长度 = %d，期望 1", len(data.Chain))
+	}
+	if data.Chain[0].Link.Ok {
+		t.Error("断链时 Link.Ok 应为 false")
+	}
+	if data.Chain[0].Link.Reason != "missing_intermediate" {
+		t.Errorf("断链原因 = %q，期望 missing_intermediate", data.Chain[0].Link.Reason)
+	}
+}
+
+// TestChainParseDetectsMissingIntermediate 验证「叶 + 根（缺中间 CA）」的断链诊断。
+//
+// 这个组合是自签名判定的陷阱：根证书排在排序结果末尾且自签名，
+// 若拿它判定链尾就会误报「不缺根」，并把叶证书标成根。
+func TestChainParseDetectsMissingIntermediate(t *testing.T) {
+	leaf := loadFixture(t, "leaf.crt.pem")
+	root := loadFixture(t, "ca.crt.pem")
+
+	res, err := ChainParse(context.Background(), &ChainParseRequest{
+		Bundle: PemBundle{Data: leaf + root, Format: "pem"},
+	})
+	if err != nil {
+		t.Fatalf("ChainParse 失败：%v", err)
+	}
+	data := res.Data.(*ChainParseResult)
+	if data.MissingRoot != true {
+		t.Error("MissingRoot = false，期望 true（根证书接不进主链）")
+	}
+	if data.SelfSigned != false {
+		t.Error("SelfSigned = true，期望 false（主链链尾是叶证书）")
+	}
+	if len(data.Chain) != 2 {
+		t.Fatalf("链长度 = %d，期望 2", len(data.Chain))
+	}
+	if data.Chain[0].Role != "leaf" {
+		t.Errorf("链首角色 = %q，期望 leaf", data.Chain[0].Role)
+	}
+	if data.Chain[0].Link.Ok {
+		t.Error("链首 Link.Ok = true，期望 false")
+	}
+	if data.Chain[0].Link.Reason != "missing_intermediate" {
+		t.Errorf("链首断链原因 = %q，期望 missing_intermediate", data.Chain[0].Link.Reason)
+	}
+	if data.Chain[1].Role != "unlinked" {
+		t.Errorf("链尾角色 = %q，期望 unlinked", data.Chain[1].Role)
 	}
 }
 

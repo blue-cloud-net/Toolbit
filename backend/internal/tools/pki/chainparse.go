@@ -33,6 +33,16 @@ type ChainCertOutput struct {
 	Pem string `json:"pem"`
 	// Info 是证书元信息。
 	Info CertInfoOutput `json:"info"`
+	// Role 是证书在链中的角色（leaf / intermediate / root / unlinked）。
+	Role string `json:"role"`
+	// Link 是该证书与其上一级的连接诊断。
+	Link ChainLinkOutput `json:"link"`
+	// Validity 是该证书的有效性判定。
+	Validity ValidityOutput `json:"validity"`
+	// FingerprintSha256 是该证书的 SHA-256 指纹。
+	FingerprintSha256 string `json:"fingerprintSha256"`
+	// PublicKey 是该证书公钥的展开视图。
+	PublicKey *PublicKeyDetailOutput `json:"publicKey"`
 }
 
 // Validate 做字段级校验。
@@ -81,8 +91,13 @@ func chainOutput(chain []pkisvc.ChainCertificate) []ChainCertOutput {
 	out := make([]ChainCertOutput, 0, len(chain))
 	for _, item := range chain {
 		out = append(out, ChainCertOutput{
-			Pem:  item.PEM,
-			Info: certInfoOutput(item.Info),
+			Pem:               item.PEM,
+			Info:              certInfoOutput(item.Info),
+			Role:              item.Role,
+			Link:              chainLinkOutput(item.Link),
+			Validity:          validityOutput(item.Validity),
+			FingerprintSha256: item.FingerprintSHA256,
+			PublicKey:         publicKeyDetailOutput(item.PublicKey),
 		})
 	}
 	return out

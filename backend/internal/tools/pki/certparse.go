@@ -31,6 +31,12 @@ type CertParseResult struct {
 	SelfSigned bool `json:"selfSigned"`
 	// RawDerBase64 是证书的原始 DER（base64）。
 	RawDerBase64 string `json:"rawDerBase64"`
+	// Pem 是证书的 PEM 文本。
+	Pem string `json:"pem"`
+	// PublicKey 是证书公钥的展开视图。
+	PublicKey *PublicKeyDetailOutput `json:"publicKey"`
+	// TextView 是证书的文本视图（OpenSSL `x509 -text` 体例）。
+	TextView string `json:"textView"`
 }
 
 // Validate 做字段级校验。
@@ -85,12 +91,25 @@ func CertParse(_ context.Context, req *CertParseRequest) (tools.Result, error) {
 		return tools.Result{}, err
 	}
 
+	pemBytes, err := cert.MarshalPEM()
+	if err != nil {
+		return tools.Result{}, err
+	}
+
+	publicKey, err := pkisvc.PublicKeyDetailOf(cert)
+	if err != nil {
+		return tools.Result{}, err
+	}
+
 	result := &CertParseResult{
 		Certificate:  certInfoOutput(info),
 		Validity:     validityOutput(pkisvc.CheckValidity(cert, at)),
 		Fingerprints: fingerprintsOutput(fps),
 		SelfSigned:   info.SelfSigned,
 		RawDerBase64: encodeDER(der),
+		Pem:          string(pemBytes),
+		PublicKey:    publicKeyDetailOutput(publicKey),
+		TextView:     pkisvc.CertTextView(info, publicKey, string(pemBytes)),
 	}
 
 	return tools.Result{Data: result, Warnings: certWarnings(cert, info, at)}, nil

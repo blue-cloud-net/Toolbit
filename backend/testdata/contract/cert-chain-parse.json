@@ -16,7 +16,30 @@
           "count": 3,
           "ordered": true,
           "missingRoot": false,
-          "selfSigned": true
+          "selfSigned": true,
+          "chain": [
+            {
+              "role": "leaf",
+              "link": {
+                "method": "keyid",
+                "ok": true
+              }
+            },
+            {
+              "role": "intermediate",
+              "link": {
+                "method": "keyid",
+                "ok": true
+              }
+            },
+            {
+              "role": "root",
+              "link": {
+                "method": "self",
+                "ok": true
+              }
+            }
+          ]
         }
       }
     },

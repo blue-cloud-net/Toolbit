@@ -22,9 +22,15 @@
             "publicKey": {
               "algorithm": "RSA",
               "bits": 2048
-            }
+            },
+            "signatureAlgorithm": "RSA-SHA256"
           },
-          "selfSigned": false
+          "selfSigned": false,
+          "publicKey": {
+            "algorithm": "RSA",
+            "bits": 2048,
+            "exponent": "010001"
+          }
         }
       }
     },

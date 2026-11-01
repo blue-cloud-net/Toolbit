@@ -133,6 +133,10 @@ type ExtInfo struct {
 	Critical bool `json:"critical"`
 	// Value 是扩展值的十六进制。
 	Value string `json:"value"`
+	// Text 是扩展的可读文本（OpenSSL `x509 -text` 体例）。
+	//
+	// 未知扩展为空串：调用方回落到 Value 的十六进制。
+	Text string `json:"text"`
 }
 
 // ValidityInfo 是有效性的判定结果。
@@ -200,6 +204,10 @@ type CertInfo struct {
 	Extensions []ExtInfo `json:"extensions"`
 	// SelfSigned 报告是否自签名。
 	SelfSigned bool `json:"selfSigned"`
+	// SignatureHex 是签名字节的十六进制（小写）；无签名时为空。
+	SignatureHex string `json:"signatureHex"`
+	// Policies 是 certificatePolicies 扩展里的策略；无该扩展时为空。
+	Policies []PolicyInfo `json:"policies"`
 }
 
 // LoadCertificate 加载一张证书。
@@ -276,6 +284,8 @@ func Describe(c *Certificate, at time.Time, fpAlgs []string) (*CertInfo, error) 
 		return nil, toolerrInvalidCert("certificate already closed")
 	}
 
+	rawExtensions := c.cert.Extensions()
+
 	info := &CertInfo{
 		Version:               c.cert.Version(),
 		Subject:               nameEntries(c.cert.SubjectEntries()),
@@ -296,8 +306,11 @@ func Describe(c *Certificate, at time.Time, fpAlgs []string) (*CertInfo, error) 
 		AuthorityKeyID:        hexUpper(c.cert.AuthorityKeyID()),
 		SubjectHash:           fmt.Sprintf("%08X", c.cert.SubjectHash()),
 		IssuerHash:            fmt.Sprintf("%08X", c.cert.IssuerHash()),
-		Extensions:            extensionInfos(c.cert.Extensions()),
+		Extensions:            extensionInfos(rawExtensions),
+		SignatureHex:          hex.EncodeToString(c.cert.Signature()),
+		Policies:              PoliciesOf(c),
 	}
+	fillExtensionTexts(info, rawExtensions)
 
 	selfSigned, err := c.cert.SelfSigned()
 	if err != nil {

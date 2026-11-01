@@ -57,6 +57,9 @@
 | `fingerprints` | array | `[{ algorithm, value }]` |
 | `selfSigned` | bool | 是否自签名 |
 | `rawDerBase64` | string | 原始 DER（base64） |
+| `pem` | string | 证书的 PEM 文本 |
+| `publicKey` | object | 公钥展开视图（见下表） |
+| `textView` | string | OpenSSL `x509 -text` 体例的文本视图（服务端纯格式化生成，不依赖外部 openssl） |
 
 `certificate` 的字段：
 
@@ -77,6 +80,25 @@
 | `subjectHash` / `issuerHash` | string | 名称的 `X509_NAME_hash` |
 | `extensions` | array | `[{ nid, oid, name, critical, value }]` |
 | `selfSigned` | bool | 是否自签名 |
+| `signatureHex` | string | 签名字节的十六进制（小写） |
+| `policies` | array | certificatePolicies 扩展里的策略 `[{ oid, cpsUris, organization, noticeNumbers, explicitText }]`；无该扩展时为空数组 |
+
+`extensions[]` 的附加字段：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `text` | string | 扩展的可读文本（OpenSSL 体例，如 `CA:TRUE, pathlen:0`、`DNS:example.com`、`keyid:AB:CD`）；未知扩展为空串，前端回落 `value` 的十六进制 |
+
+`publicKey` 的字段：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `algorithm` / `bits` / `curve` | string / int / string | 与 `certificate.publicKey` 相同 |
+| `pem` | string | 公钥的 SPKI PEM 文本 |
+| `spkiHex` | string | SPKI DER 的十六进制 |
+| `fingerprint` | string | SPKI DER 的 SHA-256 指纹（小写十六进制） |
+| `modulus` / `exponent` | string | RSA 模数与公钥指数（大写十六进制）；非 RSA 为空 |
+| `x` / `y` | string | 椭圆曲线公钥点分量（大写十六进制）；非椭圆曲线为空 |
 
 ### 错误
 
@@ -231,12 +253,25 @@ ASN.1 结构树可视化。
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `count` | int | 证书数量 |
-| `chain` | array | `[{ pem, info }]`（已排序，叶 → 根） |
+| `chain` | array | `[{ pem, info, role, link, validity, fingerprintSha256, publicKey }]`（已排序，叶 → 根） |
 | `ordered` | bool | 输入是否已按序排列 |
 | `missingRoot` | bool | 是否缺少根证书 |
 | `selfSigned` | bool | 根证书是否自签名 |
 
 `info` 的字段与 [cert-parse](#cert-parse) 的 `certificate` 相同。
+
+链条目的附加字段：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `role` | string | 链中角色：`leaf`（叶）\| `intermediate`（中间 CA）\| `root`（根）\| `unlinked`（无法接入主链） |
+| `link` | object | `{ method, ok, reason }`：与上一级的连接方式与断链诊断 |
+| `link.method` | string | `leaf`（链起点）\| `keyid`（AKID ↔ SKID 匹配）\| `name`（按名称匹配）\| `self`（自签名） |
+| `link.ok` | bool | 连接是否成立 |
+| `link.reason` | string | 断链原因：`keyid_mismatch`（密钥标识符不匹配）\| `missing_intermediate`（缺中间 CA）\| `unlinked`（多余证书）；正常时为空 |
+| `validity` | object | `{ status, daysRemaining }`，语义同 `cert-parse` 的 `validity` |
+| `fingerprintSha256` | string | 该证书的 SHA-256 指纹 |
+| `publicKey` | object | 公钥展开视图，字段同 `cert-parse` 的 `publicKey` |
 
 ### 错误
 

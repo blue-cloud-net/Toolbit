@@ -416,6 +416,43 @@ func TestOrderChainReversedInput(t *testing.T) {
 	}
 }
 
+// TestOrderChainBrokenLink 验证断链诊断：链尾自签名判定只看主链链尾，
+// 不能被排在末尾的多余证书（这里是根证书）带偏。
+func TestOrderChainBrokenLink(t *testing.T) {
+	// 只给叶证书与根证书：中间 CA 缺席，主链只有叶证书一张。
+	leaf := loadCertPEM(t, "leaf.crt.pem")
+	root := loadCertPEM(t, "ca.crt.pem")
+
+	info, err := OrderChain([]*Certificate{leaf, root})
+	if err != nil {
+		t.Fatalf("OrderChain 失败：%v", err)
+	}
+	if len(info.Chain) != 2 {
+		t.Fatalf("Chain 长度 = %d，期望 2", len(info.Chain))
+	}
+	if info.SelfSigned {
+		t.Error("SelfSigned = true，期望 false（主链链尾是叶证书，不是自签根）")
+	}
+	if !info.MissingRoot {
+		t.Error("MissingRoot = false，期望 true（根证书接不进主链）")
+	}
+	if info.Chain[0].Role != ChainRoleLeaf {
+		t.Errorf("链首角色 = %q，期望 %q", info.Chain[0].Role, ChainRoleLeaf)
+	}
+	if info.Chain[0].Link.OK {
+		t.Error("链首连接正常，期望 false（缺中间 CA）")
+	}
+	if info.Chain[0].Link.Reason != ChainReasonMissingIntermediate {
+		t.Errorf("断链原因 = %q，期望 %q", info.Chain[0].Link.Reason, ChainReasonMissingIntermediate)
+	}
+	if info.Chain[1].Role != ChainRoleUnlinked {
+		t.Errorf("链尾角色 = %q，期望 %q", info.Chain[1].Role, ChainRoleUnlinked)
+	}
+	if info.Chain[1].Link.Reason != ChainReasonUnlinked {
+		t.Errorf("链尾断链原因 = %q，期望 %q", info.Chain[1].Link.Reason, ChainReasonUnlinked)
+	}
+}
+
 func TestOrderChainTooMany(t *testing.T) {
 	certs := make([]*Certificate, MaxChainLength+1)
 	for i := range certs {

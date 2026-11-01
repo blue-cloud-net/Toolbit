@@ -81,6 +81,8 @@ type ExtensionOutput struct {
 	Critical bool `json:"critical"`
 	// Value 是扩展值的十六进制。
 	Value string `json:"value"`
+	// Text 是扩展的可读文本；未知扩展为空。
+	Text string `json:"text"`
 }
 
 // ValidityOutput 是有效性判定的输出形态。
@@ -145,6 +147,58 @@ type CertInfoOutput struct {
 	Extensions []ExtensionOutput `json:"extensions"`
 	// SelfSigned 报告是否自签名。
 	SelfSigned bool `json:"selfSigned"`
+	// SignatureHex 是签名字节的十六进制。
+	SignatureHex string `json:"signatureHex"`
+	// Policies 是证书策略列表；无该扩展时为空数组。
+	Policies []PolicyOutput `json:"policies"`
+}
+
+// PublicKeyDetailOutput 是证书公钥展开视图的输出形态。
+type PublicKeyDetailOutput struct {
+	// Algorithm 是算法标识（RSA / SM2 / EC …）。
+	Algorithm string `json:"algorithm"`
+	// Bits 是 RSA 密钥位数；非 RSA 为 0。
+	Bits int `json:"bits"`
+	// Curve 是曲线名；非椭圆曲线为空。
+	Curve string `json:"curve"`
+	// Pem 是公钥的 SPKI PEM 文本。
+	Pem string `json:"pem"`
+	// SpkiHex 是 SPKI DER 的十六进制。
+	SpkiHex string `json:"spkiHex"`
+	// Fingerprint 是 SPKI DER 的 SHA-256 指纹。
+	Fingerprint string `json:"fingerprint"`
+	// Modulus 是 RSA 模数（大写十六进制）；非 RSA 为空。
+	Modulus string `json:"modulus"`
+	// Exponent 是 RSA 公钥指数（大写十六进制）；非 RSA 为空。
+	Exponent string `json:"exponent"`
+	// X 是椭圆曲线公钥点 X 分量（大写十六进制）。
+	X string `json:"x"`
+	// Y 是椭圆曲线公钥点 Y 分量（大写十六进制）。
+	Y string `json:"y"`
+}
+
+// PolicyOutput 是证书策略的输出形态。
+type PolicyOutput struct {
+	// Oid 是策略标识符（点分形式）。
+	Oid string `json:"oid"`
+	// CpsUris 是策略声明 URL 列表。
+	CpsUris []string `json:"cpsUris"`
+	// Organization 是通知机构名。
+	Organization string `json:"organization"`
+	// NoticeNumbers 是通知编号列表。
+	NoticeNumbers []int `json:"noticeNumbers"`
+	// ExplicitText 是通知正文。
+	ExplicitText string `json:"explicitText"`
+}
+
+// ChainLinkOutput 是链上连接诊断的输出形态。
+type ChainLinkOutput struct {
+	// Method 是连接方式（leaf / keyid / name / self）。
+	Method string `json:"method"`
+	// Ok 报告连接是否成立。
+	Ok bool `json:"ok"`
+	// Reason 是断链原因；正常时为空。
+	Reason string `json:"reason"`
 }
 
 // certInfoOutput 把服务层的证书视图转成输出形态。
@@ -175,6 +229,51 @@ func certInfoOutput(info *pkisvc.CertInfo) CertInfoOutput {
 		IssuerHash:            info.IssuerHash,
 		Extensions:            extensionsOutput(info.Extensions),
 		SelfSigned:            info.SelfSigned,
+		SignatureHex:          info.SignatureHex,
+		Policies:              policiesOutput(info.Policies),
+	}
+}
+
+// publicKeyDetailOutput 把公钥展开视图转成输出形态。
+func publicKeyDetailOutput(detail *pkisvc.PublicKeyDetail) *PublicKeyDetailOutput {
+	if detail == nil {
+		return nil
+	}
+	return &PublicKeyDetailOutput{
+		Algorithm:   detail.Algorithm,
+		Bits:        detail.Bits,
+		Curve:       detail.Curve,
+		Pem:         detail.PEM,
+		SpkiHex:     detail.SPKIHex,
+		Fingerprint: detail.Fingerprint,
+		Modulus:     detail.Modulus,
+		Exponent:    detail.Exponent,
+		X:           detail.X,
+		Y:           detail.Y,
+	}
+}
+
+// policiesOutput 把策略列表转成输出形态。
+func policiesOutput(policies []pkisvc.PolicyInfo) []PolicyOutput {
+	out := make([]PolicyOutput, 0, len(policies))
+	for _, item := range policies {
+		out = append(out, PolicyOutput{
+			Oid:           item.OID,
+			CpsUris:       item.CPSURIs,
+			Organization:  item.Organization,
+			NoticeNumbers: item.NoticeNumbers,
+			ExplicitText:  item.ExplicitText,
+		})
+	}
+	return out
+}
+
+// chainLinkOutput 把连接诊断转成输出形态。
+func chainLinkOutput(link pkisvc.ChainLink) ChainLinkOutput {
+	return ChainLinkOutput{
+		Method: link.Method,
+		Ok:     link.OK,
+		Reason: link.Reason,
 	}
 }
 
@@ -206,6 +305,7 @@ func extensionsOutput(extensions []pkisvc.ExtInfo) []ExtensionOutput {
 			Name:     ext.Name,
 			Critical: ext.Critical,
 			Value:    ext.Value,
+			Text:     ext.Text,
 		})
 	}
 	return out
