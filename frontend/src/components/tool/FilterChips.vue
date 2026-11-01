@@ -2,11 +2,15 @@
 /**
  * 筛选标签组。
  *
- * 单选的可点击标签组：用于「顶层类型」「状态码类别」「服务器预设」这类
- * 有限枚举的筛选。选中项高亮，未选中项次要色。
+ * 单选：用于「顶层类型」「状态码类别」这类有限枚举的筛选，
+ * 选中项高亮，未选中项次要色；重复点击当前项即取消选择。
+ *
+ * 多选：传入 `selected`（值集合）后启用，用于「DNS 服务器预设」这类
+ * 需要同时勾选多个枚举项的场景；点击切换该项的选中状态。
  *
  * 用 `button` + `aria-pressed` 表达选中态，键盘可聚焦。
  */
+import { computed } from 'vue'
 
 /** 一个筛选项。 */
 export interface FilterChipOption {
@@ -16,27 +20,55 @@ export interface FilterChipOption {
   label: string
   /** 附加说明，如条目数。 */
   hint?: string
+  /** 是否禁用该项（如已达数量上限）。 */
+  disabled?: boolean
 }
 
 const props = withDefaults(
   defineProps<{
-    /** 当前选中值；空串表示「全部」。 */
-    modelValue: string
+    /** 单选模式：当前选中值；空串表示「全部」。 */
+    modelValue?: string
+    /** 多选模式：当前选中的值集合；传入后启用多选。 */
+    selected?: readonly string[]
     /** 选项列表。 */
     options: FilterChipOption[]
     /** 无障碍标签。 */
     ariaLabel?: string
   }>(),
-  { ariaLabel: undefined },
+  { modelValue: undefined, selected: undefined, ariaLabel: undefined },
 )
 
 const emit = defineEmits<{
-  /** 选中项变化。 */
+  /** 单选模式：选中项变化。 */
   'update:modelValue': [value: string]
+  /** 多选模式：选中项集合变化。 */
+  'update:selected': [value: string[]]
 }>()
 
-/** 选中某项；重复点击当前项则取消选择（回到「全部」）。 */
+/** 是否处于多选模式（由 `selected` 是否传入决定）。 */
+const multiple = computed(() => props.selected !== undefined)
+
+/** 某项是否处于选中态。 */
+function isActive(value: string): boolean {
+  if (multiple.value) {
+    return (props.selected ?? []).includes(value)
+  }
+  return props.modelValue === value
+}
+
+/** 选中某项；单选模式下重复点击当前项则取消选择（回到「全部」）。 */
 function select(value: string): void {
+  if (multiple.value) {
+    const current = [...(props.selected ?? [])]
+    const index = current.indexOf(value)
+    if (index >= 0) {
+      current.splice(index, 1)
+    } else {
+      current.push(value)
+    }
+    emit('update:selected', current)
+    return
+  }
   emit('update:modelValue', props.modelValue === value ? '' : value)
 }
 </script>
@@ -52,8 +84,9 @@ function select(value: string): void {
       :key="option.value"
       type="button"
       class="filter-chips__item"
-      :class="{ 'filter-chips__item--active': modelValue === option.value }"
-      :aria-pressed="modelValue === option.value"
+      :class="{ 'filter-chips__item--active': isActive(option.value) }"
+      :aria-pressed="isActive(option.value)"
+      :disabled="option.disabled"
       @click="select(option.value)"
     >
       <span class="filter-chips__label">{{ option.label }}</span>
@@ -100,6 +133,16 @@ function select(value: string): void {
   color: var(--tb-primary);
   background: var(--tb-primary-soft);
   border-color: var(--tb-primary);
+}
+
+.filter-chips__item:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.filter-chips__item:disabled:hover {
+  color: var(--tb-text-secondary);
+  border-color: var(--tb-border);
 }
 
 .filter-chips__hint {
