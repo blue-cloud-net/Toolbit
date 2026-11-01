@@ -1,25 +1,30 @@
 {
   "name": "Base64 编解码",
-  "description": "在文本与 Base64 之间互转，支持标准与 URL 安全变体。",
+  "description": "在文本与 Base64 之间互转，支持标准与 URL 安全变体互转。",
   "category": "编码",
   "actions": {
     "encode": "编码",
-    "decode": "解码"
+    "decode": "解码",
+    "convert": "变体互转",
+    "reverse": "反向转换"
   },
   "fields": {
     "operation": "操作",
     "input": "输入内容",
     "inputEncoding": "输入编码",
     "variant": "Base64 变体",
+    "targetVariant": "目标变体",
     "padding": "保留填充字符",
     "outputEncoding": "输出编码"
   },
   "options": {
     "operation": {
       "encode": "编码",
-      "decode": "解码"
+      "decode": "解码",
+      "convert": "变体互转"
     },
     "variant": {
+      "auto": "自动识别",
       "standard": "标准（+ /）",
       "url": "URL 安全（- _）"
     },
@@ -40,12 +45,18 @@
     {
       "label": "解码一段 Base64",
       "value": "SGVsbG8sIFRvb2xiaXQh"
+    },
+    {
+      "label": "标准转 URL 安全",
+      "value": "++//Pw=="
     }
   ],
   "hints": {
     "input": "编码时按所选输入编码解释内容；解码时自动忽略空白与填充字符。",
     "padding": "关闭后不输出「=」填充，常用于 URL 与文件名场景。",
-    "output": "解码结果的输出编码可选 UTF-8 文本或十六进制。"
+    "convert": "变体互转把一段 Base64 文本换成另一种字母表；「自动识别」按输入用到的字符判断来源变体。",
+    "output": "解码结果的输出编码可选 UTF-8 文本或十六进制。",
+    "reverse": "把当前结果作为新输入再转一次：标准 → URL 安全 → 标准，一键来回。"
   },
   "faq": [
     {
@@ -55,6 +66,14 @@
     {
       "q": "为什么解码时提示非法输入？",
       "a": "输入含有不属于所选变体的字符，或长度不合法。请确认使用的是标准变体还是 URL 安全变体。"
+    },
+    {
+      "q": "标准变体与 URL 安全变体有什么区别？",
+      "a": "两者编码的是同样的字节，区别只在第 62、63 个字符：标准用「+」「/」，URL 安全用「-」「_」。后者可以直接放进 URL、文件名与 Cookie 值里。"
+    },
+    {
+      "q": "「变体互转」需要先把 Base64 解码吗？",
+      "a": "不需要。转换在字节层面完成：先按来源变体解出字节，再按目标变体重新编码，中间的字节不会丢失。"
     }
   ]
 }

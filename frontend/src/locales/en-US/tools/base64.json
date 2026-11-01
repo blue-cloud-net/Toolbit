@@ -1,25 +1,30 @@
 {
   "name": "Base64 Codec",
-  "description": "Convert between text and Base64, with standard and URL-safe variants.",
+  "description": "Convert between text and Base64, and switch between the standard and URL-safe variants.",
   "category": "Encoding",
   "actions": {
     "encode": "Encode",
-    "decode": "Decode"
+    "decode": "Decode",
+    "convert": "Convert variant",
+    "reverse": "Convert back"
   },
   "fields": {
     "operation": "Operation",
     "input": "Input",
     "inputEncoding": "Input encoding",
     "variant": "Base64 variant",
+    "targetVariant": "Target variant",
     "padding": "Keep padding",
     "outputEncoding": "Output encoding"
   },
   "options": {
     "operation": {
       "encode": "Encode",
-      "decode": "Decode"
+      "decode": "Decode",
+      "convert": "Convert variant"
     },
     "variant": {
+      "auto": "Auto-detect",
       "standard": "Standard (+ /)",
       "url": "URL-safe (- _)"
     },
@@ -40,12 +45,18 @@
     {
       "label": "Decode a Base64 string",
       "value": "SGVsbG8sIFRvb2xiaXQh"
+    },
+    {
+      "label": "Standard to URL-safe",
+      "value": "++//Pw=="
     }
   ],
   "hints": {
     "input": "When encoding, the input is read using the selected encoding; when decoding, whitespace and padding are ignored.",
     "padding": "Turn it off to omit the 「=」 padding, which is common for URLs and file names.",
-    "output": "The decoded output can be rendered as UTF-8 text or hexadecimal."
+    "convert": "Variant conversion rewrites a Base64 string in the other alphabet; 「Auto-detect」 infers the source variant from the characters used.",
+    "output": "The decoded output can be rendered as UTF-8 text or hexadecimal.",
+    "reverse": "Feeds the current result back in and flips the direction, so standard ⇄ URL-safe takes a single click."
   },
   "faq": [
     {
@@ -55,6 +66,14 @@
     {
       "q": "Why does decoding report invalid input?",
       "a": "The input contains characters outside the selected variant or has an invalid length. Check whether the data uses the standard or URL-safe variant."
+    },
+    {
+      "q": "What is the difference between the standard and URL-safe variants?",
+      "a": "Both encode the same bytes; only the 62nd and 63rd characters differ: 「+」 and 「/」 in the standard alphabet, 「-」 and 「_」 in the URL-safe one. The latter can be dropped straight into URLs, file names and cookie values."
+    },
+    {
+      "q": "Does variant conversion decode the Base64 first?",
+      "a": "No. The conversion happens at the byte level: the bytes are read with the source variant and re-encoded with the target variant, so nothing is lost in between."
     }
   ]
 }

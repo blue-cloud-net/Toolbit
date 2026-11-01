@@ -178,3 +178,134 @@ func TestBase64InvalidHexInput(t *testing.T) {
 		t.Errorf("错误码 = %s，期望 INVALID_HEX", toolErr.Code)
 	}
 }
+
+func TestBase64Convert(t *testing.T) {
+	cases := []struct {
+		name         string
+		data         string
+		variant      string
+		target       string
+		wantOutput   string
+		wantEncoding string
+	}{
+		{"标准转 URL 安全", "+/8=", "", Base64VariantURL, "-_8=", "base64url"},
+		{"URL 安全转标准", "-_8=", "", Base64VariantStandard, "+/8=", "base64"},
+		{"自动识别输入变体", "-_8=", Base64VariantAuto, Base64VariantStandard, "+/8=", "base64"},
+		{"显式指定输入变体", "-_8=", Base64VariantURL, Base64VariantStandard, "+/8=", "base64"},
+		{"忽略换行", "+/\n8=", "", Base64VariantURL, "-_8=", "base64url"},
+		{"忽略填充", "+/8", "", Base64VariantURL, "-_8=", "base64url"},
+		{"无特殊字符时两变体等价", "SGVsbG8=", "", Base64VariantURL, "SGVsbG8=", "base64url"},
+		{"缺省目标变体为 url", "+/8=", "", "", "-_8=", "base64url"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			res, err := Base64(context.Background(), &Base64Request{
+				Operation:     Base64Convert,
+				Input:         ByteInput{Data: tc.data, Encoding: EncodingUTF8},
+				Variant:       tc.variant,
+				TargetVariant: tc.target,
+			})
+			if err != nil {
+				t.Fatalf("转换失败: %v", err)
+			}
+			got := res.Data.(Base64Result)
+			if got.Output != tc.wantOutput {
+				t.Errorf("输出 = %q，期望 %q", got.Output, tc.wantOutput)
+			}
+			if got.Encoding != tc.wantEncoding {
+				t.Errorf("编码 = %q，期望 %q", got.Encoding, tc.wantEncoding)
+			}
+		})
+	}
+}
+
+func TestBase64ConvertPadding(t *testing.T) {
+	no := false
+	res, err := Base64(context.Background(), &Base64Request{
+		Operation:     Base64Convert,
+		Input:         ByteInput{Data: "+/8=", Encoding: EncodingUTF8},
+		TargetVariant: Base64VariantURL,
+		Padding:       &no,
+	})
+	if err != nil {
+		t.Fatalf("转换失败: %v", err)
+	}
+	if got := res.Data.(Base64Result).Output; got != "-_8" {
+		t.Errorf("输出 = %q，期望 %q", got, "-_8")
+	}
+}
+
+func TestBase64ConvertRoundTrip(t *testing.T) {
+	original := "+/8="
+	first, err := Base64(context.Background(), &Base64Request{
+		Operation:     Base64Convert,
+		Input:         ByteInput{Data: original, Encoding: EncodingUTF8},
+		TargetVariant: Base64VariantURL,
+	})
+	if err != nil {
+		t.Fatalf("转换失败: %v", err)
+	}
+	second, err := Base64(context.Background(), &Base64Request{
+		Operation:     Base64Convert,
+		Input:         ByteInput{Data: first.Data.(Base64Result).Output, Encoding: EncodingUTF8},
+		TargetVariant: Base64VariantStandard,
+	})
+	if err != nil {
+		t.Fatalf("转换失败: %v", err)
+	}
+	if got := second.Data.(Base64Result).Output; got != original {
+		t.Errorf("往返结果 = %q，期望 %q", got, original)
+	}
+}
+
+func TestBase64ConvertMixedAlphabets(t *testing.T) {
+	_, err := Base64(context.Background(), &Base64Request{
+		Operation: Base64Convert,
+		Input:     ByteInput{Data: "+-_8=", Encoding: EncodingUTF8},
+	})
+	if err == nil {
+		t.Fatal("期望混用字母表时失败")
+	}
+	toolErr, ok := err.(*toolerr.Error)
+	if !ok {
+		t.Fatalf("错误类型 = %T，期望 *toolerr.Error", err)
+	}
+	if toolErr.Code != toolerr.CodeInvalidBase64 {
+		t.Errorf("错误码 = %s，期望 INVALID_BASE64", toolErr.Code)
+	}
+}
+
+func TestBase64ConvertInvalidTargetVariant(t *testing.T) {
+	_, err := Base64(context.Background(), &Base64Request{
+		Operation:     Base64Convert,
+		Input:         ByteInput{Data: "SGVsbG8=", Encoding: EncodingUTF8},
+		TargetVariant: "base32",
+	})
+	if err == nil {
+		t.Fatal("期望校验失败")
+	}
+	toolErr, ok := err.(*toolerr.Error)
+	if !ok {
+		t.Fatalf("错误类型 = %T，期望 *toolerr.Error", err)
+	}
+	if toolErr.Code != toolerr.CodeInvalidField {
+		t.Errorf("错误码 = %s，期望 INVALID_FIELD", toolErr.Code)
+	}
+}
+
+func TestBase64ConvertRejectsHexInputEncoding(t *testing.T) {
+	_, err := Base64(context.Background(), &Base64Request{
+		Operation: Base64Convert,
+		Input:     ByteInput{Data: "2f384d3d", Encoding: EncodingHex},
+	})
+	if err == nil {
+		t.Fatal("期望校验失败")
+	}
+	toolErr, ok := err.(*toolerr.Error)
+	if !ok {
+		t.Fatalf("错误类型 = %T，期望 *toolerr.Error", err)
+	}
+	if toolErr.Code != toolerr.CodeInvalidField {
+		t.Errorf("错误码 = %s，期望 INVALID_FIELD", toolErr.Code)
+	}
+}

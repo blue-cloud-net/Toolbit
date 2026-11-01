@@ -18,29 +18,34 @@
 
 ## base64
 
-Base64 编解码。
+Base64 编解码，以及标准变体与 URL 安全变体之间的互转。
 
 ### 请求
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `operation` | string | 是 | `encode` \| `decode` |
-| `input` | object | 是 | `{ data, encoding }`；`encoding` ∈ `utf8` \| `hex` |
-| `variant` | string | 否 | `standard`（默认）\| `url` |
+| `operation` | string | 是 | `encode` \| `decode` \| `convert` |
+| `input` | object | 是 | `{ data, encoding }`；`encoding` ∈ `utf8` \| `hex`（`convert` 时仅 `utf8`） |
+| `variant` | string | 否 | `standard`（默认）\| `url`；`convert` 时可取 `auto` |
 | `padding` | bool | 否 | 是否保留 `=` 填充（默认 `true`） |
 | `outputEncoding` | string | 否 | 默认 `utf8`（解码时） |
+| `targetVariant` | string | 否 | `convert` 的输出变体：`standard` \| `url`（默认 `url`） |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `output` | string | 结果 |
+| `encoding` | string | 输出编码（`base64` \| `base64url` \| `utf8` \| `hex`） |
 
 ### 错误
 
 `INVALID_BASE64`、`INVALID_ENCODING`、`INVALID_FIELD`。
 
 > 解码时忽略换行与空白；`variant: url` 使用 `-` / `_` 字符集。
+>
+> `convert` 在字节层面完成：先按 `variant` 解出字节，再按 `targetVariant` 重新编码。
+> `variant: auto` 按输入用到的字符判断来源变体；两组字母表混用（既含 `+`/`/` 又含 `-`/`_`）返回 `INVALID_BASE64`。
 
 ---
 

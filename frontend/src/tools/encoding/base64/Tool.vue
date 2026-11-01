@@ -4,15 +4,18 @@
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
+import { ElButton } from 'element-plus/es/components/button/index'
+import 'element-plus/es/components/button/style/css'
 import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
 import 'element-plus/es/components/checkbox/style/css'
 import { ElInput } from 'element-plus/es/components/input/index'
 import 'element-plus/es/components/input/style/css'
 import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
 import 'element-plus/es/components/select/style/css'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import AppIcon from '@/components/common/AppIcon.vue'
 import EncodingSelect from '@/components/tool/EncodingSelect.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
@@ -22,7 +25,17 @@ import ValidationHint from '@/components/tool/ValidationHint.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { useValidation } from '@/composables/useValidation'
-import { DEFAULT_EXAMPLE } from '@/tools/encoding/base64/example'
+import { EXAMPLES } from '@/tools/encoding/base64/example'
+import {
+  buildPayload,
+  normalizeForm,
+  reverseConversion,
+  type Base64FormState,
+  type Base64InputEncoding,
+  type Base64Operation,
+  type Base64SourceVariant,
+  type Base64Variant,
+} from '@/tools/encoding/base64/form'
 
 /** 后端 base64 工具的响应。 */
 interface Base64Result {
@@ -36,18 +49,31 @@ interface FaqItem {
   a: string
 }
 
-type Operation = 'encode' | 'decode'
-type Variant = 'standard' | 'url'
-type InputEncoding = 'utf8' | 'hex'
+type Operation = Base64Operation
+type Variant = Base64Variant
+type SourceVariant = Base64SourceVariant
+type InputEncoding = Base64InputEncoding
 
 const { t, tm } = useI18n()
 
 const operation = ref<Operation>('encode')
 const input = ref('')
 const inputEncoding = ref<InputEncoding>('utf8')
-const variant = ref<Variant>('standard')
+const variant = ref<SourceVariant>('standard')
 const padding = ref(true)
 const outputEncoding = ref<InputEncoding>('utf8')
+const targetVariant = ref<Variant>('url')
+
+/** 当前表单状态。 */
+const form = computed<Base64FormState>(() => ({
+  operation: operation.value,
+  input: input.value,
+  inputEncoding: inputEncoding.value,
+  variant: variant.value,
+  padding: padding.value,
+  outputEncoding: outputEncoding.value,
+  targetVariant: targetVariant.value,
+}))
 
 const {
   state,
@@ -68,34 +94,53 @@ bindInput((text) => {
 const resultText = computed(() => data.value?.output ?? '')
 const running = computed(() => state.value === 'loading')
 
-const inputEncodings: readonly InputEncoding[] = ['utf8', 'hex']
-const outputEncodings = computed<readonly InputEncoding[]>(() =>
-  operation.value === 'encode' ? ['utf8'] : ['utf8', 'hex'],
+const inputEncodings = computed<readonly InputEncoding[]>(() =>
+  operation.value === 'convert' ? ['utf8'] : ['utf8', 'hex'],
 )
 
 const faq = computed<FaqItem[]>(() => tm('tools.base64.faq') as FaqItem[])
 
+/**
+ * 切换操作时归一化互斥的选项。
+ *
+ * `auto` 变体只对 convert 有意义，`hex` 输入编码只对 encode / decode 有意义；
+ * 切走时回落为各自的默认值，避免发出后端不接受的组合。
+ */
+watch(operation, () => {
+  const next = normalizeForm(form.value)
+  variant.value = next.variant
+  inputEncoding.value = next.inputEncoding
+})
+
 /** 运行当前输入。 */
 function run(): void {
-  void execute({
-    operation: operation.value,
-    input: { data: input.value, encoding: inputEncoding.value },
-    variant: variant.value,
-    padding: padding.value,
-    outputEncoding: outputEncoding.value,
-  })
+  void execute(buildPayload(form.value))
+}
+
+/** 反向转换：把结果作为新输入再来一次（标准 ⇄ URL 安全）。 */
+function reverse(): void {
+  const next = reverseConversion(form.value, data.value?.output ?? '')
+  variant.value = next.variant
+  targetVariant.value = next.targetVariant
+  input.value = next.input
 }
 
 /** 输入即时校验：纯前端语法检查，不发请求、不写存储。 */
 const { validation } = useValidation(input, {
-  format: computed(() => (inputEncoding.value === 'hex' ? 'hex' : 'base64')),
+  format: computed(() => {
+    if (inputEncoding.value === 'hex') {
+      return 'hex'
+    }
+    // convert 的输入本身就是 Base64 文本，其余操作按所选变体检查字符集。
+    return 'base64'
+  }),
 })
 
 /** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
 useAutoRun({
   slug: 'base64',
   run,
-  watch: [operation, input, inputEncoding, variant, padding, outputEncoding],
+  watch: [operation, input, inputEncoding, variant, padding, outputEncoding, targetVariant],
   enabled: () => input.value !== '',
 })
 
@@ -107,17 +152,29 @@ function reset(): void {
   variant.value = 'standard'
   padding.value = true
   outputEncoding.value = 'utf8'
+  targetVariant.value = 'url'
   resetRun()
 }
 
-/** 填入示例。 */
+/**
+ * 填入示例。
+ *
+ * 优先给**当前操作**对应的示例（encode / decode / convert 各一），
+ * 没有匹配时回落到第一个示例。
+ */
 function fillExample(): void {
-  operation.value = DEFAULT_EXAMPLE.operation
-  input.value = DEFAULT_EXAMPLE.input
-  inputEncoding.value = DEFAULT_EXAMPLE.inputEncoding
-  variant.value = DEFAULT_EXAMPLE.variant
-  padding.value = DEFAULT_EXAMPLE.padding
-  outputEncoding.value = DEFAULT_EXAMPLE.outputEncoding
+  const example =
+    EXAMPLES.find((item) => item.operation === operation.value) ?? EXAMPLES[0]
+  if (!example) {
+    return
+  }
+  operation.value = example.operation
+  input.value = example.input
+  inputEncoding.value = example.inputEncoding
+  variant.value = example.variant
+  padding.value = example.padding
+  outputEncoding.value = example.outputEncoding
+  targetVariant.value = example.targetVariant
   resetRun()
 }
 
@@ -185,6 +242,10 @@ function onKeydown(event: KeyboardEvent): void {
                   :label="t('tools.base64.options.operation.decode')"
                   value="decode"
                 />
+                <ElOption
+                  :label="t('tools.base64.options.operation.convert')"
+                  value="convert"
+                />
               </ElSelect>
             </label>
 
@@ -195,6 +256,11 @@ function onKeydown(event: KeyboardEvent): void {
                 class="field__select"
                 :aria-label="t('tools.base64.fields.variant')"
               >
+                <ElOption
+                  v-if="operation === 'convert'"
+                  :label="t('tools.base64.options.variant.auto')"
+                  value="auto"
+                />
                 <ElOption
                   :label="t('tools.base64.options.variant.standard')"
                   value="standard"
@@ -207,6 +273,40 @@ function onKeydown(event: KeyboardEvent): void {
             </label>
 
             <label
+              v-if="operation === 'convert'"
+              class="field"
+            >
+              <span class="field__label">{{ t('tools.base64.fields.targetVariant') }}</span>
+              <ElSelect
+                v-model="targetVariant"
+                class="field__select"
+                :aria-label="t('tools.base64.fields.targetVariant')"
+              >
+                <ElOption
+                  :label="t('tools.base64.options.variant.standard')"
+                  value="standard"
+                />
+                <ElOption
+                  :label="t('tools.base64.options.variant.url')"
+                  value="url"
+                />
+              </ElSelect>
+            </label>
+
+            <ElButton
+              v-if="operation === 'convert'"
+              class="field__reverse"
+              :aria-label="t('tools.base64.actions.reverse')"
+              :title="t('tools.base64.hints.reverse')"
+              @click="reverse"
+            >
+              <AppIcon
+                name="swap"
+                :size="16"
+              />
+            </ElButton>
+
+            <label
               v-if="operation === 'decode'"
               class="field"
             >
@@ -217,10 +317,12 @@ function onKeydown(event: KeyboardEvent): void {
                 :aria-label="t('tools.base64.fields.outputEncoding')"
               >
                 <ElOption
-                  v-for="enc in outputEncodings"
-                  :key="enc"
-                  :label="t(`tools.base64.options.outputEncoding.${enc}`)"
-                  :value="enc"
+                  :label="t('tools.base64.options.outputEncoding.utf8')"
+                  value="utf8"
+                />
+                <ElOption
+                  :label="t('tools.base64.options.outputEncoding.hex')"
+                  value="hex"
                 />
               </ElSelect>
             </label>
@@ -234,6 +336,12 @@ function onKeydown(event: KeyboardEvent): void {
           </ElCheckbox>
           <p class="field__hint">
             {{ t('tools.base64.hints.padding') }}
+          </p>
+          <p
+            v-if="operation === 'convert'"
+            class="field__hint"
+          >
+            {{ t('tools.base64.hints.convert') }}
           </p>
         </template>
 
@@ -308,6 +416,11 @@ function onKeydown(event: KeyboardEvent): void {
 
 .field__select {
   width: 100%;
+}
+
+.field__reverse {
+  align-self: flex-end;
+  margin-bottom: var(--tb-space-1);
 }
 
 .field__hint {

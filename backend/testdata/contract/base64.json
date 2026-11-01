@@ -60,6 +60,43 @@
       }
     },
     {
+      "name": "标准转 URL 安全",
+      "request": {
+        "operation": "convert",
+        "input": { "data": "+/8=", "encoding": "utf8" },
+        "targetVariant": "url"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "-_8=", "encoding": "base64url" }
+      }
+    },
+    {
+      "name": "URL 安全转标准",
+      "request": {
+        "operation": "convert",
+        "input": { "data": "-_8=", "encoding": "utf8" },
+        "variant": "auto",
+        "targetVariant": "standard"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "+/8=", "encoding": "base64" }
+      }
+    },
+    {
+      "name": "转换时非法目标变体",
+      "request": {
+        "operation": "convert",
+        "input": { "data": "SGVsbG8=", "encoding": "utf8" },
+        "targetVariant": "base32"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
       "name": "非法操作类型",
       "request": {
         "operation": "transcode",

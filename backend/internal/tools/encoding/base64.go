@@ -18,6 +18,8 @@ const (
 	Base64Encode = "encode"
 	// Base64Decode 把 Base64 解码为原始数据。
 	Base64Decode = "decode"
+	// Base64Convert 在标准 Base64 与 URL 安全 Base64 之间互转。
+	Base64Convert = "convert"
 )
 
 // Base64 变体。
@@ -26,6 +28,8 @@ const (
 	Base64VariantStandard = "standard"
 	// Base64VariantURL 使用 URL 安全字符集（-_）。
 	Base64VariantURL = "url"
+	// Base64VariantAuto 自动识别输入变体；仅 convert 可用。
+	Base64VariantAuto = "auto"
 )
 
 // Base64 支持的输入编码。
@@ -48,6 +52,8 @@ type Base64Request struct {
 	Padding *bool `json:"padding"`
 	// OutputEncoding 是输出编码；解码时默认 utf8。
 	OutputEncoding string `json:"outputEncoding"`
+	// TargetVariant 是 convert 的输出变体；缺省为 url。
+	TargetVariant string `json:"targetVariant"`
 }
 
 // ByteInput 是字节输入。
@@ -69,15 +75,20 @@ type Base64Result struct {
 // Validate 做字段级校验。
 func (r *Base64Request) Validate() error {
 	switch r.Operation {
-	case Base64Encode, Base64Decode:
+	case Base64Encode, Base64Decode, Base64Convert:
 	default:
-		return tools.InvalidField("operation", []string{Base64Encode, Base64Decode}, r.Operation)
+		return tools.InvalidField("operation",
+			[]string{Base64Encode, Base64Decode, Base64Convert}, r.Operation)
 	}
 
 	switch r.Input.Encoding {
 	case "", EncodingUTF8, EncodingHex:
 	default:
 		return tools.InvalidField("input.encoding", []string{EncodingUTF8, EncodingHex}, r.Input.Encoding)
+	}
+
+	if r.Operation == Base64Convert {
+		return r.validateConvert()
 	}
 
 	switch r.Variant {
@@ -94,6 +105,40 @@ func (r *Base64Request) Validate() error {
 	}
 
 	return nil
+}
+
+// validateConvert 校验 convert 专用的字段。
+//
+// convert 的输入是 **Base64 文本**本身，故传输编码只能是 utf8；
+// `variant` 描述输入变体（可自动识别），`targetVariant` 描述输出变体。
+func (r *Base64Request) validateConvert() error {
+	switch r.Variant {
+	case "", Base64VariantAuto, Base64VariantStandard, Base64VariantURL:
+	default:
+		return tools.InvalidField("variant",
+			[]string{Base64VariantAuto, Base64VariantStandard, Base64VariantURL}, r.Variant)
+	}
+
+	switch r.TargetVariant {
+	case "", Base64VariantStandard, Base64VariantURL:
+	default:
+		return tools.InvalidField("targetVariant",
+			[]string{Base64VariantStandard, Base64VariantURL}, r.TargetVariant)
+	}
+
+	if r.Input.Encoding != "" && r.Input.Encoding != EncodingUTF8 {
+		return tools.InvalidField("input.encoding", []string{EncodingUTF8}, r.Input.Encoding)
+	}
+
+	return nil
+}
+
+// targetVariant 返回输出变体；缺省为 url。
+func (r *Base64Request) targetVariant() string {
+	if r.TargetVariant == "" {
+		return Base64VariantURL
+	}
+	return r.TargetVariant
 }
 
 // Base64 执行 Base64 编解码。
@@ -117,9 +162,15 @@ func Base64(_ context.Context, req *Base64Request) (tools.Result, error) {
 			return tools.Result{}, err
 		}
 		return tools.Result{Data: Base64Result{Output: out, Encoding: enc}}, nil
+	case Base64Convert:
+		out, enc, err := convertBase64(raw, req.Variant, req.targetVariant(), req.Padding)
+		if err != nil {
+			return tools.Result{}, err
+		}
+		return tools.Result{Data: Base64Result{Output: out, Encoding: enc}}, nil
 	default:
 		return tools.Result{}, tools.InvalidField("operation",
-			[]string{Base64Encode, Base64Decode}, req.Operation)
+			[]string{Base64Encode, Base64Decode, Base64Convert}, req.Operation)
 	}
 }
 
@@ -180,6 +231,69 @@ func decodeBase64(raw []byte, variant string, outputEncoding string) (string, st
 		return base64.URLEncoding.EncodeToString(decoded), "base64url", nil
 	default:
 		return string(decoded), EncodingUTF8, nil
+	}
+}
+
+// convertBase64 在标准 Base64 与 URL 安全 Base64 之间互转。
+//
+// 输入按 variant 指定的变体解码（auto 时自动识别），
+// 再按 target 指定的变体重新编码；padding 控制输出是否保留 `=` 填充。
+//
+// 解码时同样**忽略**换行、空白与填充。
+func convertBase64(raw []byte, variant string, target string, padding *bool) (string, string, error) {
+	text := strings.TrimRight(stripWhitespace(string(raw)), "=")
+
+	if variant == "" || variant == Base64VariantAuto {
+		detected, err := detectVariant(text)
+		if err != nil {
+			return "", "", err
+		}
+		variant = detected
+	}
+
+	enc := base64.RawStdEncoding
+	if variant == Base64VariantURL {
+		enc = base64.RawURLEncoding
+	}
+
+	decoded, err := enc.DecodeString(text)
+	if err != nil {
+		return "", "", toolerr.Newf(toolerr.CodeInvalidBase64, map[string]any{
+			"reason": "invalid base64 input",
+		})
+	}
+
+	out := base64.StdEncoding
+	name := "base64"
+	if target == Base64VariantURL {
+		out = base64.URLEncoding
+		name = "base64url"
+	}
+	if padding != nil && !*padding {
+		out = out.WithPadding(base64.NoPadding)
+	}
+
+	return out.EncodeToString(decoded), name, nil
+}
+
+// detectVariant 按字符集自动识别 Base64 变体。
+//
+// 出现 `-` / `_` 判为 URL 安全变体，出现 `+` / `/` 判为标准变体；
+// 两者都没出现时两种变体的解码结果一致，按标准处理。
+//
+// 同时出现两组字符说明输入本身不合法（两种字母表混用）。
+func detectVariant(text string) (string, error) {
+	hasURL := strings.ContainsAny(text, "-_")
+	hasStd := strings.ContainsAny(text, "+/")
+	switch {
+	case hasURL && hasStd:
+		return "", toolerr.Newf(toolerr.CodeInvalidBase64, map[string]any{
+			"reason": "mixed standard and url-safe base64 alphabets",
+		})
+	case hasURL:
+		return Base64VariantURL, nil
+	default:
+		return Base64VariantStandard, nil
 	}
 }
 
