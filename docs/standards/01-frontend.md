@@ -166,8 +166,10 @@ ToolPageLayout
 | `JsonViewer` | 折叠树形 JSON 展示 |
 | `ByteView` | 十六进制转储 |
 | `Asn1Tree` | ASN.1 结构树 |
-| `CertChainTable` | 证书链表格（主题 / 签发者 / 有效期 / 类型 / 指纹） |
-| `CertDetailDialog` | 证书详情弹窗 |
+| `CertChainTable` | 证书链梯（叶 → 根的竖向链：角色徽标、有效期、剩余天数、指纹、连接诊断与详情入口；断链点就地标出） |
+| `CertDetail` | 证书详情分区展示（有效期 / 身份 / 名称 / 公钥 / 用途 / 标识与指纹 / 策略 / 扩展） |
+| `CertDetailDialog` | 证书详情弹窗（内容由 `CertDetail` 渲染，弹窗只管开关与尺寸） |
+| `ValidityTrack` | 有效期时间轴（按剩余天数推算已过去的比例，语义色仅 success / warning / danger） |
 | `KeyValueTable` | 键值对展示（逐字段复制、语义色、可选 `hint` / `mono`） |
 | `StatGrid` | 少量关键指标的卡片网格（网段、掩码、耗时、成败台数） |
 | `DataTable` | 多记录列表表格（列定义 + 行数据 + 逐行复制 + 滚动区 + 语义色 / 彩色标签）；`copyColumns` 指定内嵌复制列（按钮贴值右侧，`copyColumn` 仍然兼容），`badgeCopy` 指定「点击徽标即复制」的列 |

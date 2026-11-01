@@ -3,7 +3,8 @@
   "description": "解析 X.509 证书的主体、签发者、有效期、扩展、公钥与指纹。",
   "category": "证书",
   "actions": {
-    "parse": "解析"
+    "parse": "解析",
+    "now": "设为当前时间"
   },
   "fields": {
     "cert": "证书",
@@ -26,7 +27,12 @@
     "keyUsage": "密钥用途",
     "extendedKeyUsage": "扩展密钥用途",
     "fingerprints": "指纹",
-    "extensions": "扩展"
+    "extensions": "扩展",
+    "extensionName": "扩展",
+    "oid": "OID",
+    "critical": "关键",
+    "extensionValue": "值",
+    "textView": "OpenSSL 风格文本视图"
   },
   "examples": [
     {
@@ -52,5 +58,11 @@
       "q": "指纹可以拿来做比对吗？",
       "a": "可以。同一张证书的任意算法指纹都是固定的，不同证书几乎不可能撞上。"
     }
-  ]
+  ],
+  "views": {
+    "summary": "摘要",
+    "extensions": "扩展",
+    "text": "文本视图",
+    "pem": "证书原文"
+  }
 }

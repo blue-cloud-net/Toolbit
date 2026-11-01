@@ -8,12 +8,7 @@
   "fields": {
     "bundle": "Certificate chain"
   },
-  "options": {
-    "views": {
-      "summary": "Summary",
-      "list": "Certificates"
-    }
-  },
+  "options": {},
   "results": {
     "chain": "Certificate chain",
     "count": "Certificate count",
@@ -25,7 +20,9 @@
     "issuer": "Issuer",
     "serial": "Serial",
     "notAfter": "Not after",
-    "empty": "The chain has no certificate"
+    "empty": "The chain has no certificate",
+    "brokenLinks": "Broken links",
+    "chainPem": "Whole chain PEM"
   },
   "examples": [
     {
@@ -51,5 +48,9 @@
       "q": "Does the tool download missing certificates?",
       "a": "No, it is purely local; use the certificate chain fetcher for downloads."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "pem": "Chain PEM"
+  }
 }

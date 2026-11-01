@@ -3,7 +3,8 @@
   "description": "Parse an X.509 certificate: subject, issuer, validity, extensions, public key and fingerprints.",
   "category": "Certificates",
   "actions": {
-    "parse": "Parse"
+    "parse": "Parse",
+    "now": "Set to now"
   },
   "fields": {
     "cert": "Certificate",
@@ -26,7 +27,12 @@
     "keyUsage": "Key usage",
     "extendedKeyUsage": "Extended key usage",
     "fingerprints": "Fingerprints",
-    "extensions": "Extensions"
+    "extensions": "Extensions",
+    "extensionName": "Extension",
+    "oid": "OID",
+    "critical": "Critical",
+    "extensionValue": "Value",
+    "textView": "OpenSSL-style text view"
   },
   "examples": [
     {
@@ -52,5 +58,11 @@
       "q": "Can I use fingerprints to compare certificates?",
       "a": "Yes. Each algorithm yields a stable value for a given certificate, and distinct certificates practically never collide."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "extensions": "Extensions",
+    "text": "Text view",
+    "pem": "Certificate"
+  }
 }

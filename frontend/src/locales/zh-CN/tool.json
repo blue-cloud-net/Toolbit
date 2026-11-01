@@ -59,9 +59,115 @@
   },
   "cert": {
     "detail": "证书详情",
-    "issuer": "颁发者",
+    "issuer": "签发者",
     "validity": "有效期",
-    "reason": "原因"
+    "reason": "原因",
+    "empty": "暂无内容",
+    "units": {
+      "days": "天"
+    },
+    "sections": {
+      "validity": "有效期",
+      "identity": "身份信息",
+      "names": "主体与签发者",
+      "publicKey": "公钥",
+      "usages": "名称与用途",
+      "identifiers": "标识与指纹",
+      "policies": "证书策略",
+      "extensions": "扩展",
+      "certificate": "证书原文"
+    },
+    "fields": {
+      "version": "版本",
+      "status": "状态",
+      "daysRemaining": "剩余天数",
+      "duration": "有效期长度",
+      "isCa": "CA 证书",
+      "selfSigned": "自签名",
+      "pathLen": "路径长度约束",
+      "serial": "序列号",
+      "signatureAlgorithm": "签名算法",
+      "signatureAlgorithmOid": "签名算法 OID",
+      "subjectHash": "主体哈希",
+      "issuerHash": "签发者哈希",
+      "subject": "主体",
+      "issuer": "签发者",
+      "validity": "有效期",
+      "algorithm": "算法",
+      "bits": "位数",
+      "curve": "曲线",
+      "publicKeyFingerprint": "公钥指纹",
+      "modulus": "模数",
+      "exponent": "指数",
+      "pointX": "公钥点 X",
+      "pointY": "公钥点 Y",
+      "spki": "SPKI（十六进制）",
+      "sanType": "类型",
+      "sanValue": "值",
+      "keyUsage": "密钥用途",
+      "bitMask": "位掩码",
+      "extKeyUsage": "扩展密钥用途",
+      "oid": "OID",
+      "subjectKeyId": "主题密钥标识符",
+      "authorityKeyId": "签发者密钥标识符",
+      "fingerprint": "指纹",
+      "policyOid": "策略 OID",
+      "cps": "策略声明",
+      "notice": "通知",
+      "extensionName": "扩展",
+      "critical": "关键",
+      "extensionValue": "值",
+      "link": "连接"
+    },
+    "status": {
+      "valid": "有效",
+      "expired": "已过期",
+      "not_yet_valid": "尚未生效",
+      "ca": "是",
+      "notCa": "否"
+    },
+    "ku": {
+      "digitalSignature": "数字签名",
+      "nonRepudiation": "不可否认",
+      "keyEncipherment": "密钥加密",
+      "dataEncipherment": "数据加密",
+      "keyAgreement": "密钥协商",
+      "keyCertSign": "证书签名",
+      "cRLSign": "CRL 签名",
+      "encipherOnly": "仅加密",
+      "decipherOnly": "仅解密"
+    },
+    "eku": {
+      "anyExtendedKeyUsage": "任意扩展密钥用法",
+      "serverAuth": "服务器认证",
+      "clientAuth": "客户端认证",
+      "codeSigning": "代码签名",
+      "emailProtection": "邮件保护",
+      "timeStamping": "时间戳",
+      "OCSPSigning": "OCSP 签名"
+    },
+    "role": {
+      "leaf": "叶证书",
+      "intermediate": "中间 CA",
+      "root": "根证书",
+      "unlinked": "游离证书"
+    },
+    "link": {
+      "leaf": "链的起点",
+      "keyid": "按密钥标识符匹配",
+      "name": "按名称匹配",
+      "self": "自签名",
+      "ok": "正常",
+      "keyid_mismatch": "密钥标识符不匹配",
+      "missing_intermediate": "缺少中间 CA",
+      "unlinked": "无法接入证书链",
+      "missing_root": "链尾不是自签名证书：输入里缺少根证书。"
+    },
+    "actions": {
+      "detail": "详情",
+      "expand": "展开",
+      "collapse": "收起"
+    }
   },
   "material": {
     "blocks": "识别到 {count} 个 PEM 块。",

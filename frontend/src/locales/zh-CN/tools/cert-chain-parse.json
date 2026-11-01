@@ -8,12 +8,7 @@
   "fields": {
     "bundle": "证书链"
   },
-  "options": {
-    "views": {
-      "summary": "摘要",
-      "list": "证书清单"
-    }
-  },
+  "options": {},
   "results": {
     "chain": "证书链",
     "count": "证书数量",
@@ -25,7 +20,9 @@
     "issuer": "签发者",
     "serial": "序列号",
     "notAfter": "失效时间",
-    "empty": "链中没有证书"
+    "empty": "链中没有证书",
+    "brokenLinks": "断链数",
+    "chainPem": "整链 PEM"
   },
   "examples": [
     {
@@ -51,5 +48,9 @@
       "q": "工具会联网下载缺失的证书吗？",
       "a": "不会，本工具纯本地；需要下载请用证书链获取工具。"
     }
-  ]
+  ],
+  "views": {
+    "summary": "摘要",
+    "pem": "链 PEM"
+  }
 }

@@ -258,12 +258,12 @@
 
 | 工具 | slug | 一句话用途 |
 | --- | --- | --- |
-| 证书解析 | `cert-parse` | 查看证书详情 |
+| 证书解析 | `cert-parse` | 查看证书详情：有效期、公钥、用途、扩展与 OpenSSL 风格文本视图；支持拖拽 / 点击导入证书文件 |
 | CSR 生成 | `csr-gen` | 生成证书签名请求 |
 | CSR 解析 | `csr-parse` | 查看 CSR 内容 |
 | PEM/DER 转换 | `pem-der` | 两种编码互转 |
 | ASN.1 视图 | `asn1-view` | 查看 DER 结构树 |
-| 证书链解析 | `cert-chain-parse` | 整理证书链顺序 |
+| 证书链解析 | `cert-chain-parse` | 整理证书链顺序，标出角色与断链点；支持一次拖入多个证书文件 |
 | 证书链验证 | `cert-chain-verify` | 验证链与域名 |
 | 证书链修复 | `cert-chain-repair` | 补全缺失的中间证书 |
 | 吊销状态检查 | `revocation-check` | 用 CRL 判断是否被吊销 |
