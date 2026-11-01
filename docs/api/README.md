@@ -1,6 +1,6 @@
 # API 总览
 
-> 状态：Stable ｜ 适用版本：v0.7.0 ｜ 最后更新：2026-10-29
+> 状态：Stable ｜ 适用版本：v0.7.0 ｜ 最后更新：2026-11-01
 
 本文描述 Toolbit 的 HTTP 接口约定。所有工具共用**一个分发端点**，请求与响应结构由 catalog 驱动。
 
@@ -16,7 +16,7 @@
 | [text.md](tools/text.md) | 文本 | 7 |
 | [data.md](tools/data.md) | 数据 | 13 |
 | [system.md](tools/system.md) | 系统 | 7 |
-| [network.md](tools/network.md) | 网络 | 9 |
+| [network.md](tools/network.md) | 网络 | 10 |
 | [documents.md](tools/documents.md) | 文档 | 4 |
 
 错误码见 [errors.md](errors.md)，管理与运维接口见 [admin.md](admin.md)。

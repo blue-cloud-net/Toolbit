@@ -1,6 +1,6 @@
 # AGENTS.md — 蓝云工具箱（Blue Cloud Toolbit）工作指南
 
-> 状态：Stable ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Stable ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-11-01
 
 本文件面向**自动化 Agent 与人类贡献者**，是本仓库的工作契约。开始任何改动前先读本文件与 [docs/architecture.md](docs/architecture.md)。
 
@@ -8,7 +8,7 @@
 
 ## 1. 项目是什么
 
-- 前后端一体的 IT 工具箱网站；v1 交付 **97 个工具**。
+- 前后端一体的 IT 工具箱网站；v1 交付 **98 个工具**。
 - 前端：Vue 3 + TypeScript + Vite + Element Plus（zh-CN / en-US 双语）。
 - 后端：Go 1.25 + Gin；**所有工具在服务端计算**。
 - 密码学：唯一底层实现是 [Tongsuo（铜锁）](https://www.tongsuo.net/)，经 `github.com/blue-cloud-net/tongsuo-go` 封装。

@@ -1,6 +1,6 @@
 # 术语表
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-11-01
 
 本文统一本项目文档与代码中的术语。
 
@@ -21,6 +21,10 @@
 | 警告 | warning | 不阻断执行、仅提示的附加信息，如 `INSECURE_ECB` |
 | 契约测试 | contract test | 校验「请求 → 响应」固定形状的测试 |
 | 黄金样本 | golden fixture | 固定的期望输入 / 输出数据 |
+| 公共解析器 | public resolver | 面向公众开放的递归 DNS 服务，如 Cloudflare 1.1.1.1 |
+| DoT | DNS over TLS | 用 TLS 加密的 DNS 通道，固定 **853** 端口 |
+| DoH | DNS over HTTPS | 用 HTTPS 加密的 DNS 通道，固定 **443** 端口 |
+| Anycast | — | 同一地址在多地同时宣告的路由方式，公共解析器普遍采用 |
 
 ---
 

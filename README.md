@@ -1,10 +1,10 @@
 # 蓝云工具箱（Blue Cloud Toolbit）
 
-> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-10-27
+> 状态：Draft ｜ 适用版本：v0.1.0 ｜ 最后更新：2026-11-01
 
 一个**前后端一体的 IT 工具箱网站**：前端 Vue 3 + TypeScript + Element Plus，后端 Go 1.25 + Gin，密码学能力全部经 [Tongsuo（铜锁）](https://www.tongsuo.net/) 原生库（通过 `github.com/blue-cloud-net/tongsuo-go` 封装）实现。
 
-v1 规划 **97 个工具**，覆盖国密算法（SM2 / SM3 / SM4）、密钥管理、X.509 与 PKI 全链路、编码格式化、文本处理、数据生成、系统与网络辅助、文档解析。
+v1 规划 **98 个工具**，覆盖国密算法（SM2 / SM3 / SM4）、密钥管理、X.509 与 PKI 全链路、编码格式化、文本处理、数据生成、系统与网络辅助、文档解析。
 
 所有工具在**服务端**计算（唯一例外：`websocket-test` 使用浏览器原生 `WebSocket`）。前端构建产物由 Go 进程直接以静态目录方式提供，**不部署 Nginx**。
 
@@ -150,8 +150,8 @@ cd web && pnpm install && pnpm dev
 | [docs/standards/](docs/standards/00-intro.md) | 开发规范（前端 / 后端 / 密码学 / 错误 / 测试 / 安全 / 可观测 / 部署 / 文档 / Git） |
 | [docs/api/README.md](docs/api/README.md) | API 契约总览（信封、错误、通用类型、限流） |
 | [docs/api/errors.md](docs/api/errors.md) | 错误码与 warnings 全表 |
-| [docs/api/tools/](docs/api/tools/crypto.md) | 97 个工具的请求 / 响应契约 |
-| [docs/tools.md](docs/tools.md) | 97 个工具的产品规格 |
+| [docs/api/tools/](docs/api/tools/crypto.md) | 98 个工具的请求 / 响应契约 |
+| [docs/tools.md](docs/tools.md) | 98 个工具的产品规格 |
 | [docs/roadmap.md](docs/roadmap.md) | 路线图与发布清单 |
 | [docs/deploy.md](docs/deploy.md) | 部署与运维指南 |
 | [docs/privacy.md](docs/privacy.md) | 隐私说明 |
@@ -180,7 +180,7 @@ All cryptographic operations are performed server-side through **Tongsuo**
 (OpenAtom 铜锁) via the `github.com/blue-cloud-net/tongsuo-go` wrapper —
 SM2, SM3, SM4, X.509, CSR, CRL, OCSP, PKCS#7/#12 and more.
 
-The v1 release targets **97 tools** across 10 categories.
+The v1 release targets **98 tools** across 10 categories.
 The frontend build output is served directly by the Go process from a static
 directory (no Nginx), and the project ships as a multi-stage container image
 published to GHCR for `linux/amd64` and `linux/arm64`.

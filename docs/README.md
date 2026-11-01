@@ -1,6 +1,6 @@
 # 文档索引
 
-> 状态：Draft ｜ 适用版本：v0.3.0 ｜ 最后更新：2026-10-28
+> 状态：Draft ｜ 适用版本：v0.3.0 ｜ 最后更新：2026-11-01
 
 本目录是 Toolbit 的完整文档集。
 
@@ -35,7 +35,7 @@
 | 文档 | 说明 |
 | --- | --- |
 | [architecture.md](architecture.md) | 系统上下文、分层、关键决策 D1–D11 |
-| [tools.md](tools.md) | 97 个工具的产品规格与使用说明 |
+| [tools.md](tools.md) | 98 个工具的产品规格与使用说明 |
 | [tool-candidates.md](tool-candidates.md) | 候选工具清单、边界与落地状态 |
 | [roadmap.md](roadmap.md) | 阶段计划、v1.1 展望、风险对策 |
 | [glossary.md](glossary.md) | 术语表 |
