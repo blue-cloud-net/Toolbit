@@ -123,3 +123,51 @@ describe('错误码词条', () => {
     expect(Object.keys(enUSErrors)).toHaveLength(82)
   })
 })
+
+/**
+ * 顶层重复键检测。
+ *
+ * JSON 允许重复键，但解析器**只保留最后一个**：
+ * 后写的分组会**静默遮蔽**先写的同名分组，界面于是显示原始键名
+ * （如 `tool.cert.blocks`）而没有任何编译期报错。
+ *
+ * 这里按「顶层键只出现一次」来兜底：语言包的顶层都是固定分组，
+ * 重复只可能是事故。
+ */
+/** 语言包原文：用于检测重复键（JSON 解析会丢掉重复项）。 */
+const LOCALE_RAW = import.meta.glob<string>('/src/locales/*/*.json', {
+  eager: true,
+  query: '?raw',
+  import: 'default',
+})
+
+describe('语言包顶层键', () => {
+  const NAMESPACE_FILES = [
+    'common',
+    'home',
+    'tool',
+    'errors',
+  ] as const
+
+  it.each(NAMESPACE_FILES)('%s 没有重复的顶层键', (name) => {
+    const seen = new Set<string>()
+    const duplicates: string[] = []
+    for (const lang of ['zh-CN', 'en-US']) {
+      const text = LOCALE_RAW[`/src/locales/${lang}/${name}.json`]
+      if (!text) {
+        throw new Error(`语言包 ${lang}/${name}.json 缺失`)
+      }
+      for (const match of text.matchAll(/^ {2}"([^"]+)":/gm)) {
+        const key = match[1]
+        if (key === undefined) {
+          continue
+        }
+        if (seen.has(`${lang}.${key}`)) {
+          duplicates.push(`${lang}.${key}`)
+        }
+        seen.add(`${lang}.${key}`)
+      }
+    }
+    expect(duplicates).toEqual([])
+  })
+})
