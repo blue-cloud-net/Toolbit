@@ -160,7 +160,7 @@ ToolPageLayout
 | `CertTextInput` | 证书 / CSR / CRL 文本输入，自动嗅探格式 |
 | `FileTextInput` | 文件或文本二选一 |
 | `FileDropZone` | 拖拽上传区，含大小与类型提示 |
-| `CodeEditor` | 等宽多行编辑（Tab 处理、换行开关、可选行号） |
+| `CodeEditor` | 等宽多行编辑（Tab 处理、折行开关、可选行号）；行号是编辑框内的**窄轨**，与输入区共用同一外框，**禁止**做成并列的独立盒子 |
 | `SearchField` | 键入即筛选的搜索框（自带标签、清空按钮、可选自动聚焦） |
 | `JsonViewer` | 折叠树形 JSON 展示 |
 | `ByteView` | 十六进制转储 |

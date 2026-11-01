@@ -85,8 +85,7 @@ a:hover {
 
 /* 等宽区域保持 1.6，避免行高过大导致可读行数变少 */
 .tb-mono,
-.field__textarea,
-.code-editor__area {
+.field__textarea {
   line-height: 1.6;
 }
 
