@@ -12,6 +12,7 @@
  */
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { RouteLocationRaw } from 'vue-router'
 
 import CopyButton from '@/components/tool/CopyButton.vue'
 import { useCopy } from '@/composables/useCopy'
@@ -43,6 +44,8 @@ export interface DataTableRow {
   cellLevels?: Record<string, DataTableCellLevel>
   /** 需要渲染成彩色标签的列（列键 → 级别）。标签自带底色，行内其余列不动。 */
   badges?: Record<string, DataTableCellLevel>
+  /** 行尾跳转目标（vue-router 的 `to`）；提供时行尾渲染链接。 */
+  to?: RouteLocationRaw
   /** 各列文本；缺失列渲染为空。 */
   cells: Record<string, string>
 }
@@ -65,6 +68,8 @@ const props = withDefaults(
     maxHeight?: string
     /** 无数据时的提示文案。 */
     empty?: string
+    /** 行尾操作列的列标题；传空串表示不渲染该列。 */
+    actionLabel?: string
   }>(),
   {
     copyable: true,
@@ -73,6 +78,7 @@ const props = withDefaults(
     badgeCopy: () => [],
     maxHeight: '420px',
     empty: '',
+    actionLabel: '',
   },
 )
 
@@ -114,6 +120,9 @@ function badgeLevel(row: DataTableRow, column: DataTableColumn): DataTableCellLe
 /** 是否需要尾部的「整行复制」列；指定了内嵌复制列时不再渲染。 */
 const showRowAction = computed(() => props.copyable && inlineCopyKeys.value.length === 0)
 
+/** 是否渲染行尾操作列（跳转链接）。 */
+const showLinkAction = computed(() => props.actionLabel !== '')
+
 /** 该列是否内嵌复制按钮（复制它的列值）。 */
 function hasInlineCopy(column: DataTableColumn): boolean {
   return props.copyable && inlineCopyKeys.value.includes(column.key)
@@ -153,6 +162,13 @@ function onBadgeClick(row: DataTableRow, column: DataTableColumn): void {
             class="data-table__action"
           >
             <span class="tb-sr-only">{{ t('common.actions.copy') }}</span>
+          </th>
+          <th
+            v-if="showLinkAction"
+            scope="col"
+            class="data-table__action"
+          >
+            {{ actionLabel }}
           </th>
         </tr>
       </thead>
@@ -210,6 +226,18 @@ function onBadgeClick(row: DataTableRow, column: DataTableColumn): void {
               :text="rowText(row)"
               size="small"
             />
+          </td>
+          <td
+            v-if="showLinkAction"
+            class="data-table__action"
+          >
+            <RouterLink
+              v-if="row.to"
+              :to="row.to"
+              class="data-table__link"
+            >
+              {{ actionLabel }}
+            </RouterLink>
           </td>
         </tr>
       </tbody>
@@ -275,6 +303,17 @@ function onBadgeClick(row: DataTableRow, column: DataTableColumn): void {
 .data-table__action {
   width: 1%;
   white-space: nowrap;
+}
+
+/* 行尾跳转链接：与普通文字链接一致，但用主色以示可点。 */
+.data-table__link {
+  color: var(--tb-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.data-table__link:hover {
+  text-decoration: underline;
 }
 
 /* 单元格内嵌复制：值占满剩余宽度，按钮紧贴其右侧 */
