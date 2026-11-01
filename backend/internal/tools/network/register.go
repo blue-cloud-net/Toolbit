@@ -40,6 +40,15 @@ func Definitions(g *netguard.Guard) []tools.Definition {
 			},
 		},
 		{
+			// dns-servers 是**纯查表**工具：内置目录快照，不出网，
+			// 因此不需要 netguard 守卫。
+			Slug:       "dns-servers",
+			NewRequest: func() tools.Request { return &DNSServersRequest{} },
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return DNSServers(ctx, req.(*DNSServersRequest))
+			},
+		},
+		{
 			Slug:       "cert-chain-fetch",
 			NewRequest: func() tools.Request { return &ChainFetchRequest{} },
 			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {

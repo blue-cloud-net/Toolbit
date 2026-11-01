@@ -1,15 +1,16 @@
 # 网络 API
 
-> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
+> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-11-01
 
-覆盖 **9** 个网络类工具。其中 4 个**需要出网**，`websocket-test` 为**纯前端**工具（无后端端点），
-`mime-lookup` 与 `http-status` 为**纯查表**工具（不出网）。
+覆盖 **10** 个网络类工具。其中 4 个**需要出网**，`websocket-test` 为**纯前端**工具（无后端端点），
+`mime-lookup`、`http-status` 与 `dns-servers` 为**纯查表**工具（不出网）。
 
 | slug | 名称 | 传输 | 端点 |
 | --- | --- | --- | --- |
 | [cidr-calc](#cidr-calc) | CIDR 计算 | JSON | `POST /api/v1/tools/cidr-calc` |
 | [ssl-check](#ssl-check) | SSL 证书检测 | WebSocket | `GET /api/v1/tools/ssl-check/stream` |
 | [dns-lookup](#dns-lookup) | DNS 查询 | JSON | `POST /api/v1/tools/dns-lookup` |
+| [dns-servers](#dns-servers) | DNS 服务器大全 | JSON | `POST /api/v1/tools/dns-servers` |
 | [dns-tester](#dns-tester) | DNS 多记录测试 | JSON | `POST /api/v1/tools/dns-tester` |
 | [websocket-test](#websocket-test) | WebSocket 测试 | 浏览器原生 | 无 |
 | [mime-lookup](#mime-lookup) | MIME 类型查询 | JSON | `POST /api/v1/tools/mime-lookup` |
@@ -225,6 +226,43 @@ DNS 记录查询（需出网）。
 > **全部服务器**（逐台列出地址、协议、耗时、状态与结果摘要）、**单台服务器**（该台的记录明细）。
 > DoH 需要完整的 `https://` 地址；DoT 固定 `853` 端口。
 > `ANY` 查询可能被上游服务器拒绝，部分服务商已不再支持。
+
+---
+
+## dns-servers
+
+DNS 服务器目录（**纯查表，不出网**）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `query` | string | 否 | 搜索词，匹配服务商名（中英文）、地址与说明；最多 253 字符 |
+| `region` | string | 否 | 地区过滤：`china` \| `asia` \| `global` |
+| `proto` | string | 否 | 协议过滤：`udp` \| `tcp` \| `dot` \| `doh` |
+| `family` | string | 否 | 地址族过滤：`ipv4` \| `ipv6` \| `domain` |
+
+四个字段都可以省略；都不给时返回**全量**目录。
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `servers` | array | `[{ provider, providerEn, region, family, proto, addr, note }]` |
+| `total` | number | 命中的端点数 |
+| `providers` | number | 命中的服务商数 |
+| `dataVersion` | string | 数据集版本（当前 `2026-11`） |
+
+`servers[]` 的每一项是**一个可复制的端点**：同一个 IP 会有 `udp` 与 `tcp` 两条，
+因为它们是两条独立的查询通道。
+
+### 错误
+
+`INVALID_FIELD`：`region` / `proto` / `family` 取值非法，或 `query` 超过 253 字符。
+
+> 目录是**内置快照**，运行期不联网，也不做实时可达性检测 ——
+> 想验证某台服务器能否解析，请用 [dns-lookup](#dns-lookup) 实测。
+> 目录里的每个端点都**可直接**作为 `dns-lookup` 的 `servers[]` 条目使用。
 
 ---
 

@@ -1,0 +1,145 @@
+{
+  "slug": "dns-servers",
+  "description": "DNS 服务器目录的契约测试数据。该工具是纯查表工具，不出网。",
+  "cases": [
+    {
+      "name": "空请求返回全量目录",
+      "request": {},
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "total": 187,
+          "providers": 24,
+          "dataVersion": "2026-11"
+        }
+      }
+    },
+    {
+      "name": "按地区过滤",
+      "request": {
+        "region": "china"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "total": 44,
+          "providers": 7
+        }
+      }
+    },
+    {
+      "name": "按协议过滤（DoH）",
+      "request": {
+        "proto": "doh"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "total": 19
+        }
+      }
+    },
+    {
+      "name": "按协议过滤（DoT）",
+      "request": {
+        "proto": "dot"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "total": 18
+        }
+      }
+    },
+    {
+      "name": "按地址族过滤（IPv6）",
+      "request": {
+        "family": "ipv6"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "total": 48
+        }
+      }
+    },
+    {
+      "name": "按中文服务商名搜索",
+      "request": {
+        "query": "阿里"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "total": 10,
+          "providers": 1
+        }
+      }
+    },
+    {
+      "name": "按英文服务商名搜索",
+      "request": {
+        "query": "cloudflare"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "providers": 1
+        }
+      }
+    },
+    {
+      "name": "未命中时返回空列表",
+      "request": {
+        "query": "zzzz-not-a-dns"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "total": 0,
+          "providers": 0
+        }
+      }
+    },
+    {
+      "name": "协议不支持",
+      "request": {
+        "proto": "gopher"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "地区不支持",
+      "request": {
+        "region": "mars"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "地址族不支持",
+      "request": {
+        "family": "ipv7"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "搜索词过长",
+      "request": {
+        "query": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

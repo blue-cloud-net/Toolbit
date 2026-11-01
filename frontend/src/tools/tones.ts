@@ -151,6 +151,7 @@ export const TOOL_TONES: Record<string, Tone> = {
   'cidr-calc': 'sky',
   'ssl-check': 'green',
   'dns-lookup': 'blue',
+  'dns-servers': 'cyan',
   'dns-tester': 'teal',
   'websocket-test': 'violet',
   'device-headers': 'amber',

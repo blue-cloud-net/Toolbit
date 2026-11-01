@@ -1,0 +1,188 @@
+provider,providerEn,region,family,proto,addr,note
+阿里公共 DNS,AliDNS,china,ipv4,udp,223.5.5.5:53,阿里公共 DNS 主解析器
+阿里公共 DNS,AliDNS,china,ipv4,tcp,223.5.5.5:53,阿里公共 DNS 主解析器
+阿里公共 DNS,AliDNS,china,ipv4,udp,223.6.6.6:53,阿里公共 DNS 备用解析器
+阿里公共 DNS,AliDNS,china,ipv4,tcp,223.6.6.6:53,阿里公共 DNS 备用解析器
+阿里公共 DNS,AliDNS,china,ipv6,udp,[2400:3200::1]:53,IPv6 主解析器
+阿里公共 DNS,AliDNS,china,ipv6,tcp,[2400:3200::1]:53,IPv6 主解析器
+阿里公共 DNS,AliDNS,china,ipv6,udp,[2400:3200:baba::1]:53,IPv6 备用解析器
+阿里公共 DNS,AliDNS,china,ipv6,tcp,[2400:3200:baba::1]:53,IPv6 备用解析器
+阿里公共 DNS,AliDNS,china,domain,dot,dns.alidns.com:853,加密查询（DoT）
+阿里公共 DNS,AliDNS,china,domain,doh,https://dns.alidns.com/dns-query,加密查询（DoH）
+腾讯 DNSPod,DNSPod,china,ipv4,udp,119.29.29.29:53,腾讯 DNSPod 主解析器
+腾讯 DNSPod,DNSPod,china,ipv4,tcp,119.29.29.29:53,腾讯 DNSPod 主解析器
+腾讯 DNSPod,DNSPod,china,ipv4,udp,182.254.116.116:53,腾讯 DNSPod 备用解析器
+腾讯 DNSPod,DNSPod,china,ipv4,tcp,182.254.116.116:53,腾讯 DNSPod 备用解析器
+腾讯 DNSPod,DNSPod,china,ipv6,udp,[2402:4e00::1]:53,IPv6 解析器
+腾讯 DNSPod,DNSPod,china,ipv6,tcp,[2402:4e00::1]:53,IPv6 解析器
+腾讯 DNSPod,DNSPod,china,domain,dot,dot.pub:853,加密查询（DoT）
+腾讯 DNSPod,DNSPod,china,domain,doh,https://doh.pub/dns-query,加密查询（DoH）
+114DNS,114DNS,china,ipv4,udp,114.114.114.114:53,南京信风公共 DNS
+114DNS,114DNS,china,ipv4,tcp,114.114.114.114:53,南京信风公共 DNS
+114DNS,114DNS,china,ipv4,udp,114.114.115.115:53,南京信风备用 DNS
+114DNS,114DNS,china,ipv4,tcp,114.114.115.115:53,南京信风备用 DNS
+百度公共 DNS,Baidu DNS,china,ipv4,udp,180.76.76.76:53,百度公共 DNS（仅明文）
+百度公共 DNS,Baidu DNS,china,ipv4,tcp,180.76.76.76:53,百度公共 DNS（仅明文）
+CNNIC 公共 DNS,CNNIC SDNS,china,ipv4,udp,1.2.4.8:53,中国互联网络信息中心主解析器
+CNNIC 公共 DNS,CNNIC SDNS,china,ipv4,tcp,1.2.4.8:53,中国互联网络信息中心主解析器
+CNNIC 公共 DNS,CNNIC SDNS,china,ipv4,udp,210.2.4.8:53,中国互联网络信息中心备用解析器
+CNNIC 公共 DNS,CNNIC SDNS,china,ipv4,tcp,210.2.4.8:53,中国互联网络信息中心备用解析器
+CNNIC 公共 DNS,CNNIC SDNS,china,ipv6,udp,[2001:dc7:1000::1]:53,IPv6 解析器
+CNNIC 公共 DNS,CNNIC SDNS,china,ipv6,tcp,[2001:dc7:1000::1]:53,IPv6 解析器
+360 安全 DNS,360 Safe DNS,china,ipv4,udp,101.226.4.6:53,电信与移动线路
+360 安全 DNS,360 Safe DNS,china,ipv4,tcp,101.226.4.6:53,电信与移动线路
+360 安全 DNS,360 Safe DNS,china,ipv4,udp,218.30.118.6:53,电信与移动线路
+360 安全 DNS,360 Safe DNS,china,ipv4,tcp,218.30.118.6:53,电信与移动线路
+360 安全 DNS,360 Safe DNS,china,ipv4,udp,123.125.81.6:53,联通线路
+360 安全 DNS,360 Safe DNS,china,ipv4,tcp,123.125.81.6:53,联通线路
+360 安全 DNS,360 Safe DNS,china,ipv4,udp,140.207.198.6:53,联通线路
+360 安全 DNS,360 Safe DNS,china,ipv4,tcp,140.207.198.6:53,联通线路
+360 安全 DNS,360 Safe DNS,china,domain,dot,dot.360.cn:853,加密查询（DoT）
+360 安全 DNS,360 Safe DNS,china,domain,doh,https://doh.360.cn/dns-query,加密查询（DoH）
+火山引擎公共 DNS,Volcano Engine TrafficRoute,china,ipv4,udp,180.184.1.1:53,字节跳动公共 DNS 主解析器
+火山引擎公共 DNS,Volcano Engine TrafficRoute,china,ipv4,tcp,180.184.1.1:53,字节跳动公共 DNS 主解析器
+火山引擎公共 DNS,Volcano Engine TrafficRoute,china,ipv4,udp,180.184.2.2:53,字节跳动公共 DNS 备用解析器
+火山引擎公共 DNS,Volcano Engine TrafficRoute,china,ipv4,tcp,180.184.2.2:53,字节跳动公共 DNS 备用解析器
+台湾 Quad101,TWNIC Quad101,asia,ipv4,udp,101.101.101.101:53,台湾网络信息中心主解析器
+台湾 Quad101,TWNIC Quad101,asia,ipv4,tcp,101.101.101.101:53,台湾网络信息中心主解析器
+台湾 Quad101,TWNIC Quad101,asia,ipv4,udp,101.102.103.104:53,台湾网络信息中心备用解析器
+台湾 Quad101,TWNIC Quad101,asia,ipv4,tcp,101.102.103.104:53,台湾网络信息中心备用解析器
+台湾 Quad101,TWNIC Quad101,asia,ipv6,udp,[2001:de4::101]:53,IPv6 主解析器
+台湾 Quad101,TWNIC Quad101,asia,ipv6,tcp,[2001:de4::101]:53,IPv6 主解析器
+台湾 Quad101,TWNIC Quad101,asia,ipv6,udp,[2001:de4::102]:53,IPv6 备用解析器
+台湾 Quad101,TWNIC Quad101,asia,ipv6,tcp,[2001:de4::102]:53,IPv6 备用解析器
+台湾 Quad101,TWNIC Quad101,asia,domain,dot,dns.twnic.tw:853,加密查询（DoT）
+台湾 Quad101,TWNIC Quad101,asia,domain,doh,https://dns.twnic.tw/dns-query,加密查询（DoH）
+日本 IIJ,IIJ,asia,ipv4,udp,210.130.0.17:53,日本互联网initiative主解析器
+日本 IIJ,IIJ,asia,ipv4,tcp,210.130.0.17:53,日本互联网initiative主解析器
+日本 IIJ,IIJ,asia,ipv4,udp,210.157.131.66:53,日本互联网initiative备用解析器
+日本 IIJ,IIJ,asia,ipv4,tcp,210.157.131.66:53,日本互联网initiative备用解析器
+日本 IIJ,IIJ,asia,ipv6,udp,[2001:240:bb41::11]:53,IPv6 主解析器
+日本 IIJ,IIJ,asia,ipv6,tcp,[2001:240:bb41::11]:53,IPv6 主解析器
+日本 IIJ,IIJ,asia,ipv6,udp,[2001:240:131::66]:53,IPv6 备用解析器
+日本 IIJ,IIJ,asia,ipv6,tcp,[2001:240:131::66]:53,IPv6 备用解析器
+日本 IIJ,IIJ,asia,domain,dot,dns.iij.ad.jp:853,加密查询（DoT）
+Cloudflare,Cloudflare,global,ipv4,udp,1.1.1.1:53,主解析器（Anycast）
+Cloudflare,Cloudflare,global,ipv4,tcp,1.1.1.1:53,主解析器（Anycast）
+Cloudflare,Cloudflare,global,ipv4,udp,1.0.0.1:53,备用解析器
+Cloudflare,Cloudflare,global,ipv4,tcp,1.0.0.1:53,备用解析器
+Cloudflare,Cloudflare,global,ipv6,udp,[2606:4700:4700::1111]:53,IPv6 主解析器
+Cloudflare,Cloudflare,global,ipv6,tcp,[2606:4700:4700::1111]:53,IPv6 主解析器
+Cloudflare,Cloudflare,global,ipv6,udp,[2606:4700:4700::1001]:53,IPv6 备用解析器
+Cloudflare,Cloudflare,global,ipv6,tcp,[2606:4700:4700::1001]:53,IPv6 备用解析器
+Cloudflare,Cloudflare,global,domain,dot,one.one.one.one:853,加密查询（DoT）
+Cloudflare,Cloudflare,global,domain,doh,https://cloudflare-dns.com/dns-query,加密查询（DoH）
+Cloudflare,Cloudflare,global,ipv4,doh,https://1.1.1.1/dns-query,加密查询（DoH）
+Google 公共 DNS,Google,global,ipv4,udp,8.8.8.8:53,主解析器
+Google 公共 DNS,Google,global,ipv4,tcp,8.8.8.8:53,主解析器
+Google 公共 DNS,Google,global,ipv4,udp,8.8.4.4:53,备用解析器
+Google 公共 DNS,Google,global,ipv4,tcp,8.8.4.4:53,备用解析器
+Google 公共 DNS,Google,global,ipv6,udp,[2001:4860:4860::8888]:53,IPv6 主解析器
+Google 公共 DNS,Google,global,ipv6,tcp,[2001:4860:4860::8888]:53,IPv6 主解析器
+Google 公共 DNS,Google,global,ipv6,udp,[2001:4860:4860::8844]:53,IPv6 备用解析器
+Google 公共 DNS,Google,global,ipv6,tcp,[2001:4860:4860::8844]:53,IPv6 备用解析器
+Google 公共 DNS,Google,global,domain,dot,dns.google:853,加密查询（DoT）
+Google 公共 DNS,Google,global,domain,doh,https://dns.google/dns-query,加密查询（DoH）
+Quad9,Quad9,global,ipv4,udp,9.9.9.9:53,主解析器（拦截恶意域名）
+Quad9,Quad9,global,ipv4,tcp,9.9.9.9:53,主解析器（拦截恶意域名）
+Quad9,Quad9,global,ipv4,udp,149.112.112.112:53,备用解析器
+Quad9,Quad9,global,ipv4,tcp,149.112.112.112:53,备用解析器
+Quad9,Quad9,global,ipv6,udp,[2620:fe::fe]:53,IPv6 主解析器
+Quad9,Quad9,global,ipv6,tcp,[2620:fe::fe]:53,IPv6 主解析器
+Quad9,Quad9,global,ipv6,udp,[2620:fe::9]:53,IPv6 备用解析器
+Quad9,Quad9,global,ipv6,tcp,[2620:fe::9]:53,IPv6 备用解析器
+Quad9,Quad9,global,domain,dot,dns.quad9.net:853,加密查询（DoT）
+Quad9,Quad9,global,domain,doh,https://dns.quad9.net/dns-query,加密查询（DoH）
+OpenDNS,OpenDNS,global,ipv4,udp,208.67.222.222:53,主解析器
+OpenDNS,OpenDNS,global,ipv4,tcp,208.67.222.222:53,主解析器
+OpenDNS,OpenDNS,global,ipv4,udp,208.67.220.220:53,备用解析器
+OpenDNS,OpenDNS,global,ipv4,tcp,208.67.220.220:53,备用解析器
+OpenDNS,OpenDNS,global,ipv6,udp,[2620:119:35::35]:53,IPv6 主解析器
+OpenDNS,OpenDNS,global,ipv6,tcp,[2620:119:35::35]:53,IPv6 主解析器
+OpenDNS,OpenDNS,global,ipv6,udp,[2620:119:53::53]:53,IPv6 备用解析器
+OpenDNS,OpenDNS,global,ipv6,tcp,[2620:119:53::53]:53,IPv6 备用解析器
+OpenDNS,OpenDNS,global,domain,dot,dns.opendns.com:853,加密查询（DoT）
+OpenDNS,OpenDNS,global,domain,doh,https://doh.opendns.com/dns-query,加密查询（DoH）
+AdGuard DNS,AdGuard DNS,global,ipv4,udp,94.140.14.14:53,主解析器（默认过滤）
+AdGuard DNS,AdGuard DNS,global,ipv4,tcp,94.140.14.14:53,主解析器（默认过滤）
+AdGuard DNS,AdGuard DNS,global,ipv4,udp,94.140.15.15:53,备用解析器
+AdGuard DNS,AdGuard DNS,global,ipv4,tcp,94.140.15.15:53,备用解析器
+AdGuard DNS,AdGuard DNS,global,ipv6,udp,[2a10:50c0::ad1:ff]:53,IPv6 主解析器
+AdGuard DNS,AdGuard DNS,global,ipv6,tcp,[2a10:50c0::ad1:ff]:53,IPv6 主解析器
+AdGuard DNS,AdGuard DNS,global,ipv6,udp,[2a10:50c0::ad2:ff]:53,IPv6 备用解析器
+AdGuard DNS,AdGuard DNS,global,ipv6,tcp,[2a10:50c0::ad2:ff]:53,IPv6 备用解析器
+AdGuard DNS,AdGuard DNS,global,domain,dot,dns.adguard.com:853,加密查询（DoT）
+AdGuard DNS,AdGuard DNS,global,domain,doh,https://dns.adguard.com/dns-query,加密查询（DoH）
+Control D,Control D,global,ipv4,udp,76.76.2.0:53,主解析器（Windscribe 团队）
+Control D,Control D,global,ipv4,tcp,76.76.2.0:53,主解析器（Windscribe 团队）
+Control D,Control D,global,ipv4,udp,76.76.10.0:53,备用解析器
+Control D,Control D,global,ipv4,tcp,76.76.10.0:53,备用解析器
+Control D,Control D,global,ipv6,udp,[2606:1a40::]:53,IPv6 主解析器
+Control D,Control D,global,ipv6,tcp,[2606:1a40::]:53,IPv6 主解析器
+Control D,Control D,global,ipv6,udp,[2606:1a40:1::]:53,IPv6 备用解析器
+Control D,Control D,global,ipv6,tcp,[2606:1a40:1::]:53,IPv6 备用解析器
+Control D,Control D,global,domain,dot,p0.control-d.com:853,加密查询（DoT）
+Control D,Control D,global,domain,doh,https://freedns.controld.com/p0,加密查询（DoH）
+Mullvad DNS,Mullvad DNS,global,ipv4,udp,194.242.2.2:53,主解析器（不拦截）
+Mullvad DNS,Mullvad DNS,global,ipv4,tcp,194.242.2.2:53,主解析器（不拦截）
+Mullvad DNS,Mullvad DNS,global,ipv4,udp,194.242.2.3:53,拦截广告与追踪器
+Mullvad DNS,Mullvad DNS,global,ipv4,tcp,194.242.2.3:53,拦截广告与追踪器
+Mullvad DNS,Mullvad DNS,global,ipv6,udp,[2a07:e340::2]:53,IPv6 解析器
+Mullvad DNS,Mullvad DNS,global,ipv6,tcp,[2a07:e340::2]:53,IPv6 解析器
+Mullvad DNS,Mullvad DNS,global,domain,dot,dns.mullvad.net:853,加密查询（DoT）
+Mullvad DNS,Mullvad DNS,global,domain,doh,https://dns.mullvad.net/dns-query,加密查询（DoH）
+DNS0.eu,DNS0.eu,global,ipv4,udp,193.110.81.0:53,欧洲非营利解析器
+DNS0.eu,DNS0.eu,global,ipv4,tcp,193.110.81.0:53,欧洲非营利解析器
+DNS0.eu,DNS0.eu,global,ipv4,udp,185.253.5.0:53,备用解析器
+DNS0.eu,DNS0.eu,global,ipv4,tcp,185.253.5.0:53,备用解析器
+DNS0.eu,DNS0.eu,global,domain,dot,dns0.eu:853,加密查询（DoT）
+DNS0.eu,DNS0.eu,global,domain,doh,https://zero.dns0.eu/,加密查询（DoH）
+DNS.SB,DNS.SB,global,ipv4,udp,185.222.222.222:53,主解析器
+DNS.SB,DNS.SB,global,ipv4,tcp,185.222.222.222:53,主解析器
+DNS.SB,DNS.SB,global,ipv4,udp,45.11.45.11:53,备用解析器
+DNS.SB,DNS.SB,global,ipv4,tcp,45.11.45.11:53,备用解析器
+DNS.SB,DNS.SB,global,domain,dot,dot.sb:853,加密查询（DoT）
+DNS.SB,DNS.SB,global,domain,doh,https://doh.dns.sb/dns-query,加密查询（DoH）
+CleanBrowsing,CleanBrowsing,global,ipv4,udp,185.228.168.9:53,安全过滤（拦恶意域名）
+CleanBrowsing,CleanBrowsing,global,ipv4,tcp,185.228.168.9:53,安全过滤（拦恶意域名）
+CleanBrowsing,CleanBrowsing,global,ipv4,udp,185.228.169.9:53,安全过滤（IPv6 入口）
+CleanBrowsing,CleanBrowsing,global,ipv4,tcp,185.228.169.9:53,安全过滤（IPv6 入口）
+CleanBrowsing,CleanBrowsing,global,ipv4,udp,185.228.168.10:53,成人过滤
+CleanBrowsing,CleanBrowsing,global,ipv4,tcp,185.228.168.10:53,成人过滤
+CleanBrowsing,CleanBrowsing,global,ipv4,udp,185.228.169.10:53,成人过滤（IPv6 入口）
+CleanBrowsing,CleanBrowsing,global,ipv4,tcp,185.228.169.10:53,成人过滤（IPv6 入口）
+CleanBrowsing,CleanBrowsing,global,ipv4,udp,185.228.168.168:53,家庭过滤
+CleanBrowsing,CleanBrowsing,global,ipv4,tcp,185.228.168.168:53,家庭过滤
+CleanBrowsing,CleanBrowsing,global,domain,dot,family-filter.dns.cleanbrowsing.org:853,加密查询（DoT）
+CleanBrowsing,CleanBrowsing,global,domain,doh,https://doh.cleanbrowsing.org/doh/family-filter/,加密查询（DoH）
+NextDNS,NextDNS,global,ipv4,udp,45.90.28.0:53,主解析器（需注册配置文件）
+NextDNS,NextDNS,global,ipv4,tcp,45.90.28.0:53,主解析器（需注册配置文件）
+NextDNS,NextDNS,global,ipv4,udp,45.90.30.0:53,备用解析器（需注册配置文件）
+NextDNS,NextDNS,global,ipv4,tcp,45.90.30.0:53,备用解析器（需注册配置文件）
+NextDNS,NextDNS,global,domain,doh,https://dns.nextdns.io,加密查询（DoH）
+Verisign,Verisign,global,ipv4,udp,64.6.64.6:53,主解析器
+Verisign,Verisign,global,ipv4,tcp,64.6.64.6:53,主解析器
+Verisign,Verisign,global,ipv4,udp,64.6.65.6:53,备用解析器
+Verisign,Verisign,global,ipv4,tcp,64.6.65.6:53,备用解析器
+Verisign,Verisign,global,ipv6,udp,[2620:74:1b::1:1]:53,IPv6 主解析器
+Verisign,Verisign,global,ipv6,tcp,[2620:74:1b::1:1]:53,IPv6 主解析器
+Verisign,Verisign,global,ipv6,udp,[2620:74:1c::2:2]:53,IPv6 备用解析器
+Verisign,Verisign,global,ipv6,tcp,[2620:74:1c::2:2]:53,IPv6 备用解析器
+Verisign,Verisign,global,domain,dot,doh.verisign.com:853,加密查询（DoT）
+Verisign,Verisign,global,domain,doh,https://doh.verisign.com/dns-query,加密查询（DoH）
+Yandex DNS,Yandex DNS,global,ipv4,udp,77.88.8.8:53,主解析器
+Yandex DNS,Yandex DNS,global,ipv4,tcp,77.88.8.8:53,主解析器
+Yandex DNS,Yandex DNS,global,ipv4,udp,77.88.8.1:53,备用解析器
+Yandex DNS,Yandex DNS,global,ipv4,tcp,77.88.8.1:53,备用解析器
+Yandex DNS,Yandex DNS,global,ipv6,udp,[2a02:6b8::feed:0ff]:53,IPv6 解析器
+Yandex DNS,Yandex DNS,global,ipv6,tcp,[2a02:6b8::feed:0ff]:53,IPv6 解析器
+Yandex DNS,Yandex DNS,global,domain,dot,common.dot.dns.yandex.net:853,加密查询（DoT）
+Yandex DNS,Yandex DNS,global,domain,doh,https://common.dot.dns.yandex.net/dns-query,加密查询（DoH）
+Comodo Secure DNS,Comodo Secure DNS,global,ipv4,udp,8.26.56.26:53,主解析器
+Comodo Secure DNS,Comodo Secure DNS,global,ipv4,tcp,8.26.56.26:53,主解析器
+Comodo Secure DNS,Comodo Secure DNS,global,ipv4,udp,8.20.247.20:53,备用解析器
+Comodo Secure DNS,Comodo Secure DNS,global,ipv4,tcp,8.20.247.20:53,备用解析器
+LibreDNS,LibreDNS,global,ipv4,udp,116.202.176.26:53,自由软件基金会解析器
+LibreDNS,LibreDNS,global,ipv4,tcp,116.202.176.26:53,自由软件基金会解析器
+LibreDNS,LibreDNS,global,domain,dot,dot.libredns.gr:853,加密查询（DoT）
+LibreDNS,LibreDNS,global,domain,doh,https://doh.libredns.gr/dns-query,加密查询（DoH）

@@ -116,6 +116,7 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'cidr-calc': 'sitemap',
   'ssl-check': 'shield-check',
   'dns-lookup': 'globe',
+  'dns-servers': 'list',
   'dns-tester': 'pulse',
   'websocket-test': 'connection',
   'ip-range-expand': 'sitemap',

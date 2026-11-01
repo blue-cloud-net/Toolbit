@@ -1,0 +1,85 @@
+{
+  "name": "DNS 服务器大全",
+  "description": "列出常用公共 DNS 的 UDP / TCP / DoT / DoH 端点，可搜索并按地区、协议、地址族筛选。",
+  "category": "网络",
+  "actions": {
+    "lookup": "实测"
+  },
+  "fields": {
+    "query": "搜索",
+    "region": "地区",
+    "proto": "协议",
+    "family": "地址族"
+  },
+  "options": {
+    "region": {
+      "all": "全部",
+      "china": "中国大陆",
+      "asia": "亚太",
+      "global": "全球"
+    },
+    "proto": {
+      "udp": "UDP",
+      "tcp": "TCP",
+      "dot": "DoT",
+      "doh": "DoH"
+    },
+    "family": {
+      "ipv4": "IPv4",
+      "ipv6": "IPv6",
+      "domain": "域名"
+    }
+  },
+  "results": {
+    "list": "DNS 服务器列表",
+    "provider": "服务商",
+    "providerEn": "英文名",
+    "proto": "协议",
+    "addr": "地址",
+    "family": "地址族",
+    "note": "说明",
+    "providers": "服务商数",
+    "endpoints": "端点数",
+    "encrypted": "加密端点",
+    "encryptedHint": "DoT 与 DoH 合计",
+    "dataVersion": "数据版本",
+    "empty": "没有符合条件的端点"
+  },
+  "examples": [
+    {
+      "label": "阿里公共 DNS",
+      "value": "阿里"
+    },
+    {
+      "label": "Cloudflare",
+      "value": "Cloudflare"
+    },
+    {
+      "label": "按地址查",
+      "value": "1.1.1.1"
+    }
+  ],
+  "hints": {
+    "query": "可写服务商中文名（阿里）、英文品牌名（Cloudflare）或地址（1.1.1.1）；搜索与地区、协议、地址族筛选可叠加。",
+    "output": "默认列出全部端点；键入或点选筛选项后即时收敛。地址列可逐行复制，「实测」列会跳转到 DNS 查询并预填该端点。",
+    "note": "数据来自内置快照，不联网。地址为各服务商的通用公开端点，具体以服务商官方文档为准。"
+  },
+  "faq": [
+    {
+      "q": "为什么同一个 IP 出现两行？",
+      "a": "UDP 与 TCP 是两条独立的查询通道：UDP 快但可能丢包，TCP 慢一些却能承载更大的响应（DNSSEC 记录尤其需要）。服务商两种都提供，因此各列一行。"
+    },
+    {
+      "q": "DoT 与 DoH 有什么区别？",
+      "a": "两者都是加密的 DNS 通道。DoT 用 TLS 跑在 853 端口；DoH 用 HTTPS 跑在 443 端口，因此在只放行 443 的网络里也能用。两者都比明文查询更难被中间设备干扰。"
+    },
+    {
+      "q": "「域名」地址族是什么意思？",
+      "a": "DoT 与 DoH 的端点通常用域名给出（如 dns.alidns.com），由系统解析后再建连；「IPv4」「IPv6」则是直接给出的地址字面量。"
+    },
+    {
+      "q": "点「实测」会发生什么？",
+      "a": "跳转到 DNS 查询工具，并把该端点的协议与地址预填进自定义服务器列表，直接就能发起真实查询。"
+    }
+  ]
+}

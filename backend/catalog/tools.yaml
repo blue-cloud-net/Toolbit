@@ -1470,9 +1470,25 @@ tools:
     wide: true
     i18nKey: tools.dns-lookup
 
-  - slug: dns-tester
+  - slug: dns-servers
     category: network
     order: 4
+    name: DNS 服务器大全
+    nameEn: DNS Server Directory
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.dns-servers
+
+  - slug: dns-tester
+    category: network
+    order: 5
     name: DNS 多记录测试
     nameEn: DNS Record Tester
     enabled: true
@@ -1488,7 +1504,7 @@ tools:
 
   - slug: websocket-test
     category: network
-    order: 5
+    order: 6
     name: WebSocket 测试
     nameEn: WebSocket Tester
     enabled: true
@@ -1504,7 +1520,7 @@ tools:
 
   - slug: mime-lookup
     category: network
-    order: 6
+    order: 7
     name: MIME 类型查询
     nameEn: MIME Type Lookup
     enabled: true
@@ -1520,7 +1536,7 @@ tools:
 
   - slug: http-status
     category: network
-    order: 7
+    order: 8
     name: HTTP 状态码查询
     nameEn: HTTP Status Code Lookup
     enabled: true
@@ -1536,7 +1552,7 @@ tools:
 
   - slug: device-headers
     category: network
-    order: 8
+    order: 9
     name: 请求头生成与 UA 解析
     nameEn: Device Headers
     enabled: true
@@ -1552,7 +1568,7 @@ tools:
 
   - slug: ip-range-expand
     category: network
-    order: 9
+    order: 10
     name: IP 段展开
     nameEn: IP Range Expander
     enabled: true

@@ -78,6 +78,7 @@ export const toolRegistry: Record<string, ToolLoader> = {
   'cidr-calc': () => import('./network/cidr-calc/index'),
   'ssl-check': () => import('./network/ssl-check/index'),
   'dns-lookup': () => import('./network/dns-lookup/index'),
+  'dns-servers': () => import('./network/dns-servers/index'),
   'dns-tester': () => import('./network/dns-tester/index'),
   'websocket-test': () => import('./network/websocket-test/index'),
   'mime-lookup': () => import('./network/mime-lookup/index'),

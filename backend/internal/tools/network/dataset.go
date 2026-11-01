@@ -25,6 +25,8 @@ const (
 	MimeTypesVersion = "2026-10"
 	// HTTPStatusVersion 是 HTTP 状态码数据集的快照版本。
 	HTTPStatusVersion = "2026-10"
+	// DNSServersVersion 是 DNS 服务器目录的快照版本。
+	DNSServersVersion = "2026-11"
 )
 
 // readDataset 读取内嵌数据集文件。

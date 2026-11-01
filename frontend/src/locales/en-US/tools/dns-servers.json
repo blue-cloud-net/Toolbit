@@ -1,0 +1,85 @@
+{
+  "name": "DNS Server Directory",
+  "description": "Lists the UDP / TCP / DoT / DoH endpoints of popular public DNS resolvers; search and filter by region, protocol and address family.",
+  "category": "Network",
+  "actions": {
+    "lookup": "Test"
+  },
+  "fields": {
+    "query": "Search",
+    "region": "Region",
+    "proto": "Protocol",
+    "family": "Address family"
+  },
+  "options": {
+    "region": {
+      "all": "All",
+      "china": "Mainland China",
+      "asia": "Asia Pacific",
+      "global": "Global"
+    },
+    "proto": {
+      "udp": "UDP",
+      "tcp": "TCP",
+      "dot": "DoT",
+      "doh": "DoH"
+    },
+    "family": {
+      "ipv4": "IPv4",
+      "ipv6": "IPv6",
+      "domain": "Hostname"
+    }
+  },
+  "results": {
+    "list": "DNS server list",
+    "provider": "Provider",
+    "providerEn": "English name",
+    "proto": "Protocol",
+    "addr": "Address",
+    "family": "Address family",
+    "note": "Note",
+    "providers": "Providers",
+    "endpoints": "Endpoints",
+    "encrypted": "Encrypted endpoints",
+    "encryptedHint": "DoT and DoH combined",
+    "dataVersion": "Data version",
+    "empty": "No endpoint matches the filters"
+  },
+  "examples": [
+    {
+      "label": "AliDNS",
+      "value": "AliDNS"
+    },
+    {
+      "label": "Cloudflare",
+      "value": "Cloudflare"
+    },
+    {
+      "label": "Search by address",
+      "value": "1.1.1.1"
+    }
+  ],
+  "hints": {
+    "query": "Accepts a provider name (AliDNS, Cloudflare) or an address (1.1.1.1); the text search combines with the region, protocol and address-family filters.",
+    "output": "All endpoints are listed by default; typing or picking a filter narrows the list instantly. Every address can be copied on its own, and the \"Test\" column jumps to DNS Lookup with that endpoint prefilled.",
+    "note": "Data comes from a built-in snapshot — nothing is sent over the network. Addresses are the general public endpoints of each provider; always confirm against the provider's own documentation."
+  },
+  "faq": [
+    {
+      "q": "Why does the same IP show up twice?",
+      "a": "UDP and TCP are two independent query channels. UDP is fast but can drop packets, while TCP is slower yet carries larger responses — which DNSSEC records especially need. Since providers offer both, each one gets its own row."
+    },
+    {
+      "q": "What is the difference between DoT and DoH?",
+      "a": "Both are encrypted DNS channels. DoT runs TLS on port 853; DoH runs HTTPS on port 443, so it still works on networks that only allow 443. Both are far harder for middleboxes to interfere with than plaintext queries."
+    },
+    {
+      "q": "What does the \"Hostname\" address family mean?",
+      "a": "DoT and DoH endpoints are usually given as hostnames (such as dns.alidns.com) that the system resolves before connecting. \"IPv4\" and \"IPv6\" are address literals given directly."
+    },
+    {
+      "q": "What happens when I click \"Test\"?",
+      "a": "It opens DNS Lookup with that endpoint's protocol and address prefilled in the custom server list, so a real query is one click away."
+    }
+  ]
+}
