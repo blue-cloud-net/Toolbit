@@ -691,7 +691,7 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 | --- | --- | --- |
 | PKI 服务层（续） | `backend/internal/pkisvc/cert.go` `pemder.go` `asn1.go` `chain.go` `chainverify.go` `chainrepair.go` `crl.go` | 证书 / CSR / 链 / CRL 的解析与验证 |
 | 证书类工具 | `backend/internal/tools/pki/` | 8 个 handler + 测试 |
-| 前端共享组件 | `frontend/src/components/tool/CertTextInput.vue` `CodeEditor.vue` | 证书族输入框；只读树 / hex 视图 |
+| 前端共享组件 | `frontend/src/components/tool/MaterialInput.vue` `CodeEditor.vue` | 材料族输入框；只读树 / hex 视图 |
 | 前端页面 | `frontend/src/tools/certificates/**` | 8 个工具页 |
 | 双语词条 | `frontend/src/locales/*/tools/` | 8 个工具的十项词条字段 |
 
@@ -737,7 +737,7 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 
 | ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| L11 | 共享组件 | `frontend/src/components/tool/CertTextInput.vue` `CodeEditor.vue` | 两组件各有单测；`CodeEditor` **自渲染**树与 hex，**不引入**编辑器依赖（防击穿 40 KB 预算） | — | ✅ |
+| L11 | 共享组件 | `frontend/src/components/tool/MaterialInput.vue` `CodeEditor.vue` | 两组件各有单测；`CodeEditor` **自渲染**树与 hex，**不引入**编辑器依赖（防击穿 40 KB 预算） | — | ✅ |
 | L12 | 八个工具页 | `frontend/src/tools/certificates/**` | 「填入示例 → 运行 → 复制」全链路可用；`asn1-view` 在 ≥1280 px 双栏 | L8, L11 | ✅ |
 | L13 | 双语词条与登记 | `frontend/src/locales/*/tools/*.json` `frontend/src/tools/index.ts` | 中英 key 集合一致；8 个 chunk 均 < 40 KB（gzip） | L12 | ✅ |
 
@@ -857,7 +857,7 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 
 | ID | 任务 | 改动 / 新增文件 | 验收标准 | 依赖 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| M11 | 十二个工具页 | `frontend/src/tools/certificates/**` | 「填入示例 → 运行 → 复制」全链路可用；`csr-gen` / `cert-gen` 复用 `KeyInput` 与 `CertTextInput`；`pfx-*` 复用 `ResultPanel` 的 base64 下载 | M8 | ✅ |
+| M11 | 十二个工具页 | `frontend/src/tools/certificates/**` | 「填入示例 → 运行 → 复制」全链路可用；`csr-gen` / `cert-gen` 复用 `KeyInput` 与 `MaterialInput`；`pfx-*` 复用 `ResultPanel` 的 base64 下载 | M8 | ✅ |
 | M12 | 双语词条与登记 | `frontend/src/locales/*/tools/*.json` `frontend/src/tools/index.ts` | 中英 key 集合一致；12 个 chunk 均 < 40 KB（gzip）；初始 JS < 250 KB（gzip） | M11 | ✅ |
 
 #### Phase M-D —— 文档与门禁

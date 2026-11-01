@@ -9,7 +9,7 @@ import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertTextInput from '@/components/tool/CertTextInput.vue'
+import MaterialInput from '@/components/tool/MaterialInput.vue'
 import KeyInput from '@/components/tool/KeyInput.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
@@ -108,7 +108,7 @@ function fillExample(): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <CertTextInput
+          <MaterialInput
             v-model="cert"
             v-model:format="certFormat"
             :label="t('tools.pfx-pack.fields.cert')"
@@ -122,7 +122,7 @@ function fillExample(): void {
             :formats="['pem', 'base64', 'hex']"
             show-passphrase
           />
-          <CertTextInput
+          <MaterialInput
             v-model="caCerts"
             v-model:format="caCertsFormat"
             :label="t('tools.pfx-pack.fields.caCerts')"

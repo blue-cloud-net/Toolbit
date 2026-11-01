@@ -10,7 +10,7 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertTextInput from '@/components/tool/CertTextInput.vue'
+import MaterialInput from '@/components/tool/MaterialInput.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -114,7 +114,7 @@ function fillExample(): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <CertTextInput
+          <MaterialInput
             v-model="input"
             v-model:format="inputFormat"
             :label="t('tools.pem-der.fields.input')"

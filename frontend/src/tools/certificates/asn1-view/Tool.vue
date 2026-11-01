@@ -10,7 +10,7 @@ import 'element-plus/es/components/input-number/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertTextInput from '@/components/tool/CertTextInput.vue'
+import MaterialInput from '@/components/tool/MaterialInput.vue'
 import CodeViewer from '@/components/tool/CodeViewer.vue'
 import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
@@ -169,7 +169,7 @@ function fillExample(): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <CertTextInput
+          <MaterialInput
             v-model="input"
             v-model:format="inputFormat"
             :label="t('tools.asn1-view.fields.input')"

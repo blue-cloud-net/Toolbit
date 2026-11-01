@@ -16,7 +16,7 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertTextInput from '@/components/tool/CertTextInput.vue'
+import MaterialInput from '@/components/tool/MaterialInput.vue'
 import KeyInput from '@/components/tool/KeyInput.vue'
 import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
@@ -253,7 +253,7 @@ function fillExample(): void {
           </label>
 
           <template v-if="signMode === 'ca'">
-            <CertTextInput
+            <MaterialInput
               v-model="issuerCert"
               v-model:format="issuerCertFormat"
               :label="t('tools.cert-gen.fields.issuerCert')"

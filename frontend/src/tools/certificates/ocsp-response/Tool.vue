@@ -7,7 +7,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertTextInput from '@/components/tool/CertTextInput.vue'
+import MaterialInput from '@/components/tool/MaterialInput.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
@@ -170,25 +170,25 @@ function fillExample(): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <CertTextInput
+          <MaterialInput
             v-model="response"
             v-model:format="responseFormat"
             :label="t('tools.ocsp-response.fields.response')"
             :rows="6"
           />
-          <CertTextInput
+          <MaterialInput
             v-model="cert"
             v-model:format="certFormat"
             :label="t('tools.ocsp-response.fields.cert')"
             :rows="5"
           />
-          <CertTextInput
+          <MaterialInput
             v-model="issuer"
             v-model:format="issuerFormat"
             :label="t('tools.ocsp-response.fields.issuer')"
             :rows="5"
           />
-          <CertTextInput
+          <MaterialInput
             v-model="trustedRoots"
             v-model:format="trustedRootsFormat"
             :label="t('tools.ocsp-response.fields.trustedRoots')"

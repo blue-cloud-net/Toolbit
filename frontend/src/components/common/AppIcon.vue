@@ -48,6 +48,7 @@ export type IconName =
   | 'link'
   | 'file-plus'
   | 'file-search'
+  | 'upload'
   | 'sitemap'
   | 'chain'
   | 'shield'
@@ -245,6 +246,12 @@ const PATHS: Record<IconName, string[]> = {
     'M14 3v5h5',
     'M14.5 15.5a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z',
     'M16.8 19.8 19 22',
+  ],
+  // 上传：托盘 + 向上箭头
+  upload: [
+    'M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15',
+    'M12 4v11',
+    'M7.5 8.5 12 4l4.5 4.5',
   ],
   sitemap: [
     'M10 3h4v4h-4z',

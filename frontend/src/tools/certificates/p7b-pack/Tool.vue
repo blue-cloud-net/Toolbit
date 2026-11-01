@@ -7,7 +7,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertTextInput from '@/components/tool/CertTextInput.vue'
+import MaterialInput from '@/components/tool/MaterialInput.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -77,7 +77,7 @@ function fillExample(): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <CertTextInput
+          <MaterialInput
             v-model="certs"
             v-model:format="certsFormat"
             :label="t('tools.p7b-pack.fields.certs')"

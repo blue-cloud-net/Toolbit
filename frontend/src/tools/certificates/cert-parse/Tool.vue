@@ -12,9 +12,9 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertTextInput from '@/components/tool/CertTextInput.vue'
 import KeyValueTable, { type KeyValueRow } from '@/components/tool/KeyValueTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
+import MaterialInput from '@/components/tool/MaterialInput.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
@@ -201,10 +201,11 @@ function fillExample(): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <CertTextInput
+          <MaterialInput
             v-model="cert"
             v-model:format="certFormat"
             :label="t('tools.cert-parse.fields.cert')"
+            slug="cert-parse"
           />
         </template>
 

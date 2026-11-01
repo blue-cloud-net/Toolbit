@@ -7,7 +7,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertTextInput from '@/components/tool/CertTextInput.vue'
+import MaterialInput from '@/components/tool/MaterialInput.vue'
 import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
@@ -123,7 +123,7 @@ function fillExample(): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <CertTextInput
+          <MaterialInput
             v-model="container"
             v-model:format="containerFormat"
             :label="t('tools.p7b-extract.fields.container')"

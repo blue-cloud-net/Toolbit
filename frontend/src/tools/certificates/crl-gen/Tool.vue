@@ -12,7 +12,7 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertTextInput from '@/components/tool/CertTextInput.vue'
+import MaterialInput from '@/components/tool/MaterialInput.vue'
 import KeyInput from '@/components/tool/KeyInput.vue'
 import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
@@ -175,7 +175,7 @@ function fillExample(): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <CertTextInput
+          <MaterialInput
             v-model="issuerCert"
             v-model:format="issuerCertFormat"
             :label="t('tools.crl-gen.fields.issuerCert')"
@@ -189,7 +189,7 @@ function fillExample(): void {
             :formats="['pem', 'base64', 'hex']"
             show-passphrase
           />
-          <CertTextInput
+          <MaterialInput
             v-model="revokedCert"
             v-model:format="revokedCertFormat"
             :label="t('tools.crl-gen.fields.revokedCert')"

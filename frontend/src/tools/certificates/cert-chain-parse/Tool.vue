@@ -8,9 +8,9 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertTextInput from '@/components/tool/CertTextInput.vue'
 import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
+import MaterialInput from '@/components/tool/MaterialInput.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -170,11 +170,13 @@ function fillExample(): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <CertTextInput
+          <MaterialInput
             v-model="bundle"
             v-model:format="bundleFormat"
             :label="t('tools.cert-chain-parse.fields.bundle')"
             :rows="12"
+            slug="cert-chain-parse"
+            append
           />
         </template>
 

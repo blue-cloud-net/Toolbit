@@ -10,7 +10,7 @@ import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertTextInput from '@/components/tool/CertTextInput.vue'
+import MaterialInput from '@/components/tool/MaterialInput.vue'
 import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
@@ -239,14 +239,14 @@ function fillExample(): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <CertTextInput
+          <MaterialInput
             v-model="bundle"
             v-model:format="bundleFormat"
             :label="t('tools.cert-chain-verify.fields.bundle')"
             :rows="10"
           />
 
-          <CertTextInput
+          <MaterialInput
             v-model="trustedRoots"
             v-model:format="trustedRootsFormat"
             :label="t('tools.cert-chain-verify.fields.trustedRoots')"

@@ -8,7 +8,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertTextInput from '@/components/tool/CertTextInput.vue'
+import MaterialInput from '@/components/tool/MaterialInput.vue'
 import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
@@ -147,21 +147,21 @@ function fillExample(): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <CertTextInput
+          <MaterialInput
             v-model="cert"
             v-model:format="certFormat"
             :label="t('tools.cert-chain-repair.fields.cert')"
             :rows="8"
           />
 
-          <CertTextInput
+          <MaterialInput
             v-model="intermediates"
             v-model:format="intermediatesFormat"
             :label="t('tools.cert-chain-repair.fields.intermediates')"
             :rows="8"
           />
 
-          <CertTextInput
+          <MaterialInput
             v-model="trustedRoots"
             v-model:format="trustedRootsFormat"
             :label="t('tools.cert-chain-repair.fields.trustedRoots')"

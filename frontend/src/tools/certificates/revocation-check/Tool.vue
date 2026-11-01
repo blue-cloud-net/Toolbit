@@ -8,7 +8,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertTextInput from '@/components/tool/CertTextInput.vue'
+import MaterialInput from '@/components/tool/MaterialInput.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
@@ -173,19 +173,19 @@ function fillExample(): void {
     <template #panel>
       <ToolPanel>
         <template #input>
-          <CertTextInput
+          <MaterialInput
             v-model="cert"
             v-model:format="certFormat"
             :label="t('tools.revocation-check.fields.cert')"
             :rows="6"
           />
-          <CertTextInput
+          <MaterialInput
             v-model="crl"
             v-model:format="crlFormat"
             :label="t('tools.revocation-check.fields.crl')"
             :rows="6"
           />
-          <CertTextInput
+          <MaterialInput
             v-model="issuer"
             v-model:format="issuerFormat"
             :label="t('tools.revocation-check.fields.issuer')"

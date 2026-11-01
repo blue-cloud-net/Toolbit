@@ -63,10 +63,34 @@
     "validity": "有效期",
     "reason": "原因"
   },
+  "material": {
+    "blocks": "识别到 {count} 个 PEM 块。",
+    "hint": "可粘贴 PEM 文本、base64 或十六进制的 DER；多个 PEM 块会按顺序一起处理。",
+    "panel": {
+      "upload": "上传文件",
+      "text": "粘贴文本"
+    },
+    "fields": {
+      "material": "材料",
+      "format": "格式"
+    },
+    "import": {
+      "drop": "把文件拖到这里",
+      "dropNamed": "把{material}文件拖到这里",
+      "accept": "支持 PEM / DER / Base64 / 十六进制",
+      "acceptMulti": "支持 PEM / DER / Base64 / 十六进制，可一次选多个",
+      "placeholder": "粘贴 PEM 文本，或把文件拖到这里",
+      "dropActive": "松开即可导入文件",
+      "notMaterial": "文件内容不是 PEM 文本或 DER 材料。",
+      "tooLarge": "导入后的内容超过 {max} KB 上限。",
+      "remove": "移除",
+      "clear": "清除内容"
+    }
+  },
   "file": {
-    "dropHint": "拖放文件到此处，或点击选择",
-    "tooLarge": "文件超过 {size} KB 上限",
-    "readFailed": "读取文件失败"
+    "dropzone": "把文件拖到这里，或点击选择",
+    "choose": "选择文件",
+    "clear": "清除文件"
   },
   "verdict": {
     "pass": "通过",
@@ -113,19 +137,6 @@
     "hints": {
       "format": "「自动识别」按 PEM → Base64 → DER → 十六进制的顺序尝试解析；显式指定格式时不做转换。"
     }
-  },
-  "file": {
-    "dropzone": "把文件拖到这里，或点击选择",
-    "choose": "选择文件",
-    "clear": "清除文件"
-  },
-  "cert": {
-    "fields": {
-      "material": "证书材料"
-    },
-    "blocks": "识别到 {count} 个 PEM 块。",
-    "hint": "可粘贴 PEM 文本、base64 或十六进制的 DER；多个 PEM 块会按顺序一起处理。",
-    "empty": "暂无内容"
   },
   "dropzone": {
     "hint": "拖入文件，或点击选择",

@@ -63,10 +63,34 @@
     "validity": "Validity",
     "reason": "Reason"
   },
+  "material": {
+    "blocks": "{count} PEM block(s) detected.",
+    "hint": "Paste PEM text, base64 or hex DER; multiple PEM blocks are processed in order.",
+    "panel": {
+      "upload": "Upload file",
+      "text": "Paste text"
+    },
+    "fields": {
+      "material": "Material",
+      "format": "Format"
+    },
+    "import": {
+      "drop": "Drop a file here",
+      "dropNamed": "Drop the {material} file here",
+      "accept": "Supports PEM / DER / Base64 / hex",
+      "acceptMulti": "Supports PEM / DER / Base64 / hex; you can select several at once",
+      "placeholder": "Paste PEM text, or drop a file here",
+      "dropActive": "Release to import the file",
+      "notMaterial": "The file is neither PEM text nor DER material.",
+      "tooLarge": "The imported content exceeds the {max} KB limit.",
+      "remove": "Remove",
+      "clear": "Clear content"
+    }
+  },
   "file": {
-    "dropHint": "Drop a file here, or click to choose",
-    "tooLarge": "File exceeds the {size} KB limit",
-    "readFailed": "Failed to read the file"
+    "dropzone": "Drop a file here, or click to choose one",
+    "choose": "Choose a file",
+    "clear": "Clear the file"
   },
   "verdict": {
     "pass": "Passed",
@@ -113,19 +137,6 @@
     "hints": {
       "format": "\"Auto-detect\" tries PEM → Base64 → DER → hexadecimal in order; an explicit format is parsed as-is."
     }
-  },
-  "file": {
-    "dropzone": "Drop a file here, or click to choose one",
-    "choose": "Choose a file",
-    "clear": "Clear the file"
-  },
-  "cert": {
-    "fields": {
-      "material": "Certificate material"
-    },
-    "blocks": "{count} PEM block(s) detected.",
-    "hint": "Accepts PEM text, base64 or hexadecimal DER; multiple PEM blocks are processed in order.",
-    "empty": "Nothing to show"
   },
   "dropzone": {
     "hint": "Drop a file here, or click to choose",

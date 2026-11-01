@@ -52,12 +52,13 @@ frontend/src/
 
 **共享组件清单（`components/tool/`）**
 
-`Asn1Tree` `Base64FileInput` `ByteView` `CertChainTable` `CertDetailDialog`
-`CertTextInput` `CodeEditor` `CodeViewer` `CopyButton` `DownloadButton`
+`Asn1Tree` `Base64FileInput` `ByteView` `CertChainTable` `CertDetail`
+`CertDetailDialog` `CodeEditor` `CodeViewer` `CopyButton` `DownloadButton`
 `EmptyState` `EncodingSelect` `ErrorAlert` `FileDropZone` `FileTextInput`
-`JsonViewer` `KeyInput` `KeyValueTable` `LoadingSkeleton` `ProgressStream`
-`QuickReference` `ResultPanel` `RunBar` `SearchField` `SensitiveInput`
-`ToolPageLayout` `ToolPanel` `ValidationHint`
+`JsonViewer` `KeyInput` `KeyValueTable` `LoadingSkeleton` `MaterialInput`
+`ProgressStream` `QuickReference` `ResultPanel` `RunBar` `SearchField`
+`SensitiveInput` `ToolPageLayout` `ToolPanel` `ValidityTrack`
+`ValidationHint`
 
 **组合式函数清单（`composables/`）**
 
@@ -109,7 +110,7 @@ frontend/src/
 ToolPageLayout
 ├── 标题行：图标 / 名称 / 描述 / 徽章 / 收藏 / 复制链接
 ├── ToolPanel
-│   ├── 输入区（FieldRow / FileDropZone / KeyInput / CertTextInput ...）
+│   ├── 输入区（FieldRow / FileDropZone / KeyInput / MaterialInput ...）
 │   ├── 参数区（按工具）
 │   ├── RunBar：运行 / 重置 / 填入示例
 │   └── ResultPanel：idle / loading / success / error
@@ -157,7 +158,7 @@ ToolPageLayout
 | `EncodingSelect` | utf8 / hex / base64 / base64url 切换 |
 | `SensitiveInput` | 遮蔽 + 显示切换（密钥、口令） |
 | `KeyInput` | 私钥 / 公钥输入，自动识别 PEM/DER |
-| `CertTextInput` | 证书 / CSR / CRL 文本输入，自动嗅探格式 |
+| `MaterialInput` | **通用**材料输入框，供所有以 PEM 文本承载的材料共用（证书 / CSR / CRL / P7B / PFX …）：**两个互斥入口**，一屏只渲染一个面板——「上传文件」（大拖放区）与「粘贴文本」（纯文本框），用分段控件（`ElRadioGroup` + `ElRadioButton`）切换，右侧是「格式」下拉；**禁止**做成「文本框上叠一个浮层 + 隐藏开关」——那种布局要靠「点哪儿都收起」的隐式规则维持，容易出现状态不闭环；文件选择用 Element Plus 的 `ElUpload`（拖放模式）作拖放区，拖入时嗅探 PEM / DER / base64 / 十六进制并自动切换格式，导入成功后自动切到「粘贴文本」面板；已导入文件显示为胶囊标签；`append` 让多文件追加成 bundle，`slug` 让体积上限取工具目录登记的请求体限额 |
 | `FileTextInput` | 文件或文本二选一 |
 | `FileDropZone` | 拖拽上传区，含大小与类型提示 |
 | `CodeEditor` | 等宽多行编辑（Tab 处理、折行开关、可选行号）；行号是编辑框内的**窄轨**，与输入区共用同一外框，**禁止**做成并列的独立盒子 |
