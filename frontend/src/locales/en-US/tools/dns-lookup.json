@@ -16,9 +16,22 @@
     "custom": "Custom servers",
     "timeoutMs": "Timeout (ms)"
   },
-  "options": {},
+  "options": {
+    "region": {
+      "global": "Global",
+      "switzerland": "Switzerland",
+      "china": "China",
+      "usa": "United States"
+    },
+    "group": {
+      "primary": "Primary",
+      "backup": "Backup",
+      "doh": "DoH (encrypted)"
+    }
+  },
   "views": {
-    "summary": "Summary"
+    "summary": "Summary",
+    "all": "All servers"
   },
   "results": {
     "output": "Answers",
@@ -35,11 +48,15 @@
     "latency": "Latency",
     "recordCount": "Records",
     "status": "Status",
+    "server": "Server",
+    "answers": "Answers",
+    "ok": "OK",
     "name": "Name",
     "type": "Type",
     "value": "Value",
     "empty": "Every server returned the same records",
-    "noRecord": "This server returned no records"
+    "noRecord": "This server returned no records",
+    "noServer": "No server was queried"
   },
   "examples": [
     {
@@ -49,7 +66,7 @@
   ],
   "hints": {
     "servers": "Leave every server unselected to use the system resolvers; once presets or custom servers are chosen, only those servers are queried.",
-    "presets": "Click a chip to toggle a server. Cloudflare, Google and AliDNS are selected by default so the first run already compares three resolvers.",
+    "presets": "Presets come in three groups: primary, backup and encrypted DoH. Click a chip to toggle a server. Cloudflare, Google and AliDNS are selected by default so the first run already compares three resolvers.",
     "limit": "At most {max} servers per query; {count} selected.",
     "doh": "DoH requires a full `https://` URL."
   },
@@ -61,6 +78,10 @@
     {
       "q": "What does \"answer consistency\" mean?",
       "a": "The answer sets returned by every successful server are compared. When they differ, the summary lists which servers are missing a given record — common with CDN geolocation or DNS round-robin."
+    },
+    {
+      "q": "What does the \"All servers\" tab show?",
+      "a": "It lists every server queried in this run — address, protocol, latency, status and a summary of its answers — so the results can be compared side by side."
     },
     {
       "q": "Are TTLs included?",

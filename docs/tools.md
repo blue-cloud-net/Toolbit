@@ -971,7 +971,7 @@
 | --- | --- | --- |
 | CIDR 计算 | `cidr-calc` | 子网地址换算与可视化 |
 | SSL 证书检测 | `ssl-check` | 现场握手并检查证书链 |
-| DNS 查询 | `dns-lookup` | 多服务器对比查询各类 DNS 记录 |
+| DNS 查询 | `dns-lookup` | 多服务器（主用 / 备用 / DoH）对比查询各类 DNS 记录 |
 | DNS 多记录测试 | `dns-tester` | whois / DNSSEC / PTR 检测 |
 | WebSocket 测试 | `websocket-test` | 浏览器直连测试 |
 | MIME 类型查询 | `mime-lookup` | 媒体类型全集浏览与检索（键入即时筛选） |

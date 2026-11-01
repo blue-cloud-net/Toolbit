@@ -29,6 +29,7 @@ import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
 import {
   DEFAULT_PRESET_IDS,
+  DNS_PRESET_GROUPS,
   DNS_SERVER_PRESETS,
   MAX_SERVERS,
   type DNSServerPreset,
@@ -118,12 +119,44 @@ const serverCount = computed(() => activePresets.value.length + customServers.va
 /** 是否还能再加服务器。 */
 const canAddServer = computed(() => serverCount.value < MAX_SERVERS)
 
-/** 预设筛选项。 */
-const presetOptions = computed(() =>
-  DNS_SERVER_PRESETS.map((preset) => ({
-    value: preset.id,
-    label: preset.label,
-    hint: preset.region,
+/**
+ * 地区标签。
+ *
+ * 用**字面量键**而不是模板字面量：`usage.test.ts` 遇到模板字面量键会**整页跳过**，
+ * 这会让本页的其它词条引用全部失去静态校验。
+ *
+ * 放在 `computed` 里，切换语言时才会重新求值。
+ */
+const REGION_LABELS = computed<Record<string, string>>(() => ({
+  global: t('tools.dns-lookup.options.region.global'),
+  switzerland: t('tools.dns-lookup.options.region.switzerland'),
+  china: t('tools.dns-lookup.options.region.china'),
+  usa: t('tools.dns-lookup.options.region.usa'),
+}))
+
+/**
+ * 分组标题。
+ *
+ * 与 `REGION_LABELS` 同理：用**字面量键**而不是模板字面量，
+ * 否则 `usage.test.ts` 会整页跳过本页的静态校验。
+ */
+const GROUP_LABELS = computed<Record<string, string>>(() => ({
+  primary: t('tools.dns-lookup.options.group.primary'),
+  backup: t('tools.dns-lookup.options.group.backup'),
+  doh: t('tools.dns-lookup.options.group.doh'),
+}))
+
+/** 分组后的预设筛选项；已达数量上限时禁用未选中的项。 */
+const presetGroups = computed(() =>
+  DNS_PRESET_GROUPS.map((group) => ({
+    key: group,
+    label: GROUP_LABELS.value[group] ?? group,
+    options: DNS_SERVER_PRESETS.filter((preset) => preset.group === group).map((preset) => ({
+      value: preset.id,
+      label: preset.label,
+      hint: REGION_LABELS.value[preset.regionKey] ?? preset.regionKey,
+      disabled: !selectedPresets.value.includes(preset.id) && !canAddServer.value,
+    })),
   })),
 )
 
@@ -135,9 +168,12 @@ const servers = computed(() => [
     .map((item) => ({ proto: item.proto, addr: item.addr.trim() })),
 ])
 
-/** 结果页签：汇总 + 每台服务器。 */
+/** 结果页签：汇总 + 全部服务器 + 每台服务器。 */
 const views = computed(() => {
-  const list = [{ id: 'summary', label: t('tools.dns-lookup.views.summary') }]
+  const list = [
+    { id: 'summary', label: t('tools.dns-lookup.views.summary') },
+    { id: 'all', label: t('tools.dns-lookup.views.all') },
+  ]
   for (const server of data.value?.perServer ?? []) {
     list.push({ id: server.server, label: shortServerLabel(server.server) })
   }
@@ -293,6 +329,44 @@ const answerColumns = computed<DataTableColumn[]>(() => [
   { key: 'value', label: t('tools.dns-lookup.results.value'), mono: true },
 ])
 
+/** 「全部服务器」表里每台服务器最多预览的记录条数。 */
+const ANSWER_PREVIEW_LIMIT = 4
+
+/** 「全部服务器」表的列定义。 */
+const allServerColumns = computed<DataTableColumn[]>(() => [
+  { key: 'server', label: t('tools.dns-lookup.results.server'), mono: true },
+  { key: 'proto', label: t('tools.dns-lookup.results.protocol'), mono: true },
+  { key: 'latency', label: t('tools.dns-lookup.results.latency'), mono: true, align: 'right' },
+  { key: 'status', label: t('tools.dns-lookup.results.status') },
+  { key: 'records', label: t('tools.dns-lookup.results.recordCount'), align: 'right' },
+  { key: 'answers', label: t('tools.dns-lookup.results.answers'), mono: true },
+])
+
+/** 「全部服务器」表的行：每台服务器的耗时、状态与结果摘要。 */
+const allServerRows = computed<DataTableRow[]>(() =>
+  (data.value?.perServer ?? []).map((server) => {
+    const answers = server.answers.map((answer) => `${answer.type} ${answer.value}`)
+    const preview = answers.slice(0, ANSWER_PREVIEW_LIMIT).join('、')
+    const more =
+      answers.length > ANSWER_PREVIEW_LIMIT ? ` …(${answers.length})` : ''
+    return {
+      key: server.server,
+      level: server.error ? ('danger' as const) : undefined,
+      badges: {
+        status: server.error ? ('danger' as const) : ('success' as const),
+      },
+      cells: {
+        server: server.server,
+        proto: server.proto,
+        latency: `${server.latencyMs}ms`,
+        status: server.error ? server.error.code : t('tools.dns-lookup.results.ok'),
+        records: String(server.answers.length),
+        answers: preview + more,
+      },
+    }
+  }),
+)
+
 /** 当前页签对应的服务器。 */
 const activeServer = computed<DNSServerResult | null>(
   () => (data.value?.perServer ?? []).find((item) => item.server === activeView.value) ?? null,
@@ -350,17 +424,12 @@ const resultText = computed(() => {
 
 const faq = computed<FaqItem[]>(() => tm('tools.dns-lookup.faq') as FaqItem[])
 
-/** 切换某个预设服务器的选中状态。 */
-function togglePreset(id: string): void {
-  const index = selectedPresets.value.indexOf(id)
-  if (index >= 0) {
-    selectedPresets.value.splice(index, 1)
+/** 应用预设服务器的新选择；超出数量上限时忽略。 */
+function updateSelectedPresets(value: string[]): void {
+  if (value.length > MAX_SERVERS - customServers.value.length) {
     return
   }
-  if (!canAddServer.value) {
-    return
-  }
-  selectedPresets.value.push(id)
+  selectedPresets.value = value
 }
 
 /** 追加一台自定义服务器。 */
@@ -448,12 +517,19 @@ function reset(): void {
         <template #options>
           <div class="field">
             <span class="field__label">{{ t('tools.dns-lookup.fields.presets') }}</span>
-            <FilterChips
-              :model-value="''"
-              :options="presetOptions"
-              :aria-label="t('tools.dns-lookup.fields.presets')"
-              @update:model-value="togglePreset"
-            />
+            <div
+              v-for="group in presetGroups"
+              :key="group.key"
+              class="presets"
+            >
+              <span class="presets__title">{{ group.label }}</span>
+              <FilterChips
+                :selected="selectedPresets"
+                :options="group.options"
+                :aria-label="group.label"
+                @update:selected="updateSelectedPresets"
+              />
+            </div>
             <p class="field__hint">
               {{ t('tools.dns-lookup.hints.presets') }}
             </p>
@@ -556,6 +632,16 @@ function reset(): void {
             />
           </template>
 
+          <template v-else-if="viewId === 'all'">
+            <DataTable
+              class="table"
+              :columns="allServerColumns"
+              :rows="allServerRows"
+              :copy-column="'server'"
+              :empty="t('tools.dns-lookup.results.noServer')"
+            />
+          </template>
+
           <div
             v-else-if="activeServer"
           >
@@ -608,6 +694,18 @@ function reset(): void {
 </template>
 
 <style scoped>
+.presets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  margin-bottom: var(--tb-space-2);
+}
+
+.presets__title {
+  font-size: var(--tb-font-2xs);
+  color: var(--tb-text-tertiary);
+}
+
 .custom {
   display: flex;
   flex-wrap: wrap;

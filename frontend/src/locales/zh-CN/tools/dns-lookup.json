@@ -16,9 +16,22 @@
     "custom": "自定义服务器",
     "timeoutMs": "超时（毫秒）"
   },
-  "options": {},
+  "options": {
+    "region": {
+      "global": "全球",
+      "switzerland": "瑞士",
+      "china": "中国",
+      "usa": "美国"
+    },
+    "group": {
+      "primary": "主用",
+      "backup": "备用",
+      "doh": "DoH 加密"
+    }
+  },
   "views": {
-    "summary": "汇总"
+    "summary": "汇总",
+    "all": "全部服务器"
   },
   "results": {
     "output": "解析结果",
@@ -35,11 +48,15 @@
     "latency": "耗时",
     "recordCount": "记录数",
     "status": "状态",
+    "server": "服务器",
+    "answers": "结果",
+    "ok": "成功",
     "name": "记录名",
     "type": "类型",
     "value": "值",
     "empty": "各服务器的解析结果完全一致",
-    "noRecord": "该服务器没有返回记录"
+    "noRecord": "该服务器没有返回记录",
+    "noServer": "本次没有查询任何服务器"
   },
   "examples": [
     {
@@ -49,7 +66,7 @@
   ],
   "hints": {
     "servers": "留空使用系统配置的解析器；选择预设或添加自定义服务器后只查询指定服务器。",
-    "presets": "点击标签切换服务器；默认选中 Cloudflare、Google 与 AliDNS 三家，可多选对比。",
+    "presets": "预设分三组：主用、备用与 DoH 加密。点击标签切换服务器；默认选中 Cloudflare、Google 与 AliDNS 三家，可多选对比。",
     "limit": "一次最多查询 {max} 台服务器，当前已选 {count} 台。",
     "doh": "DoH 需要填写完整的 `https://` 地址。"
   },
@@ -61,6 +78,10 @@
     {
       "q": "「记录一致性」是什么意思？",
       "a": "比较各台成功服务器返回的记录集合。若有差异，汇总页会列出「哪些服务器缺少某条记录」，常见于 CDN 就近解析或 DNS 轮询。"
+    },
+    {
+      "q": "「全部服务器」页签看什么？",
+      "a": "逐台列出本次查询的所有服务器：地址、协议、耗时、状态与结果摘要，便于横向对比。"
     },
     {
       "q": "能查到 TTL 吗？",
