@@ -16,8 +16,9 @@ import { ElInput } from 'element-plus/es/components/input/index'
 import 'element-plus/es/components/input/style/css'
 import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
 import 'element-plus/es/components/select/style/css'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 
 import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import FilterChips from '@/components/tool/FilterChips.vue'
@@ -32,6 +33,7 @@ import {
   DNS_PRESET_GROUPS,
   DNS_SERVER_PRESETS,
   MAX_SERVERS,
+  findDNSPreset,
   type DNSServerPreset,
 } from '@/tools/network/dns-lookup/presets'
 
@@ -93,6 +95,10 @@ const PROTOS = ['udp', 'tcp', 'dot', 'doh']
 
 const { t, tm } = useI18n()
 
+/** 当前路由；用于读取「DNS 服务器大全」带来的预填参数。 */
+const route = useRoute()
+const router = useRouter()
+
 const host = ref(DEFAULT_EXAMPLE.host)
 const type = ref(DEFAULT_EXAMPLE.type)
 const selectedPresets = ref<string[]>([...DEFAULT_PRESET_IDS])
@@ -143,6 +149,8 @@ const REGION_LABELS = computed<Record<string, string>>(() => ({
 const GROUP_LABELS = computed<Record<string, string>>(() => ({
   primary: t('tools.dns-lookup.options.group.primary'),
   backup: t('tools.dns-lookup.options.group.backup'),
+  tcp: t('tools.dns-lookup.options.group.tcp'),
+  dot: t('tools.dns-lookup.options.group.dot'),
   doh: t('tools.dns-lookup.options.group.doh'),
 }))
 
@@ -474,6 +482,51 @@ function reset(): void {
   customAddr.value = ''
   resetRun()
 }
+
+/**
+ * 应用 URL 预填。
+ *
+ * 「DNS 服务器大全」的行尾「实测」链接会带上 `proto` 与 `addr`；
+ * 也支持 `preset` 直接点名某个预设。预填**覆盖**默认预选，
+ * 避免与「一次最多 8 台」的上限冲突。
+ *
+ * 返回是否真的预填了。
+ */
+function applyPrefill(): boolean {
+  const query = route.query
+  const presetId = typeof query.preset === 'string' ? query.preset : ''
+  if (presetId !== '') {
+    const preset = findDNSPreset(presetId)
+    if (!preset) {
+      return false
+    }
+    selectedPresets.value = [preset.id]
+    customServers.value = []
+    return true
+  }
+
+  const proto = typeof query.proto === 'string' ? query.proto : ''
+  const addr = typeof query.addr === 'string' ? query.addr : ''
+  // 协议必须是受支持的取值；非法值直接忽略，由后端校验兼底。
+  if (proto === '' || addr === '' || !PROTOS.includes(proto)) {
+    return false
+  }
+  selectedPresets.value = []
+  customServers.value = [{ id: 1, proto, addr }]
+  customProto.value = proto
+  return true
+}
+
+// 首次进入即应用预填，保证首帧就是预填后的状态。
+const prefilled = applyPrefill()
+
+onMounted(() => {
+  if (!prefilled) {
+    return
+  }
+  // 清掉查询参数：刷新页面不应重复套用。
+  void router.replace({ name: 'tool', params: { slug: 'dns-lookup' }, query: {} })
+})
 </script>
 
 <template>

@@ -26,6 +26,8 @@
     "group": {
       "primary": "Primary",
       "backup": "Backup",
+      "tcp": "TCP transport",
+      "dot": "DoT (encrypted)",
       "doh": "DoH (encrypted)"
     }
   },
@@ -66,7 +68,7 @@
   ],
   "hints": {
     "servers": "Leave every server unselected to use the system resolvers; once presets or custom servers are chosen, only those servers are queried.",
-    "presets": "Presets come in three groups: primary, backup and encrypted DoH. Click a chip to toggle a server. Cloudflare, Google and AliDNS are selected by default so the first run already compares three resolvers.",
+    "presets": "Presets come in five groups: primary, backup, TCP transport, encrypted DoT and encrypted DoH. Click a chip to toggle a server. Cloudflare, Google and AliDNS are selected by default so the first run already compares three resolvers.",
     "limit": "At most {max} servers per query; {count} selected.",
     "doh": "DoH requires a full `https://` URL."
   },

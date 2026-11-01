@@ -11,6 +11,7 @@ import {
   DNS_PRESET_GROUPS,
   DNS_SERVER_PRESETS,
   MAX_SERVERS,
+  findDNSPreset,
 } from './presets'
 
 describe('DNS 服务器预设', () => {
@@ -39,6 +40,20 @@ describe('DNS 服务器预设', () => {
     }
   })
 
+  it('TCP 分组是 host:port 形式的明文地址', () => {
+    for (const preset of DNS_SERVER_PRESETS.filter((item) => item.group === 'tcp')) {
+      expect(preset.proto).toBe('tcp')
+      expect(preset.addr).toMatch(/^\d{1,3}(\.\d{1,3}){3}:\d+$/)
+    }
+  })
+
+  it('DoT 分组是主机名加 853 端口', () => {
+    for (const preset of DNS_SERVER_PRESETS.filter((item) => item.group === 'dot')) {
+      expect(preset.proto).toBe('dot')
+      expect(preset.addr).toMatch(/^[a-z0-9.-]+:853$/)
+    }
+  })
+
   it('主用与备用分组是 host:port 形式的明文地址', () => {
     for (const preset of DNS_SERVER_PRESETS.filter(
       (item) => item.group === 'primary' || item.group === 'backup',
@@ -46,6 +61,13 @@ describe('DNS 服务器预设', () => {
       expect(preset.proto).toBe('udp')
       expect(preset.addr).toMatch(/^\d{1,3}(\.\d{1,3}){3}:\d+$/)
     }
+  })
+
+  it('可以按标识找到预设', () => {
+    const first = DNS_SERVER_PRESETS[0]
+    expect(first).toBeDefined()
+    expect(findDNSPreset(first!.id)?.addr).toBe(first!.addr)
+    expect(findDNSPreset('no-such-preset')).toBeNull()
   })
 
   it('默认选中的预设都存在', () => {

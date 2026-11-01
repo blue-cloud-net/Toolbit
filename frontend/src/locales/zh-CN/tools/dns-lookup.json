@@ -26,6 +26,8 @@
     "group": {
       "primary": "主用",
       "backup": "备用",
+      "tcp": "TCP 通道",
+      "dot": "DoT 加密",
       "doh": "DoH 加密"
     }
   },
@@ -66,7 +68,7 @@
   ],
   "hints": {
     "servers": "留空使用系统配置的解析器；选择预设或添加自定义服务器后只查询指定服务器。",
-    "presets": "预设分三组：主用、备用与 DoH 加密。点击标签切换服务器；默认选中 Cloudflare、Google 与 AliDNS 三家，可多选对比。",
+    "presets": "预设分五组：主用、备用、TCP 通道、DoT 加密与 DoH 加密。点击标签切换服务器；默认选中 Cloudflare、Google 与 AliDNS 三家，可多选对比。",
     "limit": "一次最多查询 {max} 台服务器，当前已选 {count} 台。",
     "doh": "DoH 需要填写完整的 `https://` 地址。"
   },
