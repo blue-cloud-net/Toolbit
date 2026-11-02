@@ -121,6 +121,7 @@ export const toolRegistry: Record<string, ToolLoader> = {
   'nginx-config': () => import('./system/nginx-config/index'),
   'firewall-rules': () => import('./system/firewall-rules/index'),
   'docker-compose-gen': () => import('./system/docker-compose-gen/index'),
+  'docker-run-convert': () => import('./system/docker-run-convert/index'),
 
   // ── 文档 / Documents ──
   'markdown-preview': () => import('./documents/markdown-preview/index'),

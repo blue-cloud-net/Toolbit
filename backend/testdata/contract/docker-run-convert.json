@@ -1,0 +1,67 @@
+{
+  "slug": "docker-run-convert",
+  "description": "docker run 与 Compose 双向转换的契约测试数据。",
+  "cases": [
+    {
+      "name": "docker run 命令转 Compose",
+      "request": {
+        "direction": "runToCompose",
+        "input": "docker run -d --name web -p 8080:80 nginx:alpine"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "direction": "runToCompose",
+          "image": "nginx:alpine",
+          "serviceName": "nginx"
+        }
+      }
+    },
+    {
+      "name": "Compose 配置转 docker run",
+      "request": {
+        "direction": "composeToRun",
+        "input": "services:\n  web:\n    image: nginx:alpine\n    ports:\n      - \"8080:80\"\n"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "direction": "composeToRun"
+        }
+      }
+    },
+    {
+      "name": "严格模式遇到未支持参数",
+      "request": {
+        "direction": "runToCompose",
+        "input": "docker run --rm nginx:alpine",
+        "strict": true
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "缺少输入",
+      "request": {
+        "direction": "runToCompose"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "非法转换方向",
+      "request": {
+        "direction": "sideways",
+        "input": "docker run nginx:alpine"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_MODE"
+      }
+    }
+  ]
+}

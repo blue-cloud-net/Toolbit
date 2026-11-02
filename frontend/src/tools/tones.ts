@@ -145,6 +145,7 @@ export const TOOL_TONES: Record<string, Tone> = {
   'nginx-config': 'teal',
   'firewall-rules': 'rose',
   'docker-compose-gen': 'blue',
+  'docker-run-convert': 'indigo',
   'lookup-table': 'violet',
 
   // ── 网络 / Network ──

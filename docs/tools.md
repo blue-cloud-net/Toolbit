@@ -19,7 +19,7 @@
 | [格式化](#格式化formatting) | 9 | JSON、JS、SQL、HTML、XML、TOML、YAML、格式转换、颜色转换 |
 | [文本](#文本text) | 7 | 正则测试、文本转换、文本对比、正则校验、正则生成、数据脱敏、文本统计 |
 | [数据](#数据data) | 13 | 时间戳、UUID、日期计算、国家代码、行政区划、二维码、号码校验、CSV 转换、JSON 转类型、模拟数据、归档查看、文件识别、ID 生成 |
-| [系统](#系统system) | 7 | cURL、Crontab、权限计算、Nginx 配置生成、防火墙规则生成、Compose 配置生成、速查表 |
+| [系统](#系统system) | 8 | cURL、Crontab、权限计算、Nginx 配置生成、防火墙规则生成、Compose 配置生成、Docker run 互转、速查表 |
 | [网络](#网络network) | 11 | CIDR、SSL 检测、DNS 查询、DNS 服务器大全、DNS 测试、WebSocket 测试、MIME 类型、HTTP 状态码、UA 解析、请求头生成、IP 段展开 |
 | [文档](#文档documents) | 4 | PDF 签名校验、Markdown 预览、EML 解析、Markdown 转换 |
 
@@ -967,6 +967,7 @@
 | Nginx 配置生成 | `nginx-config` | 生成 Nginx 全局与站点配置 |
 | 防火墙规则生成 | `firewall-rules` | 生成 ufw / firewalld / iptables / nftables 规则 |
 | Compose 配置生成 | `docker-compose-gen` | 由服务定义生成 Compose 配置 |
+| docker run 互转 | `docker-run-convert` | `docker run` 命令与 Compose 配置双向转换 |
 | 速查表 | `lookup-table` | 查询端口、退出码与时间戳格式 |
 
 ### cURL 命令生成（cURL Generator）
@@ -1005,6 +1006,20 @@
 **常见问题**
 
 - **Q：`755` 是什么意思？** A：属主可读写执行，属组与其他人可读可执行。
+
+### docker run 互转（Docker Run / Compose Converter）
+
+- **用途**：在 `docker run` 命令与 Compose 配置之间双向转换。
+- **输入**：转换方向、源文本（命令或 YAML）、服务名（可选）、严格模式开关。
+- **输出**：转换产物文本、镜像与服务名（命令 → Compose）或逐服务的命令（Compose → 命令）、未转换项清单。
+- **默认**：方向 `docker run → Compose`；服务名留空时由镜像名推导；宽松模式（忽略未支持项并列出）。
+- **安全提示**：转换是**纯文本**处理，不连接守护进程；未转换项**只列名字**，**不回显取值**（如 `-e` 里的口令）。
+
+**常见问题**
+
+- **Q：支持哪些参数？** A：命令方向覆盖名称、端口、环境变量、卷、网络、重启策略、入口点、工作目录、用户、主机名、特权、cap、标签、tmpfs、设备、内存与 CPU；其余参数会被忽略并列出。
+- **Q：为什么有的项没转换？** A：例如 `--env-file`、`--mount`、`healthcheck`、`depends_on`、`build` 在另一侧没有等价项。
+- **Q：结果能直接用吗？** A：这是语法级转换，落地前请用 `docker compose config` 校验。
 
 ---
 

@@ -1,0 +1,55 @@
+{
+  "name": "Docker Run / Compose Converter",
+  "description": "Convert between a docker run command and a Compose file, covering ports, environment variables, volumes, networks and the start command.",
+  "category": "System",
+  "actions": {
+    "run": "Convert"
+  },
+  "fields": {
+    "direction": "Direction",
+    "input": "Input",
+    "serviceName": "Service name",
+    "strict": "Strict mode"
+  },
+  "options": {
+    "direction": {
+      "runToCompose": "docker run → Compose",
+      "composeToRun": "Compose → docker run"
+    }
+  },
+  "results": {
+    "output": "Result",
+    "direction": "Direction",
+    "image": "Image",
+    "serviceName": "Service name",
+    "service": "Service",
+    "serviceCount": "Services",
+    "command": "Command",
+    "empty": "No service to show"
+  },
+  "examples": [
+    {
+      "label": "docker run to Compose",
+      "value": "docker run -d --name web -p 8080:80 -e TZ=Asia/Shanghai nginx:alpine"
+    }
+  ],
+  "hints": {
+    "input": "Paste a docker run command or a Compose file; the conversion is pure text processing and never talks to a daemon.",
+    "serviceName": "Leave it empty to derive the name from the image.",
+    "strict": "Fail on unsupported options or keys instead of ignoring them."
+  },
+  "faq": [
+    {
+      "q": "Which docker run options are supported?",
+      "a": "Name, ports, environment, volumes, networks, restart policy, entrypoint, working dir, user, hostname, privileged, capabilities, labels, tmpfs, devices, memory and CPU. Anything else is ignored and listed."
+    },
+    {
+      "q": "Why are some options left out?",
+      "a": "Options such as --env-file, --mount, healthcheck, depends_on and build have no equivalent on the other side. They are listed by name, and their values are never echoed back."
+    },
+    {
+      "q": "Can I use the output as is?",
+      "a": "This is a syntax-level conversion. Validate it with docker compose config, and fill in networks, volumes and health checks as needed."
+    }
+  ]
+}

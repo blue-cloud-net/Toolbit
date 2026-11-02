@@ -78,6 +78,15 @@ func Definitions() []tools.Definition {
 			},
 		},
 		{
+			Slug: "docker-run-convert",
+			NewRequest: func() tools.Request {
+				return &DockerRunConvertRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return DockerRunConvert(ctx, req.(*DockerRunConvertRequest))
+			},
+		},
+		{
 			Slug: "lookup-table",
 			NewRequest: func() tools.Request {
 				return &LookupTableRequest{}

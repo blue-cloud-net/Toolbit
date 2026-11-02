@@ -1438,9 +1438,25 @@ tools:
     wide: false
     i18nKey: tools.docker-compose-gen
 
-  - slug: lookup-table
+  - slug: docker-run-convert
     category: system
     order: 7
+    name: docker run 与 Compose 互转
+    nameEn: Docker Run / Compose Converter
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: true
+    i18nKey: tools.docker-run-convert
+
+  - slug: lookup-table
+    category: system
+    order: 8
     name: 速查表查询
     nameEn: Lookup Table
     enabled: true

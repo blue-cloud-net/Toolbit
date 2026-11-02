@@ -2,7 +2,7 @@
 
 > 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
 
-覆盖 **7** 个系统类工具。端点均为 `POST /api/v1/tools/{slug}`，全部为 `light` 档位。
+覆盖 **8** 个系统类工具。端点均为 `POST /api/v1/tools/{slug}`，全部为 `light` 档位。
 
 | slug | 名称 |
 | --- | --- |
@@ -12,6 +12,7 @@
 | [nginx-config](#nginx-config) | Nginx 配置生成 |
 | [firewall-rules](#firewall-rules) | 防火墙规则生成 |
 | [docker-compose-gen](#docker-compose-gen) | Compose 配置生成 |
+| [docker-run-convert](#docker-run-convert) | docker run 与 Compose 互转 |
 | [lookup-table](#lookup-table) | 速查表 |
 
 ---
@@ -221,6 +222,48 @@ Unix 权限计算与解释。
 `MISSING_FIELD`、`INVALID_FIELD`。
 
 > 生成的是 Compose 文本，不含 `build` 段与密钥。
+
+---
+
+## docker-run-convert
+
+在 `docker run` 命令与 Compose 配置之间双向转换（Docker Run / Compose Converter）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `direction` | string | 否 | `runToCompose`（默认）\| `composeToRun` |
+| `input` | string | 是 | 源文本：`docker run` 命令或 Compose 配置（≤ 64 KiB） |
+| `serviceName` | string | 否 | `runToCompose` 方向的服务名；留空则由镜像名推导 |
+| `strict` | bool | 否 | 严格模式：遇到未支持项直接报错，默认 `false` |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `direction` | string | 实际使用的转换方向 |
+| `output` | string | 转换产物文本 |
+| `image` | string | 解析到的镜像（`runToCompose` 方向） |
+| `serviceName` | string | 服务名（`runToCompose` 方向） |
+| `services` | array | 服务列表 `[{ name, image, exec, runCommand }]` |
+| `unsupported` | array | 未转换的项：**只有**参数名或 Compose 键名，**不含**取值 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`、`UNSUPPORTED_MODE`、`INVALID_YAML`、`TOO_LARGE`、`TOO_MANY_ITEMS`。
+
+> 这是**纯文本**转换：不连接守护进程，也不拉取镜像。
+>
+> `runToCompose` 覆盖 `--name` `-p` `-e` `-v` `--network` `--restart` `--entrypoint`
+> `-w` `-u` `-h` `--privileged` `--cap-add` `--cap-drop` `-l` `--tmpfs` `--device`
+> `-m` `--cpus` `-t` `-i` `--init` `--read-only`，以及组合短参与 `--flag=value` 写法。
+> `--env-file`、`--mount`、`--rm`、`-d` 等无 Compose 等价项，`healthcheck`、
+> `depends_on`、`build`、`deploy`、`secrets`、`configs`、`profiles` 等 Compose 键
+> 同样无 `docker run` 等价项：宽松模式下**列出名字并忽略**，严格模式下报 `INVALID_FIELD`。
+>
+> `composeToRun` 只取每个服务的**第一个**网络（`docker run` 仅支持一个 `--network`）。
+> 生成的命令中所有取值均用单引号包裹，避免含 `$` `;` 的值被 shell 执行。
 
 ---
 

@@ -1,0 +1,55 @@
+{
+  "name": "docker run 与 Compose 互转",
+  "description": "在 docker run 命令与 Compose 配置之间双向转换，覆盖端口、环境变量、卷、网络与启动命令。",
+  "category": "系统",
+  "actions": {
+    "run": "转换"
+  },
+  "fields": {
+    "direction": "转换方向",
+    "input": "输入内容",
+    "serviceName": "服务名",
+    "strict": "严格模式"
+  },
+  "options": {
+    "direction": {
+      "runToCompose": "docker run → Compose",
+      "composeToRun": "Compose → docker run"
+    }
+  },
+  "results": {
+    "output": "转换结果",
+    "direction": "转换方向",
+    "image": "镜像",
+    "serviceName": "服务名",
+    "service": "服务",
+    "serviceCount": "服务数量",
+    "command": "命令",
+    "empty": "没有可展示的服务"
+  },
+  "examples": [
+    {
+      "label": "docker run 转 Compose",
+      "value": "docker run -d --name web -p 8080:80 -e TZ=Asia/Shanghai nginx:alpine"
+    }
+  ],
+  "hints": {
+    "input": "粘贴 docker run 命令或 Compose 配置；转换是纯文本处理，不连接任何守护进程。",
+    "serviceName": "留空则由镜像名推导。",
+    "strict": "遇到未支持的参数或键时直接报错，而不是忽略。"
+  },
+  "faq": [
+    {
+      "q": "支持哪些 docker run 参数？",
+      "a": "覆盖名称、端口、环境变量、卷、网络、重启策略、入口点、工作目录、用户、主机名、特权、cap、标签、tmpfs、设备、内存与 CPU；其余参数会被忽略并列出。"
+    },
+    {
+      "q": "为什么有的参数没有被转换？",
+      "a": "例如 --env-file、--mount、healthcheck、depends_on、build 在另一侧没有等价项，工具会列出它们，但不会回显取值。"
+    },
+    {
+      "q": "转换结果可以直接用吗？",
+      "a": "这是语法级转换，落地前请用 docker compose config 校验，并按需补齐网络、卷与健康检查。"
+    }
+  ]
+}

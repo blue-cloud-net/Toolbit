@@ -111,6 +111,7 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'nginx-config': 'terminal',
   'firewall-rules': 'shield',
   'docker-compose-gen': 'box',
+  'docker-run-convert': 'swap',
 
   // ── 网络 / Network ──
   'cidr-calc': 'sitemap',
