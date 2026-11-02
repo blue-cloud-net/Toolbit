@@ -33,6 +33,18 @@ const (
 	DNSProtoDoH = "doh"
 )
 
+// DNS 查询的报文尺寸约定。
+const (
+	// dnsUDPBufferSize 是查询通告的 EDNS0 缓冲（字节）。
+	//
+	// 不通告 EDNS0 时上游按历史上的 512 字节上限截断应答（TC=1）：
+	// 多条 A/AAAA 与长 TXT 会被切掉，记录数偏少，
+	// 跨服务器比对时就会出现「某一台少了几条记录」的**假差异**。
+	dnsUDPBufferSize = dns.DefaultMsgSize
+	// dnsDefaultPort 是明文 DNS 的默认端口。
+	dnsDefaultPort = 53
+)
+
 // DNSProtos 返回受支持的查询协议（顺序稳定）。
 func DNSProtos() []string {
 	return []string{DNSProtoUDP, DNSProtoTCP, DNSProtoDoT, DNSProtoDoH}
@@ -233,14 +245,16 @@ func queryOneServer(
 		Answers: []DNSAnswer{},
 	}
 
-	msg := new(dns.Msg)
-	msg.SetQuestion(dns.Fqdn(host), qtype)
-	msg.RecursionDesired = true
+	msg := buildDNSQuery(host, qtype)
 
 	queryCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	resp, err := exchangeDNS(queryCtx, g, srv, msg)
+	if err == nil && resp != nil && resp.Truncated && srv.Proto == DNSProtoUDP {
+		// 应答被截断：回退 TCP 重取一次完整结果。
+		resp = retryOverTCP(queryCtx, g, srv, msg, resp)
+	}
 	result.LatencyMs = time.Since(start).Milliseconds()
 	if err != nil {
 		mapped := mapNetError(err)
@@ -262,6 +276,33 @@ func queryOneServer(
 	return result
 }
 
+// buildDNSQuery 构造查询报文。
+//
+// 通告 EDNS0 缓冲（4096 字节）：不通告时上游按历史上的 512 字节上限
+// 截断应答（TC=1），多条 A/AAAA 与长 TXT 会被切掉，
+// 记录数偏少、跨服务器比对时出现「假差异」。
+func buildDNSQuery(host string, qtype uint16) *dns.Msg {
+	msg := new(dns.Msg)
+	msg.SetQuestion(dns.Fqdn(host), qtype)
+	msg.RecursionDesired = true
+	msg.SetEdns0(dnsUDPBufferSize, false)
+	return msg
+}
+
+// retryOverTCP 在 UDP 应答被截断时用 TCP 再取一次完整应答。
+//
+// 回退失败（或回退得到的应答不是成功应答）时保留原来的截断应答，
+// 不让一次回退失败覆盖已经拿到的真实结果。
+func retryOverTCP(
+	ctx context.Context, g *netguard.Guard, srv DNSServerInput, msg *dns.Msg, truncated *dns.Msg,
+) *dns.Msg {
+	full, err := exchangeStream(ctx, g, srv.Addr, dnsDefaultPort, false, msg)
+	if err != nil || full == nil || full.Rcode != dns.RcodeSuccess {
+		return truncated
+	}
+	return full
+}
+
 // exchangeDNS 按协议发起一次查询。
 //
 // 所有建连都经 netguard；用户指定的服务器同样要做私网校验。
@@ -272,7 +313,7 @@ func exchangeDNS(ctx context.Context, g *netguard.Guard, srv DNSServerInput, msg
 	case DNSProtoDoT:
 		return exchangeStream(ctx, g, srv.Addr, 853, true, msg)
 	case DNSProtoTCP:
-		return exchangeStream(ctx, g, srv.Addr, 53, false, msg)
+		return exchangeStream(ctx, g, srv.Addr, dnsDefaultPort, false, msg)
 	default:
 		return exchangePacket(ctx, g, srv.Addr, msg)
 	}
@@ -280,14 +321,16 @@ func exchangeDNS(ctx context.Context, g *netguard.Guard, srv DNSServerInput, msg
 
 // exchangePacket 走 UDP。
 func exchangePacket(ctx context.Context, g *netguard.Guard, addr string, msg *dns.Msg) (*dns.Msg, error) {
-	conn, err := dialDNS(ctx, g, addr, 53, "udp")
+	conn, err := dialDNS(ctx, g, addr, dnsDefaultPort, "udp")
 	if err != nil {
 		return nil, err
 	}
 	defer func() { _ = conn.Close() }()
 
 	co := &dns.Conn{Conn: conn}
-	co.UDPSize = dns.MinMsgSize
+	// 接收缓冲要与通告的 EDNS0 缓冲一致：缓冲过小会把超长应答
+	// 截在读缓冲里，报文直接解析失败。
+	co.UDPSize = dnsUDPBufferSize
 	if deadline, ok := ctx.Deadline(); ok {
 		_ = co.SetDeadline(deadline)
 	}

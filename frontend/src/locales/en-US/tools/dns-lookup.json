@@ -41,9 +41,13 @@
     "servers": "Servers",
     "fastest": "Fastest",
     "ttl": "TTL range",
+    "ttlColumn": "TTL",
     "consistency": "Answer consistency",
     "consistent": "Consistent",
     "inconsistent": "Differences found",
+    "notApplicable": "N/A",
+    "consistencyNa": "Needs at least two servers that returned a result",
+    "consistencyHint": "Only servers that returned a result are compared",
     "record": "Record",
     "missing": "Servers missing it",
     "protocol": "Protocol",
@@ -57,6 +61,7 @@
     "type": "Type",
     "value": "Value",
     "empty": "Every server returned the same records",
+    "emptyNa": "At least two servers are needed to compare answers",
     "noRecord": "This server returned no records",
     "noServer": "No server was queried"
   },
@@ -79,7 +84,7 @@
     },
     {
       "q": "What does \"answer consistency\" mean?",
-      "a": "The answer sets returned by every successful server are compared. When they differ, the summary lists which servers are missing a given record — common with CDN geolocation or DNS round-robin."
+      "a": "The answer sets returned by every successful server are compared. When they differ, the summary lists which servers are missing a given record — common with CDN geolocation or DNS round-robin. With only one successful server there is nothing to compare, so the verdict is \"N/A\"."
     },
     {
       "q": "What does the \"All servers\" tab show?",

@@ -5,6 +5,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/miekg/dns"
+
 	"github.com/blue-cloud-net/Toolbit/backend/internal/netguard"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/toolerr"
 )
@@ -209,6 +211,33 @@ func TestDNSLookupRequiresNetwork(t *testing.T) {
 
 	_, err := DNSLookup(context.Background(), offlineGuard(), &DNSLookupRequest{Host: "example.com", Type: "A"})
 	assertCode(t, err, toolerr.CodeNetworkDisabled)
+}
+
+func TestBuildDNSQueryAdvertisesEDNS0(t *testing.T) {
+	t.Parallel()
+
+	msg := buildDNSQuery("example.com", dns.TypeA)
+	if len(msg.Question) != 1 {
+		t.Fatalf("问题区条目数 = %d，期望 1", len(msg.Question))
+	}
+	if msg.Question[0].Name != "example.com." {
+		t.Fatalf("问题名 = %q，期望 example.com.", msg.Question[0].Name)
+	}
+	if msg.Question[0].Qtype != dns.TypeA {
+		t.Fatalf("查询类型 = %d，期望 %d", msg.Question[0].Qtype, dns.TypeA)
+	}
+	if !msg.RecursionDesired {
+		t.Fatal("应当请求递归解析")
+	}
+	// 不通告 EDNS0 时上游按 512 字节截断应答，
+	// 记录会被切掉 → 跨服务器比对出现「假差异」。
+	opt := msg.IsEdns0()
+	if opt == nil {
+		t.Fatal("必须通告 EDNS0 缓冲")
+	}
+	if opt.UDPSize() != dnsUDPBufferSize {
+		t.Fatalf("EDNS0 缓冲 = %d，期望 %d", opt.UDPSize(), dnsUDPBufferSize)
+	}
 }
 
 func TestDNSTesterValidate(t *testing.T) {

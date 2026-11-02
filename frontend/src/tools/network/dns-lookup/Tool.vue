@@ -37,24 +37,8 @@ import {
   type DNSServerPreset,
 } from '@/tools/network/dns-lookup/presets'
 
+import { compareAnswers, serverLabel, type DNSServerResult } from './compare'
 import { DEFAULT_EXAMPLE } from './example'
-
-/** 单条解析结果。 */
-interface DNSAnswer {
-  name: string
-  type: string
-  ttl: number
-  value: string
-}
-
-/** 单台服务器的结果。 */
-interface DNSServerResult {
-  server: string
-  proto: string
-  latencyMs: number
-  answers: DNSAnswer[]
-  error: { code: string; message: string } | null
-}
 
 /** 后端 dns-lookup 工具的响应。 */
 interface DNSLookupResult {
@@ -168,13 +152,34 @@ const presetGroups = computed(() =>
   })),
 )
 
-/** 实际要查询的服务器列表。 */
-const servers = computed(() => [
-  ...activePresets.value.map((preset) => ({ proto: preset.proto, addr: preset.addr })),
-  ...customServers.value
-    .filter((item) => item.addr.trim() !== '')
-    .map((item) => ({ proto: item.proto, addr: item.addr.trim() })),
-])
+/** 实际要查询的服务器列表；同一协议 + 同一地址只查一次。 */
+const servers = computed(() => {
+  const seen = new Set<string>()
+  const list: { proto: string; addr: string }[] = []
+  const candidates = [
+    ...activePresets.value.map((preset) => ({ proto: preset.proto, addr: preset.addr })),
+    ...customServers.value
+      .filter((item) => item.addr.trim() !== '')
+      .map((item) => ({ proto: item.proto, addr: item.addr.trim() })),
+  ]
+  for (const item of candidates) {
+    const key = `${item.proto} ${item.addr}`
+    if (seen.has(key)) {
+      continue
+    }
+    seen.add(key)
+    list.push(item)
+  }
+  return list
+})
+
+/** 单台服务器页签的标识前缀。 */
+const SERVER_VIEW_PREFIX = 'server-'
+
+/** 单台服务器页签的标识。 */
+function serverViewId(index: number): string {
+  return `${SERVER_VIEW_PREFIX}${index}`
+}
 
 /** 结果页签：汇总 + 全部服务器 + 每台服务器。 */
 const views = computed(() => {
@@ -182,19 +187,14 @@ const views = computed(() => {
     { id: 'summary', label: t('tools.dns-lookup.views.summary') },
     { id: 'all', label: t('tools.dns-lookup.views.all') },
   ]
-  for (const server of data.value?.perServer ?? []) {
-    list.push({ id: server.server, label: shortServerLabel(server.server) })
-  }
+  const perServer = data.value?.perServer ?? []
+  perServer.forEach((server, index) => {
+    // 标识用**下标**而不是地址：同一个地址既有明文 UDP 又有 TCP 通道，
+    // 用地址当标识会让两个页签撞在一起、显示成同一台服务器。
+    list.push({ id: serverViewId(index), label: serverLabel(server) })
+  })
   return list
 })
-
-/** 页签标题：去掉端口与协议前缀的短名。 */
-function shortServerLabel(server: string): string {
-  const withoutScheme = server.replace(/^https?:\/\//, '')
-  const hostPart = withoutScheme.split('/')[0] ?? withoutScheme
-  const short = hostPart.split(':')[0] ?? hostPart
-  return short || server
-}
 
 /** 成功的服务器。 */
 const succeeded = computed(() =>
@@ -215,17 +215,19 @@ const summary = computed(() => {
   for (const item of ok) {
     if (item.latencyMs < fastestMs) {
       fastestMs = item.latencyMs
-      fastest = `${item.latencyMs}ms (${shortServerLabel(item.server)})`
+      fastest = `${item.latencyMs}ms (${serverLabel(item)})`
     }
     if (item.latencyMs > slowestMs) {
       slowestMs = item.latencyMs
-      slowest = `${item.latencyMs}ms (${shortServerLabel(item.server)})`
+      slowest = `${item.latencyMs}ms (${serverLabel(item)})`
     }
   }
   let ttlMin = Number.POSITIVE_INFINITY
   let ttlMax = 0
+  let hasTtl = false
   for (const item of ok) {
     for (const answer of item.answers) {
+      hasTtl = true
       ttlMin = Math.min(ttlMin, answer.ttl)
       ttlMax = Math.max(ttlMax, answer.ttl)
     }
@@ -236,38 +238,18 @@ const summary = computed(() => {
     total: servers.length,
     fastest,
     slowest,
-    ttlMin: Number.isFinite(ttlMin) ? ttlMin : null,
-    ttlMax: ttlMax > 0 ? ttlMax : null,
+    ttlMin: hasTtl ? ttlMin : null,
+    ttlMax: hasTtl ? ttlMax : null,
   }
 })
 
-/** 记录一致性差异：各成功服务器的答案集合互比。 */
-const differences = computed(() => {
-  const ok = succeeded.value
-  if (ok.length < 2) {
-    return []
-  }
-  const sets = ok.map((item) => new Set(item.answers.map((a) => `${a.type} ${a.value}`)))
-  const union = new Set<string>()
-  for (const set of sets) {
-    for (const value of set) {
-      union.add(value)
-    }
-  }
-  const rows: { value: string; missing: string[] }[] = []
-  for (const value of union) {
-    const missing = ok
-      .filter((_, index) => !sets[index]?.has(value))
-      .map((item) => shortServerLabel(item.server))
-    if (missing.length > 0) {
-      rows.push({ value, missing })
-    }
-  }
-  return rows.sort((a, b) => a.value.localeCompare(b.value))
-})
-
-/** 一致性结论。 */
-const consistent = computed(() => differences.value.length === 0 && succeeded.value.length >= 2)
+/**
+ * 记录一致性报告。
+ *
+ * 结论有三种：`na`（成功返回的服务器不足两台，没有可比对象）、
+ * `consistent`（记录集合完全相同）与 `inconsistent`（存在差异）。
+ */
+const consistency = computed(() => compareAnswers(data.value?.perServer ?? []))
 
 /** 汇总统计卡片。 */
 const summaryStats = computed<StatGridItem[]>(() => {
@@ -302,25 +284,49 @@ const summaryStats = computed<StatGridItem[]>(() => {
       value: value.ttlMin === value.ttlMax ? `${value.ttlMin}s` : `${value.ttlMin}–${value.ttlMax}s`,
     })
   }
-  items.push({
-    label: t('tools.dns-lookup.results.consistency'),
-    value: consistent.value
-      ? t('tools.dns-lookup.results.consistent')
-      : t('tools.dns-lookup.results.inconsistent'),
-    level: consistent.value ? 'success' : 'warning',
-  })
+  // 一致性只有一台成功服务器时**没有可比对象**，
+  // 必须报「不适用」而不是「存在差异」。
+  if (consistency.value.state === 'na') {
+    items.push({
+      label: t('tools.dns-lookup.results.consistency'),
+      value: t('tools.dns-lookup.results.notApplicable'),
+      level: 'muted',
+      hint: t('tools.dns-lookup.results.consistencyNa'),
+    })
+  } else if (consistency.value.state === 'consistent') {
+    items.push({
+      label: t('tools.dns-lookup.results.consistency'),
+      value: t('tools.dns-lookup.results.consistent'),
+      level: 'success',
+      hint: t('tools.dns-lookup.results.consistencyHint'),
+    })
+  } else {
+    items.push({
+      label: t('tools.dns-lookup.results.consistency'),
+      value: t('tools.dns-lookup.results.inconsistent'),
+      level: 'warning',
+      hint: t('tools.dns-lookup.results.consistencyHint'),
+    })
+  }
   return items
 })
 
 /** 差异表格。 */
 const differenceRows = computed<DataTableRow[]>(() =>
-  differences.value.map((row) => ({
+  consistency.value.differences.map((row) => ({
     key: row.value,
     cells: {
       value: row.value,
       missing: row.missing.join('、'),
     },
   })),
+)
+
+/** 差异表格的空态文案。 */
+const differenceEmptyText = computed(() =>
+  consistency.value.state === 'na'
+    ? t('tools.dns-lookup.results.emptyNa')
+    : t('tools.dns-lookup.results.empty'),
 )
 
 /** 差异表格列定义。 */
@@ -333,7 +339,7 @@ const differenceColumns = computed<DataTableColumn[]>(() => [
 const answerColumns = computed<DataTableColumn[]>(() => [
   { key: 'name', label: t('tools.dns-lookup.results.name'), mono: true },
   { key: 'type', label: t('tools.dns-lookup.results.type'), mono: true },
-  { key: 'ttl', label: t('tools.dns-lookup.results.ttl'), mono: true, align: 'right' },
+  { key: 'ttl', label: t('tools.dns-lookup.results.ttlColumn'), mono: true, align: 'right' },
   { key: 'value', label: t('tools.dns-lookup.results.value'), mono: true },
 ])
 
@@ -352,13 +358,14 @@ const allServerColumns = computed<DataTableColumn[]>(() => [
 
 /** 「全部服务器」表的行：每台服务器的耗时、状态与结果摘要。 */
 const allServerRows = computed<DataTableRow[]>(() =>
-  (data.value?.perServer ?? []).map((server) => {
+  (data.value?.perServer ?? []).map((server, index) => {
     const answers = server.answers.map((answer) => `${answer.type} ${answer.value}`)
     const preview = answers.slice(0, ANSWER_PREVIEW_LIMIT).join('、')
     const more =
       answers.length > ANSWER_PREVIEW_LIMIT ? ` …(${answers.length})` : ''
     return {
-      key: server.server,
+      // 行标识要唯一：同一地址的 udp / tcp 两行地址文本相同。
+      key: `${index}-${server.proto}-${server.server}`,
       level: server.error ? ('danger' as const) : undefined,
       badges: {
         status: server.error ? ('danger' as const) : ('success' as const),
@@ -376,9 +383,14 @@ const allServerRows = computed<DataTableRow[]>(() =>
 )
 
 /** 当前页签对应的服务器。 */
-const activeServer = computed<DNSServerResult | null>(
-  () => (data.value?.perServer ?? []).find((item) => item.server === activeView.value) ?? null,
-)
+const activeServer = computed<DNSServerResult | null>(() => {
+  const id = activeView.value
+  if (!id.startsWith(SERVER_VIEW_PREFIX)) {
+    return null
+  }
+  const index = Number(id.slice(SERVER_VIEW_PREFIX.length))
+  return data.value?.perServer?.[index] ?? null
+})
 
 /** 某台服务器的记录表格。 */
 function answerRows(server: DNSServerResult): DataTableRow[] {
@@ -469,6 +481,9 @@ function run(): void {
   if (list.length > 0) {
     payload.servers = list
   }
+  // 新一轮的服务器集合可能与上一轮不同：回到汇总页签，
+  // 否则会停在一个已经不存在的服务器页签上（页签内容空白）。
+  activeView.value = 'summary'
   void execute(payload)
 }
 
@@ -480,6 +495,7 @@ function reset(): void {
   customServers.value = []
   customProto.value = 'udp'
   customAddr.value = ''
+  activeView.value = 'summary'
   resetRun()
 }
 
@@ -677,11 +693,10 @@ onMounted(() => {
             <StatGrid :items="summaryStats" />
 
             <DataTable
-              v-if="differences.length > 0"
               class="table"
               :columns="differenceColumns"
               :rows="differenceRows"
-              :empty="t('tools.dns-lookup.results.empty')"
+              :empty="differenceEmptyText"
             />
           </template>
 
