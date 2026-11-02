@@ -28,6 +28,14 @@ export interface DataTableColumn {
   label: string
   /** 是否用等宽字体（地址、指纹、摘要、媒体类型等）。 */
   mono?: boolean
+  /**
+   * 是否禁止换行。
+   *
+   * 地址、URL 这类**不可断开**的长串必须置真：默认的 `overflow-wrap: anywhere`
+   * 会让浏览器认为该列可以窄到只剩一个字符，于是列被压成竖排单字
+   * （「地址」列只剩 57px，IPv6 与 DoH 端点根本显示不全）。
+   */
+  nowrap?: boolean
   /** 该列默认的语义级别。 */
   level?: DataTableCellLevel
   /** 对齐方式；默认左对齐。 */
@@ -152,6 +160,7 @@ function onBadgeClick(row: DataTableRow, column: DataTableColumn): void {
             v-for="column in columns"
             :key="column.key"
             scope="col"
+            :class="column.nowrap ? 'data-table__nowrap' : ''"
             :style="column.align ? { textAlign: column.align } : undefined"
           >
             {{ column.label }}
@@ -183,6 +192,7 @@ function onBadgeClick(row: DataTableRow, column: DataTableColumn): void {
             :style="column.align ? { textAlign: column.align } : undefined"
             :class="[
               column.mono ? 'tb-mono' : '',
+              column.nowrap ? 'data-table__nowrap' : '',
               cellLevel(row, column) ? `data-table__cell--${cellLevel(row, column)}` : '',
             ]"
           >
@@ -326,6 +336,15 @@ function onBadgeClick(row: DataTableRow, column: DataTableColumn): void {
 .data-table__value {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+/* 禁止换行的列：地址 / URL 等长串保持整行可读，不再被压成竖排单字。 */
+.data-table__nowrap {
+  white-space: nowrap;
+}
+
+.data-table__nowrap .data-table__value {
+  overflow-wrap: normal;
 }
 
 .data-table__cell--success {

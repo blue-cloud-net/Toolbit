@@ -153,6 +153,23 @@
   --tb-font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
 }
 
+/* ══ 超宽屏：容器随视口放宽 ═══════════════════════════════════════════
+ *
+ * 大屏上 1280px 的内容列会浪费两侧空间，宽表（如 DNS 目录）因此横向放不下。
+ * 内容列随视口放宽，但**不**放宽顶栏与页脚（它们各自有独立宽度）。
+ */
+@media (min-width: 1600px) {
+  :root {
+    --tb-container-w: 1600px;
+  }
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --tb-container-w: 1760px;
+  }
+}
+
 /* ══ 浅色主色板（12 组）══════════════════════════════════════════════ */
 
 :root[data-accent='indigo'] {

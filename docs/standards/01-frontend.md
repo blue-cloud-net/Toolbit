@@ -1,6 +1,6 @@
 # 前端规范
 
-> 状态：Draft ｜ 适用版本：v0.2.1 ｜ 最后更新：2026-10-29
+> 状态：Draft ｜ 适用版本：v0.2.1 ｜ 最后更新：2026-11-02
 
 适用目录：`frontend/`。
 
@@ -172,7 +172,7 @@ ToolPageLayout
 | `ValidityTrack` | 有效期时间轴（按剩余天数推算已过去的比例，语义色仅 success / warning / danger） |
 | `KeyValueTable` | 键值对展示（逐字段复制、语义色、可选 `hint` / `mono`） |
 | `StatGrid` | 少量关键指标的卡片网格（网段、掩码、耗时、成败台数） |
-| `DataTable` | 多记录列表表格（列定义 + 行数据 + 逐行复制 + 滚动区 + 语义色 / 彩色标签）；`copyColumns` 指定内嵌复制列（按钮贴值右侧，`copyColumn` 仍然兼容），`badgeCopy` 指定「点击徽标即复制」的列 |
+| `DataTable` | 多记录列表表格（列定义 + 行数据 + 逐行复制 + 滚动区 + 语义色 / 彩色标签）；`copyColumns` 指定内嵌复制列（按钮贴值右侧，`copyColumn` 仍然兼容），`badgeCopy` 指定「点击徽标即复制」的列，`nowrap` 指定**禁止换行**的列 |
 | `CopyButton` / `DownloadButton` | 复制（**图标式**，tooltip 固定为「复制」，结果用 `ElMessage` 提示） / 下载（文本走 `content`，**二进制产物**如 PNG 走 `base64`，解码逻辑见 `components/tool/base64.ts`） |
 | `EmptyState` / `ErrorAlert` / `LoadingSkeleton` | 状态展示 |
 | `ProgressStream` | 流式进度（ssl-check） |
@@ -183,6 +183,10 @@ ToolPageLayout
 > `display: table`，调用方写 `<DataTable class="table">` 时会命中它；
 > 若滚动容器跟着变成 table 盒子，`max-height` 与 `overflow: auto` 会同时失效，
 > 长表格将撑开整页而不再在面板内滚动。
+>
+> `DataTable` 的**地址 / URL 列必须置 `nowrap`**。单元格默认 `overflow-wrap: anywhere`，
+> 浏览器会认为该列可以窄到只剩一个字符，于是长地址被压成竖排单字（实测「地址」列
+> 只剩 57px，IPv6 与 DoH 端点完全显示不全）。
 
 ---
 

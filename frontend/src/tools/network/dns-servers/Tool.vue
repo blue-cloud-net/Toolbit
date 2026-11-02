@@ -8,9 +8,12 @@
  *
  * 本页**没有运行按钮**：目录是一次性取回的静态快照，键入即筛选。
  *
- * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
+ * 工具输入（搜索词、筛选项）只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
+ * 写进 `localStorage` 的只有**显示模式**这一条界面偏好（`toolbit.view.dns-servers`）。
  */
-import { computed, ref } from 'vue'
+import { ElRadioButton, ElRadioGroup } from 'element-plus/es/components/radio/index'
+import 'element-plus/es/components/radio/style/css'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
@@ -23,36 +26,14 @@ import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useLiveFilter } from '@/composables/useLiveFilter'
 
 import { EXAMPLES } from './example'
+import ServerCards from './ServerCards.vue'
+import type { DNSServerEntry, DNSServersResult } from './types'
 
-/** 一条 DNS 服务器端点记录。 */
-interface DNSServerEntry {
-  /** 服务商中文名。 */
-  provider: string
-  /** 服务商英文名。 */
-  providerEn: string
-  /** 归属地区。 */
-  region: string
-  /** 地址族。 */
-  family: string
-  /** 查询协议。 */
-  proto: string
-  /** 服务器地址；DoH 时是完整 URL。 */
-  addr: string
-  /** 端点说明。 */
-  note: string
-}
+/** 显示模式：卡片（按服务商分组）或列表（逐行成表）。 */
+type ViewMode = 'card' | 'list'
 
-/** 后端 dns-servers 工具的响应。 */
-interface DNSServersResult {
-  /** 命中的端点。 */
-  servers: DNSServerEntry[]
-  /** 命中条数。 */
-  total: number
-  /** 命中的服务商数。 */
-  providers: number
-  /** 数据集版本。 */
-  dataVersion: string
-}
+/** 显示模式的持久化键（界面偏好，非工具输入）。 */
+const VIEW_MODE_STORAGE_KEY = 'toolbit.view.dns-servers'
 
 /** 常见问题条目。 */
 interface FaqItem {
@@ -78,6 +59,42 @@ const region = ref('')
 const selectedProtos = ref<string[]>([])
 /** 地址族：多选，空数组表示全部。 */
 const selectedFamilies = ref<string[]>([])
+
+/** 显示模式；默认卡片模式。 */
+const viewMode = ref<ViewMode>(loadViewMode())
+
+/** 读取已保存的显示模式；无值或非法值回落到卡片模式。 */
+function loadViewMode(): ViewMode {
+  if (typeof localStorage === 'undefined') {
+    return 'card'
+  }
+  try {
+    return localStorage.getItem(VIEW_MODE_STORAGE_KEY) === 'list' ? 'list' : 'card'
+  } catch {
+    return 'card'
+  }
+}
+
+/** 写入显示模式到 localStorage。 */
+function saveViewMode(next: ViewMode): void {
+  if (typeof localStorage === 'undefined') {
+    return
+  }
+  try {
+    localStorage.setItem(VIEW_MODE_STORAGE_KEY, next)
+  } catch {
+    // 存储不可用时忽略，不影响切换。
+  }
+}
+
+/** 切换显示模式。 */
+function onViewModeChange(next: string | number | boolean | undefined): void {
+  viewMode.value = next === 'list' ? 'list' : 'card'
+}
+
+watch(viewMode, (next) => {
+  saveViewMode(next)
+})
 
 /** 目录一次性取回；文本筛选在本地完成。 */
 const { state, data, meta, error, filtered, reload } = useLiveFilter<
@@ -232,7 +249,8 @@ const columns = computed<DataTableColumn[]>(() => [
   { key: 'provider', label: t('tools.dns-servers.results.provider') },
   { key: 'providerEn', label: t('tools.dns-servers.results.providerEn'), mono: true },
   { key: 'proto', label: t('tools.dns-servers.results.proto') },
-  { key: 'addr', label: t('tools.dns-servers.results.addr'), mono: true },
+  // 地址列禁止换行：否则浏览器会把它压成竖排单字，长地址根本显示不全。
+  { key: 'addr', label: t('tools.dns-servers.results.addr'), mono: true, nowrap: true },
   { key: 'family', label: t('tools.dns-servers.results.family') },
   { key: 'note', label: t('tools.dns-servers.results.note') },
 ])
@@ -293,7 +311,6 @@ const faq = computed<FaqItem[]>(() => tm('tools.dns-servers.faq') as FaqItem[])
     slug="dns-servers"
     :name="t('tools.dns-servers.name')"
     name-en="DNS Server Directory"
-    wide
   >
     <template #panel>
       <ToolPanel>
@@ -355,9 +372,36 @@ const faq = computed<FaqItem[]>(() => tm('tools.dns-servers.faq') as FaqItem[])
           v-if="data"
           #extra
         >
+          <div class="toolbar">
+            <span class="toolbar__label">{{ t('tools.dns-servers.fields.view') }}</span>
+            <ElRadioGroup
+              :model-value="viewMode"
+              size="small"
+              :aria-label="t('tools.dns-servers.fields.view')"
+              @update:model-value="onViewModeChange"
+            >
+              <ElRadioButton value="card">
+                {{ t('tools.dns-servers.options.view.card') }}
+              </ElRadioButton>
+              <ElRadioButton value="list">
+                {{ t('tools.dns-servers.options.view.list') }}
+              </ElRadioButton>
+            </ElRadioGroup>
+          </div>
+
           <StatGrid :items="stats" />
 
+          <ServerCards
+            v-if="viewMode === 'card'"
+            class="cards"
+            :entries="visible"
+            :proto-labels="PROTO_LABELS"
+            :family-labels="FAMILY_LABELS"
+            :region-labels="REGION_LABELS"
+          />
+
           <DataTable
+            v-else
             class="table"
             :columns="columns"
             :rows="rows"
@@ -365,6 +409,13 @@ const faq = computed<FaqItem[]>(() => tm('tools.dns-servers.faq') as FaqItem[])
             :action-label="t('tools.dns-servers.actions.lookup')"
             :empty="t('tools.dns-servers.results.empty')"
           />
+
+          <p
+            v-if="visible.length === 0"
+            class="cards__empty"
+          >
+            {{ t('tools.dns-servers.results.empty') }}
+          </p>
         </template>
       </ResultPanel>
     </template>
@@ -372,6 +423,9 @@ const faq = computed<FaqItem[]>(() => tm('tools.dns-servers.faq') as FaqItem[])
     <template #usage>
       <p class="prose">
         {{ t('tools.dns-servers.hints.output') }}
+      </p>
+      <p class="prose">
+        {{ t('tools.dns-servers.hints.view') }}
       </p>
     </template>
 
@@ -394,8 +448,33 @@ const faq = computed<FaqItem[]>(() => tm('tools.dns-servers.faq') as FaqItem[])
 </template>
 
 <style scoped>
+/* 显示模式切换行：与统计卡片同排，右对齐。 */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--tb-space-2);
+  margin-bottom: var(--tb-space-2);
+}
+
+.toolbar__label {
+  font-size: var(--tb-font-xs);
+  color: var(--tb-text-tertiary);
+}
+
 .table {
   margin-top: var(--tb-space-3);
+}
+
+.cards {
+  margin-top: var(--tb-space-3);
+}
+
+.cards__empty {
+  margin: var(--tb-space-3) 0 0;
+  font-size: var(--tb-font-sm);
+  color: var(--tb-text-tertiary);
+  text-align: center;
 }
 
 .prose {

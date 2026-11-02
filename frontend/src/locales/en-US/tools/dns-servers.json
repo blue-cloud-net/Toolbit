@@ -9,7 +9,8 @@
     "query": "Search",
     "region": "Region",
     "proto": "Protocol",
-    "family": "Address family"
+    "family": "Address family",
+    "view": "View"
   },
   "options": {
     "region": {
@@ -28,6 +29,10 @@
       "ipv4": "IPv4",
       "ipv6": "IPv6",
       "domain": "Hostname"
+    },
+    "view": {
+      "card": "Cards",
+      "list": "Table"
     }
   },
   "results": {
@@ -62,6 +67,7 @@
   "hints": {
     "query": "Accepts a provider name (AliDNS, Cloudflare) or an address (1.1.1.1); the text search combines with the region, protocol and address-family filters.",
     "output": "All endpoints are listed by default; typing or picking a filter narrows the list instantly. Every address can be copied on its own, and the \"Test\" column jumps to DNS Lookup with that endpoint prefilled.",
+    "view": "Cards is the default: one card per provider, endpoints grouped by address family, and UDP / TCP of the same address share a single row. Switch to the table view for one endpoint per row, which is easier to compare column by column and to copy as a whole row.",
     "note": "Data comes from a built-in snapshot — nothing is sent over the network. Addresses are the general public endpoints of each provider; always confirm against the provider's own documentation."
   },
   "faq": [
