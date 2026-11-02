@@ -63,12 +63,21 @@ func Definitions(g *netguard.Guard) []tools.Definition {
 			},
 		},
 		{
-			Slug: "device-headers",
+			Slug: "ua-parser",
 			NewRequest: func() tools.Request {
-				return &DeviceHeadersRequest{}
+				return &UAParserRequest{}
 			},
 			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
-				return DeviceHeaders(ctx, req.(*DeviceHeadersRequest))
+				return UAParser(ctx, req.(*UAParserRequest))
+			},
+		},
+		{
+			Slug: "header-generator",
+			NewRequest: func() tools.Request {
+				return &HeaderGeneratorRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return HeaderGenerator(ctx, req.(*HeaderGeneratorRequest))
 			},
 		},
 		{

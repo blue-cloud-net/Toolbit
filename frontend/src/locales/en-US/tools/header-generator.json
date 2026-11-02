@@ -1,25 +1,19 @@
 {
-  "name": "Device Headers",
-  "description": "Generate client request headers for a platform, or parse a User-Agent string.",
+  "name": "Header Generator",
+  "description": "Generate a set of client request headers for a platform and version, with optional custom headers.",
   "category": "Network",
   "actions": {
     "run": "Generate"
   },
   "fields": {
-    "mode": "Mode",
     "platform": "Platform",
     "version": "Version",
     "os": "Operating system",
-    "userAgent": "User-Agent string",
     "acceptLanguage": "Accept-Language",
     "referer": "Referer",
     "customHeaders": "Custom headers"
   },
   "options": {
-    "mode": {
-      "generate": "Generate headers",
-      "parseUa": "Parse UA"
-    },
     "platform": {
       "chrome": "Chrome desktop",
       "firefox": "Firefox desktop",
@@ -33,29 +27,25 @@
   "results": {
     "headers": "Headers",
     "userAgent": "User-Agent",
-    "browser": "Browser",
-    "browserVersion": "Browser version",
-    "os": "Operating system",
-    "osVersion": "OS version",
-    "deviceType": "Device type",
-    "isBot": "Bot",
-    "engine": "Engine",
     "headerName": "Header Name",
     "headerValue": "Header Value"
   },
   "examples": [
     {
-      "label": "Generate Chrome headers",
-      "value": "{\"mode\":\"generate\",\"platform\":\"chrome\",\"version\":\"120.0.0.0\"}"
+      "label": "Chrome desktop",
+      "value": "{\"platform\":\"chrome\",\"version\":\"120.0.0.0\"}"
     },
     {
-      "label": "Parse a User-Agent",
-      "value": "{\"mode\":\"parseUa\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\"}"
+      "label": "Android Chrome",
+      "value": "{\"platform\":\"android\",\"version\":\"131.0.0.0\"}"
+    },
+    {
+      "label": "curl",
+      "value": "{\"platform\":\"curl\",\"version\":\"8.9.1\"}"
     }
   ],
   "hints": {
     "platform": "The first version supports built-in platforms and custom input only; no online UA lookup is used.",
-    "output": "The parse result distinguishes desktop, mobile, tablet and bot, and reports the rendering engine.",
     "customHeaders": "One per line, in `Name: Value` format."
   },
   "faq": [
@@ -64,8 +54,12 @@
       "a": "No. It is only a template of common headers for debugging and compatibility testing."
     },
     {
-      "q": "Is the UA data kept up to date?",
-      "a": "Not automatically. The data is a built-in snapshot updated with tool releases."
+      "q": "Can the version and operating system be left empty?",
+      "a": "Yes. The built-in defaults for the platform are used; fill them in only when a specific version matters."
+    },
+    {
+      "q": "Why are custom headers sorted alphabetically?",
+      "a": "So the same set of custom headers always produces the same order, which makes comparison and copying easier."
     }
   ]
 }

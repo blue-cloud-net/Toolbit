@@ -1,0 +1,53 @@
+{
+  "name": "UA 解析",
+  "description": "把 User-Agent 串拆成浏览器、操作系统、设备类型与渲染引擎。",
+  "category": "网络",
+  "actions": {
+    "run": "解析"
+  },
+  "fields": {
+    "userAgent": "User-Agent 串"
+  },
+  "options": {},
+  "results": {
+    "title": "解析结果",
+    "browser": "浏览器",
+    "browserVersion": "浏览器版本",
+    "os": "操作系统",
+    "osVersion": "系统版本",
+    "deviceType": "设备类型",
+    "isBot": "爬虫",
+    "engine": "渲染引擎"
+  },
+  "examples": [
+    {
+      "label": "Chrome 桌面版",
+      "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    },
+    {
+      "label": "iOS Safari",
+      "value": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1"
+    },
+    {
+      "label": "Googlebot",
+      "value": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+    }
+  ],
+  "hints": {
+    "output": "解析结果会区分桌面、移动、平板与爬虫，并给出渲染引擎；识别规则是内置的关键词匹配，不查在线数据库。"
+  },
+  "faq": [
+    {
+      "q": "解析结果能当作设备指纹吗？",
+      "a": "不能。它只做结构化识别，不做指纹追踪，也不判断 UA 是否被伪造。"
+    },
+    {
+      "q": "UA 数据库会更新吗？",
+      "a": "不会自动更新。识别规则是内置快照，随工具版本更新。"
+    },
+    {
+      "q": "为什么有些 UA 解析不出浏览器？",
+      "a": "识别靠关键词与前缀匹配。非常规或刻意伪装的 UA 只会得到 unknown。"
+    }
+  ]
+}

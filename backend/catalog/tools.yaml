@@ -1582,11 +1582,11 @@ tools:
     wide: false
     i18nKey: tools.http-status
 
-  - slug: device-headers
+  - slug: ua-parser
     category: network
     order: 9
-    name: 请求头生成与 UA 解析
-    nameEn: Device Headers
+    name: UA 解析
+    nameEn: User-Agent Parser
     enabled: true
     transport: json
     rateClass: light
@@ -1596,11 +1596,27 @@ tools:
     requiresNetwork: false
     autoRun: true
     wide: false
-    i18nKey: tools.device-headers
+    i18nKey: tools.ua-parser
+
+  - slug: header-generator
+    category: network
+    order: 10
+    name: 请求头生成
+    nameEn: Header Generator
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.header-generator
 
   - slug: ip-range-expand
     category: network
-    order: 10
+    order: 11
     name: IP 段展开
     nameEn: IP Range Expander
     enabled: true

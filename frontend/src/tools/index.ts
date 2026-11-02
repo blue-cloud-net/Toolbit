@@ -86,7 +86,8 @@ export const toolRegistry: Record<string, ToolLoader> = {
   'mime-lookup': () => import('./network/mime-lookup/index'),
   'http-status': () => import('./network/http-status/index'),
   'ip-range-expand': () => import('./network/ip-range-expand/index'),
-  'device-headers': () => import('./network/device-headers/index'),
+  'ua-parser': () => import('./network/ua-parser/index'),
+  'header-generator': () => import('./network/header-generator/index'),
 
   // ── 文本 / Text ──
   'regex-tester': () => import('./text/regex-tester/index'),

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 /**
- * 设备请求头工具页。
+ * 请求头生成工具页。
+ *
+ * 按平台生成一组客户端请求头（User-Agent / Accept / Accept-Language 等），
+ * 并允许追加自定义请求头。
  *
  * 输入只存在于组件局部状态；离开页面即丢弃，**不写**任何浏览器存储。
  */
@@ -19,26 +22,14 @@ import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
-import { EXAMPLES } from '@/tools/network/device-headers/example'
+import { EXAMPLES } from '@/tools/network/header-generator/example'
 
-/** 后端 device-headers 工具的响应。 */
-interface DeviceHeadersResult {
-  /** 模式。 */
-  mode: string
+/** 后端 header-generator 工具的响应。 */
+interface HeaderGeneratorResult {
   /** 生成的请求头。 */
   headers: Array<{ name: string; value: string }>
-  /** 生成或解析的 UA 串。 */
+  /** 生成的 UA 串。 */
   userAgent: string
-  /** 解析出的 UA 信息；generate 模式为 null。 */
-  parsed: {
-    browser: string
-    browserVersion: string
-    os: string
-    osVersion: string
-    deviceType: string
-    isBot: boolean
-    engine: string
-  } | null
 }
 
 /** 常见问题条目。 */
@@ -47,73 +38,45 @@ interface FaqItem {
   a: string
 }
 
+/** 平台枚举（与后端 `HeaderPlatforms` 对应）。 */
+const PLATFORMS = ['chrome', 'firefox', 'safari', 'edge', 'android', 'ios', 'curl']
+
 const { t, tm } = useI18n()
 
-const mode = ref('generate')
 const platform = ref('chrome')
 const version = ref('')
 const os = ref('')
-const userAgent = ref(
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-)
 const acceptLanguage = ref('zh-CN,zh;q=0.9,en;q=0.8')
 const referer = ref('')
 const customHeaders = ref('')
 
-const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<DeviceHeadersResult>({
-  slug: 'device-headers',
-})
+const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<HeaderGeneratorResult>(
+  { slug: 'header-generator' },
+)
 
 const running = computed(() => state.value === 'loading')
 
-/** 结果文本：生成模式是请求头文本，解析模式是 UA 串。 */
+/** 结果文本：请求头文本，便于整段复制。 */
 const resultText = computed(() => {
   const result = data.value
   if (!result) {
     return ''
   }
-  if (result.headers.length > 0) {
-    return result.headers.map((header) => `${header.name}: ${header.value}`).join('\n')
-  }
-  return result.userAgent
+  return result.headers.map((header) => `${header.name}: ${header.value}`).join('\n')
 })
 
-/** 摘要卡片：解析模式展示 UA 拆解，生成模式展示 UA 串。 */
+/** 摘要卡片：生成的 UA 串。 */
 const statItems = computed<StatGridItem[]>(() => {
   const result = data.value
   if (!result) {
     return []
   }
-  const parsed = result.parsed
-  if (!parsed) {
-    // generate 模式：后端不返回解析结果，只给出 UA 串。
-    return result.userAgent
-      ? [
-          {
-            label: t('tools.device-headers.results.userAgent'),
-            value: result.userAgent,
-          },
-        ]
-      : []
-  }
-  const items: StatGridItem[] = [
-    { label: t('tools.device-headers.results.browser'), value: parsed.browser || '—' },
+  return [
     {
-      label: t('tools.device-headers.results.browserVersion'),
-      value: parsed.browserVersion || '—',
+      label: t('tools.header-generator.results.userAgent'),
+      value: result.userAgent || '—',
     },
-    { label: t('tools.device-headers.results.os'), value: parsed.os || '—' },
-    { label: t('tools.device-headers.results.osVersion'), value: parsed.osVersion || '—' },
-    { label: t('tools.device-headers.results.deviceType'), value: parsed.deviceType || '—' },
-    { label: t('tools.device-headers.results.engine'), value: parsed.engine || '—' },
   ]
-  items.push({
-    label: t('tools.device-headers.results.isBot'),
-    value: parsed.isBot ? t('common.states.yes') : t('common.states.no'),
-    level: parsed.isBot ? 'warning' : 'success',
-    mono: false,
-  })
-  return items
 })
 
 /** 请求头表格行。 */
@@ -124,7 +87,7 @@ const headerRows = computed<DataTableRow[]>(() =>
   })),
 )
 
-const faq = computed<FaqItem[]>(() => tm('tools.device-headers.faq') as FaqItem[])
+const faq = computed<FaqItem[]>(() => tm('tools.header-generator.faq') as FaqItem[])
 
 /**
  * 自定义请求头：把「每行一条 `名称: 值`」的文本解析成对象。
@@ -155,11 +118,9 @@ const parsedCustomHeaders = computed<Record<string, string>>(() => {
 /** 运行当前输入。 */
 function run(): void {
   void execute({
-    mode: mode.value,
     platform: platform.value,
     version: version.value,
     os: os.value,
-    userAgent: userAgent.value,
     acceptLanguage: acceptLanguage.value,
     referer: referer.value,
     customHeaders: parsedCustomHeaders.value,
@@ -168,20 +129,17 @@ function run(): void {
 
 // 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。
 useAutoRun({
-  slug: 'device-headers',
+  slug: 'header-generator',
   run,
-  watch: [mode, platform, version, os, userAgent, acceptLanguage, referer, customHeaders],
+  watch: [platform, version, os, acceptLanguage, referer, customHeaders],
   enabled: () => true,
 })
 
 /** 重置表单与结果。 */
 function reset(): void {
-  mode.value = 'generate'
   platform.value = 'chrome'
   version.value = ''
   os.value = ''
-  userAgent.value =
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
   acceptLanguage.value = 'zh-CN,zh;q=0.9,en;q=0.8'
   referer.value = ''
   customHeaders.value = ''
@@ -201,117 +159,75 @@ function fillExample(index: number): void {
 
 <template>
   <ToolPageLayout
-    slug="device-headers"
-    :name="t('tools.device-headers.name')"
-    name-en="Device Headers"
+    slug="header-generator"
+    :name="t('tools.header-generator.name')"
+    name-en="Header Generator"
   >
     <template #panel>
       <ToolPanel>
         <template #input>
           <label class="field">
-            <span class="field__label">{{ t('tools.device-headers.fields.mode') }}</span>
-            <ElSelect
-              v-model="mode"
-              class="field__select"
-              :aria-label="t('tools.device-headers.fields.mode')"
-            >
-              <ElOption
-                :label="t('tools.device-headers.options.mode.generate')"
-                value="generate"
-              />
-              <ElOption
-                :label="t('tools.device-headers.options.mode.parseUa')"
-                value="parseUa"
-              />
-            </ElSelect>
-          </label>
-
-          <label
-            v-if="mode === 'generate'"
-            class="field"
-          >
-            <span class="field__label">{{ t('tools.device-headers.fields.platform') }}</span>
+            <span class="field__label">{{ t('tools.header-generator.fields.platform') }}</span>
             <ElSelect
               v-model="platform"
               class="field__select"
-              :aria-label="t('tools.device-headers.fields.platform')"
+              :aria-label="t('tools.header-generator.fields.platform')"
             >
               <ElOption
-                v-for="name in ['chrome', 'firefox', 'safari', 'edge', 'android', 'ios', 'curl']"
+                v-for="name in PLATFORMS"
                 :key="name"
-                :label="t(`tools.device-headers.options.platform.${name}`)"
+                :label="t(`tools.header-generator.options.platform.${name}`)"
                 :value="name"
               />
             </ElSelect>
           </label>
 
-          <label
-            v-if="mode === 'generate'"
-            class="field field--grow"
-          >
-            <span class="field__label">{{ t('tools.device-headers.fields.version') }}</span>
+          <label class="field field--grow">
+            <span class="field__label">{{ t('tools.header-generator.fields.version') }}</span>
             <ElInput
               v-model="version"
               class="field__input tb-mono"
               placeholder="120.0.0.0"
               autocomplete="off"
-              :aria-label="t('tools.device-headers.fields.version')"
+              :aria-label="t('tools.header-generator.fields.version')"
             />
           </label>
 
-          <label
-            v-if="mode === 'generate'"
-            class="field field--grow"
-          >
-            <span class="field__label">{{ t('tools.device-headers.fields.os') }}</span>
+          <label class="field field--grow">
+            <span class="field__label">{{ t('tools.header-generator.fields.os') }}</span>
             <ElInput
               v-model="os"
               class="field__input tb-mono"
-              placeholder="Windows 11"
+              placeholder="Windows NT 10.0; Win64; x64"
               autocomplete="off"
-              :aria-label="t('tools.device-headers.fields.os')"
-            />
-          </label>
-
-          <label
-            v-if="mode === 'parseUa'"
-            class="field field--grow"
-          >
-            <span class="field__label">{{ t('tools.device-headers.fields.userAgent') }}</span>
-            <ElInput
-              v-model="userAgent"
-              class="field__input tb-mono"
-              type="textarea"
-              :rows="4"
-              autocomplete="off"
-              :aria-label="t('tools.device-headers.fields.userAgent')"
+              :aria-label="t('tools.header-generator.fields.os')"
             />
           </label>
         </template>
 
         <template #options>
           <label class="field field--grow">
-            <span class="field__label">{{ t('tools.device-headers.fields.acceptLanguage') }}</span>
+            <span class="field__label">{{ t('tools.header-generator.fields.acceptLanguage') }}</span>
             <ElInput
               v-model="acceptLanguage"
               class="field__input tb-mono"
               autocomplete="off"
-              :aria-label="t('tools.device-headers.fields.acceptLanguage')"
+              :aria-label="t('tools.header-generator.fields.acceptLanguage')"
             />
           </label>
 
           <label class="field field--grow">
-            <span class="field__label">{{ t('tools.device-headers.fields.referer') }}</span>
+            <span class="field__label">{{ t('tools.header-generator.fields.referer') }}</span>
             <ElInput
               v-model="referer"
               class="field__input tb-mono"
               autocomplete="off"
-              :aria-label="t('tools.device-headers.fields.referer')"
+              :aria-label="t('tools.header-generator.fields.referer')"
             />
           </label>
 
           <label class="field field--grow">
-            <span class="field__label">{{ t('tools.device-headers.fields.customHeaders') }}</span>
+            <span class="field__label">{{ t('tools.header-generator.fields.customHeaders') }}</span>
             <ElInput
               v-model="customHeaders"
               class="field__input tb-mono"
@@ -319,12 +235,12 @@ function fillExample(index: number): void {
               :rows="3"
               placeholder="X-Trace-Id: abc123"
               autocomplete="off"
-              :aria-label="t('tools.device-headers.fields.customHeaders')"
+              :aria-label="t('tools.header-generator.fields.customHeaders')"
             />
           </label>
 
           <p class="field__hint">
-            {{ t('tools.device-headers.hints.customHeaders') }}
+            {{ t('tools.header-generator.hints.customHeaders') }}
           </p>
         </template>
 
@@ -345,7 +261,7 @@ function fillExample(index: number): void {
         :text="resultText"
         :meta="meta"
         :error="error"
-        :title="t('tools.device-headers.results.headers')"
+        :title="t('tools.header-generator.results.headers')"
         hide-text
         @retry="run"
       >
@@ -353,10 +269,18 @@ function fillExample(index: number): void {
           <StatGrid :items="statItems" />
           <DataTable
             v-if="headerRows.length > 0"
-            class="device-headers__table"
+            class="header-generator__table"
             :columns="[
-              { key: 'name', label: t('tools.device-headers.results.headerName'), mono: true },
-              { key: 'value', label: t('tools.device-headers.results.headerValue'), mono: true },
+              {
+                key: 'name',
+                label: t('tools.header-generator.results.headerName'),
+                mono: true,
+              },
+              {
+                key: 'value',
+                label: t('tools.header-generator.results.headerValue'),
+                mono: true,
+              },
             ]"
             :rows="headerRows"
             copy-column="value"
@@ -384,7 +308,7 @@ function fillExample(index: number): void {
 </template>
 
 <style scoped>
-.device-headers__table {
+.header-generator__table {
   margin-top: var(--tb-space-3);
 }
 </style>

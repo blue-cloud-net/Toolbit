@@ -1,0 +1,45 @@
+{
+  "slug": "ua-parser",
+  "description": "UA 解析工具的契约测试数据。",
+  "cases": [
+    {
+      "name": "解析 Chrome on Windows",
+      "request": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "browser": "Chrome",
+          "browserVersion": "120.0.0.0",
+          "os": "Windows",
+          "deviceType": "desktop",
+          "isBot": false
+        }
+      }
+    },
+    {
+      "name": "解析爬虫 UA",
+      "request": {
+        "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "isBot": true,
+          "deviceType": "bot"
+        }
+      }
+    },
+    {
+      "name": "缺少 UA 串",
+      "request": {
+        "userAgent": ""
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    }
+  ]
+}

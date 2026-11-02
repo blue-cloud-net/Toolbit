@@ -1,8 +1,8 @@
 # 网络 API
 
-> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-11-01
+> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-11-02
 
-覆盖 **10** 个网络类工具。其中 4 个**需要出网**，`websocket-test` 为**纯前端**工具（无后端端点），
+覆盖 **11** 个网络类工具。其中 4 个**需要出网**，`websocket-test` 为**纯前端**工具（无后端端点），
 `mime-lookup`、`http-status` 与 `dns-servers` 为**纯查表**工具（不出网）。
 
 | slug | 名称 | 传输 | 端点 |
@@ -15,7 +15,8 @@
 | [websocket-test](#websocket-test) | WebSocket 测试 | 浏览器原生 | 无 |
 | [mime-lookup](#mime-lookup) | MIME 类型查询 | JSON | `POST /api/v1/tools/mime-lookup` |
 | [http-status](#http-status) | HTTP 状态码查询 | JSON | `POST /api/v1/tools/http-status` |
-| [device-headers](#device-headers) | 设备请求头 | JSON | `POST /api/v1/tools/device-headers` |
+| [ua-parser](#ua-parser) | UA 解析 | JSON | `POST /api/v1/tools/ua-parser` |
+| [header-generator](#header-generator) | 请求头生成 | JSON | `POST /api/v1/tools/header-generator` |
 | [ip-range-expand](#ip-range-expand) | IP 段展开 | JSON | `POST /api/v1/tools/ip-range-expand` |
 
 ---
@@ -428,37 +429,66 @@ HTTP 状态码查询（**不出网**）。
 
 ---
 
-## device-headers
+## ua-parser
 
-生成客户端请求头并解析 User-Agent（Device Headers）。
+把 User-Agent 串拆成结构化字段（User-Agent Parser）。
 
 ### 请求
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `mode` | string | 否 | `generate` 生成 / `parseUa` 解析，默认 `generate` |
-| `platform` | string | 否 | `chrome` `firefox` `safari` `edge` `android` `ios` `curl` |
-| `version` | string | 否 | 浏览器版本号 |
-| `os` | string | 否 | 操作系统名称与版本 |
-| `userAgent` | string | 否 | `parseUa` 模式下的 User-Agent 串 |
-| `acceptLanguage` | string | 否 | Accept-Language 头 |
-| `referer` | string | 否 | Referer 头 |
-| `customHeaders` | object | 否 | 额外请求头，键值对 |
+| `userAgent` | string | 是 | 待解析的 User-Agent 串；长度上限 1024 |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `mode` | string | 模式 |
-| `headers` | array | 请求头列表 `[{ name, value }]` |
-| `userAgent` | string | User-Agent 串 |
-| `parsed` | object | 解析结果 `{ browser, browserVersion, os, osVersion, deviceType, isBot, engine }` |
+| `userAgent` | string | 规范化后的 UA 串（两端去空白） |
+| `browser` | string | 浏览器名称；无法识别时为 `unknown` |
+| `browserVersion` | string | 浏览器版本 |
+| `os` | string | 操作系统名称；无法识别时为 `unknown` |
+| `osVersion` | string | 操作系统版本 |
+| `deviceType` | string | 设备类型：`desktop` / `mobile` / `tablet` / `bot` / `unknown` |
+| `isBot` | bool | 是否是爬虫 |
+| `engine` | string | 渲染引擎：`Gecko` / `Blink/WebKit` / 空串 |
 
 ### 错误
 
-`MISSING_FIELD`、`INVALID_FIELD`。
+`MISSING_FIELD`（`userAgent` 为空）、`INVALID_FIELD`（`userAgent` 超过 1024 字符）。
 
-> 生成的 UA 是**常见组合**，不代表任何真实浏览器；解析只做结构化识别，不做指纹追踪。
+> 识别规则是**内置的关键词与前缀匹配**：不查在线 UA 数据库，也不做指纹追踪。
+> iOS 的 UA 串含 `like Mac OS X`，因此 iPhone / iPad 优先于 macOS 判定。
+
+---
+
+## header-generator
+
+按平台与版本生成一组客户端请求头（Header Generator）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `platform` | string | 否 | `chrome` `firefox` `safari` `edge` `android` `ios` `curl`；默认 `chrome` |
+| `version` | string | 否 | 浏览器版本号；留空用平台默认值 |
+| `os` | string | 否 | 操作系统名称与版本；留空用平台默认值 |
+| `acceptLanguage` | string | 否 | Accept-Language 头；留空用默认值 |
+| `referer` | string | 否 | Referer 头；留空则不输出该头 |
+| `customHeaders` | object | 否 | 额外请求头，键值对；至多 20 条，名称须是合法的 RFC 9110 token |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `headers` | array | 请求头列表 `[{ name, value }]` |
+| `userAgent` | string | 生成的 UA 串 |
+
+### 错误
+
+`INVALID_FIELD`（`platform` 取值非法、`customHeaders` 名称非法或超出上限、各文本字段超长）。
+
+> 生成的 UA 是**常见组合**，不代表任何真实浏览器。
+> 自定义请求头按名称字典序输出，顺序稳定。
 
 ---
 

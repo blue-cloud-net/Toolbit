@@ -1,0 +1,53 @@
+{
+  "name": "User-Agent Parser",
+  "description": "Break a User-Agent string down into browser, operating system, device type and rendering engine.",
+  "category": "Network",
+  "actions": {
+    "run": "Parse"
+  },
+  "fields": {
+    "userAgent": "User-Agent string"
+  },
+  "options": {},
+  "results": {
+    "title": "Parse result",
+    "browser": "Browser",
+    "browserVersion": "Browser version",
+    "os": "Operating system",
+    "osVersion": "OS version",
+    "deviceType": "Device type",
+    "isBot": "Bot",
+    "engine": "Engine"
+  },
+  "examples": [
+    {
+      "label": "Chrome desktop",
+      "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    },
+    {
+      "label": "iOS Safari",
+      "value": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1"
+    },
+    {
+      "label": "Googlebot",
+      "value": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+    }
+  ],
+  "hints": {
+    "output": "The result distinguishes desktop, mobile, tablet and bot, and reports the rendering engine; recognition relies on built-in keyword matching, not an online database."
+  },
+  "faq": [
+    {
+      "q": "Can the result be used as a device fingerprint?",
+      "a": "No. It only performs structural recognition; it neither fingerprints nor decides whether a User-Agent was spoofed."
+    },
+    {
+      "q": "Is the UA data kept up to date?",
+      "a": "Not automatically. The recognition rules are a built-in snapshot updated with tool releases."
+    },
+    {
+      "q": "Why is no browser detected for some User-Agents?",
+      "a": "Recognition relies on keyword and prefix matching. Unusual or deliberately spoofed User-Agents only yield unknown."
+    }
+  ]
+}
