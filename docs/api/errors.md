@@ -46,6 +46,7 @@
 | `INVALID_CHMOD` | 400 | 权限值非法 | `value` |
 | `INVALID_TIME` | 400 | 时间无法解析 | `value` |
 | `INVALID_DOMAIN` | 400 | 域名格式非法 | `value` |
+| `INVALID_PROTOBUF` | 400 | Protobuf 数据或描述文件非法 | `offset`, `line`, `column` |
 
 ---
 

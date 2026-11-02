@@ -25,6 +25,7 @@
   "INVALID_CHMOD": "The permission value is invalid: {value}",
   "INVALID_TIME": "The time value cannot be parsed: {value}",
   "INVALID_DOMAIN": "The domain format is invalid: {value}",
+  "INVALID_PROTOBUF": "The protobuf data or descriptor is invalid.",
   "UNSUPPORTED_ALGORITHM": "Unsupported algorithm: {algorithm}.",
   "UNSUPPORTED_MODE": "Unsupported mode: {mode}.",
   "UNSUPPORTED_PADDING": "Unsupported padding: {padding}.",

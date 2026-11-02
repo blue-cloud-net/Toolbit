@@ -118,9 +118,9 @@ describe('工具词条', () => {
 
 describe('错误码词条', () => {
   it('覆盖全部错误码与警告码', () => {
-    // 与 backend/internal/toolerr 的注册表条目数量保持一致（67 + 14）。
-    expect(Object.keys(zhCNErrors)).toHaveLength(82)
-    expect(Object.keys(enUSErrors)).toHaveLength(82)
+    // 与 backend/internal/toolerr 的注册表条目数量保持一致（68 + 15）。
+    expect(Object.keys(zhCNErrors)).toHaveLength(83)
+    expect(Object.keys(enUSErrors)).toHaveLength(83)
   })
 })
 

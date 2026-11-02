@@ -1,0 +1,109 @@
+{
+  "slug": "protobuf-decoder",
+  "description": "Protobuf 解码的契约测试数据。",
+  "cases": [
+    {
+      "name": "线格式解码 varint",
+      "request": {
+        "mode": "wire",
+        "input": { "data": "089601", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "wire", "fieldCount": 1, "byteLength": 3 }
+      }
+    },
+    {
+      "name": "线格式解码文本字段",
+      "request": {
+        "mode": "wire",
+        "input": { "data": "0a0648656c6c6f211001", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "wire", "fieldCount": 2 }
+      }
+    },
+    {
+      "name": "线格式解码嵌套消息",
+      "request": {
+        "mode": "wire",
+        "input": { "data": "0a020801", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "wire", "depth": 1 }
+      }
+    },
+    {
+      "name": "线格式解码带十六进制转储",
+      "request": {
+        "mode": "wire",
+        "input": { "data": "089601", "encoding": "hex" },
+        "includeHexDump": true
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "wire" }
+      }
+    },
+    {
+      "name": "schema 模式解码",
+      "request": {
+        "mode": "schema",
+        "input": { "data": "0a05416c6963651007", "encoding": "hex" },
+        "schema": "syntax = \"proto3\";\nmessage Person {\n  string name = 1;\n  int32 id = 2;\n}\n",
+        "messageType": "Person"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "schema", "messageType": "Person", "fieldCount": 2 }
+      }
+    },
+    {
+      "name": "字段数超限被截断",
+      "request": {
+        "mode": "wire",
+        "input": { "data": "0801080208030804", "encoding": "hex" },
+        "maxFields": 2
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "wire", "fieldCount": 2, "truncated": true }
+      }
+    },
+    {
+      "name": "字节流畸形",
+      "request": {
+        "mode": "wire",
+        "input": { "data": "08", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_PROTOBUF"
+      }
+    },
+    {
+      "name": "schema 模式缺少描述文件",
+      "request": {
+        "mode": "schema",
+        "input": { "data": "089601", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "未知模式",
+      "request": {
+        "mode": "yaml",
+        "input": { "data": "089601", "encoding": "hex" }
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "UNSUPPORTED_MODE"
+      }
+    }
+  ]
+}

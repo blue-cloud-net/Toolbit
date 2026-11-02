@@ -1,0 +1,120 @@
+{
+  "slug": "protobuf-encoder",
+  "description": "Protobuf 编码的契约测试数据。",
+  "cases": [
+    {
+      "name": "线格式编码 varint",
+      "request": {
+        "mode": "wire",
+        "fields": [{ "field": 1, "type": "int32", "value": "150" }],
+        "outputEncoding": "hex"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "089601", "encoding": "hex", "byteLength": 3, "fieldCount": 1 }
+      }
+    },
+    {
+      "name": "线格式编码文本字段",
+      "request": {
+        "mode": "wire",
+        "fields": [{ "field": 1, "type": "string", "value": "Alice" }],
+        "outputEncoding": "hex"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "0a05416c696365", "encoding": "hex" }
+      }
+    },
+    {
+      "name": "线格式编码嵌套消息",
+      "request": {
+        "mode": "wire",
+        "fields": [
+          {
+            "field": 1,
+            "type": "message",
+            "fields": [{ "field": 1, "type": "int32", "value": "1" }]
+          }
+        ],
+        "outputEncoding": "hex"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "0a020801", "encoding": "hex" }
+      }
+    },
+    {
+      "name": "线格式编码二进制字段",
+      "request": {
+        "mode": "wire",
+        "fields": [{ "field": 1, "type": "bytes", "value": "48656c6c6f", "encoding": "hex" }],
+        "outputEncoding": "base64"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "encoding": "base64" }
+      }
+    },
+    {
+      "name": "schema 模式编码",
+      "request": {
+        "mode": "schema",
+        "schema": "syntax = \"proto3\";\nmessage Person {\n  string name = 1;\n  int32 id = 2;\n}\n",
+        "messageType": "Person",
+        "message": "{\"name\": \"Alice\", \"id\": 7}",
+        "outputEncoding": "hex"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": { "output": "0a05416c6963651007", "encoding": "hex" }
+      }
+    },
+    {
+      "name": "字段号非法",
+      "request": {
+        "mode": "wire",
+        "fields": [{ "field": 0, "type": "int32", "value": "1" }]
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "缺少字段规格",
+      "request": {
+        "mode": "wire"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "schema 模式缺少 protojson",
+      "request": {
+        "mode": "schema",
+        "schema": "syntax = \"proto3\";\nmessage Person { string name = 1; }\n",
+        "messageType": "Person"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "protojson 与描述不匹配",
+      "request": {
+        "mode": "schema",
+        "schema": "syntax = \"proto3\";\nmessage Person { string name = 1; }\n",
+        "messageType": "Person",
+        "message": "{\"nope\": 1}"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_PROTOBUF"
+      }
+    }
+  ]
+}

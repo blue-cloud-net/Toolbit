@@ -44,6 +44,7 @@ const (
 	CodeInvalidChmod    Code = "INVALID_CHMOD"
 	CodeInvalidTime     Code = "INVALID_TIME"
 	CodeInvalidDomain   Code = "INVALID_DOMAIN"
+	CodeInvalidProtobuf Code = "INVALID_PROTOBUF"
 )
 
 // 算法与参数类错误（Unsupported * / Key* / Passphrase* 等）。

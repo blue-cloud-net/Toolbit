@@ -846,6 +846,38 @@ tools:
     wide: false
     i18nKey: tools.html-escape
 
+  - slug: protobuf-decoder
+    category: encoding
+    order: 8
+    name: Protobuf 解码器
+    nameEn: Protobuf Decoder
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 8388608
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.protobuf-decoder
+
+  - slug: protobuf-encoder
+    category: encoding
+    order: 9
+    name: Protobuf 编码器
+    nameEn: Protobuf Encoder
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 8388608
+    timeoutMs: 15000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: false
+    wide: true
+    i18nKey: tools.protobuf-encoder
+
   - slug: json-format
     category: formatting
     order: 1

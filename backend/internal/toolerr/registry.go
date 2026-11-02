@@ -44,6 +44,7 @@ var Registry = map[Code]Spec{
 	"INVALID_CHMOD":    {HTTP: http.StatusBadRequest, Message: "invalid permission value", I18nKey: "errors.INVALID_CHMOD"},
 	"INVALID_TIME":     {HTTP: http.StatusBadRequest, Message: "invalid time value", I18nKey: "errors.INVALID_TIME"},
 	"INVALID_DOMAIN":   {HTTP: http.StatusBadRequest, Message: "invalid domain", I18nKey: "errors.INVALID_DOMAIN"},
+	"INVALID_PROTOBUF": {HTTP: http.StatusBadRequest, Message: "invalid protobuf data", I18nKey: "errors.INVALID_PROTOBUF"},
 
 	// 算法与参数。
 	"UNSUPPORTED_ALGORITHM": {HTTP: http.StatusBadRequest, Message: "unsupported algorithm", I18nKey: "errors.UNSUPPORTED_ALGORITHM"},

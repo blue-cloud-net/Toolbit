@@ -74,5 +74,23 @@ func Definitions() []tools.Definition {
 				return HTMLEscape(ctx, req.(*HTMLEscapeRequest))
 			},
 		},
+		{
+			Slug: "protobuf-decoder",
+			NewRequest: func() tools.Request {
+				return &ProtobufDecodeRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return ProtobufDecode(ctx, req.(*ProtobufDecodeRequest))
+			},
+		},
+		{
+			Slug: "protobuf-encoder",
+			NewRequest: func() tools.Request {
+				return &ProtobufEncodeRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return ProtobufEncode(ctx, req.(*ProtobufEncodeRequest))
+			},
+		},
 	}
 }

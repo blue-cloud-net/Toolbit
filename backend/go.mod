@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	github.com/blue-cloud-net/tongsuo-go v0.5.0
+	github.com/bufbuild/protocompile v0.14.1
 	github.com/coder/websocket v1.8.15
 	github.com/gin-gonic/gin v1.12.0
 	github.com/makiuchi-d/gozxing v0.1.1
@@ -17,6 +18,7 @@ require (
 	golang.org/x/net v0.51.0
 	golang.org/x/text v0.34.0
 	golang.org/x/time v0.12.0
+	google.golang.org/protobuf v1.36.10
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.39.0
 )
@@ -59,7 +61,6 @@ require (
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/tools v0.41.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/protobuf v1.36.10 // indirect
 	modernc.org/libc v1.66.3 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect

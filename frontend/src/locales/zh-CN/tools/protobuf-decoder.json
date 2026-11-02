@@ -1,0 +1,83 @@
+{
+  "name": "Protobuf 解码器",
+  "description": "解析 protobuf 二进制数据：按线格式列出字段，或按 .proto 描述还原成 JSON。",
+  "category": "编码",
+  "actions": {
+    "decode": "解码"
+  },
+  "fields": {
+    "input": "待解析的字节数据",
+    "inputEncoding": "输入编码",
+    "file": "导入二进制文件",
+    "mode": "解析模式",
+    "schema": ".proto 描述",
+    "messageType": "消息类型",
+    "maxDepth": "最大嵌套深度",
+    "maxFields": "最大字段数",
+    "inferStrings": "优先按文本解释",
+    "includeHexDump": "输出十六进制转储"
+  },
+  "options": {
+    "mode": {
+      "wire": "线格式（无需描述文件）",
+      "schema": "按 .proto 描述"
+    }
+  },
+  "results": {
+    "title": "解析结果",
+    "byteLength": "字节长度",
+    "fieldCount": "字段数",
+    "depth": "实际深度",
+    "path": "路径",
+    "fieldNumber": "字段号",
+    "name": "字段名",
+    "declaredType": "声明类型",
+    "wireType": "线类型",
+    "value": "值",
+    "unknownFieldCount": "未知字段数",
+    "truncated": "已截断",
+    "truncatedYes": "是",
+    "nestedMessage": "（嵌套消息）",
+    "empty": "没有可展示的字段。",
+    "emptyHex": "未勾选「输出十六进制转储」。"
+  },
+  "examples": [
+    {
+      "label": "解码一段 protobuf 字节流",
+      "value": "0a05416c6963651007"
+    },
+    {
+      "label": "按 .proto 描述解析同一段数据",
+      "value": "message Person { string name = 1; int32 id = 2; }"
+    }
+  ],
+  "hints": {
+    "input": "十六进制与 Base64 要在「输入编码」里选对；导入二进制文件会自动按 Base64 填入。",
+    "mode": "线格式模式只看字节结构，长度分隔字段会尽力猜成文本或嵌套消息；按 .proto 模式则给出字段名与声明类型，并统计未知字段。",
+    "limit": "超过最大字段数或最大嵌套深度时结果会被截断，不会报错。"
+  },
+  "faq": [
+    {
+      "q": "线格式模式怎么区分文本和嵌套消息？",
+      "a": "长度分隔字段先看是不是可打印的 UTF-8 文本：是就按文本显示；不是才尝试按嵌套消息解析；两者都不成立就给出十六进制预览。"
+    },
+    {
+      "q": "为什么 JSON 里的字段号是字符串键？",
+      "a": "没有描述文件时不知道字段名，只能用字段号。超过 JavaScript 安全整数范围的整数值会按字符串输出，避免精度丢失。"
+    },
+    {
+      "q": ".proto 模式支持 import 吗？",
+      "a": "支持 Google 标准类型（如 google/protobuf/timestamp.proto）；其它 import 需要先把定义合并进同一份描述文件。"
+    },
+    {
+      "q": "解析失败怎么办？",
+      "a": "错误会给出出错的字节偏移。先确认输入编码是否选对，再确认描述文件里的字段类型与实际数据是否一致。"
+    }
+  ],
+  "views": {
+    "summary": "摘要",
+    "fields": "字段",
+    "json": "JSON",
+    "hex": "十六进制"
+  }
+}

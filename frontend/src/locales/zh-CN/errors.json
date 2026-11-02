@@ -25,6 +25,7 @@
   "INVALID_CHMOD": "权限值非法：{value}",
   "INVALID_TIME": "时间无法解析：{value}",
   "INVALID_DOMAIN": "域名格式非法：{value}",
+  "INVALID_PROTOBUF": "Protobuf 数据或描述文件非法。",
   "UNSUPPORTED_ALGORITHM": "不支持的算法：{algorithm}。",
   "UNSUPPORTED_MODE": "不支持的模式：{mode}。",
   "UNSUPPORTED_PADDING": "不支持的填充方式：{padding}。",

@@ -1,0 +1,75 @@
+{
+  "name": "Protobuf 编码器",
+  "description": "把字段规格或 protojson 编码成 protobuf 二进制数据，输出十六进制或 Base64。",
+  "category": "编码",
+  "actions": {
+    "encode": "编码",
+    "addField": "添加字段",
+    "addChild": "添加子字段",
+    "removeRow": "删除"
+  },
+  "fields": {
+    "mode": "编码模式",
+    "fieldsJson": "字段规格（JSON）",
+    "schema": ".proto 描述",
+    "messageType": "消息类型",
+    "message": "protojson 内容",
+    "outputEncoding": "输出编码",
+    "fieldNumber": "字段号",
+    "type": "类型",
+    "value": "值",
+    "encoding": "字节编码"
+  },
+  "options": {
+    "mode": {
+      "wire": "按字段规格",
+      "schema": "按 protojson"
+    },
+    "editor": {
+      "table": "表格",
+      "json": "JSON 文本"
+    }
+  },
+  "results": {
+    "output": "编码结果",
+    "byteLength": "字节长度",
+    "fieldCount": "字段数",
+    "encoding": "输出编码"
+  },
+  "examples": [
+    {
+      "label": "按字段规格编码",
+      "value": "1:string = Alice，2:int32 = 7"
+    },
+    {
+      "label": "按 protojson 编码",
+      "value": "{\"name\": \"Alice\", \"id\": 7}"
+    }
+  ],
+  "hints": {
+    "fields": "字段值一律按字符串填写，避免 64 位整数在浏览器里丢精度；bytes 类型的值要另选字节编码。",
+    "schema": "按 protojson 编码时，字段名用 .proto 里的字段名或它的驼峰形式；64 位整数与 bytes 按 protojson 规范分别用字符串与 Base64 表示。",
+    "switch": "两种编辑形态可以随时切换，切换时会互相同步字段数据。"
+  },
+  "faq": [
+    {
+      "q": "表格和 JSON 文本两种编辑方式有什么区别？",
+      "a": "只是同一份字段数据的两种视图：表格适合逐个字段填写，JSON 文本适合批量粘贴与版本管理。切换时会自动互相同步。"
+    },
+    {
+      "q": "为什么值要写成字符串？",
+      "a": "JavaScript 的数字只有 53 位精度，protobuf 的 64 位整数会丢精度。统一按字符串传递，由服务端按类型解析。"
+    },
+    {
+      "q": "sint32 与 int32 有什么区别？",
+      "a": "int32 对负数要占满 10 个字节，sint32 用 ZigZag 编码，负数更省空间。两者解码出来的数值相同。"
+    },
+    {
+      "q": "怎么编码嵌套消息？",
+      "a": "把类型选成 message，再给这一行添加子字段；子字段会作为长度分隔的嵌套消息写进去。"
+    }
+  ],
+  "errors": {
+    "invalidJson": "字段规格 JSON 非法"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "name": "Protobuf Decoder",
+  "description": "Decode protobuf binary data: list the fields from the wire format, or restore JSON with a .proto descriptor.",
+  "category": "Encoding",
+  "actions": {
+    "decode": "Decode"
+  },
+  "fields": {
+    "input": "Binary data to decode",
+    "inputEncoding": "Input encoding",
+    "file": "Import a binary file",
+    "mode": "Decode mode",
+    "schema": ".proto descriptor",
+    "messageType": "Message type",
+    "maxDepth": "Max nesting depth",
+    "maxFields": "Max field count",
+    "inferStrings": "Prefer text interpretation",
+    "includeHexDump": "Include hex dump"
+  },
+  "options": {
+    "mode": {
+      "wire": "Wire format (no descriptor)",
+      "schema": "With .proto descriptor"
+    }
+  },
+  "results": {
+    "title": "Decoded result",
+    "byteLength": "Byte length",
+    "fieldCount": "Field count",
+    "depth": "Actual depth",
+    "path": "Path",
+    "fieldNumber": "Field number",
+    "name": "Field name",
+    "declaredType": "Declared type",
+    "wireType": "Wire type",
+    "value": "Value",
+    "unknownFieldCount": "Unknown fields",
+    "truncated": "Truncated",
+    "truncatedYes": "Yes",
+    "nestedMessage": "(nested message)",
+    "empty": "No field to show.",
+    "emptyHex": "Hex dump was not requested."
+  },
+  "examples": [
+    {
+      "label": "Decode a protobuf byte stream",
+      "value": "0a05416c6963651007"
+    },
+    {
+      "label": "Decode the same bytes with a .proto descriptor",
+      "value": "message Person { string name = 1; int32 id = 2; }"
+    }
+  ],
+  "hints": {
+    "input": "Pick the right input encoding for hex or Base64; importing a binary file fills the box with Base64 automatically.",
+    "mode": "Wire mode only looks at the byte structure and guesses length-delimited values as text or nested messages; the .proto mode adds field names, declared types and an unknown field count.",
+    "limit": "Results are truncated — not rejected — once the field count or nesting depth limit is reached."
+  },
+  "faq": [
+    {
+      "q": "How does wire mode tell text from a nested message?",
+      "a": "A length-delimited value is shown as text when it is printable UTF-8; otherwise it is parsed as a nested message; if neither works you get a hex preview."
+    },
+    {
+      "q": "Why are field numbers used as JSON keys?",
+      "a": "Without a descriptor there are no field names, only numbers. Integers beyond the JavaScript safe range are emitted as strings so no precision is lost."
+    },
+    {
+      "q": "Does the .proto mode support import?",
+      "a": "Google well-known types such as google/protobuf/timestamp.proto are available; other imports must be merged into the same descriptor file first."
+    },
+    {
+      "q": "Decoding failed — what should I check?",
+      "a": "The error carries the byte offset. First confirm the input encoding, then confirm the field types in the descriptor match the actual data."
+    }
+  ],
+  "views": {
+    "summary": "Summary",
+    "fields": "Fields",
+    "json": "JSON",
+    "hex": "Hex"
+  }
+}

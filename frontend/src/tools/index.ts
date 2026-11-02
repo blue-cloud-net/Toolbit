@@ -21,6 +21,8 @@ export const toolRegistry: Record<string, ToolLoader> = {
   'encoding-convert': () => import('./encoding/encoding-convert/index'),
   'gzip-deflate': () => import('./encoding/gzip-deflate/index'),
   'html-escape': () => import('./encoding/html-escape/index'),
+  'protobuf-decoder': () => import('./encoding/protobuf-decoder/index'),
+  'protobuf-encoder': () => import('./encoding/protobuf-encoder/index'),
 
   // ── 格式化 / Formatting ──
   'json-format': () => import('./formatting/json-format/index'),

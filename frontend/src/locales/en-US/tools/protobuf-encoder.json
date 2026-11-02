@@ -1,0 +1,75 @@
+{
+  "name": "Protobuf Encoder",
+  "description": "Encode field specs or protojson into protobuf binary data, output as hex or Base64.",
+  "category": "Encoding",
+  "actions": {
+    "encode": "Encode",
+    "addField": "Add field",
+    "addChild": "Add child field",
+    "removeRow": "Remove"
+  },
+  "fields": {
+    "mode": "Encode mode",
+    "fieldsJson": "Field specs (JSON)",
+    "schema": ".proto descriptor",
+    "messageType": "Message type",
+    "message": "protojson content",
+    "outputEncoding": "Output encoding",
+    "fieldNumber": "Field number",
+    "type": "Type",
+    "value": "Value",
+    "encoding": "Byte encoding"
+  },
+  "options": {
+    "mode": {
+      "wire": "By field specs",
+      "schema": "By protojson"
+    },
+    "editor": {
+      "table": "Table",
+      "json": "JSON text"
+    }
+  },
+  "results": {
+    "output": "Encoded result",
+    "byteLength": "Byte length",
+    "fieldCount": "Field count",
+    "encoding": "Output encoding"
+  },
+  "examples": [
+    {
+      "label": "Encode from field specs",
+      "value": "1:string = Alice，2:int32 = 7"
+    },
+    {
+      "label": "Encode from protojson",
+      "value": "{\"name\": \"Alice\", \"id\": 7}"
+    }
+  ],
+  "hints": {
+    "fields": "Field values are always written as strings so 64-bit integers keep their precision in the browser; bytes values need an explicit byte encoding.",
+    "schema": "When encoding protojson, use the field names from the .proto file or their camelCase form; 64-bit integers and bytes follow the protojson rules (string and Base64).",
+    "switch": "The two editor forms can be switched at any time; switching syncs the field data between them."
+  },
+  "faq": [
+    {
+      "q": "What is the difference between the table and the JSON text form?",
+      "a": "They are two views of the same field data: the table suits filling fields one by one, the JSON text suits pasting a batch. Switching syncs them automatically."
+    },
+    {
+      "q": "Why are values written as strings?",
+      "a": "JavaScript numbers only keep 53 bits of precision, which would corrupt 64-bit protobuf integers. Values are passed as strings and parsed by type on the server."
+    },
+    {
+      "q": "How does sint32 differ from int32?",
+      "a": "int32 spends 10 bytes on negative numbers, while sint32 uses ZigZag encoding and stays compact. Both decode to the same number."
+    },
+    {
+      "q": "How do I encode a nested message?",
+      "a": "Set the type to message and add child fields to that row; the children are written as a length-delimited nested message."
+    }
+  ],
+  "errors": {
+    "invalidJson": "Invalid field spec JSON"
+  }
+}

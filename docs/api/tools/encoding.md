@@ -1,8 +1,8 @@
 # 编码 API
 
-> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
+> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-11-02
 
-覆盖 **7** 个编码类工具。端点均为 `POST /api/v1/tools/{slug}`，全部为 `light` 档位。
+覆盖 **9** 个编码类工具。端点均为 `POST /api/v1/tools/{slug}`，全部为 `light` 档位。
 
 | slug | 名称 |
 | --- | --- |
@@ -13,6 +13,8 @@
 | [encoding-convert](#encoding-convert) | 编码转换 |
 | [gzip-deflate](#gzip-deflate) | GZip/Deflate |
 | [html-escape](#html-escape) | HTML 转义 |
+| [protobuf-decoder](#protobuf-decoder) | Protobuf 解码器 |
+| [protobuf-encoder](#protobuf-encoder) | Protobuf 编码器 |
 
 ---
 
@@ -238,6 +240,137 @@ HTML 实体编解码（HTML Escape）。
 `INVALID_FIELD`。
 
 > 只处理命名实体与十进制 / 十六进制数字实体，不做 CSS / JS 上下文转义。
+
+---
+
+## protobuf-decoder
+
+解析 protobuf 二进制数据。支持两种模式：`wire`（按线格式解析，不需要描述文件）与
+`schema`（按 `.proto` 描述解释字段名与声明类型）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `mode` | string | 否 | `wire`（默认）\| `schema` |
+| `input` | object | 是 | `{ data, encoding }`；`encoding` ∈ `utf8` \| `hex` \| `base64` \| `base64url` |
+| `schema` | string | `schema` 模式必填 | `.proto` 描述文本；只支持单文件 |
+| `messageType` | string | 否 | 顶层消息全名或简名；`schema` 中顶层消息唯一时可省略 |
+| `maxDepth` | int | 否 | 嵌套解析深度上限（0–128），默认 `32` |
+| `maxFields` | int | 否 | 字段总数上限（1–100000），默认 `10000` |
+| `inferStrings` | bool | 否 | 是否**优先**把长度分隔字段识别为 UTF-8 文本，默认 `true` |
+| `includeHexDump` | bool | 否 | 是否返回十六进制转储，默认 `false` |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `mode` | string | 实际使用的解析模式 |
+| `messageType` | string | 解析所用的消息名；`wire` 模式为空 |
+| `byteLength` | int | 输入字节数 |
+| `fieldCount` | int | 解析出的字段总数（含嵌套字段） |
+| `depth` | int | 实际达到的最大嵌套深度 |
+| `maxDepth` | int | 生效的深度上限 |
+| `fields` | array | 顶层字段列表 |
+| `json` | string | 解析结果的 JSON 文本 |
+| `unknownFieldCount` | int | `schema` 模式下无法识别的字段数 |
+| `hexDump` | string | 十六进制转储；未请求时为空 |
+| `truncated` | bool | 结果是否因上限被截断 |
+
+`fields[]` 的元素结构：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `path` | string | 字段路径：根为 `root`，子字段逐级追加 `/<字段号>`，重复字段的元素追加 `[<下标>]` |
+| `offset` | int | 该字段在线格式字节流中的起始偏移 |
+| `fieldNumber` | int | 字段号 |
+| `name` | string | 字段名；仅 `schema` 模式有值 |
+| `wireType` | string | 线类型：`varint` \| `fixed32` \| `fixed64` \| `bytes` \| `group` |
+| `declaredType` | string | 声明类型；仅 `schema` 模式有值 |
+| `value` | string | 字段值的文本表示 |
+| `length` | int | 长度分隔字段的字节数 |
+| `text` | bool | 该值是否被识别为 UTF-8 文本 |
+| `message` | bool | 该值是否被识别为嵌套消息 |
+| `hex` | string | 二进制值的十六进制预览（最多 64 字节） |
+| `float` | number | 32 / 64 位浮点字段的浮点解释 |
+| `children` | array | 嵌套消息的子字段，结构同上 |
+
+### 错误
+
+`INVALID_PROTOBUF`、`MISSING_FIELD`、`INVALID_FIELD`、`UNSUPPORTED_MODE`、
+`INVALID_ENCODING`、`INVALID_HEX`、`INVALID_BASE64`。
+
+> `wire` 模式只依据字节结构判断语义：长度分隔字段先看是不是可打印的 UTF-8 文本，
+> 不是才尝试按嵌套消息解析，两者都不成立则给出十六进制预览。
+>
+> `schema` 模式支持 Google 标准类型（如 `google/protobuf/timestamp.proto`）；
+> 其它 import 需要先把定义合并进同一份描述文件。
+>
+> 超出 `maxFields` / `maxDepth` 时结果被**截断**并置 `truncated: true`，不报错。
+
+---
+
+## protobuf-encoder
+
+把字段规格或 protojson 编码成 protobuf 二进制数据。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `mode` | string | 否 | `wire`（默认）\| `schema` |
+| `schema` | string | `schema` 模式必填 | `.proto` 描述文本；只支持单文件 |
+| `messageType` | string | 否 | 顶层消息全名或简名 |
+| `message` | string | `schema` 模式必填 | protojson 文本 |
+| `fields` | array | `wire` 模式必填 | 字段规格列表 |
+| `outputEncoding` | string | 否 | 默认 `base64` |
+
+`fields[]` 的元素结构：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `field` | int | 是 | 字段号（1–536870911） |
+| `type` | string | 是 | 语义类型名，见下表 |
+| `value` | string | 是 | 值的文本表示；**一律用字符串**，避免 64 位整数丢精度 |
+| `encoding` | string | 否 | `bytes` 类型值的编码（`utf8` \| `hex` \| `base64` \| `base64url`） |
+| `fields` | array | 否 | `message` 类型的子字段规格 |
+
+`type` 的取值与对应的线类型：
+
+| `type` | 线类型 | `value` 的含义 |
+| --- | --- | --- |
+| `int32` / `int64` | varint | 十进制有符号整数 |
+| `uint32` / `uint64` | varint | 十进制无符号整数（也支持 `0x` 前缀的十六进制） |
+| `sint32` / `sint64` | varint | 十进制有符号整数，按 ZigZag 编码 |
+| `bool` | varint | `true` / `false` |
+| `enum` | varint | 十进制有符号整数（无线格式时只支持数值） |
+| `fixed32` / `sfixed32` | fixed32 | 32 位整数 |
+| `float` | fixed32 | 32 位浮点数 |
+| `fixed64` / `sfixed64` | fixed64 | 64 位整数 |
+| `double` | fixed64 | 64 位浮点数 |
+| `string` | bytes | UTF-8 文本 |
+| `bytes` | bytes | 按 `encoding` 解释的字节 |
+| `message` | bytes | 由子字段编码出的嵌套消息 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `output` | string | 编码结果 |
+| `encoding` | string | 实际使用的输出编码 |
+| `byteLength` | int | 结果字节数 |
+| `fieldCount` | int | 写入的字段总数（含嵌套字段） |
+
+### 错误
+
+`INVALID_PROTOBUF`、`MISSING_FIELD`、`INVALID_FIELD`、`UNSUPPORTED_MODE`、
+`INVALID_ENCODING`、`INVALID_HEX`、`INVALID_BASE64`。
+
+> `wire` 模式按字段在列表中的**先后顺序**依次写出，不做字段号排序；
+> 同一个字段号出现多次即为 protobuf 的重复字段语义。
+>
+> `schema` 模式按 protojson 规范解析 `message`：64 位整数用字符串表示，
+> `bytes` 用 Base64 表示，枚举可以用枚举名；编码结果按**字段号**排序，输出稳定可复现。
 
 ---
 
