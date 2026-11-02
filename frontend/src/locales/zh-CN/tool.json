@@ -208,8 +208,7 @@
       "dropActive": "松开即可导入文件",
       "notMaterial": "文件内容不是 PEM 文本或 DER 材料。",
       "tooLarge": "导入后的内容超过 {max} KB 上限。",
-      "remove": "移除",
-      "clear": "清除内容"
+      "remove": "移除"
     }
   },
   "file": {

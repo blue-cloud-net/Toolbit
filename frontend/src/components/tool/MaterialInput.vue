@@ -15,6 +15,9 @@
  * 面板之间**没有叠加、没有浮层、没有隐藏开关**——这是本组件的核心约束：
  * 叠加式布局必须靠「点哪儿都收起」这类隐式规则维持，容易出现状态不闭环。
  *
+ * 两个面板**等高**：高度统一由样式里的 `--material-panel-height` 决定
+ * （文本框行数推导，见 CSS 注释），切换入口时下方内容不会跳动。
+ *
  * 导入时会**嗅探**文件形态（PEM / DER / base64 / 十六进制）并自动切换「格式」，
  * 免去用户手工选格式。导入成功后自动切到「粘贴文本」面板，让用户看得见内容。
  *
@@ -398,12 +401,25 @@ function clearFiles(): void {
   format.value = 'auto'
   panel.value = 'upload'
 }
+
+/**
+ * 文本框被清空（Element Plus 输入框自带的清除图标）。
+ *
+ * 与原先的「清除内容」按钮同义：丢掉已导入文件、回到「自动识别」格式。
+ * 面板**不**切回「上传文件」：清空多半是为了接着粘新内容。
+ */
+function onClear(): void {
+  error.value = ''
+  imported.value = []
+  format.value = 'auto'
+}
 </script>
 
 <template>
   <div
     class="material-input"
     :class="{ 'material-input--drag': dragActive }"
+    :style="{ '--material-rows': props.rows }"
     @dragenter="onDragEnter"
     @dragover="onDragOver"
     @dragleave="onDragLeave"
@@ -526,8 +542,10 @@ function clearFiles(): void {
         autocomplete="off"
         :aria-label="label ?? t('tool.material.fields.material')"
         :disabled="props.disabled"
+        clearable
         @focus="focused = true"
         @blur="focused = false"
+        @clear="onClear"
       />
     </div>
 
@@ -535,15 +553,6 @@ function clearFiles(): void {
       <p class="field__hint">
         {{ hint }}
       </p>
-      <button
-        v-if="value !== ''"
-        type="button"
-        class="material-input__toggle"
-        :disabled="props.disabled"
-        @click="clearFiles"
-      >
-        {{ t('tool.material.import.clear') }}
-      </button>
     </div>
 
     <p
@@ -561,6 +570,25 @@ function clearFiles(): void {
   display: flex;
   flex-direction: column;
   gap: var(--tb-space-2);
+
+  /*
+   * 两个输入面板的**共同高度**。
+   *
+   * 「上传文件」与「粘贴文本」必须等高：否则切换入口时，下方内容会整体跳动。
+   * 高度按文本框行数推导（`--material-rows` 由组件按 `rows` 属性注入）：
+   *
+   *   面板高 = 行数 × 行高 + 文本框内边距与边框
+   *
+   * 上传面板另有最小高度（图标 + 标题 + 副标题 + 按钮），两者取大者。
+   * 行高同时写进文本框的 `line-height`，保证「看得见的行数」与推导一致。
+   */
+  --material-line-height: 20px;
+  --material-text-chrome: 12px;
+  --material-upload-min: 192px;
+  --material-panel-height: max(
+    var(--material-upload-min),
+    calc(var(--material-rows, 8) * var(--material-line-height) + var(--material-text-chrome))
+  );
 }
 
 /* 标题行：字段名 + 入口分段控件 + 格式。 */
@@ -581,6 +609,10 @@ function clearFiles(): void {
 
 /* 上传面板：一个虚线大拖放区。 */
 .material-input__upload {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: var(--material-panel-height);
   border: 1px dashed var(--tb-border-strong);
   border-radius: var(--tb-radius-card);
   background: var(--tb-bg-elevated);
@@ -595,6 +627,16 @@ function clearFiles(): void {
 .material-input__drop {
   display: block;
   width: 100%;
+  height: 100%;
+}
+
+/*
+ * Element Plus 的 `ElUpload` 在根节点里再套一层 `.el-upload`（真正的触发器）。
+ * 这层是块级且高度自适应，拖放区的 `height: 100%` 会解析成 `auto`，
+ * 所以必须先把这一层也撑满，拖放区才能填满面板。
+ */
+.material-input__drop :deep(.el-upload) {
+  height: 100%;
 }
 
 .material-input__drop :deep(.el-upload-dragger) {
@@ -603,8 +645,8 @@ function clearFiles(): void {
   align-items: center;
   justify-content: center;
   gap: var(--tb-space-1);
-  min-height: 168px;
-  padding: var(--tb-space-6) var(--tb-space-4);
+  height: 100%;
+  padding: var(--tb-space-4);
   border: 0;
   background: transparent;
 }
@@ -652,6 +694,23 @@ function clearFiles(): void {
   display: flex;
   flex-direction: column;
   gap: var(--tb-space-2);
+  height: var(--material-panel-height);
+}
+
+/* 文本框填满面板剩余高度：面板高度已固定，行数只决定初始容量。 */
+.material-input__text :deep(.el-textarea) {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.material-input__text :deep(.el-textarea__inner) {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  line-height: var(--material-line-height);
+  /* 高度已由面板锁定，手动拖拽会破坏两个面板等高的约定。 */
+  resize: none;
 }
 
 /* 已导入文件：胶囊标签。 */
@@ -700,28 +759,6 @@ function clearFiles(): void {
 
 .material-input__file-remove:hover {
   color: var(--tb-danger);
-}
-
-/* 文字按钮：清除内容。 */
-.material-input__toggle {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--tb-primary);
-  font: inherit;
-  font-size: var(--tb-font-xs);
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.material-input__toggle:hover {
-  text-decoration: underline;
-}
-
-.material-input__toggle:disabled {
-  color: var(--tb-text-tertiary);
-  cursor: not-allowed;
-  text-decoration: none;
 }
 
 .material-input__foot {

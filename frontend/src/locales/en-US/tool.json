@@ -208,8 +208,7 @@
       "dropActive": "Release to import the file",
       "notMaterial": "The file is neither PEM text nor DER material.",
       "tooLarge": "The imported content exceeds the {max} KB limit.",
-      "remove": "Remove",
-      "clear": "Clear content"
+      "remove": "Remove"
     }
   },
   "file": {
