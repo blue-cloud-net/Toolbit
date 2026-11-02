@@ -1,6 +1,6 @@
 # 证书 API
 
-> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
+> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-11-02
 
 覆盖 **24** 个证书类工具 —— 本项目最大的分类。端点均为 `POST /api/v1/tools/{slug}`，除 `cert-chain-fetch`（multipart + 出网）外均为 JSON。
 
@@ -33,6 +33,21 @@
 
 ---
 
+## 数组字段的两种编码
+
+「已查询、确认没有该项」在本 API 里有**两种**编码，语义不同，客户端必须区别对待：
+
+| 编码 | 含义 | 字段 |
+| --- | --- | --- |
+| `null` | 已查询，确认没有该项 | `certificate.san`、`certificate.keyUsage`、`certificate.extendedKeyUsage`、`policies[].cpsUris`、`policies[].noticeNumbers` |
+| `[]` | 结构性字段，恒为空数组 | `certificate.subject`、`certificate.issuer`、`certificate.extensions`、`certificate.policies`、`fingerprints`、`chain` |
+
+原因：上游在扩展缺失时返回 `nil`（原样透传 ⇒ `null`），而结构性字段由服务端显式构造空切片（⇒ `[]`）。
+
+> **客户端注意**：读取这些字段前必须判空（JavaScript 里 `null.length` 会直接抛异常）。
+
+---
+
 ## cert-parse
 
 解析 X.509 证书。
@@ -53,7 +68,7 @@
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `certificate` | object | 证书主体信息（见下表） |
-| `validity` | object | `{ status, daysRemaining }`；`status` ∈ `valid` \| `expired` \| `not_yet_valid` |
+| `validity` | object | `{ status, daysRemaining }`；`status` ∈ `valid` \| `expired` \| `not_yet_valid`；`daysRemaining` 是**小数**（保留 1 位），已过期为负数 |
 | `fingerprints` | array | `[{ algorithm, value }]` |
 | `selfSigned` | bool | 是否自签名 |
 | `rawDerBase64` | string | 原始 DER（base64） |
@@ -66,7 +81,7 @@
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `version` | int | 版本号（2 表示 v3） |
-| `subject` / `issuer` | array | RDN 条目 `[{ field, value }]`（`field` 短名如 `CN`、`O`） |
+| `subject` / `issuer` | array | RDN 条目 `[{ field, value }]`（`field` 短名如 `CN`、`O`）；恒为数组 |
 | `subjectText` / `issuerText` | string | OpenSSL 风格单行文本，如 `/C=CN/O=Toolbit Test/CN=leaf.example.com` |
 | `serial` | string | 序列号（大写十六进制） |
 | `notBefore` / `notAfter` | string | 生效 / 过期时间（RFC3339） |
@@ -74,14 +89,21 @@
 | `signatureAlgorithm` / `signatureAlgorithmOid` | string | 签名算法短名 / 点分 OID |
 | `isCa` | bool | 是否为 CA 证书 |
 | `pathLen` | int | 路径长度约束；非 CA 或无该扩展为 `-1` |
-| `san` | array | 主体备用名条目 |
-| `keyUsage` / `extendedKeyUsage` | array | 密钥用途 / 扩展密钥用途 |
+| `san` | array \| null | 主体备用名条目；无该扩展时为 `null` |
+| `keyUsage` / `extendedKeyUsage` | array \| null | 密钥用途 / 扩展密钥用途；无该扩展时为 `null` |
 | `subjectKeyId` / `authorityKeyId` | string | 主题 / 签发者密钥标识符（大写十六进制） |
 | `subjectHash` / `issuerHash` | string | 名称的 `X509_NAME_hash` |
-| `extensions` | array | `[{ nid, oid, name, critical, value }]` |
+| `extensions` | array | `[{ nid, oid, name, critical, value }]`；恒为数组 |
 | `selfSigned` | bool | 是否自签名 |
 | `signatureHex` | string | 签名字节的十六进制（小写） |
-| `policies` | array | certificatePolicies 扩展里的策略 `[{ oid, cpsUris, organization, noticeNumbers, explicitText }]`；无该扩展时为空数组 |
+| `policies` | array | certificatePolicies 扩展里的策略 `[{ oid, cpsUris, organization, noticeNumbers, explicitText }]`；恒为数组 |
+
+`policies[]` 的附加字段：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `cpsUris` | array \| null | 策略声明 URL；无声明时为 `null` |
+| `noticeNumbers` | array \| null | 通知编号；无编号时为 `null` |
 
 `extensions[]` 的附加字段：
 
@@ -247,13 +269,16 @@ ASN.1 结构树可视化。
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `bundle` | object | 是 | `PemBundle`（多张证书） |
+| `fingerprints` | array | 否 | 需要计算的指纹算法；为空时只算 `["SHA256"]` |
+
+`fingerprints` 的合法取值与 [cert-parse](#cert-parse) 相同。
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `count` | int | 证书数量 |
-| `chain` | array | `[{ pem, info, role, link, validity, fingerprintSha256, publicKey }]`（已排序，叶 → 根） |
+| `chain` | array | `[{ pem, info, role, link, validity, fingerprints, publicKey }]`（已排序，叶 → 根） |
 | `ordered` | bool | 输入是否已按序排列 |
 | `missingRoot` | bool | 是否缺少根证书 |
 | `selfSigned` | bool | 根证书是否自签名 |
@@ -270,14 +295,24 @@ ASN.1 结构树可视化。
 | `link.ok` | bool | 连接是否成立 |
 | `link.reason` | string | 断链原因：`keyid_mismatch`（密钥标识符不匹配）\| `missing_intermediate`（缺中间 CA）\| `unlinked`（多余证书）；正常时为空 |
 | `validity` | object | `{ status, daysRemaining }`，语义同 `cert-parse` 的 `validity` |
-| `fingerprintSha256` | string | 该证书的 SHA-256 指纹 |
+| `fingerprints` | array | `[{ algorithm, value }]`，按请求的算法顺序；计算失败的算法不出现在列表里 |
 | `publicKey` | object | 公钥展开视图，字段同 `cert-parse` 的 `publicKey` |
 
 ### 错误
 
-`INVALID_CERT`、`INVALID_PEM`、`TOO_MANY_ITEMS`。
+`INVALID_CERT`、`INVALID_PEM`、`TOO_MANY_ITEMS`、`UNSUPPORTED_ALGORITHM`。
 
 > 证书链上限 64 张，超出返回 `TOO_MANY_ITEMS`。
+
+### 链 PEM 的拼接形式
+
+服务端导出的整链 PEM 采用 **RFC 7468 严格形式**（§3 Figure 3）：
+
+- 每个块以 `-----END CERTIFICATE-----` 加一个换行收尾；
+- **块与块之间恰好一个换行，没有空行**；
+- 标签只使用 `CERTIFICATE`（§8 禁止生成 `CERTIFICATE CHAIN` 标签）。
+
+解析侧按 §2 的要求忽略块之间的空白与换行差异，因此**输入**时块间空行可有可无。
 > 排序优先按 **AKID ↔ SKID** 匹配，退回主体 / 签发者文本；同一层有多个候选时按输入顺序取第一个（稳定排序）。
 > `ordered: false` **只**表示输入需要重排，**不是**错误。
 
@@ -859,9 +894,13 @@ JSON：`POST /api/v1/tools/cert-chain-fetch`。
 | `issuer` | string | 签发者 |
 | `notBefore` | string | 生效时间 |
 | `notAfter` | string | 失效时间 |
-| `validDays` | int | 有效期总天数 |
-| `daysRemaining` | int | 剩余天数 |
+| `validDays` | number | 有效期总天数；**小数**（保留 1 位） |
+| `daysRemaining` | number | 剩余天数；**小数**（保留 1 位），已过期为负数 |
 | `hoursRemaining` | int | 剩余小时数 |
+
+> **天数的展示口径**：不足 10 天时保留 1 位小数（「9.6 天」），
+> 否则截断为整数（「820.7 天」显示成「820 天」）。
+> 服务端的 `recommendations` 文案与前端页面**使用同一口径**。
 | `status` | string | 状态 |
 | `isSelfSigned` | bool | 是否自签名 |
 | `isCA` | bool | 是否 CA 证书 |
@@ -869,7 +908,7 @@ JSON：`POST /api/v1/tools/cert-chain-fetch`。
 | `keyBits` | int | 密钥位数 |
 | `curve` | string | 椭圆曲线名 |
 | `signatureAlgorithm` | string | 签名算法 |
-| `san` | array | 主体备用名列表 |
+| `san` | array \| null | 主体备用名列表；无该扩展时为 `null` |
 | `recommendations` | array | 续期建议 |
 
 ### 错误

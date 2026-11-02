@@ -4,6 +4,7 @@
  * 只做「数据 → 展示形态」的转换，不依赖 Vue：
  * 便于在 vitest 中独立覆盖，也避免各工具页各写一份。
  */
+import type { CertificateExtension } from '@/types/certificate'
 
 /** 语义级别；与共享组件的 `level` 取值一致。 */
 export type CertLevel = 'success' | 'warning' | 'danger' | 'info' | 'muted'
@@ -147,7 +148,9 @@ export function validityPercent(
 }
 
 /**
- * 有效期总天数。
+ * 有效期总天数（保留 1 位小数）。
+ *
+ * 短命证书（不足 1 天）不再显示成「0 天」。
  */
 export function durationDays(notBefore: string, notAfter: string): number {
   const start = Date.parse(notBefore)
@@ -155,7 +158,125 @@ export function durationDays(notBefore: string, notAfter: string): number {
   if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) {
     return 0
   }
-  return Math.round((end - start) / 86_400_000)
+  return Math.round(((end - start) / 86_400_000) * 10) / 10
+}
+
+/**
+ * 数组归一化：`null` / `undefined` → 空数组。
+ *
+ * 后端对「已查询但无该项」编码成 `null`（见 types/certificate.ts 的说明），
+ * 直接读 `.length` / `.map` 会抛 TypeError 让整页白屏。
+ * 所有读取后端数组的地方都必须过这一层。
+ */
+export function toList<T>(value: T[] | null | undefined): T[] {
+  return value ?? []
+}
+
+/**
+ * 天数渲染。
+ *
+ * 不足 10 天时保留 1 位小数（「9.6 天」），否则取整（「12 天」）。
+ * 临期证书需要区分「还剩 9.6 天」与「还剩 9 天」。
+ */
+export function formatDays(value: number): string {
+  if (!Number.isFinite(value)) {
+    return '0'
+  }
+  if (Math.abs(value) < 10) {
+    return value.toFixed(1)
+  }
+  return String(Math.trunc(value))
+}
+
+/**
+ * 按 RFC 7468 严格形式拼接多段 PEM。
+ *
+ * §3 Figure 3（Strict）：`stricttextualmsg = preeb eol strictbase64text posteb eol`
+ * ⇒ 每个块以 `posteb eol` 收尾，**块与块之间恰好一个换行、没有空行**。
+ * §2 要求解析侧忽略空白，因此**输入**时块间空行可有可无。
+ */
+export function joinChainPem(blocks: string[]): string {
+  const parts = blocks.map((block) => block.trim()).filter((block) => block !== '')
+  if (parts.length === 0) {
+    return ''
+  }
+  return `${parts.join('\n')}\n`
+}
+
+/**
+ * 关键扩展的登记项。
+ *
+ * 顺序即展示顺序：先是证书的**身份与能力**（能否签发、能干什么），
+ * 再是**标识**与**分发点**。与浏览器内置证书查看器的习惯一致。
+ *
+ * `name` 是本地化词条的短名（对应 `tool.cert.ext.<name>`）。
+ */
+export interface KeyExtension {
+  /** 扩展的点分 OID。 */
+  oid: string
+  /** 本地化词条的短名。 */
+  name: string
+}
+
+/**
+ * 关键扩展登记表。
+ */
+export const KEY_EXTENSIONS: readonly KeyExtension[] = [
+  { oid: '2.5.29.19', name: 'basicConstraints' },
+  { oid: '2.5.29.15', name: 'keyUsage' },
+  { oid: '2.5.29.37', name: 'extendedKeyUsage' },
+  { oid: '2.5.29.17', name: 'subjectAltName' },
+  { oid: '2.5.29.18', name: 'issuerAltName' },
+  { oid: '2.5.29.14', name: 'subjectKeyIdentifier' },
+  { oid: '2.5.29.35', name: 'authorityKeyIdentifier' },
+  { oid: '2.5.29.31', name: 'cRLDistributionPoints' },
+  { oid: '1.3.6.1.5.5.7.1.1', name: 'authorityInfoAccess' },
+  { oid: '2.5.29.32', name: 'certificatePolicies' },
+  { oid: '2.5.29.30', name: 'nameConstraints' },
+]
+
+/**
+ * 挑出证书的**关键扩展**。
+ *
+ * 只保留该证书**实际带有**的关键扩展，并按 `KEY_EXTENSIONS` 的固定顺序排列；
+ * 一个都没有时返回空数组。
+ *
+ * 返回的每一项附带 `keyName`（本地化短名），便于直接渲染。
+ */
+export interface KeyExtensionEntry extends CertificateExtension {
+  /** 本地化词条的短名。 */
+  keyName: string
+}
+
+/**
+ * 挑出证书的关键扩展。
+ */
+export function keyExtensions(extensions: CertificateExtension[]): KeyExtensionEntry[] {
+  const out: KeyExtensionEntry[] = []
+  for (const item of KEY_EXTENSIONS) {
+    const found = extensions.find((ext) => ext.oid === item.oid)
+    if (found) {
+      out.push({ ...found, keyName: item.name })
+    }
+  }
+  return out
+}
+
+/**
+ * 全部扩展（保持证书里的原始顺序）。
+ */
+export function allExtensions(extensions: CertificateExtension[]): CertificateExtension[] {
+  return [...extensions]
+}
+
+/**
+ * 扩展的可读值。
+ *
+ * 优先用后端解出的可读文本（OpenSSL `x509 -text` 体例）；
+ * 未知扩展回落十六进制原值。
+ */
+export function extensionValue(ext: CertificateExtension): string {
+  return ext.text || hexUpper(ext.value)
 }
 
 /**

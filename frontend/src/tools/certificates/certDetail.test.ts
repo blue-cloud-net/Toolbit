@@ -10,17 +10,23 @@ import {
   chainRoleKey,
   displayVersion,
   durationDays,
+  extensionValue,
   extKeyUsageEntries,
   formatDateTime,
+  formatDays,
   hexUpper,
+  joinChainPem,
+  keyExtensions,
   keyUsageEntries,
   linkMethodKey,
   linkReasonKey,
   safetyLevel,
   safetyLevelColor,
+  toList,
   validityLevel,
   validityPercent,
 } from './certDetail'
+import type { CertificateExtension } from '@/types/certificate'
 
 describe('keyUsageEntries', () => {
   it('给出 RFC 5280 的位掩码', () => {
@@ -94,8 +100,117 @@ describe('durationDays', () => {
     expect(durationDays('2026-01-01T00:00:00Z', '2027-01-01T00:00:00Z')).toBe(365)
   })
 
+  it('不足 1 天不再显示成 0 天', () => {
+    expect(durationDays('2026-01-01T00:00:00Z', '2026-01-01T12:00:00Z')).toBe(0.5)
+  })
+
   it('时间非法时返回 0', () => {
     expect(durationDays('bad', 'worse')).toBe(0)
+  })
+})
+
+describe('toList', () => {
+  it('null 与 undefined 归一化为空数组', () => {
+    expect(toList(null)).toEqual([])
+    expect(toList(undefined)).toEqual([])
+  })
+
+  it('已有数组原样返回', () => {
+    const items = ['a', 'b']
+    expect(toList(items)).toEqual(items)
+  })
+})
+
+describe('formatDays', () => {
+  it('不足 10 天保留 1 位小数', () => {
+    expect(formatDays(9.6)).toBe('9.6')
+    expect(formatDays(0.4)).toBe('0.4')
+  })
+
+  it('10 天以上取整', () => {
+    expect(formatDays(12)).toBe('12')
+    expect(formatDays(365.4)).toBe('365')
+  })
+
+  it('负数同样保留 1 位小数', () => {
+    expect(formatDays(-2.4)).toBe('-2.4')
+    expect(formatDays(-30)).toBe('-30')
+  })
+
+  it('非法值返回 0', () => {
+    expect(formatDays(Number.NaN)).toBe('0')
+  })
+})
+
+describe('joinChainPem', () => {
+  it('块间恰好一个换行，没有空行', () => {
+    const joined = joinChainPem([
+      '-----BEGIN CERTIFICATE-----\nAAAA\n-----END CERTIFICATE-----\n',
+      '-----BEGIN CERTIFICATE-----\nBBBB\n-----END CERTIFICATE-----\n',
+    ])
+    expect(joined).toBe(
+      '-----BEGIN CERTIFICATE-----\nAAAA\n-----END CERTIFICATE-----\n'
+      + '-----BEGIN CERTIFICATE-----\nBBBB\n-----END CERTIFICATE-----\n',
+    )
+    expect(joined).not.toContain('\n\n')
+  })
+
+  it('过滤空块', () => {
+    expect(joinChainPem(['', '  ', 'AAA'])).toBe('AAA\n')
+  })
+
+  it('空输入返回空串', () => {
+    expect(joinChainPem([])).toBe('')
+  })
+})
+
+describe('keyExtensions', () => {
+  const ext = (oid: string, name: string): CertificateExtension => ({
+    nid: 1,
+    oid,
+    name,
+    critical: false,
+    value: '00',
+    text: '',
+  })
+
+  it('只挑实际带有的关键扩展，且顺序固定', () => {
+    const entries = keyExtensions([
+      ext('2.5.29.17', 'subjectAltName'),
+      ext('2.5.29.19', 'basicConstraints'),
+      ext('1.2.3.4', 'unknown'),
+    ])
+    expect(entries.map((item) => item.oid)).toEqual(['2.5.29.19', '2.5.29.17'])
+    expect(entries[0]?.keyName).toBe('basicConstraints')
+    expect(entries[1]?.keyName).toBe('subjectAltName')
+  })
+
+  it('没有关键扩展时返回空数组', () => {
+    expect(keyExtensions([ext('1.2.3.4', 'unknown')])).toEqual([])
+  })
+})
+
+describe('extensionValue', () => {
+  it('优先用可读文本', () => {
+    expect(extensionValue({
+      nid: 1,
+      oid: '2.5.29.19',
+      name: 'basicConstraints',
+      critical: true,
+      value: '3000',
+      text: 'CA:TRUE',
+    })).toBe('CA:TRUE')
+  })
+
+  it('没有可读文本时回落到十六进制', () => {
+    expect(extensionValue({
+      nid: 1,
+      oid: '1.2.3.4',
+      name: 'unknown',
+      critical: false,
+      value: 'ab12',
+      text: '',
+    })).toBe('AB12')
   })
 })
 

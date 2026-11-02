@@ -144,7 +144,10 @@ type ValidityInfo struct {
 	// Status 取值见 ValidityValid / ValidityExpired / ValidityNotYetValid。
 	Status string `json:"status"`
 	// DaysRemaining 是距离过期的剩余天数；已过期为负数。
-	DaysRemaining int `json:"daysRemaining"`
+	//
+	// 它是**小数**（保留 1 位）：临期证书（剩余不足 10 天）需要区分
+	// 「还剩 9.6 天」与「还剩 9 天」，整数会丢掉这层信息。
+	DaysRemaining float64 `json:"daysRemaining"`
 }
 
 // FingerprintInfo 是一组指纹中的一项。
@@ -409,24 +412,37 @@ func CheckValidity(c *Certificate, at time.Time) ValidityInfo {
 
 	notBefore := c.cert.NotBefore()
 	notAfter := c.cert.NotAfter()
+	days := RoundDays(notAfter.Sub(now))
 
 	switch {
 	case now.Before(notBefore):
 		return ValidityInfo{
 			Status:        ValidityNotYetValid,
-			DaysRemaining: int(math.Floor(notAfter.Sub(now).Hours() / 24)),
+			DaysRemaining: days,
 		}
 	case now.After(notAfter):
 		return ValidityInfo{
 			Status:        ValidityExpired,
-			DaysRemaining: int(math.Floor(notAfter.Sub(now).Hours() / 24)),
+			DaysRemaining: days,
 		}
 	default:
 		return ValidityInfo{
 			Status:        ValidityValid,
-			DaysRemaining: int(math.Floor(notAfter.Sub(now).Hours() / 24)),
+			DaysRemaining: days,
 		}
 	}
+}
+
+// RoundDays 把时长折算成天数，保留 1 位小数。
+//
+// 负数（已过期）同样保留 1 位小数，但**不带小数点尾巴**：
+// `-0.04` 归一为 `0`，避免出现 "-0.0 天" 这种读起来别扭的值。
+func RoundDays(d time.Duration) float64 {
+	days := math.Round(d.Hours()/24*10) / 10
+	if days == 0 {
+		return 0
+	}
+	return days
 }
 
 // nameEntries 把 RDN 条目转成对外视图。

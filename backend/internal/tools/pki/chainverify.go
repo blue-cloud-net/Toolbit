@@ -107,7 +107,9 @@ func ChainVerify(_ context.Context, req *ChainVerifyRequest) (tools.Result, erro
 	defer closeAll(roots)
 
 	// 链内证书按「叶子 → 根」排序：首张是叶证书，其余是中间证书。
-	ordered, err := pkisvc.OrderChain(certs)
+	//
+	// 本工具只关心验证结论，不需要指纹 —— 传 nil 让服务层只算 SHA-256。
+	ordered, err := pkisvc.OrderChain(certs, nil)
 	if err != nil {
 		return tools.Result{}, err
 	}

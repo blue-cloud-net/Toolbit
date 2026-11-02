@@ -5,21 +5,20 @@
  * 证书内容只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  *
- * 结果区分四个页签：摘要 / 扩展 / 文本视图 / 证书原文；
+ * 结果区分四个页签：摘要 / 扩展 / 文本视图 / 证书PEM；
  * 默认停在「摘要」，产物（文本视图、PEM）各自独立成页签。
  */
-import { ElButton } from 'element-plus/es/components/button/index'
-import 'element-plus/es/components/button/style/css'
+import { ElCheckbox, ElCheckboxGroup } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
 import { ElInput } from 'element-plus/es/components/input/index'
 import 'element-plus/es/components/input/style/css'
-import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
-import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CertDetail from '@/components/tool/CertDetail.vue'
+import CertExtensions from '@/components/tool/CertExtensions.vue'
+import CopyButton from '@/components/tool/CopyButton.vue'
 import MaterialInput from '@/components/tool/MaterialInput.vue'
-import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import DownloadButton from '@/components/tool/DownloadButton.vue'
 import ResultPanel, { type ResultView, type Verdict } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
@@ -27,7 +26,7 @@ import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
-import { hexUpper } from '@/tools/certificates/certDetail'
+import { formatDays, toList } from '@/tools/certificates/certDetail'
 import { DEFAULT_EXAMPLE } from '@/tools/certificates/cert-parse/example'
 import type { CertParseResult } from '@/types/certificate'
 
@@ -96,27 +95,6 @@ const verdict = computed<Verdict | null>(() => {
   return { level: 'success', label: t('tool.verdict.pass') }
 })
 
-/** 扩展表格列。 */
-const extensionColumns = computed<DataTableColumn[]>(() => [
-  { key: 'name', label: t('tools.cert-parse.results.extensionName') },
-  { key: 'oid', label: t('tools.cert-parse.results.oid'), mono: true },
-  { key: 'critical', label: t('tools.cert-parse.results.critical'), align: 'center' },
-  { key: 'value', label: t('tools.cert-parse.results.extensionValue'), mono: true },
-])
-
-/** 扩展表格行。 */
-const extensionRows = computed<DataTableRow[]>(() =>
-  (data.value?.certificate.extensions ?? []).map((ext) => ({
-    key: `${ext.oid}-${ext.nid}`,
-    cells: {
-      name: ext.name || ext.oid,
-      oid: ext.oid,
-      critical: ext.critical ? t('common.states.yes') : '-',
-      value: ext.text || hexUpper(ext.value),
-    },
-  })),
-)
-
 /** 结果文本：结构化摘要（复制 / 下载的数据源）。 */
 const resultText = computed(() => {
   const result = data.value
@@ -124,37 +102,41 @@ const resultText = computed(() => {
     return ''
   }
   const info = result.certificate
+  const san = toList(info.san)
+  const keyUsage = toList(info.keyUsage)
+  const eku = toList(info.extendedKeyUsage)
   const head = [
     `${t('tools.cert-parse.results.subject')}: ${info.subjectText}`,
     `${t('tools.cert-parse.results.issuer')}: ${info.issuerText}`,
     `${t('tools.cert-parse.results.serial')}: ${info.serial}`,
-    `${t('tools.cert-parse.results.validity')}: ${result.validity.status} (${result.validity.daysRemaining}d)`,
+    `${t('tools.cert-parse.results.validity')}: ${result.validity.status} (${formatDays(result.validity.daysRemaining)}d)`,
     `${t('tools.cert-parse.results.notBefore')}: ${info.notBefore}`,
     `${t('tools.cert-parse.results.notAfter')}: ${info.notAfter}`,
     `${t('tools.cert-parse.results.publicKey')}: ${info.publicKey.algorithm} ${info.publicKey.bits}`,
     `${t('tools.cert-parse.results.signatureAlgorithm')}: ${info.signatureAlgorithm}`,
     `${t('tools.cert-parse.results.selfSigned')}: ${result.selfSigned}`,
   ]
-  if (info.san.length > 0) {
-    head.push(`${t('tools.cert-parse.results.san')}: ${info.san.join(', ')}`)
+  if (san.length > 0) {
+    head.push(`${t('tools.cert-parse.results.san')}: ${san.join(', ')}`)
   }
-  if (info.keyUsage.length > 0) {
-    head.push(`${t('tools.cert-parse.results.keyUsage')}: ${info.keyUsage.join(', ')}`)
+  if (keyUsage.length > 0) {
+    head.push(`${t('tools.cert-parse.results.keyUsage')}: ${keyUsage.join(', ')}`)
   }
-  if (info.extendedKeyUsage.length > 0) {
-    head.push(`${t('tools.cert-parse.results.extendedKeyUsage')}: ${info.extendedKeyUsage.join(', ')}`)
+  if (eku.length > 0) {
+    head.push(`${t('tools.cert-parse.results.extendedKeyUsage')}: ${eku.join(', ')}`)
   }
   head.push('')
   head.push(t('tools.cert-parse.results.fingerprints'))
-  for (const fp of result.fingerprints) {
+  for (const fp of toList(result.fingerprints)) {
     head.push(`  ${fp.algorithm}: ${fp.value}`)
   }
-  if (info.extensions.length > 0) {
+  const extensions = toList(info.extensions)
+  if (extensions.length > 0) {
     head.push('')
     head.push(t('tools.cert-parse.results.extensions'))
-    for (const ext of info.extensions) {
+    for (const ext of extensions) {
       head.push(
-        `  ${ext.name || ext.oid}${ext.critical ? ' (critical)' : ''}: ${ext.text || hexUpper(ext.value)}`,
+        `  ${ext.name || ext.oid}${ext.critical ? ' (critical)' : ''}: ${ext.text || ext.value}`,
       )
     }
   }
@@ -201,10 +183,6 @@ function fillExample(): void {
   resetRun()
 }
 
-/** 把「判断时刻」设为当前时间。 */
-function setNow(): void {
-  atTime.value = new Date().toISOString()
-}
 </script>
 
 <template>
@@ -225,24 +203,27 @@ function setNow(): void {
         </template>
 
         <template #options>
-          <label class="field">
+          <div class="field">
             <span class="field__label">{{ t('tools.cert-parse.fields.fingerprints') }}</span>
-            <ElSelect
+            <ElCheckboxGroup
               v-model="fingerprints"
-              class="field__select"
-              multiple
+              class="field__checks"
               :aria-label="t('tools.cert-parse.fields.fingerprints')"
             >
-              <ElOption
+              <ElCheckbox
                 v-for="alg in FINGERPRINT_ALGORITHMS"
                 :key="alg"
-                :label="String(alg)"
                 :value="alg"
-              />
-            </ElSelect>
-          </label>
+              >
+                {{ alg.toUpperCase() }}
+              </ElCheckbox>
+            </ElCheckboxGroup>
+            <p class="field__hint">
+              {{ t('tools.cert-parse.hints.fingerprints') }}
+            </p>
+          </div>
 
-          <label class="field">
+          <div class="field">
             <span class="field__label">{{ t('tools.cert-parse.fields.atTime') }}</span>
             <ElInput
               v-model="atTime"
@@ -250,14 +231,12 @@ function setNow(): void {
               placeholder="2026-01-01T00:00:00Z"
               spellcheck="false"
               autocomplete="off"
+              clearable
             />
-            <ElButton
-              size="small"
-              @click="setNow"
-            >
-              {{ t('tools.cert-parse.actions.now') }}
-            </ElButton>
-          </label>
+            <p class="field__hint">
+              {{ t('tools.cert-parse.hints.atTime') }}
+            </p>
+          </div>
         </template>
 
         <template #footer>
@@ -293,12 +272,11 @@ function setNow(): void {
             :validity="data.validity"
             :fingerprints="data.fingerprints"
             :public-key="data.publicKey"
+            :pem="data.pem"
           />
-          <DataTable
+          <CertExtensions
             v-else-if="viewId === 'extensions' && data"
-            :columns="extensionColumns"
-            :rows="extensionRows"
-            :copy-column="'value'"
+            :extensions="data.certificate.extensions"
           />
           <div
             v-else-if="viewId === 'text' && data"
@@ -319,12 +297,18 @@ function setNow(): void {
             class="product-wrap"
           >
             <div class="product-wrap__head">
-              <span class="product-wrap__label">PEM</span>
-              <DownloadButton
-                filename="certificate.pem"
-                :content="data.pem"
-                mime="application/x-pem-file"
-              />
+              <span class="product-wrap__label">{{ t('tools.cert-parse.views.pem') }}</span>
+              <div class="product-wrap__actions">
+                <CopyButton
+                  :text="data.pem"
+                  :label="t('tool.cert.actions.copyPem')"
+                />
+                <DownloadButton
+                  filename="certificate.pem"
+                  :content="data.pem"
+                  mime="application/x-pem-file"
+                />
+              </div>
             </div>
             <pre class="product"><code>{{ data.pem }}</code></pre>
           </div>
@@ -357,6 +341,12 @@ function setNow(): void {
 </template>
 
 <style scoped>
+.field__checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-1) var(--tb-space-3);
+}
+
 .product-wrap {
   display: flex;
   flex-direction: column;
@@ -367,6 +357,12 @@ function setNow(): void {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--tb-space-2);
+}
+
+.product-wrap__actions {
+  display: flex;
+  align-items: center;
   gap: var(--tb-space-2);
 }
 

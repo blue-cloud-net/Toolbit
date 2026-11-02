@@ -6,7 +6,8 @@
     "parse": "Parse"
   },
   "fields": {
-    "bundle": "Certificate chain"
+    "bundle": "Certificate chain",
+    "fingerprints": "Fingerprint algorithms"
   },
   "options": {},
   "results": {
@@ -33,6 +34,7 @@
   "hints": {
     "order": "Ordering matches AKID ↔ SKID first and falls back to the subject / issuer text; when several candidates sit at the same level the first in input order wins.",
     "ambiguous": "\"Input already ordered\" being false only means the input had to be reordered — it is not a failure.",
+    "fingerprints": "Several algorithms can be computed at once; with none selected SHA-256 is used.",
     "limit": "A chain may hold up to 64 certificates."
   },
   "faq": [
@@ -51,6 +53,6 @@
   ],
   "views": {
     "summary": "Summary",
-    "pem": "Chain PEM"
+    "pem": "Certificate chain PEM"
   }
 }

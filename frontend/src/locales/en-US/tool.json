@@ -75,13 +75,17 @@
       "identifiers": "Identifiers and fingerprints",
       "policies": "Certificate policies",
       "extensions": "Extensions",
-      "certificate": "Certificate source"
+      "keyExtensions": "Key extensions",
+      "allExtensions": "All extensions",
+      "certificate": "Certificate PEM"
     },
     "fields": {
       "version": "Version",
       "status": "Status",
       "daysRemaining": "Days remaining",
       "duration": "Validity length",
+      "validityPeriod": "Valid from → to",
+      "sha256Fingerprint": "SHA-256 fingerprint",
       "isCa": "CA certificate",
       "selfSigned": "Self-signed",
       "pathLen": "Path length constraint",
@@ -96,6 +100,7 @@
       "algorithm": "Algorithm",
       "bits": "Bits",
       "curve": "Curve",
+      "publicKey": "Public key",
       "publicKeyFingerprint": "Public key fingerprint",
       "modulus": "Modulus",
       "exponent": "Exponent",
@@ -152,6 +157,19 @@
       "root": "Root",
       "unlinked": "Unlinked"
     },
+    "ext": {
+      "basicConstraints": "Basic constraints",
+      "keyUsage": "Key usage",
+      "extendedKeyUsage": "Extended key usage",
+      "subjectAltName": "Subject alternative name",
+      "issuerAltName": "Issuer alternative name",
+      "subjectKeyIdentifier": "Subject key identifier",
+      "authorityKeyIdentifier": "Authority key identifier",
+      "cRLDistributionPoints": "CRL distribution points",
+      "authorityInfoAccess": "Authority information access",
+      "certificatePolicies": "Certificate policies",
+      "nameConstraints": "Name constraints"
+    },
     "link": {
       "leaf": "Start of the chain",
       "keyid": "Matched by key identifier",
@@ -166,7 +184,8 @@
     "actions": {
       "detail": "Details",
       "expand": "Expand",
-      "collapse": "Collapse"
+      "collapse": "Collapse",
+      "copyPem": "Copy PEM"
     }
   },
   "material": {

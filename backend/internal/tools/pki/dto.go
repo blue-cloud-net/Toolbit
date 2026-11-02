@@ -90,7 +90,9 @@ type ValidityOutput struct {
 	// Status 取值：valid / expired / not_yet_valid。
 	Status string `json:"status"`
 	// DaysRemaining 是距离过期的剩余天数；已过期为负数。
-	DaysRemaining int `json:"daysRemaining"`
+	//
+	// 它是**小数**（保留 1 位）：临期证书需要区分「还剩 9.6 天」与「还剩 9 天」。
+	DaysRemaining float64 `json:"daysRemaining"`
 }
 
 // FingerprintOutput 是一组指纹中的一项。

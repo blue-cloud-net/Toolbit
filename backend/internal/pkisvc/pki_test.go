@@ -156,7 +156,29 @@ func TestCheckValidityValid(t *testing.T) {
 		t.Errorf("Status = %q，期望 %q", info.Status, ValidityValid)
 	}
 	if info.DaysRemaining <= 0 {
-		t.Errorf("DaysRemaining = %d，期望 > 0", info.DaysRemaining)
+		t.Errorf("DaysRemaining = %v，期望 > 0", info.DaysRemaining)
+	}
+}
+
+// TestRoundDays 断言天数折算保留 1 位小数，且不出现 "-0"。
+func TestRoundDays(t *testing.T) {
+	cases := []struct {
+		name string
+		in   time.Duration
+		want float64
+	}{
+		{"整日", 12 * 24 * time.Hour, 12},
+		{"小数日", 9*24*time.Hour + 14*time.Hour + 24*time.Minute, 9.6},
+		{"负数", -(3*24*time.Hour + 12*time.Hour), -3.5},
+		{"不足一小时归零", -30 * time.Minute, 0},
+		{"零", 0, 0},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := RoundDays(c.in); got != c.want {
+				t.Errorf("RoundDays(%v) = %v，期望 %v", c.in, got, c.want)
+			}
+		})
 	}
 }
 
@@ -371,7 +393,7 @@ func TestOrderChain(t *testing.T) {
 	}
 	t.Cleanup(func() { closeCertificates(certs) })
 
-	info, err := OrderChain(certs)
+	info, err := OrderChain(certs, nil)
 	if err != nil {
 		t.Fatalf("OrderChain 失败：%v", err)
 	}
@@ -404,7 +426,7 @@ func TestOrderChainReversedInput(t *testing.T) {
 
 	// 反转输入：排序后应恢复叶 → 根。
 	reversed := []*Certificate{certs[2], certs[1], certs[0]}
-	info, err := OrderChain(reversed)
+	info, err := OrderChain(reversed, nil)
 	if err != nil {
 		t.Fatalf("OrderChain 失败：%v", err)
 	}
@@ -423,7 +445,7 @@ func TestOrderChainBrokenLink(t *testing.T) {
 	leaf := loadCertPEM(t, "leaf.crt.pem")
 	root := loadCertPEM(t, "ca.crt.pem")
 
-	info, err := OrderChain([]*Certificate{leaf, root})
+	info, err := OrderChain([]*Certificate{leaf, root}, nil)
 	if err != nil {
 		t.Fatalf("OrderChain 失败：%v", err)
 	}
@@ -459,7 +481,7 @@ func TestOrderChainTooMany(t *testing.T) {
 		certs[i] = &Certificate{}
 	}
 
-	_, err := OrderChain(certs)
+	_, err := OrderChain(certs, nil)
 	if err == nil {
 		t.Fatal("超过链长度上限应报错")
 	}

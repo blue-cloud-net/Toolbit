@@ -3,6 +3,7 @@ package pki
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -147,6 +148,58 @@ func TestCertParseRejectsUnknownFingerprint(t *testing.T) {
 	})
 	if got := codeOf(t, err); got != toolerr.CodeUnsupportedAlgorithm {
 		t.Errorf("错误码 = %s，期望 %s", got, toolerr.CodeUnsupportedAlgorithm)
+	}
+}
+
+// TestCertParseEmptyExtensionsAreNull 锁定「无该扩展 → null」的契约口径。
+//
+// 上游 tongsuo-go 在扩展缺失时返回 nil，DTO 原样透传 ⇒ JSON 里是 `null`
+// 而不是 `[]`。前端类型已同步声明为可空（见 frontend/src/types/certificate.ts），
+// 这里用测试把口径钉死，避免有人「顺手」改成 []。
+func TestCertParseEmptyExtensionsAreNull(t *testing.T) {
+	res, err := CertParse(context.Background(), &CertParseRequest{
+		Input: PemBundle{Data: loadFixture(t, "ca.crt.pem"), Format: "pem"},
+	})
+	if err != nil {
+		t.Fatalf("CertParse 失败：%v", err)
+	}
+	data := res.Data.(*CertParseResult)
+
+	// ca.crt.pem 没有 SAN / KeyUsage / EKU 扩展。
+	if data.Certificate.San != nil {
+		t.Errorf("San = %v，期望 nil（无该扩展时编码为 null）", data.Certificate.San)
+	}
+	if data.Certificate.KeyUsage != nil {
+		t.Errorf("KeyUsage = %v，期望 nil（无该扩展时编码为 null）", data.Certificate.KeyUsage)
+	}
+	if data.Certificate.ExtendedKeyUsage != nil {
+		t.Errorf("ExtendedKeyUsage = %v，期望 nil（无该扩展时编码为 null）", data.Certificate.ExtendedKeyUsage)
+	}
+
+	// 序列化后必须是字面量 null。
+	raw, err := json.Marshal(data.Certificate)
+	if err != nil {
+		t.Fatalf("序列化失败：%v", err)
+	}
+	for _, key := range []string{`"san":`, `"keyUsage":`, `"extendedKeyUsage":`} {
+		if !strings.Contains(string(raw), key+"null") {
+			t.Errorf("序列化结果里 %s 不是 null：%s", key, raw)
+		}
+	}
+
+	// 有该扩展的证书则是数组。
+	res, err = CertParse(context.Background(), &CertParseRequest{
+		Input: PemBundle{Data: loadFixture(t, "leaf.crt.pem"), Format: "pem"},
+	})
+	if err != nil {
+		t.Fatalf("CertParse 失败：%v", err)
+	}
+	leaf := res.Data.(*CertParseResult)
+	if len(leaf.Certificate.San) == 0 {
+		t.Error("叶证书的 San 为空，期望至少一条")
+	}
+	if len(leaf.Certificate.KeyUsage) == 0 {
+		t.Error("叶证书的 KeyUsage 为空，期望至少一条")
 	}
 }
 
@@ -346,8 +399,15 @@ func TestChainParse(t *testing.T) {
 		if cert.Link.Method != "keyid" && i < 2 {
 			t.Errorf("第 %d 张的连接方式 = %q，期望 keyid", i, cert.Link.Method)
 		}
-		if len(cert.FingerprintSha256) != 64 {
-			t.Errorf("第 %d 张的指纹长度 = %d，期望 64", i, len(cert.FingerprintSha256))
+		if len(cert.Fingerprints) != 1 {
+			t.Errorf("第 %d 张的指纹数量 = %d，期望 1（默认只算 SHA-256）", i, len(cert.Fingerprints))
+			continue
+		}
+		if cert.Fingerprints[0].Algorithm != "sha256" {
+			t.Errorf("第 %d 张的指纹算法 = %q，期望 sha256", i, cert.Fingerprints[0].Algorithm)
+		}
+		if len(cert.Fingerprints[0].Value) != 64 {
+			t.Errorf("第 %d 张的指纹长度 = %d，期望 64", i, len(cert.Fingerprints[0].Value))
 		}
 		if cert.PublicKey == nil || cert.PublicKey.Modulus == "" {
 			t.Errorf("第 %d 张缺少公钥细节", i)
@@ -358,6 +418,46 @@ func TestChainParse(t *testing.T) {
 	}
 	if data.Chain[0].Validity.Status != "valid" {
 		t.Errorf("叶证书有效性 = %q，期望 valid", data.Chain[0].Validity.Status)
+	}
+}
+
+// TestChainParseMultiFingerprint 验证链上每张证书都能按请求的算法集算指纹。
+func TestChainParseMultiFingerprint(t *testing.T) {
+	res, err := ChainParse(context.Background(), &ChainParseRequest{
+		Bundle:       PemBundle{Data: loadFixture(t, "chain.pem"), Format: "pem"},
+		Fingerprints: []string{"sha256", "sha1", "sm3"},
+	})
+	if err != nil {
+		t.Fatalf("ChainParse 失败：%v", err)
+	}
+	data := res.Data.(*ChainParseResult)
+	if len(data.Chain) != 3 {
+		t.Fatalf("链长度 = %d，期望 3", len(data.Chain))
+	}
+	for i, cert := range data.Chain {
+		if len(cert.Fingerprints) != 3 {
+			t.Errorf("第 %d 张的指纹数量 = %d，期望 3", i, len(cert.Fingerprints))
+			continue
+		}
+		for j, want := range []string{"sha256", "sha1", "sm3"} {
+			if cert.Fingerprints[j].Algorithm != want {
+				t.Errorf("第 %d 张的第 %d 个算法 = %q，期望 %q", i, j, cert.Fingerprints[j].Algorithm, want)
+			}
+			if cert.Fingerprints[j].Value == "" {
+				t.Errorf("第 %d 张的第 %d 个指纹值为空", i, j)
+			}
+		}
+	}
+}
+
+// TestChainParseRejectsUnknownFingerprint 验证非法指纹算法被拒。
+func TestChainParseRejectsUnknownFingerprint(t *testing.T) {
+	_, err := ChainParse(context.Background(), &ChainParseRequest{
+		Bundle:       PemBundle{Data: loadFixture(t, "chain.pem"), Format: "pem"},
+		Fingerprints: []string{"sha999"},
+	})
+	if got := codeOf(t, err); got != toolerr.CodeUnsupportedAlgorithm {
+		t.Errorf("错误码 = %s，期望 %s", got, toolerr.CodeUnsupportedAlgorithm)
 	}
 }
 

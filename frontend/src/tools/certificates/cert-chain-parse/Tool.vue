@@ -5,14 +5,17 @@
  * 证书内容只存在于组件局部状态；离开页面即丢弃，
  * **不写**任何浏览器存储（AGENTS.md §4.11）。
  *
- * 结果区分两个页签：摘要（链梯 + 逐张详情）/ 链 PEM；
- * 链上每一级都能点开详情浮层，查看该证书的完整字段。
+ * 结果区分两个页签：摘要（链梯 + 逐张详情）/ 证书链 PEM；
+ * 链上每一级都能点开详情浮层，查看该证书的完整字段（与证书解析同版式）。
  */
+import { ElCheckbox, ElCheckboxGroup } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CertChainTable from '@/components/tool/CertChainTable.vue'
 import CertDetailDialog, { type CertDetailPayload } from '@/components/tool/CertDetailDialog.vue'
+import CopyButton from '@/components/tool/CopyButton.vue'
 import MaterialInput from '@/components/tool/MaterialInput.vue'
 import DownloadButton from '@/components/tool/DownloadButton.vue'
 import ResultPanel, { type ResultView, type Verdict } from '@/components/tool/ResultPanel.vue'
@@ -22,6 +25,7 @@ import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
+import { joinChainPem, toList } from '@/tools/certificates/certDetail'
 import { DEFAULT_EXAMPLE } from '@/tools/certificates/cert-chain-parse/example'
 import type { CertChainParseResult, ChainCertificate } from '@/types/certificate'
 
@@ -33,8 +37,12 @@ interface FaqItem {
 
 const { t, tm } = useI18n()
 
+/** 可选的指纹算法；与证书解析页保持一致。 */
+const FINGERPRINT_ALGORITHMS = ['sha256', 'sha1', 'sm3', 'sha384', 'sha512', 'md5']
+
 const bundle = ref('')
 const bundleFormat = ref('auto')
+const fingerprints = ref<string[]>(['sha256'])
 
 const {
   state,
@@ -76,9 +84,7 @@ function openDetail(cert: ChainCertificate): void {
   detail.value = {
     info: cert.info,
     validity: cert.validity,
-    fingerprints: cert.fingerprintSha256
-      ? [{ algorithm: 'sha256', value: cert.fingerprintSha256 }]
-      : [],
+    fingerprints: toList(cert.fingerprints),
     publicKey: cert.publicKey,
     pem: cert.pem,
   }
@@ -134,9 +140,9 @@ const stats = computed<StatGridItem[]>(() => {
   return items
 })
 
-/** 整链 PEM：按链序拼接。 */
+/** 整链 PEM：按链序拼接（RFC 7468 严格形式，块间恰好一个换行）。 */
 const chainPem = computed(() =>
-  (data.value?.chain ?? []).map((cert) => cert.pem).filter(Boolean).join('\n'),
+  joinChainPem(toList(data.value?.chain).map((cert) => cert.pem)),
 )
 
 /** 结果文本：链摘要（复制 / 下载的数据源）。 */
@@ -152,11 +158,14 @@ const resultText = computed(() => {
     `${t('tools.cert-chain-parse.results.selfSigned')}: ${result.selfSigned}`,
     '',
   ]
-  result.chain.forEach((cert, index) => {
+  toList(result.chain).forEach((cert, index) => {
     head.push(`[${index}] ${cert.info.subjectText}`)
     head.push(`    issuer: ${cert.info.issuerText}`)
     head.push(`    serial: ${cert.info.serial}  notAfter: ${cert.info.notAfter}`)
     head.push(`    role: ${cert.role}  link: ${cert.link.method}  ok: ${cert.link.ok}`)
+    for (const fp of toList(cert.fingerprints)) {
+      head.push(`    ${fp.algorithm}: ${fp.value}`)
+    }
   })
   return head.join('\n')
 })
@@ -170,6 +179,7 @@ function run(): void {
   }
   void execute({
     bundle: { data: bundle.value, format: bundleFormat.value },
+    fingerprints: fingerprints.value,
   })
 }
 
@@ -177,7 +187,7 @@ function run(): void {
 useAutoRun({
   slug: 'cert-chain-parse',
   run,
-  watch: [bundle, bundleFormat],
+  watch: [bundle, bundleFormat, fingerprints],
   enabled: () => bundle.value.trim() !== '',
 })
 
@@ -185,6 +195,7 @@ useAutoRun({
 function reset(): void {
   bundle.value = ''
   bundleFormat.value = 'auto'
+  fingerprints.value = ['sha256']
   resetRun()
 }
 
@@ -192,6 +203,7 @@ function reset(): void {
 function fillExample(): void {
   bundle.value = DEFAULT_EXAMPLE.bundle
   bundleFormat.value = 'auto'
+  fingerprints.value = ['sha256']
   resetRun()
 }
 </script>
@@ -213,6 +225,28 @@ function fillExample(): void {
             slug="cert-chain-parse"
             append
           />
+        </template>
+
+        <template #options>
+          <div class="field">
+            <span class="field__label">{{ t('tools.cert-chain-parse.fields.fingerprints') }}</span>
+            <ElCheckboxGroup
+              v-model="fingerprints"
+              class="field__checks"
+              :aria-label="t('tools.cert-chain-parse.fields.fingerprints')"
+            >
+              <ElCheckbox
+                v-for="alg in FINGERPRINT_ALGORITHMS"
+                :key="alg"
+                :value="alg"
+              >
+                {{ alg.toUpperCase() }}
+              </ElCheckbox>
+            </ElCheckboxGroup>
+            <p class="field__hint">
+              {{ t('tools.cert-chain-parse.hints.fingerprints') }}
+            </p>
+          </div>
         </template>
 
         <template #footer>
@@ -260,11 +294,17 @@ function fillExample(): void {
           >
             <div class="chain-pem__head">
               <span class="chain-pem__label">{{ t('tools.cert-chain-parse.results.chainPem') }}</span>
-              <DownloadButton
-                filename="chain.pem"
-                :content="chainPem"
-                mime="application/x-pem-file"
-              />
+              <div class="chain-pem__actions">
+                <CopyButton
+                  :text="chainPem"
+                  :label="t('tool.cert.actions.copyPem')"
+                />
+                <DownloadButton
+                  filename="chain.pem"
+                  :content="chainPem"
+                  mime="application/x-pem-file"
+                />
+              </div>
             </div>
             <pre class="product"><code>{{ chainPem }}</code></pre>
           </div>
@@ -302,6 +342,12 @@ function fillExample(): void {
 </template>
 
 <style scoped>
+.field__checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-1) var(--tb-space-3);
+}
+
 .chain-summary {
   display: flex;
   flex-direction: column;
@@ -322,6 +368,12 @@ function fillExample(): void {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--tb-space-2);
+}
+
+.chain-pem__actions {
+  display: flex;
+  align-items: center;
   gap: var(--tb-space-2);
 }
 

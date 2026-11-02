@@ -18,6 +18,7 @@ import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
+import { formatDays } from '@/tools/certificates/certDetail'
 import { EXAMPLES } from '@/tools/certificates/cert-lifecycle/example'
 
 /** 后端 cert-lifecycle 工具的响应。 */
@@ -201,13 +202,13 @@ function fillExample(index: number): void {
             <div class="detail__row">
               <dt>{{ t('tools.cert-lifecycle.results.validDays') }}</dt>
               <dd class="tb-mono">
-                {{ data?.validDays ?? 0 }}
+                {{ formatDays(data?.validDays ?? 0) }}
               </dd>
             </div>
             <div class="detail__row">
               <dt>{{ t('tools.cert-lifecycle.results.daysRemaining') }}</dt>
               <dd class="tb-mono">
-                {{ data?.daysRemaining ?? 0 }}
+                {{ formatDays(data?.daysRemaining ?? 0) }}
               </dd>
             </div>
             <div class="detail__row">

@@ -11,6 +11,8 @@ import (
 type ChainParseRequest struct {
 	// Bundle 是证书链材料（可含多张证书）。
 	Bundle PemBundle `json:"bundle"`
+	// Fingerprints 是要计算的指纹算法；为空时只算 SHA-256。
+	Fingerprints []string `json:"fingerprints"`
 }
 
 // ChainParseResult 是证书链解析工具的响应。
@@ -39,15 +41,23 @@ type ChainCertOutput struct {
 	Link ChainLinkOutput `json:"link"`
 	// Validity 是该证书的有效性判定。
 	Validity ValidityOutput `json:"validity"`
-	// FingerprintSha256 是该证书的 SHA-256 指纹。
-	FingerprintSha256 string `json:"fingerprintSha256"`
+	// Fingerprints 是该证书的指纹列表（按请求的算法顺序）。
+	Fingerprints []FingerprintOutput `json:"fingerprints"`
 	// PublicKey 是该证书公钥的展开视图。
 	PublicKey *PublicKeyDetailOutput `json:"publicKey"`
 }
 
 // Validate 做字段级校验。
 func (r *ChainParseRequest) Validate() error {
-	return r.Bundle.Validate("bundle")
+	if err := r.Bundle.Validate("bundle"); err != nil {
+		return err
+	}
+	for _, alg := range r.Fingerprints {
+		if !containsString(pkisvc.FingerprintAlgorithms(), alg) {
+			return tools.UnsupportedAlgorithm(alg, pkisvc.FingerprintAlgorithms())
+		}
+	}
+	return nil
 }
 
 // ChainParse 解析并排序证书链。
@@ -70,7 +80,7 @@ func ChainParse(_ context.Context, req *ChainParseRequest) (tools.Result, error)
 	}
 	defer closeAll(certs)
 
-	info, err := pkisvc.OrderChain(certs)
+	info, err := pkisvc.OrderChain(certs, req.Fingerprints)
 	if err != nil {
 		return tools.Result{}, err
 	}
@@ -91,13 +101,13 @@ func chainOutput(chain []pkisvc.ChainCertificate) []ChainCertOutput {
 	out := make([]ChainCertOutput, 0, len(chain))
 	for _, item := range chain {
 		out = append(out, ChainCertOutput{
-			Pem:               item.PEM,
-			Info:              certInfoOutput(item.Info),
-			Role:              item.Role,
-			Link:              chainLinkOutput(item.Link),
-			Validity:          validityOutput(item.Validity),
-			FingerprintSha256: item.FingerprintSHA256,
-			PublicKey:         publicKeyDetailOutput(item.PublicKey),
+			Pem:          item.PEM,
+			Info:         certInfoOutput(item.Info),
+			Role:         item.Role,
+			Link:         chainLinkOutput(item.Link),
+			Validity:     validityOutput(item.Validity),
+			Fingerprints: fingerprintsOutput(item.Fingerprints),
+			PublicKey:    publicKeyDetailOutput(item.PublicKey),
 		})
 	}
 	return out

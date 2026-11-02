@@ -2,6 +2,8 @@ package pki
 
 import (
 	"context"
+	"math"
+	"strconv"
 	"time"
 
 	"github.com/blue-cloud-net/Toolbit/backend/internal/pkisvc"
@@ -29,9 +31,11 @@ type CertLifecycleResult struct {
 	// NotAfter 是过期时间。
 	NotAfter string `json:"notAfter"`
 	// ValidDays 是有效天数。
-	ValidDays int `json:"validDays"`
+	ValidDays float64 `json:"validDays"`
 	// DaysRemaining 是距离过期的剩余天数；已过期为负数。
-	DaysRemaining int `json:"daysRemaining"`
+	//
+	// 它是**小数**（保留 1 位）：临期证书需要区分「还剩 9.6 天」与「还剩 9 天」。
+	DaysRemaining float64 `json:"daysRemaining"`
 	// HoursRemaining 是距离过期的剩余小时数；已过期为负数。
 	HoursRemaining int `json:"hoursRemaining"`
 	// Status 是状态：valid / expiring / expired / notYetValid。
@@ -100,9 +104,9 @@ func CertLifecycle(ctx context.Context, req *CertLifecycleRequest) (tools.Result
 		Issuer:             info.IssuerText,
 		NotBefore:          info.NotBefore.UTC().Format(time.RFC3339),
 		NotAfter:           info.NotAfter.UTC().Format(time.RFC3339),
-		ValidDays:          int(info.NotAfter.Sub(info.NotBefore).Hours() / 24),
+		ValidDays:          pkisvc.RoundDays(info.NotAfter.Sub(info.NotBefore)),
 		DaysRemaining:      validity.DaysRemaining,
-		HoursRemaining:     int(time.Until(info.NotAfter).Hours()),
+		HoursRemaining:     int(info.NotAfter.Sub(now).Hours()),
 		Status:             CertStatusValid,
 		IsSelfSigned:       info.SelfSigned,
 		IsCA:               info.IsCA,
@@ -114,10 +118,6 @@ func CertLifecycle(ctx context.Context, req *CertLifecycleRequest) (tools.Result
 		Recommendations:    []string{},
 	}
 
-	if result.SAN == nil {
-		result.SAN = []string{}
-	}
-
 	switch {
 	case validity.Status == pkisvc.ValidityNotYetValid:
 		result.Status = CertStatusNotYetValid
@@ -127,13 +127,13 @@ func CertLifecycle(ctx context.Context, req *CertLifecycleRequest) (tools.Result
 		result.Status = CertStatusExpired
 		result.Recommendations = append(result.Recommendations,
 			"证书已过期，需要立即续期并替换")
-	case validity.DaysRemaining <= req.WarningDays:
+	case validity.DaysRemaining <= float64(req.WarningDays):
 		result.Status = CertStatusExpiring
 		result.Recommendations = append(result.Recommendations,
-			"证书将在 "+itoa(validity.DaysRemaining)+" 天内过期，请尽快安排续期")
+			"证书将在 "+formatDays(validity.DaysRemaining)+" 天内过期，请尽快安排续期")
 	default:
 		result.Recommendations = append(result.Recommendations,
-			"证书在有效期内，剩余 "+itoa(validity.DaysRemaining)+" 天")
+			"证书在有效期内，剩余 "+formatDays(validity.DaysRemaining)+" 天")
 	}
 
 	if result.IsSelfSigned {
@@ -144,7 +144,7 @@ func CertLifecycle(ctx context.Context, req *CertLifecycleRequest) (tools.Result
 		result.Recommendations = append(result.Recommendations,
 			"证书没有主体备用名（SAN），现代客户端会要求 SAN 中包含访问域名")
 	}
-	if result.ValidDays > 0 && result.ValidDays > 365*3 {
+	if result.ValidDays > 0 && result.ValidDays > 365*3.0 {
 		result.Recommendations = append(result.Recommendations,
 			"有效期超过三年，建议确认是否符合机构的证书策略要求")
 	}
@@ -152,24 +152,18 @@ func CertLifecycle(ctx context.Context, req *CertLifecycleRequest) (tools.Result
 	return tools.Result{Data: result}, nil
 }
 
-// itoa 把整数转成字符串。
-func itoa(value int) string {
-	if value == 0 {
-		return "0"
+// formatDays 把天数渲染成字符串。
+//
+// 口径与前端 `certDetail.ts` 的 `formatDays` **必须一致**：
+// 不足 10 天时保留 1 位小数（「9.6 天」），否则**截断**（「820.7」→「820」）。
+//
+// 用截断而非四舍五入：820.7 天说成「821 天」会显得比实际更紧迫，
+// 而前端 `Math.trunc` 也会截断 —— 两边必须一样。
+func formatDays(value float64) string {
+	if math.Abs(value) < 10 {
+		return strconv.FormatFloat(value, 'f', 1, 64)
 	}
-	negative := value < 0
-	if negative {
-		value = -value
-	}
-	digits := []byte{}
-	for value > 0 {
-		digits = append([]byte{byte('0' + value%10)}, digits...)
-		value /= 10
-	}
-	if negative {
-		return "-" + string(digits)
-	}
-	return string(digits)
+	return strconv.FormatFloat(math.Trunc(value), 'f', 0, 64)
 }
 
 // Validate 做字段级校验。

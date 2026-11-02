@@ -280,6 +280,28 @@ SM2 密文的 `C1C3C2` / `C1C2C3` 顺序与 `04` 前缀在各实现间不统一�
 - 解析类工具**必须**在调用上游之前**自行测量输入体积与展开规模**（限额见 §9），
   **禁止**依赖上游的隐式行为。
 
+### 8.7 PEM 文本输出形式（RFC 7468）
+
+本仓库输出的 PEM 文本采用 **RFC 7468** 的**严格形式**（§3 Figure 3）：
+
+- 每个块以 `-----END <LABEL>-----` 加**一个**换行收尾；
+- **块与块之间恰好一个换行，没有空行**；
+- base64 每行恰好 64 个字符（末行除外）。
+
+依据：
+
+- RFC 7468 §2：允许一个文件含多个 textual encoding 实例（多张证书）。
+- RFC 7468 §3 Figure 3：`stricttextualmsg = preeb eol strictbase64text posteb eol`，
+  且文中明写「New implementations SHOULD emit the strict format」。
+- RFC 7468 §2（解析侧）：parsers SHOULD ignore whitespace，MUST handle different
+  newline conventions ⇒ **输入**时块间空行可有可无，解析器必须两种都收。
+- RFC 7468 §8：Generators MUST NOT generate the `CERTIFICATE CHAIN` 标签
+  ⇒ 本仓库只用 `CERTIFICATE`。
+
+> **实现提示**：`MarshalPEM()` 产出的每个块**已带结尾换行**，
+> 拼接时用 `"\n"` 连接**整块**（不要对已带换行的块再各加一个），
+> 否则块间会多出一个空行，不符严格 ABNF。
+
 ---
 
 ## 9. 限额

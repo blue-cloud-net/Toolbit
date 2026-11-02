@@ -35,6 +35,29 @@
       }
     },
     {
+      "name": "无 SAN 与用途扩展的根证书",
+      "request": {
+        "input": {
+          "data": "-----BEGIN CERTIFICATE-----\nMIIDZzCCAk+gAwIBAgIUL3ASu7cIu4Y3PrUoM7+wuDmxhMQwDQYJKoZIhvcNAQEL\nBQAwQzELMAkGA1UEBhMCQ04xFTATBgNVBAoMDFRvb2xiaXQgVGVzdDEdMBsGA1UE\nAwwUVG9vbGJpdCBUZXN0IFJvb3QgQ0EwHhcNMjAwMTAxMDAwMDAwWhcNMzYwMTAx\nMDAwMDAwWjBDMQswCQYDVQQGEwJDTjEVMBMGA1UECgwMVG9vbGJpdCBUZXN0MR0w\nGwYDVQQDDBRUb29sYml0IFRlc3QgUm9vdCBDQTCCASIwDQYJKoZIhvcNAQEBBQAD\nggEPADCCAQoCggEBALrs7a2LO/IXVEHQG+Ce/sWAXsD5A6iAZYgSRuJG4dt0cZcM\nxIspCRXohszCDFRqd1w0niMLLuX9ho5qm2HXCwNzZ2IrzztDgohdbT/krZaF8u8C\nIOL/5wRB3/5jKdL7OjAABZJm4GhLEFCoRkcyv7LOZ/ja0OzpRgj0I3RcTYvHzZJm\nHcmy4I7DycYxPoilp4qy2y66EqDwXsc99fOy7pjvYd4rc6QJaAhvFZRvFTSP1VhA\no3adgLyHgs2vsCRXKxlcJgJIn2AXD5sIejrJUInPs20YeHtNz9M/pq8oWtegqMUJ\nJog8lPaG+7DUhSlJYRpr3JRg6CX70fS+wKb5knUCAwEAAaNTMFEwHQYDVR0OBBYE\nFJjQMA7HPNL6MXq2rIyR6RVLjD/VMB8GA1UdIwQYMBaAFJjQMA7HPNL6MXq2rIyR\n6RVLjD/VMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBALT+LbtZ\n62EgG2IbdJPakUPGIuvEskRO2ERyt/dYoepCY8XY8dC9RM2t9w08Ful/MUPsvYWh\naLw6Q/Xpz516YOZ0Z6r8hI6XqPXilxTm7MkFlYm4Cl0qp+dJJW3h9mFLCeUZApoM\nonoeBBNE1mrYdVNZ2MWxx7qkpecJbnHhs/f9C8EjFLgaMDpcaoMPSYPBeNHR7Plh\nN57dJFpxr6BZtmx1PeByhZ8J3reJHJFV1s91CkOm1NFgnf2jfQ/pSnD1lrlseusL\nv6vpqG2hQ0HTyzcVcVhVQZvtR+ebZMQ8UrkekKJDz6H08J+/nLoRO3XcqSqTWqT4\n8tZ0Gha9VOJoSis=\n-----END CERTIFICATE-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "certificate": {
+            "subjectText": "/C=CN/O=Toolbit Test/CN=Toolbit Test Root CA",
+            "isCa": true,
+            "selfSigned": true,
+            "san": null,
+            "keyUsage": null,
+            "extendedKeyUsage": null
+          },
+          "selfSigned": true
+        }
+      }
+    },
+    {
       "name": "计算多种指纹",
       "request": {
         "input": {

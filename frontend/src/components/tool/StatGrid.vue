@@ -23,6 +23,13 @@ export interface StatGridItem {
   level?: StatGridLevel
   /** 是否用等宽字体；默认 `true`。 */
   mono?: boolean
+  /**
+   * 是否横跨整行。
+   *
+   * 指纹、有效期区间这类**长值**必须整行展示：
+   * 挤在半宽的格子里会被折成好几行，读起来像乱码。
+   */
+  wide?: boolean
 }
 
 withDefaults(
@@ -46,7 +53,10 @@ withDefaults(
       v-for="item in items"
       :key="item.label"
       class="stat-grid__card"
-      :class="item.level ? `stat-grid__card--${item.level}` : ''"
+      :class="[
+        item.level ? `stat-grid__card--${item.level}` : '',
+        item.wide ? 'stat-grid__card--wide' : '',
+      ]"
     >
       <span class="stat-grid__label">{{ item.label }}</span>
       <span
@@ -78,6 +88,15 @@ withDefaults(
   border: 1px solid var(--tb-border);
   border-radius: var(--tb-radius-control);
   border-left: 3px solid var(--tb-border);
+}
+
+/* 整行卡片：指纹、有效期区间这类长值不折行。 */
+.stat-grid__card--wide {
+  grid-column: 1 / -1;
+}
+
+.stat-grid__card--wide .stat-grid__value {
+  overflow-wrap: anywhere;
 }
 
 .stat-grid__label {

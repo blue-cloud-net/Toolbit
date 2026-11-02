@@ -45,7 +45,7 @@ const { t } = useI18n()
   <ElDialog
     :model-value="detail !== null"
     :title="t('tool.cert.detail')"
-    width="900px"
+    width="min(1100px, 92vw)"
     append-to-body
     destroy-on-close
     @close="close()"

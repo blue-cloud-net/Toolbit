@@ -16,10 +16,12 @@ import CopyButton from '@/components/tool/CopyButton.vue'
 import {
   chainRoleKey,
   formatDateTime,
+  formatDays,
   linkMethodKey,
   linkReasonKey,
   safetyLevel,
   safetyLevelColor,
+  toList,
 } from '@/tools/certificates/certDetail'
 import type { ChainCertificate } from '@/types/certificate'
 
@@ -65,6 +67,11 @@ function roleTone(role: string): 'success' | 'warning' | 'info' | 'muted' {
 function daysTone(days: number): 'success' | 'warning' | 'danger' {
   const tone = safetyLevelColor(safetyLevel(days))
   return tone === 'success' || tone === 'warning' ? tone : 'danger'
+}
+
+/** 某张证书的 SHA-256 指纹；没有该算法时为空串。 */
+function sha256Of(cert: ChainCertificate): string {
+  return toList(cert.fingerprints).find((fp) => fp.algorithm.toLowerCase() === 'sha256')?.value ?? ''
 }
 </script>
 
@@ -115,14 +122,14 @@ function daysTone(days: number): 'success' | 'warning' | 'danger' {
                   class="chain__days"
                   :class="`chain__days--${daysTone(cert.validity.daysRemaining)}`"
                 >
-                  {{ cert.validity.daysRemaining }} {{ t('tool.cert.units.days') }}
+                  {{ formatDays(cert.validity.daysRemaining) }} {{ t('tool.cert.units.days') }}
                 </span>
               </dd>
             </div>
             <div class="chain__field">
               <dt>{{ t('tool.cert.fields.fingerprint') }}</dt>
               <dd class="chain__mono">
-                {{ cert.fingerprintSha256 || '-' }}
+                {{ sha256Of(cert) || '-' }}
               </dd>
             </div>
             <div class="chain__field">
@@ -148,6 +155,12 @@ function daysTone(days: number): 'success' | 'warning' | 'danger' {
             >
               {{ t('tool.cert.actions.detail') }}
             </button>
+            <span class="chain__action-label">{{ t('tool.cert.actions.copyPem') }}</span>
+            <CopyButton
+              :text="cert.pem"
+              size="small"
+              :label="t('tool.cert.actions.copyPem')"
+            />
           </div>
         </div>
       </li>
@@ -341,6 +354,9 @@ function daysTone(days: number): 'success' | 'warning' | 'danger' {
 }
 
 .chain__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
   margin-top: var(--tb-space-2);
 }
 
@@ -351,6 +367,11 @@ function daysTone(days: number): 'success' | 'warning' | 'danger' {
   cursor: pointer;
   background: none;
   border: none;
+}
+
+.chain__action-label {
+  font-size: var(--tb-font-xs);
+  color: var(--tb-text-tertiary);
 }
 
 .chain__notice {

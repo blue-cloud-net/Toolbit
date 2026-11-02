@@ -6,7 +6,8 @@
     "parse": "解析"
   },
   "fields": {
-    "bundle": "证书链"
+    "bundle": "证书链",
+    "fingerprints": "指纹算法"
   },
   "options": {},
   "results": {
@@ -33,6 +34,7 @@
   "hints": {
     "order": "排序优先按 **AKID ↔ SKID** 匹配，退回主体 / 签发者文本；同一层有多个候选时按输入顺序取第一个。",
     "ambiguous": "「输入已有序」为 false 只表示需要重排，**不**表示排序失败。",
+    "fingerprints": "可同时计算多种指纹；一个都不勾选时按 SHA-256 计算。",
     "limit": "证书链上限 64 张。"
   },
   "faq": [
@@ -51,6 +53,6 @@
   ],
   "views": {
     "summary": "摘要",
-    "pem": "链 PEM"
+    "pem": "证书链 PEM"
   }
 }

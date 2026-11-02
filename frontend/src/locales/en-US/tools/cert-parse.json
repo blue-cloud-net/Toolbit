@@ -3,8 +3,7 @@
   "description": "Parse an X.509 certificate: subject, issuer, validity, extensions, public key and fingerprints.",
   "category": "Certificates",
   "actions": {
-    "parse": "Parse",
-    "now": "Set to now"
+    "parse": "Parse"
   },
   "fields": {
     "cert": "Certificate",
@@ -41,8 +40,8 @@
     }
   ],
   "hints": {
-    "fingerprints": "Several algorithms can be computed at once; md5 and sha1 are weak and only useful for legacy interop.",
-    "atTime": "Leave empty to evaluate against the current time; supply an RFC3339 instant to review historical state.",
+    "fingerprints": "Several algorithms can be computed at once; with none selected SHA-256 is used. md5 and sha1 are weak and only useful for legacy interop.",
+    "atTime": "Leave empty to evaluate against the current time; supply an RFC3339 instant to review historical state, and use the clear icon in the input to go back to the current time.",
     "safe": "Read-only: the certificate is never modified and never written to disk."
   },
   "faq": [
@@ -63,6 +62,6 @@
     "summary": "Summary",
     "extensions": "Extensions",
     "text": "Text view",
-    "pem": "Certificate"
+    "pem": "Certificate PEM"
   }
 }

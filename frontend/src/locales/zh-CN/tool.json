@@ -75,13 +75,17 @@
       "identifiers": "标识与指纹",
       "policies": "证书策略",
       "extensions": "扩展",
-      "certificate": "证书原文"
+      "keyExtensions": "关键扩展",
+      "allExtensions": "全部扩展",
+      "certificate": "证书PEM"
     },
     "fields": {
       "version": "版本",
       "status": "状态",
       "daysRemaining": "剩余天数",
       "duration": "有效期长度",
+      "validityPeriod": "有效期区间",
+      "sha256Fingerprint": "SHA-256 指纹",
       "isCa": "CA 证书",
       "selfSigned": "自签名",
       "pathLen": "路径长度约束",
@@ -96,6 +100,7 @@
       "algorithm": "算法",
       "bits": "位数",
       "curve": "曲线",
+      "publicKey": "公钥",
       "publicKeyFingerprint": "公钥指纹",
       "modulus": "模数",
       "exponent": "指数",
@@ -152,6 +157,19 @@
       "root": "根证书",
       "unlinked": "游离证书"
     },
+    "ext": {
+      "basicConstraints": "基本约束",
+      "keyUsage": "密钥用途",
+      "extendedKeyUsage": "扩展密钥用途",
+      "subjectAltName": "主体备用名",
+      "issuerAltName": "签发者备用名",
+      "subjectKeyIdentifier": "主题密钥标识符",
+      "authorityKeyIdentifier": "签发者密钥标识符",
+      "cRLDistributionPoints": "吊销列表分发点",
+      "authorityInfoAccess": "授权信息访问",
+      "certificatePolicies": "证书策略",
+      "nameConstraints": "名称约束"
+    },
     "link": {
       "leaf": "链的起点",
       "keyid": "按密钥标识符匹配",
@@ -166,7 +184,8 @@
     "actions": {
       "detail": "详情",
       "expand": "展开",
-      "collapse": "收起"
+      "collapse": "收起",
+      "copyPem": "复制 PEM"
     }
   },
   "material": {

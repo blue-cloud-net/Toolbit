@@ -3,6 +3,20 @@
  *
  * 字段名必须与 `backend/internal/tools/pki/dto.go` 的 `json:` tag 逐字一致：
  * 名字对不上时页面不会报错，只会**一直空白**。
+ *
+ * ## 数组字段的可空性
+ *
+ * 后端对「证书没有该扩展」有两种编码，**语义不同**：
+ *
+ * - `null` —— 已查询、确认没有该项。适用于上游 tongsuo-go 在扩展缺失时
+ *   返回 nil 的字段（`san` / `keyUsage` / `extendedKeyUsage` / `cpsUris` /
+ *   `noticeNumbers`）。
+ * - `[]` —— 结构性字段恒为空数组（`subject` / `issuer` / `extensions` /
+ *   `policies` / `fingerprints` / `chain`），由 `make` 显式构造。
+ *
+ * 因此**可空字段的类型是 `T[] | null`**：TypeScript 会强制每个使用点显式
+ * 处理 `null`（用 `toList()` 归一化），漏一处直接编译失败，
+ * 而不是运行期抛 `null.length` 让整页白屏。
  */
 
 /** 一个 RDN 条目（主体 / 签发者的单个字段）。 */
@@ -51,12 +65,12 @@ export interface PublicKeyDetail {
 export interface CertificatePolicy {
   /** 策略标识符（点分形式）。 */
   oid: string
-  /** 策略声明 URL 列表。 */
-  cpsUris: string[]
+  /** 策略声明 URL 列表；无声明时为 `null`。 */
+  cpsUris: string[] | null
   /** 通知机构名。 */
   organization: string
-  /** 通知编号列表。 */
-  noticeNumbers: number[]
+  /** 通知编号列表；无编号时为 `null`。 */
+  noticeNumbers: number[] | null
   /** 通知正文。 */
   explicitText: string
 }
@@ -81,7 +95,7 @@ export interface CertificateExtension {
 export interface CertificateValidity {
   /** `valid` | `expired` | `not_yet_valid`。 */
   status: string
-  /** 距离过期的剩余天数；已过期为负数。 */
+  /** 距离过期的剩余天数；已过期为负数。**小数**（保留 1 位）。 */
   daysRemaining: number
 }
 
@@ -121,12 +135,12 @@ export interface CertificateInfo {
   isCa: boolean
   /** 路径长度约束；非 CA 或无该扩展为 -1。 */
   pathLen: number
-  /** 主体备用名条目。 */
-  san: string[]
-  /** 密钥用途位名。 */
-  keyUsage: string[]
-  /** 扩展密钥用途。 */
-  extendedKeyUsage: string[]
+  /** 主体备用名条目；无该扩展时为 `null`。 */
+  san: string[] | null
+  /** 密钥用途位名；无该扩展时为 `null`。 */
+  keyUsage: string[] | null
+  /** 扩展密钥用途；无该扩展时为 `null`。 */
+  extendedKeyUsage: string[] | null
   /** 主题密钥标识符（大写十六进制）。 */
   subjectKeyId: string
   /** 签发者密钥标识符（大写十六进制）。 */
@@ -167,8 +181,8 @@ export interface ChainCertificate {
   link: ChainLink
   /** 有效性判定。 */
   validity: CertificateValidity
-  /** SHA-256 指纹（小写十六进制）。 */
-  fingerprintSha256: string
+  /** 指纹列表（按请求的算法顺序）；无该扩展时为 `null`。 */
+  fingerprints: CertificateFingerprint[]
   /** 公钥展开视图；读取失败时为 null。 */
   publicKey: PublicKeyDetail | null
 }

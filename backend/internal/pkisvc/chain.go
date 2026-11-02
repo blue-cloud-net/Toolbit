@@ -19,8 +19,11 @@ type ChainCertificate struct {
 	Link ChainLink `json:"link"`
 	// Validity 是该证书在当前时刻的有效性判定。
 	Validity ValidityInfo `json:"validity"`
-	// FingerprintSHA256 是该证书的 SHA-256 指纹（小写十六进制）。
-	FingerprintSHA256 string `json:"fingerprintSha256"`
+	// Fingerprints 是该证书的指纹列表（按请求的算法顺序）。
+	//
+	// 没有显式指定算法时只含 SHA-256；计算失败的算法不会让整条链失败，
+	// 只是不出现在列表里。
+	Fingerprints []FingerprintInfo `json:"fingerprints"`
 	// PublicKey 是该证书公钥的展开视图；读取失败时为空。
 	PublicKey *PublicKeyDetail `json:"publicKey,omitempty"`
 
@@ -71,7 +74,9 @@ type chainNode struct {
 // 这样交叉签名的中间 CA 不会导致随机顺序。
 //
 // 无法接入链的证书（与主链无父子关系）排在链尾，顺序保持输入顺序。
-func OrderChain(certs []*Certificate) (*ChainInfo, error) {
+//
+// fingerprintAlgs 是要计算的指纹算法；为空时只算 SHA-256。
+func OrderChain(certs []*Certificate, fingerprintAlgs []string) (*ChainInfo, error) {
 	if len(certs) == 0 {
 		return nil, toolerr.Newf(toolerr.CodeMissingField, map[string]any{"field": "bundle.data"})
 	}
@@ -124,16 +129,18 @@ func OrderChain(certs []*Certificate) (*ChainInfo, error) {
 		}
 
 		item := ChainCertificate{
-			PEM:      string(pemBytes),
-			Info:     info,
-			Role:     chainRole(i, mainLen, selfSigned),
-			Link:     links[i],
-			Validity: CheckValidity(node.cert, zeroTime),
-			cert:     node.cert,
+			PEM:          string(pemBytes),
+			Info:         info,
+			Role:         chainRole(i, mainLen, selfSigned),
+			Link:         links[i],
+			Validity:     CheckValidity(node.cert, zeroTime),
+			Fingerprints: []FingerprintInfo{},
+			cert:         node.cert,
 		}
 
-		if fps, err := Fingerprints(node.cert, []string{FingerprintSHA256}); err == nil && len(fps) > 0 {
-			item.FingerprintSHA256 = fps[0].Value
+		// 指纹算不出来**不**让整条链失败：链的顺序才是本函数的主职责。
+		if fps, err := Fingerprints(node.cert, fingerprintAlgs); err == nil {
+			item.Fingerprints = fps
 		}
 		if detail, err := PublicKeyDetailOf(node.cert); err == nil {
 			item.PublicKey = detail

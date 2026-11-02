@@ -14,6 +14,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CopyButton from '@/components/tool/CopyButton.vue'
+import CertExtensions from '@/components/tool/CertExtensions.vue'
 import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import KeyValueTable, { type KeyValueRow } from '@/components/tool/KeyValueTable.vue'
 import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
@@ -23,15 +24,15 @@ import {
   durationDays,
   extKeyUsageEntries,
   formatDateTime,
-  hexUpper,
+  formatDays,
   keyUsageEntries,
   safetyLevel,
   safetyLevelColor,
+  toList,
   validityLevel,
   validityPercent,
 } from '@/tools/certificates/certDetail'
 import type {
-  CertificateExtension,
   CertificateFingerprint,
   CertificateInfo,
   CertificateValidity,
@@ -83,6 +84,27 @@ const validityTone = computed(() => validityLevel(props.validity.status))
 /** 剩余天数的紧急度。 */
 const safety = computed(() => safetyLevel(props.validity.daysRemaining))
 
+/** SHA-256 指纹（浏览器证书查看器把它放在最显眼的位置）。 */
+const sha256Fingerprint = computed(() =>
+  props.fingerprints.find((fp) => fp.algorithm.toLowerCase() === 'sha256')?.value ?? '',
+)
+
+/** 公钥摘要：算法 + 位数 + 曲线。 */
+const publicKeySummary = computed(() => {
+  const detail = props.publicKey ?? props.info.publicKey
+  if (!detail) {
+    return ''
+  }
+  const parts = [detail.algorithm]
+  if (detail.bits > 0) {
+    parts.push(`${detail.bits} ${t('tool.cert.fields.bits')}`)
+  }
+  if (detail.curve) {
+    parts.push(detail.curve)
+  }
+  return parts.join(' · ')
+})
+
 /** 概览卡片。 */
 const overview = computed<StatGridItem[]>(() => {
   const info = props.info
@@ -95,12 +117,16 @@ const overview = computed<StatGridItem[]>(() => {
     },
     {
       label: t('tool.cert.fields.daysRemaining'),
-      value: `${props.validity.daysRemaining} ${t('tool.cert.units.days')}`,
+      value: `${formatDays(props.validity.daysRemaining)} ${t('tool.cert.units.days')}`,
       level: safetyLevelColor(safety.value),
     },
     {
       label: t('tool.cert.fields.duration'),
-      value: `${durationDays(info.notBefore, info.notAfter)} ${t('tool.cert.units.days')}`,
+      value: `${formatDays(durationDays(info.notBefore, info.notAfter))} ${t('tool.cert.units.days')}`,
+    },
+    {
+      label: t('tool.cert.fields.publicKey'),
+      value: publicKeySummary.value,
     },
     {
       label: t('tool.cert.fields.isCa'),
@@ -116,7 +142,19 @@ const overview = computed<StatGridItem[]>(() => {
         : t('common.states.no'),
       level: info.selfSigned ? ('warning' as const) : undefined,
     },
+    {
+      label: t('tool.cert.fields.validityPeriod'),
+      value: `${formatTime(info.notBefore)} → ${formatTime(info.notAfter)}`,
+      wide: true,
+    },
   ]
+  if (sha256Fingerprint.value !== '') {
+    items.push({
+      label: t('tool.cert.fields.sha256Fingerprint'),
+      value: sha256Fingerprint.value,
+      wide: true,
+    })
+  }
   if (info.isCa && info.pathLen >= 0) {
     items.push({
       label: t('tool.cert.fields.pathLen'),
@@ -140,12 +178,12 @@ const identityRows = computed<KeyValueRow[]>(() => {
 
 /** 主体 RDN 表。 */
 const subjectRows = computed<KeyValueRow[]>(() =>
-  props.info.subject.map((entry) => ({ label: entry.field, value: entry.value })),
+  toList(props.info.subject).map((entry) => ({ label: entry.field, value: entry.value })),
 )
 
 /** 签发者 RDN 表。 */
 const issuerRows = computed<KeyValueRow[]>(() =>
-  props.info.issuer.map((entry) => ({ label: entry.field, value: entry.value })),
+  toList(props.info.issuer).map((entry) => ({ label: entry.field, value: entry.value })),
 )
 
 /** 公钥摘要表。 */
@@ -203,7 +241,7 @@ const sanColumns = computed<DataTableColumn[]>(() => [
 
 /** 主体备用名表格行。 */
 const sanRows = computed<DataTableRow[]>(() =>
-  props.info.san.map((entry, index) => {
+  toList(props.info.san).map((entry, index) => {
     const at = entry.indexOf(':')
     return {
       key: `${entry}-${index}`,
@@ -223,7 +261,7 @@ const kuColumns = computed<DataTableColumn[]>(() => [
 
 /** 密钥用途表格行。 */
 const kuRows = computed<DataTableRow[]>(() =>
-  keyUsageEntries(props.info.keyUsage).map((entry) => ({
+  keyUsageEntries(toList(props.info.keyUsage)).map((entry) => ({
     key: entry.name,
     cells: { name: label('ku', entry.name), value: entry.value || '-' },
   })),
@@ -237,7 +275,7 @@ const ekuColumns = computed<DataTableColumn[]>(() => [
 
 /** 扩展密钥用途表格行。 */
 const ekuRows = computed<DataTableRow[]>(() =>
-  extKeyUsageEntries(props.info.extendedKeyUsage).map((entry) => ({
+  extKeyUsageEntries(toList(props.info.extendedKeyUsage)).map((entry) => ({
     key: entry.name,
     cells: { name: label('eku', entry.name), value: entry.value || '-' },
   })),
@@ -284,13 +322,14 @@ const policyColumns = computed<DataTableColumn[]>(() => [
 
 /** 策略表格行。 */
 const policyRows = computed<DataTableRow[]>(() =>
-  props.info.policies.map((policy) => {
+  toList(props.info.policies).map((policy) => {
     const noticeParts: string[] = []
     if (policy.organization) {
       noticeParts.push(policy.organization)
     }
-    if (policy.noticeNumbers.length > 0) {
-      noticeParts.push(policy.noticeNumbers.join(', '))
+    const numbers = toList(policy.noticeNumbers)
+    if (numbers.length > 0) {
+      noticeParts.push(numbers.join(', '))
     }
     if (policy.explicitText) {
       noticeParts.push(policy.explicitText)
@@ -299,32 +338,11 @@ const policyRows = computed<DataTableRow[]>(() =>
       key: policy.oid,
       cells: {
         oid: policy.oid,
-        cps: policy.cpsUris.join('\n') || '-',
+        cps: toList(policy.cpsUris).join('\n') || '-',
         notice: noticeParts.join(' · ') || '-',
       },
     }
   }),
-)
-
-/** 扩展表格列。 */
-const extensionColumns = computed<DataTableColumn[]>(() => [
-  { key: 'name', label: t('tool.cert.fields.extensionName') },
-  { key: 'oid', label: t('tool.cert.fields.oid'), mono: true },
-  { key: 'critical', label: t('tool.cert.fields.critical'), align: 'center' },
-  { key: 'value', label: t('tool.cert.fields.extensionValue'), mono: true },
-])
-
-/** 扩展表格行。 */
-const extensionRows = computed<DataTableRow[]>(() =>
-  props.info.extensions.map((ext: CertificateExtension) => ({
-    key: `${ext.oid}-${ext.nid}`,
-    cells: {
-      name: ext.name || ext.oid,
-      oid: ext.oid,
-      critical: ext.critical ? t('common.states.yes') : '-',
-      value: ext.text || hexUpper(ext.value),
-    },
-  })),
 )
 </script>
 
@@ -409,7 +427,7 @@ const extensionRows = computed<DataTableRow[]>(() =>
     </section>
 
     <section
-      v-if="info.san.length > 0 || info.keyUsage.length > 0 || info.extendedKeyUsage.length > 0"
+      v-if="sanRows.length > 0 || kuRows.length > 0 || ekuRows.length > 0"
       class="cert-detail__section"
     >
       <h3 class="cert-detail__title">
@@ -470,17 +488,10 @@ const extensionRows = computed<DataTableRow[]>(() =>
     </section>
 
     <section
-      v-if="showExtensions && extensionRows.length > 0"
+      v-if="showExtensions"
       class="cert-detail__section"
     >
-      <h3 class="cert-detail__title">
-        {{ t('tool.cert.sections.extensions') }}
-      </h3>
-      <DataTable
-        :columns="extensionColumns"
-        :rows="extensionRows"
-        :copy-column="'value'"
-      />
+      <CertExtensions :extensions="toList(info.extensions)" />
     </section>
 
     <section
