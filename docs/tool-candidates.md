@@ -14,7 +14,8 @@
 - 本表**不记录**任何外部项目名称（[../AGENTS.md](../AGENTS.md) §5 禁止清单）。
 - 成本口径：**S** ≈ 半个工作日，**M** ≈ 1–2 天，**L** ≈ 3 天以上。
 
-> **当前状态**：本文列出的候选已于 v0.8.0 **全部交付**，slug 均已在 catalog 登记。
+> **当前状态**：本文列出的候选已于 v0.8.0 **全部交付**，slug 均已在 catalog 登记；
+> 批次 C（§2.1）的两个 Protobuf 工具随后交付，slug 也已在 catalog 登记。
 > 下表保留能力定义与取舍理由，作为交付记录与后续增强的输入；**待办候选为零**，
 > 新一批候选评审后再补充。
 
@@ -31,7 +32,8 @@
 | `firewall-rules` | 系统 | 防火墙规则生成：按场景拼装 iptables / UFW / nftables 规则，支持批量导出 | 无；与 `nginx-config` 同族 | 零新依赖 | M | P0 |
 | `regex-validate` | 文本 | 正则表达式语法校验：只校验不匹配，输出是否合法、错误位置与方言提示 | 与 `regex-tester` 共用同一条 RE2 编译路径与方言判定，不重复实现方言逻辑 | 零新依赖 | S | P0 |
 | `regex-build` | 文本 | 正则表达式生成：由结构化选项（字符类、量词、分组、前后缀、常用模板）拼装表达式并给出释义 | 无；生成结果仍按 RE2 方言校验，非法组合即时报错 | 零新依赖 | M | P1 |
-| `device-headers` | 网络 | 客户端请求头生成与 User-Agent（UA）解析：按平台与浏览器版本生成完整请求头，反向解析 UA 为结构化字段 | 无；`http-status` / `mime-lookup` 同属速查族，本项属「构造 + 解析」 | 零新依赖 | M | P0 |
+| `ua-parser` | 网络 | User-Agent（UA）解析：把 UA 串拆成浏览器、版本、操作系统、设备类型与渲染引擎 | 无；`http-status` / `mime-lookup` 同属速查族；由原 `device-headers` 拆分而来 | 零新依赖 | S | P0 |
+| `header-generator` | 网络 | 客户端请求头生成：按平台与浏览器版本生成完整请求头，可追加自定义请求头 | 无；`curl-generator` 同属「构造」族；由原 `device-headers` 拆分而来 | 零新依赖 | S | P0 |
 | `ssh-keygen` | 密钥 | SSH 私钥生成：产出 OpenSSH 格式（`openssh-key-v1`）密钥对、`authorized_keys` 公钥行与 SHA256 指纹 | 与 `keygen` 互补：`keygen` 产出 PKCS#8 / SPKI PEM，本项产出 OpenSSH 格式；密钥材料复用既有算法能力 | 零新依赖（受 §3 边界约束） | M | P1 |
 
 ### 1.2 既有工具增强（✅ v0.8.0 已交付）
@@ -45,7 +47,11 @@
 
 ### 1.3 工具总数影响
 
-批次 A 含 **7** 个新增 slug；批次 B 的 19 个备选全部并入本版交付，另补充 `mime-lookup` 与 `http-status` 两个速查类工具，合计 **28** 个新增 slug。工具总数由 **70** 变为 **98**（`password-gen` 与 `jwt-codec` 为既有增强，不计入）。
+批次 A 含 **8** 个新增 slug；批次 B 的 19 个备选全部并入本版交付，另补充 `mime-lookup` 与 `http-status` 两个速查类工具，合计 **29** 个新增 slug。工具总数由 **70** 变为 **100**（`password-gen` 与 `jwt-codec` 为既有增强，不计入）。
+
+> `docker run` ↔ Compose 的**命令级**互转由独立 slug `docker-run-convert`（系统分类）交付，
+> 与 `docker-compose-gen` 的「服务定义 → compose」分工明确；
+> 契约见 [api/tools/system.md](api/tools/system.md#docker-run-convert)。
 
 ---
 
@@ -62,7 +68,7 @@
 | `totp` | 加密 | TOTP / HOTP 生成与校验 | [roadmap.md](roadmap.md) §16.1 已列；需 RFC 6238 / 4226 标准向量 | 复用 `hmac-gen` 的 HMAC 能力 | M | P1 |
 | `csv-convert` | 数据 | JSON ↔ CSV 转换，CSV 格式化与合法性校验 | 补 `format-convert` 的 CSV 缺口（现覆盖 JSON / YAML / TOML / XML） | 零新依赖 | M | P1 |
 | `json-to-types` | 数据 | JSON 转语言类型定义（TypeScript / Go / Rust / Java） | [roadmap.md](roadmap.md) §16.1 已列 | 零新依赖 | M | P1 |
-| `docker-compose-gen` | 系统 | Dockerfile / compose 可视化生成，`docker run` 命令转 compose | 无 | 零新依赖 | M | P1 |
+| `docker-compose-gen` | 系统 | 由服务定义生成 compose 配置 | 与 `docker-run-convert` 分工：本工具只做「服务定义 → compose」，命令级互转由 `docker-run-convert` 承担 | 零新依赖 | M | P1 |
 | `color-convert` | 格式化 | 颜色格式转换（HEX / RGB / HSL / OKLCH）与对比度检查 | [roadmap.md](roadmap.md) §16.1 已列 | 零新依赖 | S | P1 |
 | `archive-inspect` | 数据 | ZIP / TAR / GZIP 内容查看与条目清单 | 扩充 `gzip-deflate`；**必须**限制条目数与解压体积 | 零新依赖 | M | P2 |
 | `file-analyze` | 数据 | 文件类型识别与元数据提取（魔数、MIME、大小、摘要） | `mimetype` 已在依赖树，提升为直接依赖 | 零新依赖 | S | P2 |
@@ -74,6 +80,30 @@
 | `lookup-table` | 系统 | 速查表：端口号、Linux 退出码、时间戳格式 | [roadmap.md](roadmap.md) §16.1 已列 | 零新依赖 | S | P2 |
 | `markdown-convert` | 文档 | Markdown 与 HTML 互转 | 复用既有 `goldmark` 依赖 | 零新依赖 | S | P2 |
 | `html-escape` | 编码 | HTML 实体编解码 | 补 `html-format` 的实体方向 | 零新依赖 | S | P2 |
+
+---
+
+## 2.1 批次 C —— 已交付
+
+### 2.1.1 新增工具（✅ 已交付）
+
+| slug | 分类 | 能力 | 与既有工具的关系 | 依赖 | 成本 | 优先级 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `protobuf-decoder` | 编码 | protobuf 二进制解码：线格式字段树 + 按 `.proto` 描述还原 JSON | 与 `asn1-view` 同属「二进制结构查看」族，但 protobuf 是自描述长度分隔格式，**不复用** ASN.1 实现 | `google.golang.org/protobuf`（提升为直接依赖）、`github.com/bufbuild/protocompile` | M | P0 |
+| `protobuf-encoder` | 编码 | protobuf 二进制编码：字段规格（表格 / JSON 文本）或 protojson → 字节流 | 与 `protobuf-decoder` 成对；字段规格模型由前端页面持有，服务端只接收扁平的字段列表 | 同上 | M | P0 |
+
+### 2.1.2 实现边界
+
+| 事项 | 结论 | 依据 |
+| --- | --- | --- |
+| `.proto` 描述的支持范围 | **只支持单文件** | 多文件 import 需要额外的文件解析通道；Google 标准类型由 `protocompile.WithStandardImports` 直接可用 |
+| 线格式的长度分隔字段语义 | **启发式判断** | 线格式本身不携带类型信息；先按可打印 UTF-8 文本处理，否则尝试按嵌套消息解析，都不成立时给出十六进制预览 |
+| 字段值一律用字符串传递 | **必须** | JavaScript 的数字只有 53 位精度，64 位整数会丢精度；由服务端按语义类型解析 |
+| 新增依赖 | **已说明** | `google.golang.org/protobuf` 由间接依赖提升为直接依赖；新增 `github.com/bufbuild/protocompile`（纯 Go 的 .proto 编译器前端，不需要 protoc 二进制） |
+
+### 2.1.3 工具总数影响
+
+批次 C 含 **2** 个新增 slug，工具总数由 **100** 变为 **102**。
 
 ---
 
@@ -89,7 +119,7 @@
 | ECIES / DES / 3DES | **受阻** | 已是缺口 I-02 与 I-05，上游补齐后再入契约 |
 | `regex-build` | **可以** | 纯字符串拼装，不涉及密码学运算；产出结果按 RE2 方言校验 |
 | `nginx-config` / `firewall-rules` | **可以** | 纯模板拼装，不出网、不涉及密码学 |
-| `device-headers` 的 UA 库 | **需边界** | UA 数据需要更新机制；首版只支持内置常见平台与自定义填写，**不引入**在线 UA 查询 |
+| `ua-parser` / `header-generator` 的 UA 库 | **需边界** | UA 数据需要更新机制；首版只支持内置常见平台与自定义填写，**不引入**在线 UA 查询 |
 | 一切出网类需求 | **需单独评审** | SSRF 校验、限流与出网总开关要求见 [standards/06-security.md](standards/06-security.md) |
 | 任何新增依赖 | **需说明理由** | 变更 `backend/go.mod` 必须在提交信息写明 `adds: <pkg> <version>`（AGENTS §12） |
 | `hash-calc` 扩充摘要算法（SHA3 / BLAKE2 / CRC32 等） | **需先确认上游** | 现支持 SM3 / MD5 / SHA1 / SHA224 / SHA256 / SHA384 / SHA512；新增算法须经 `cryptosvc` 转调 Tongsuo，上游无入口则走上游 issue，**不得**用标准库 `crypto/*` 兜底 |

@@ -35,7 +35,7 @@
 | 文档 | 说明 |
 | --- | --- |
 | [architecture.md](architecture.md) | 系统上下文、分层、关键决策 D1–D11 |
-| [tools.md](tools.md) | 98 个工具的产品规格与使用说明 |
+| [tools.md](tools.md) | 102 个工具的产品规格与使用说明 |
 | [tool-candidates.md](tool-candidates.md) | 候选工具清单、边界与落地状态 |
 | [roadmap.md](roadmap.md) | 阶段计划、v1.1 展望、风险对策 |
 | [glossary.md](glossary.md) | 术语表 |
@@ -69,16 +69,16 @@
 | [api/README.md](api/README.md) | 总览：端点、信封、通用类型、限流、WebSocket、示例 |
 | [api/errors.md](api/errors.md) | 错误码与警告全集 |
 | [api/admin.md](api/admin.md) | 健康、元信息、统计、探针、内部端点 |
-| [api/tools/crypto.md](api/tools/crypto.md) | 加密（8） |
-| [api/tools/keys.md](api/tools/keys.md) | 密钥（6） |
-| [api/tools/certificates.md](api/tools/certificates.md) | 证书（23） |
-| [api/tools/encoding.md](api/tools/encoding.md) | 编码（6） |
-| [api/tools/formatting.md](api/tools/formatting.md) | 格式化（8） |
-| [api/tools/text.md](api/tools/text.md) | 文本（2） |
-| [api/tools/data.md](api/tools/data.md) | 数据（6） |
-| [api/tools/system.md](api/tools/system.md) | 系统（3） |
-| [api/tools/network.md](api/tools/network.md) | 网络（5） |
-| [api/tools/documents.md](api/tools/documents.md) | 文档（3） |
+| [api/tools/crypto.md](api/tools/crypto.md) | 加密（10） |
+| [api/tools/keys.md](api/tools/keys.md) | 密钥（7） |
+| [api/tools/certificates.md](api/tools/certificates.md) | 证书（24） |
+| [api/tools/encoding.md](api/tools/encoding.md) | 编码（9） |
+| [api/tools/formatting.md](api/tools/formatting.md) | 格式化（9） |
+| [api/tools/text.md](api/tools/text.md) | 文本（7） |
+| [api/tools/data.md](api/tools/data.md) | 数据（13） |
+| [api/tools/system.md](api/tools/system.md) | 系统（8） |
+| [api/tools/network.md](api/tools/network.md) | 网络（11） |
+| [api/tools/documents.md](api/tools/documents.md) | 文档（4） |
 
 ### 2.5 政策与运维
 

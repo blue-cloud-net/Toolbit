@@ -108,10 +108,34 @@
 - **`DownloadButton` 支持二进制下载**：新增可选 `base64` 入参（与 `content` 二选一），
   二进制产物（PNG 等）不必再绕道文本下载；解码逻辑抽到
   `frontend/src/components/tool/base64.ts` 并附单元测试
+- **证书详情按浏览器内置证书查看器的形态重排**
+  - 概览新增**有效期区间**、**SHA-256 指纹**、**公钥**三张卡片（长值整行展示）
+  - 扩展区分**关键扩展**（只列证书实际带有的，可读值）与**全部扩展**（含未知扩展的完整清单），
+    两段同页签，共享组件 `CertExtensions`
+  - 链上每张证书都能单独复制 PEM；详情弹窗加宽到 `min(1100px, 92vw)`，
+    内容与 `cert-parse` 摘要页**同源同版式**
+  - 「证书原文」改名「证书PEM」（上传的是 DER 时「原文」不准确），并加复制按钮
+- **指纹算法改为复选框**：下拉多选改成一排复选框；`cert-chain-parse` 同步支持多算法
+  - **破坏性**：`cert-chain-parse` 响应里 `chain[].fingerprintSha256` **删除**，
+    改为 `chain[].fingerprints[]`（`{ algorithm, value }`）
+  - `cert-chain-parse` 请求新增 `fingerprints`（不传时只算 SHA-256）
+- **剩余天数保留 1 位小数**：不足 10 天时显示「9.6 天」而不是「9 天」
+  - **破坏性**：`validity.daysRemaining`、`cert-lifecycle` 的 `daysRemaining` 与 `validDays`
+    由 `int` 改为 **浮点**（保留 1 位）
+  - 服务端「续期建议」文案与前端页面**统一口径**（不足 10 天保留 1 位，否则截断）
+  - `cert-lifecycle` 的警告期判定同步改用小数（9.6 天 / 阈值 10 即进入警告）
+- **「判断时刻」不再需要「设为当前时间」按钮**：留空即按当前时间，
+  按钮换成「清除」（清空 = 回到当前时间）；两处 `time.Now()` 的取时刻口径也统一了
+- **整链 PEM 按 RFC 7468 严格形式拼接**：块间**恰好一个换行、没有空行**，
+  末尾一个换行；此前每块已带结尾换行再 `join('\n')`，多出一个空行
+  - 解析侧本来就收两种写法（RFC 7468 §2 要求忽略空白），因此**输入**时块间空行可有可无
+  - 依据写进 [docs/standards/03-crypto.md](docs/standards/03-crypto.md) §8.7
 
 ### Removed
 
-- **移除 `wifi-qr`（访客 WiFi 二维码）**：工具总数 98 → **97**
+- **移除 `device-headers`（请求头生成与 UA 解析）**：能力拆分为 `ua-parser` 与
+  `header-generator` 两个工具，原 slug 与端点不再存在
+- **移除 `wifi-qr`（访客 WiFi 二维码）**：工具总数 -1
   - 该工具与 `qr-code` 的生成能力完全重叠，且结果区会**明文回显**含网络口令的
     `WIFI:T:…;S:…;P:…;` 载荷；访客网络应改用 `qr-code` 生成，避免口令在页面上长期可见
   - 同步删除后端实现与单测、契约测试数据、catalog 条目、前端模块与双语词条；
@@ -120,6 +144,26 @@
 
 ### Fixed
 
+- **`cert-parse` 与 `cert-chain-parse` 的结果区整片空白**（白屏）
+  - 根因：上游在**扩展缺失**时返回 `nil`（`SAN` / `KeyUsage` / `ExtendedKeyUsage`），
+    DTO 原样透传 ⇒ JSON 里是 `null`；前端 `CertDetail` 直接读 `.length`，
+    `null.length` 抛 TypeError ⇒ **整个组件渲染失败**
+  - 三处崩溃点全部修掉：`CertDetail` 模板、`cert-parse` 的 `resultText`（复制 / 下载的数据源）、
+    以及 `policies[].cpsUris.join()`（有策略扩展但无 CPS 的证书必崩）
+  - 前端类型同步声明为**可空**（`T[] | null`）+ 统一的 `toList()` 归一化，
+    TypeScript 编译器强制每个使用点判空，漏一处直接编译失败
+  - 契约口径写进 [docs/api/tools/certificates.md](docs/api/tools/certificates.md)：
+    「已查询、确认没有该项」编码成 `null`，结构性字段恒为 `[]`
+- **`cert-lifecycle` 的示例是空的**：「填入示例」点了没反应，改用测试用叶证书夹具
+- `ua-parser` 修正 **iOS 的 UA 串被误判为 macOS**：iPhone / iPad 的 UA 串含
+  `like Mac OS X`，原判定顺序先匹配 `Mac OS X`，导致系统名与版本都取错；
+  现在 iPhone / iPad 优先判定，系统版本取 `18_1` 这种下划线写法
+- `DataTable` 的**长地址列会被压成竖排单字**：单元格默认 `overflow-wrap: anywhere`，
+  浏览器于是认为该列可以窄到只剩一个字符（`dns-servers` 的「地址」列只剩 57px，
+  IPv6 与 DoH 端点根本显示不全）；新增列级 `nowrap` 选项，`dns-servers` 的地址列
+  改为禁止换行
+- `dns-servers` 在**宽屏下显示不全**：页面此前强制左右分栏，结果区只拿到一半宽度，
+  表格放不下只能横向裁切；改为**整幅宽度**（去掉分栏），表格与卡片都完整可见
 - `device-headers` **完全不可用**：前端把 `customHeaders` 当作**字符串**下发，而后端
   的类型是 `map[string]string`，每次调用都返回 `INVALID_FIELD`；现在前端按
   「每行一条 `名称: 值`」解析成对象后再提交
@@ -127,9 +171,63 @@
   `cidrs` / `count`），页面的网段与地址总数一直显示为空
 - `ip-range-expand` 与 `device-headers` 在结果区显示与可见内容不一致时不再出现
   「（空结果）」：复制文本改为按实际模式取值
+- `dns-lookup` 的**「记录一致性」在只有一台服务器时误报「存在差异」**：一致性比较要
+  至少两台**查询成功**的服务器才有可比对象，不足两台时报「不适用」；查询失败的服务器
+  不参与比较（否则会把「超时」误报成「记录缺失」）
+- `dns-lookup` 的**单台服务器页签会串台**：页签标识原本用服务器地址，而同一个地址既有
+  明文 UDP 又有 TCP 通道（如 `1.1.1.1:53`），两个页签撞在一起、点第二个却显示第一台的结果；
+  标识改为按下标生成，页签标题与差异列表带上协议以示区分
+- `dns-lookup` 的**大应答会被截断**：查询未通告 EDNS0，上游按历史上的 512 字节上限切分应答
+  （多条 A/AAAA 与长 TXT 会被切掉），记录数偏少、跨服务器比对因此出现「假差异」；
+  现在通告 4096 字节 EDNS0 缓冲、UDP 接收缓冲同步放大，应答仍被截断时回退 TCP 取完整结果
+- `dns-lookup` 的 IPv6 服务器地址被截成「[2606」这样的半个地址；短名解析改为先去掉
+  方括号再截端口
+- `dns-lookup` 的**同一协议 + 同一地址会被重复查询**（自定义服务器与预设撞车时）；
+  下发前按「协议 + 地址」去重
 
 ### Added
 
+- **新增两个 Protobuf 工具**（工具总数 +2，累计 **102**）
+  - **`protobuf-decoder`（Protobuf 解码器）**：解析 protobuf 二进制数据
+    - **线格式模式**（默认）：按 protobuf 二进制线格式解析出字段号、线类型与取值，
+      给出字段树、JSON 视图与可选的十六进制转储
+    - **按 `.proto` 描述模式**：填入描述文件与顶层消息名后，还原出字段名、声明类型、
+      嵌套结构与 protojson，并统计无法识别的字段数
+    - 长度分隔字段的语义靠启发式判断：先按可打印 UTF-8 文本处理，否则尝试按嵌套消息
+      解析，都不成立时给出十六进制预览
+    - 嵌套深度（默认 32 层）与字段总数（默认 10000）双上限；超出时结果**截断**并标记
+      `truncated`，不报错
+    - 支持导入二进制文件（自动按 Base64 填入）
+  - **`protobuf-encoder`（Protobuf 编码器）**：生成 protobuf 二进制数据
+    - **按字段规格**：字段号、语义类型（`int32` / `sint32` / `fixed32` / `string` /
+      `bytes` / `message` 等 17 种）、值与字节编码，输出 Base64 / 十六进制 / Base64URL
+    - **按 protojson**：填入 `.proto` 描述与 JSON 内容即可编码
+    - 字段输入支持**表格**与 **JSON 文本**两种编辑形态，随时切换并自动互相同步；
+      嵌套消息在表格里通过子字段行表达
+    - 字段值一律按字符串传递：JavaScript 的数字只有 53 位精度，64 位整数会丢精度
+  - 新增错误码 `INVALID_PROTOBUF`（线格式畸形、描述文件编译失败、protojson 与描述不匹配）
+  - 新增依赖：`github.com/bufbuild/protocompile v0.14.1`；
+    `google.golang.org/protobuf v1.36.10` 由间接依赖提升为直接依赖
+    （`adds: github.com/bufbuild/protocompile v0.14.1`）
+
+- **新增工具 `docker-run-convert`（docker run 与 Compose 互转）**：`docker run` 命令与
+  Compose 配置**双向转换**（工具总数 +1）
+  - 方向 `runToCompose`（默认）/ `composeToRun`，另提供严格模式开关
+  - 命令方向覆盖名称、端口、环境变量、卷、网络、重启策略、入口点、工作目录、用户、
+    主机名、特权、cap、标签、tmpfs、设备、内存与 CPU；支持组合短参与 `--flag=value` 写法
+  - Compose 方向按**服务顺序**输出 `docker run` 命令，端口的长短格式都吃
+  - 未支持的参数与 Compose 键**只列名字**、**不回显取值**（避免泄漏 `-e` 里的口令）；
+    严格模式下改为直接报 `INVALID_FIELD`
+  - 纯文本转换：不连接守护进程，也不拉取镜像
+- **拆分 `device-headers` 为两个工具**：原「请求头生成与 UA 解析」承担两件事，
+  现按职责拆开（工具总数 +1）
+  - **`ua-parser`（UA 解析）**：只做 UA 串的**反向**解析，输出浏览器、浏览器版本、
+    操作系统、系统版本、设备类型（桌面 / 移动 / 平板 / 爬虫）与渲染引擎；
+    输入为空返回 `MISSING_FIELD`，超过 1024 字符返回 `INVALID_FIELD`
+  - **`header-generator`（请求头生成）**：只做**正向**生成，按平台（Chrome / Firefox /
+    Safari / Edge / Android / iOS / curl）与版本产出完整请求头，并支持追加自定义请求头；
+    自定义请求头按名称字典序输出，顺序稳定
+  - 两者都**不出网**：识别规则与模板都是内置快照，不查在线 UA 数据库
 - **新增工具 `dns-servers`（DNS 服务器大全）**：常用公共 DNS 的端点目录，
   **纯查表、不出网**
   - 内置 24 家服务商（中国大陆 7 家、亚太 2 家、全球 15 家）、187 个端点的快照；
@@ -272,6 +370,10 @@
 
 ### Changed（界面与视觉）
 
+- `dns-servers` 支持**显示模式切换**：默认**卡片模式**（一家服务商一张卡，卡内按地址族
+  列出端点，同一地址的 UDP / TCP 合并成一行），可切到**列表模式**（逐行成表，便于按列
+  比对与整行复制）；两种视图共用同一套筛选条件，切换只影响呈现
+
 - 图标改为**彩色**：不再统一成一个主色，改为每个分类、每个工具各有各的色调
   - 新增 **12 组固定色调**令牌 `--tb-tone-<名>` / `--tb-tone-<名>-soft`
     （`tokens.css`，明暗两套），与主色（`--tb-primary`）**正交**：主色负责交互高亮，
@@ -317,6 +419,7 @@
 ### 新增的本地存储键
 
 - `toolbit.split`：工具页左右分栏的比例（`0.25` ~ `0.75`），属界面偏好
+- `toolbit.view.dns-servers`：DNS 服务器目录的显示模式（`card` / `list`），属界面偏好
 
 > 工具输入、密钥、证书与历史结果**一律不写**任何浏览器存储（见 [docs/privacy.md](docs/privacy.md) §5）。
 
