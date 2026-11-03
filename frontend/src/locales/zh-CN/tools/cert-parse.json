@@ -60,6 +60,9 @@
   ],
   "views": {
     "summary": "摘要",
+    "names": "名称与用途",
+    "identifiers": "标识与指纹",
+    "publicKey": "公钥",
     "extensions": "扩展",
     "text": "文本视图",
     "pem": "证书PEM"

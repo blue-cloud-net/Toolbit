@@ -1,14 +1,24 @@
 <script setup lang="ts">
 /**
- * 证书详情。
+ * 证书详情（**单区**组件）。
  *
- * 把一张证书的**全部**结构化字段分区呈现：
- * 有效期 / 身份 / 名称 / 公钥 / 用途 / 标识与指纹 / 策略 / 扩展。
+ * 一张证书的字段很多；全塞进一个页面会让人找不到重点。
+ * 因此本组件按 `section` **只渲染一个区**：
  *
- * 供 `cert-parse` 的摘要页签与证书链的详情弹窗**共用**，
- * 因此只依赖 `CertificateInfo` 这类共享类型，不认识任何具体工具。
+ * - `summary` —— 摘要：状态 / 剩余天数 / 公钥 / 签名算法 / CA / 自签名 +
+ *   有效期进度条 + 主体 / 签发者 / 有效期区间 / SHA-256 指纹
+ * - `names` —— 名称与用途：主体与签发者的 RDN、SAN / KeyUsage / EKU
+ * - `identifiers` —— 标识与指纹：序列号、签名算法 OID、名称哈希、
+ *   SKID / AKID、全部指纹、证书策略
+ * - `publicKey` —— 公钥：摘要、模数 / 指数 / 曲线点、SPKI
+ * - `extensions` —— 扩展：关键扩展 + 全部扩展
+ * - `pem` —— 证书PEM
  *
- * 文案走共享命名空间 `tool.cert.*`：不与单个 slug 耦合。
+ * 页签由外层决定（`cert-parse` 用 `ResultPanel` 的页签，
+ * 证书链的详情弹窗用 `CertDetailTabs`），本组件只管内容。
+ *
+ * 只依赖 `CertificateInfo` 这类共享类型，不认识任何具体工具；
+ * 文案走共享命名空间 `tool.cert.*`。
  */
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -39,22 +49,31 @@ import type {
   PublicKeyDetail,
 } from '@/types/certificate'
 
+/** 可渲染的区。 */
+export type CertDetailSection =
+  | 'summary'
+  | 'names'
+  | 'identifiers'
+  | 'publicKey'
+  | 'extensions'
+  | 'pem'
+
 const props = withDefaults(
   defineProps<{
     /** 证书元信息。 */
     info: CertificateInfo
     /** 有效性判定。 */
     validity: CertificateValidity
-    /** 指纹列表；不给时不渲染该区。 */
+    /** 要渲染哪个区。 */
+    section: CertDetailSection
+    /** 指纹列表；不给时不渲染指纹相关行。 */
     fingerprints?: CertificateFingerprint[]
-    /** 公钥展开视图；不给时不渲染该区。 */
+    /** 公钥展开视图；不给时不渲染公钥区。 */
     publicKey?: PublicKeyDetail | null
     /** 证书 PEM；给出时提供复制入口。 */
     pem?: string
-    /** 是否渲染扩展区。 */
-    showExtensions?: boolean
   }>(),
-  { fingerprints: () => [], publicKey: null, pem: '', showExtensions: false },
+  { fingerprints: () => [], publicKey: null, pem: '' },
 )
 
 const { t, te, locale } = useI18n()
@@ -105,11 +124,10 @@ const publicKeySummary = computed(() => {
   return parts.join(' · ')
 })
 
-/** 概览卡片。 */
-const overview = computed<StatGridItem[]>(() => {
+/** 摘要区的状态卡片：只放**短值**。 */
+const summaryCards = computed<StatGridItem[]>(() => {
   const info = props.info
-  const items: StatGridItem[] = [
-    { label: t('tool.cert.fields.version'), value: displayVersion(info.version) },
+  return [
     {
       label: t('tool.cert.fields.status'),
       value: label('status', props.validity.status),
@@ -121,12 +139,12 @@ const overview = computed<StatGridItem[]>(() => {
       level: safetyLevelColor(safety.value),
     },
     {
-      label: t('tool.cert.fields.duration'),
-      value: `${formatDays(durationDays(info.notBefore, info.notAfter))} ${t('tool.cert.units.days')}`,
-    },
-    {
       label: t('tool.cert.fields.publicKey'),
       value: publicKeySummary.value,
+    },
+    {
+      label: t('tool.cert.fields.signatureAlgorithm'),
+      value: info.signatureAlgorithm,
     },
     {
       label: t('tool.cert.fields.isCa'),
@@ -142,38 +160,47 @@ const overview = computed<StatGridItem[]>(() => {
         : t('common.states.no'),
       level: info.selfSigned ? ('warning' as const) : undefined,
     },
+  ]
+})
+
+/** 摘要区的长值行：主体、签发者、有效期、指纹。 */
+const summaryRows = computed<KeyValueRow[]>(() => {
+  const info = props.info
+  const rows: KeyValueRow[] = [
+    { label: t('tool.cert.fields.subject'), value: info.subjectText },
+    { label: t('tool.cert.fields.issuer'), value: info.issuerText },
     {
       label: t('tool.cert.fields.validityPeriod'),
       value: `${formatTime(info.notBefore)} → ${formatTime(info.notAfter)}`,
-      wide: true,
+      hint: `${formatDays(durationDays(info.notBefore, info.notAfter))} ${t('tool.cert.units.days')}`,
     },
   ]
   if (sha256Fingerprint.value !== '') {
-    items.push({
+    rows.push({
       label: t('tool.cert.fields.sha256Fingerprint'),
       value: sha256Fingerprint.value,
-      wide: true,
     })
   }
-  if (info.isCa && info.pathLen >= 0) {
-    items.push({
-      label: t('tool.cert.fields.pathLen'),
-      value: String(info.pathLen),
-    })
-  }
-  return items
+  return rows
 })
 
-/** 身份信息表。 */
+/** 标识与指纹区的表。 */
 const identityRows = computed<KeyValueRow[]>(() => {
   const info = props.info
-  return [
+  const rows: KeyValueRow[] = [
+    { label: t('tool.cert.fields.version'), value: displayVersion(info.version) },
     { label: t('tool.cert.fields.serial'), value: info.serial },
-    { label: t('tool.cert.fields.signatureAlgorithm'), value: info.signatureAlgorithm },
     { label: t('tool.cert.fields.signatureAlgorithmOid'), value: info.signatureAlgorithmOid },
     { label: t('tool.cert.fields.subjectHash'), value: info.subjectHash },
     { label: t('tool.cert.fields.issuerHash'), value: info.issuerHash },
   ]
+  if (info.isCa && info.pathLen >= 0) {
+    rows.push({
+      label: t('tool.cert.fields.pathLen'),
+      value: String(info.pathLen),
+    })
+  }
+  return rows
 })
 
 /** 主体 RDN 表。 */
@@ -253,17 +280,25 @@ const sanRows = computed<DataTableRow[]>(() =>
   }),
 )
 
-/** 密钥用途表格列。 */
+/**
+ * 密钥用途表格列。
+ *
+ * 只有一列：用途与位掩码合并成「数字签名（0x80）」，
+ * 拆成两列反而要来回对照。
+ */
 const kuColumns = computed<DataTableColumn[]>(() => [
-  { key: 'name', label: t('tool.cert.fields.keyUsage') },
-  { key: 'value', label: t('tool.cert.fields.bitMask'), mono: true },
+  { key: 'usage', label: t('tool.cert.fields.keyUsage') },
 ])
 
 /** 密钥用途表格行。 */
 const kuRows = computed<DataTableRow[]>(() =>
   keyUsageEntries(toList(props.info.keyUsage)).map((entry) => ({
     key: entry.name,
-    cells: { name: label('ku', entry.name), value: entry.value || '-' },
+    cells: {
+      usage: entry.value
+        ? `${label('ku', entry.name)}（${entry.value}）`
+        : label('ku', entry.name),
+    },
   })),
 )
 
@@ -323,46 +358,13 @@ const fingerprintRows = computed<DataTableRow[]>(() =>
   })),
 )
 
-/** 策略表格列。 */
-const policyColumns = computed<DataTableColumn[]>(() => [
-  { key: 'oid', label: t('tool.cert.fields.policyOid'), mono: true },
-  { key: 'cps', label: t('tool.cert.fields.cps') },
-  { key: 'notice', label: t('tool.cert.fields.notice') },
-])
-
-/** 策略表格行。 */
-const policyRows = computed<DataTableRow[]>(() =>
-  toList(props.info.policies).map((policy) => {
-    const noticeParts: string[] = []
-    if (policy.organization) {
-      noticeParts.push(policy.organization)
-    }
-    const numbers = toList(policy.noticeNumbers)
-    if (numbers.length > 0) {
-      noticeParts.push(numbers.join(', '))
-    }
-    if (policy.explicitText) {
-      noticeParts.push(policy.explicitText)
-    }
-    return {
-      key: policy.oid,
-      cells: {
-        oid: policy.oid,
-        cps: toList(policy.cpsUris).join('\n') || '-',
-        notice: noticeParts.join(' · ') || '-',
-      },
-    }
-  }),
-)
 </script>
 
 <template>
   <div class="cert-detail">
-    <section class="cert-detail__section">
-      <h3 class="cert-detail__title">
-        {{ t('tool.cert.sections.validity') }}
-      </h3>
-      <StatGrid :items="overview" />
+    <!-- 摘要：只给「状态 + 谁签的 + 什么时候失效 + 指纹」 -->
+    <template v-if="section === 'summary'">
+      <StatGrid :items="summaryCards" />
       <ValidityTrack
         class="cert-detail__track"
         :percent="percent"
@@ -370,155 +372,144 @@ const policyRows = computed<DataTableRow[]>(() =>
         :start="formatTime(info.notBefore)"
         :end="formatTime(info.notAfter)"
       />
-    </section>
+      <KeyValueTable :rows="summaryRows" />
+    </template>
 
-    <section class="cert-detail__section">
-      <h3 class="cert-detail__title">
-        {{ t('tool.cert.sections.identity') }}
-      </h3>
-      <KeyValueTable :rows="identityRows" />
-    </section>
-
-    <section class="cert-detail__section">
-      <h3 class="cert-detail__title">
-        {{ t('tool.cert.sections.names') }}
-      </h3>
-      <div class="cert-detail__names">
-        <div class="cert-detail__name">
-          <h4 class="cert-detail__subtitle">
-            {{ t('tool.cert.fields.subject') }}
-          </h4>
-          <p class="cert-detail__dn">
-            {{ info.subjectText }}
-          </p>
-          <KeyValueTable :rows="subjectRows" />
-        </div>
-        <div class="cert-detail__name">
-          <h4 class="cert-detail__subtitle">
-            {{ t('tool.cert.fields.issuer') }}
-          </h4>
-          <p class="cert-detail__dn">
-            {{ info.issuerText }}
-          </p>
-          <KeyValueTable :rows="issuerRows" />
-        </div>
-      </div>
-    </section>
-
-    <section
-      v-if="publicKey"
-      class="cert-detail__section"
-    >
-      <h3 class="cert-detail__title">
-        {{ t('tool.cert.sections.publicKey') }}
-      </h3>
-      <KeyValueTable :rows="publicKeyRows" />
-      <button
-        type="button"
-        class="cert-detail__toggle"
-        :aria-expanded="publicKeyExpanded"
-        @click="publicKeyExpanded = !publicKeyExpanded"
-      >
-        {{ publicKeyExpanded ? t('tool.cert.actions.collapse') : t('tool.cert.actions.expand') }}
-      </button>
-      <template v-if="publicKeyExpanded">
-        <KeyValueTable
-          class="cert-detail__extra"
-          :rows="publicKeyDetailRows"
-        />
-        <div class="cert-detail__pem">
-          <div class="cert-detail__pem-head">
-            <span class="cert-detail__pem-label">PEM</span>
-            <CopyButton :text="publicKey.pem" />
+    <!-- 名称与用途：主体 / 签发者 / SAN / KU / EKU -->
+    <template v-else-if="section === 'names'">
+      <section class="cert-detail__section">
+        <h3 class="cert-detail__title">
+          {{ t('tool.cert.sections.names') }}
+        </h3>
+        <div class="cert-detail__names">
+          <div class="cert-detail__name">
+            <h4 class="cert-detail__subtitle">
+              {{ t('tool.cert.fields.subject') }}
+            </h4>
+            <p class="cert-detail__dn">
+              {{ info.subjectText }}
+            </p>
+            <KeyValueTable :rows="subjectRows" />
           </div>
-          <pre class="cert-detail__pem-body"><code>{{ publicKey.pem }}</code></pre>
+          <div class="cert-detail__name">
+            <h4 class="cert-detail__subtitle">
+              {{ t('tool.cert.fields.issuer') }}
+            </h4>
+            <p class="cert-detail__dn">
+              {{ info.issuerText }}
+            </p>
+            <KeyValueTable :rows="issuerRows" />
+          </div>
         </div>
-      </template>
-    </section>
+      </section>
 
-    <section
-      v-if="sanRows.length > 0 || kuRows.length > 0 || ekuRows.length > 0"
-      class="cert-detail__section"
-    >
-      <h3 class="cert-detail__title">
-        {{ t('tool.cert.sections.usages') }}
-      </h3>
-      <DataTable
-        v-if="sanRows.length > 0"
-        class="cert-detail__table"
-        :columns="sanColumns"
-        :rows="sanRows"
-        :copy-column="'value'"
-      />
-      <DataTable
-        v-if="kuRows.length > 0"
-        class="cert-detail__table"
-        :columns="kuColumns"
-        :rows="kuRows"
-        :copy-column="'name'"
-      />
-      <DataTable
-        v-if="ekuRows.length > 0"
-        class="cert-detail__table"
-        :columns="ekuColumns"
-        :rows="ekuRows"
-        :copy-column="'name'"
-      />
-    </section>
+      <section
+        v-if="sanRows.length > 0 || kuRows.length > 0 || ekuRows.length > 0"
+        class="cert-detail__section"
+      >
+        <h3 class="cert-detail__title">
+          {{ t('tool.cert.sections.usages') }}
+        </h3>
+        <DataTable
+          v-if="sanRows.length > 0"
+          class="cert-detail__table"
+          :columns="sanColumns"
+          :rows="sanRows"
+          :copy-column="'value'"
+        />
+        <DataTable
+          v-if="kuRows.length > 0"
+          class="cert-detail__table"
+          :columns="kuColumns"
+          :rows="kuRows"
+          :copy-column="'name'"
+        />
+        <DataTable
+          v-if="ekuRows.length > 0"
+          class="cert-detail__table"
+          :columns="ekuColumns"
+          :rows="ekuRows"
+          :copy-column="'value'"
+        />
+      </section>
+    </template>
 
-    <section
-      v-if="identifierRows.length > 0 || fingerprintRows.length > 0"
-      class="cert-detail__section"
-    >
-      <h3 class="cert-detail__title">
-        {{ t('tool.cert.sections.identifiers') }}
-      </h3>
-      <KeyValueTable :rows="identifierRows" />
-      <DataTable
-        v-if="fingerprintRows.length > 0"
-        class="cert-detail__table"
-        :columns="fingerprintColumns"
-        :rows="fingerprintRows"
-        :copy-column="'value'"
-      />
-    </section>
+    <!-- 标识与指纹：序列号 / 哈希 / SKID / AKID / 指纹 / 策略 -->
+    <template v-else-if="section === 'identifiers'">
+      <section class="cert-detail__section">
+        <h3 class="cert-detail__title">
+          {{ t('tool.cert.sections.identity') }}
+        </h3>
+        <KeyValueTable :rows="identityRows" />
+      </section>
 
-    <section
-      v-if="policyRows.length > 0"
-      class="cert-detail__section"
-    >
-      <h3 class="cert-detail__title">
-        {{ t('tool.cert.sections.policies') }}
-      </h3>
-      <DataTable
-        :columns="policyColumns"
-        :rows="policyRows"
-        :copy-column="'oid'"
-      />
-    </section>
+      <section
+        v-if="identifierRows.length > 0 || fingerprintRows.length > 0"
+        class="cert-detail__section"
+      >
+        <h3 class="cert-detail__title">
+          {{ t('tool.cert.sections.identifiers') }}
+        </h3>
+        <KeyValueTable :rows="identifierRows" />
+        <DataTable
+          v-if="fingerprintRows.length > 0"
+          class="cert-detail__table"
+          :columns="fingerprintColumns"
+          :rows="fingerprintRows"
+          :copy-column="'value'"
+        />
+      </section>
+    </template>
 
-    <section
-      v-if="showExtensions"
-      class="cert-detail__section"
-    >
+    <!-- 公钥 -->
+    <template v-else-if="section === 'publicKey'">
+      <section
+        v-if="publicKey"
+        class="cert-detail__section"
+      >
+        <KeyValueTable :rows="publicKeyRows" />
+        <button
+          type="button"
+          class="cert-detail__toggle"
+          :aria-expanded="publicKeyExpanded"
+          @click="publicKeyExpanded = !publicKeyExpanded"
+        >
+          {{ publicKeyExpanded ? t('tool.cert.actions.collapse') : t('tool.cert.actions.expand') }}
+        </button>
+        <template v-if="publicKeyExpanded">
+          <KeyValueTable
+            class="cert-detail__extra"
+            :rows="publicKeyDetailRows"
+          />
+          <div class="cert-detail__pem">
+            <div class="cert-detail__pem-head">
+              <span class="cert-detail__pem-label">PEM</span>
+              <CopyButton :text="publicKey.pem" />
+            </div>
+            <pre class="cert-detail__pem-body"><code>{{ publicKey.pem }}</code></pre>
+          </div>
+        </template>
+      </section>
+    </template>
+
+    <!-- 扩展 -->
+    <template v-else-if="section === 'extensions'">
       <CertExtensions :extensions="toList(info.extensions)" />
-    </section>
+    </template>
 
-    <section
-      v-if="pem"
-      class="cert-detail__section"
-    >
-      <h3 class="cert-detail__title">
-        {{ t('tool.cert.sections.certificate') }}
-      </h3>
+    <!-- 证书PEM -->
+    <template v-else-if="section === 'pem'">
       <div class="cert-detail__pem">
         <div class="cert-detail__pem-head">
           <span class="cert-detail__pem-label">PEM</span>
-          <CopyButton :text="pem" />
+          <CopyButton
+            :text="pem"
+            :label="t('tool.cert.actions.copyPem')"
+          />
         </div>
         <pre class="cert-detail__pem-body"><code>{{ pem }}</code></pre>
       </div>
-    </section>
+    </template>
   </div>
 </template>
 

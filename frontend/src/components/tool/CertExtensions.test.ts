@@ -1,8 +1,8 @@
 /**
  * CertExtensions 组件测试。
  *
- * 覆盖两段式展示：**关键扩展**（只列实际带有的、按固定顺序）
- * 与 **全部扩展**（含未知扩展的完整清单）。
+ * 覆盖「全部扩展」清单：已知与未知扩展都在表里，
+ * 值用后端解出的可读文本，没有可读文本时回落十六进制。
  */
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
@@ -25,7 +25,7 @@ function ext(
 }
 
 describe('CertExtensions', () => {
-  it('关键扩展只列实际带有的项', () => {
+  it('列出全部扩展及其可读值', () => {
     const wrapper = mount(CertExtensions, {
       ...mountOptions,
       props: {
@@ -41,7 +41,7 @@ describe('CertExtensions', () => {
     expect(text).toContain('DNS:example.com')
   })
 
-  it('未知扩展只出现在全部扩展里', () => {
+  it('未知扩展也在清单里，值回落十六进制', () => {
     const wrapper = mount(CertExtensions, {
       ...mountOptions,
       props: {
@@ -49,12 +49,11 @@ describe('CertExtensions', () => {
       },
     })
 
-    // 全部扩展段给出短名；关键扩展段不包含它。
     expect(wrapper.text()).toContain('unknownExt')
     expect(wrapper.text()).toContain('AB12')
   })
 
-  it('没有扩展时不渲染任何段', () => {
+  it('没有扩展时不渲染表格', () => {
     const wrapper = mount(CertExtensions, {
       ...mountOptions,
       props: { extensions: [] },

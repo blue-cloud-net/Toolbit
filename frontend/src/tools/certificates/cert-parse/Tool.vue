@@ -15,8 +15,7 @@ import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import CertDetail from '@/components/tool/CertDetail.vue'
-import CertExtensions from '@/components/tool/CertExtensions.vue'
+import CertDetail, { type CertDetailSection } from '@/components/tool/CertDetail.vue'
 import CopyButton from '@/components/tool/CopyButton.vue'
 import MaterialInput from '@/components/tool/MaterialInput.vue'
 import DownloadButton from '@/components/tool/DownloadButton.vue'
@@ -69,9 +68,12 @@ bindInput(() => {
 
 const running = computed(() => state.value === 'loading')
 
-/** 结果页签：摘要 / 扩展 / 文本视图 / 证书原文。 */
+/** 结果页签：摘要 / 名称与用途 / 标识与指纹 / 公钥 / 扩展 / 文本视图 / 证书PEM。 */
 const views = computed<ResultView[]>(() => [
   { id: 'summary', label: t('tools.cert-parse.views.summary') },
+  { id: 'names', label: t('tools.cert-parse.views.names') },
+  { id: 'identifiers', label: t('tools.cert-parse.views.identifiers') },
+  { id: 'publicKey', label: t('tools.cert-parse.views.publicKey') },
   { id: 'extensions', label: t('tools.cert-parse.views.extensions') },
   { id: 'text', label: t('tools.cert-parse.views.text') },
   { id: 'pem', label: t('tools.cert-parse.views.pem') },
@@ -267,16 +269,13 @@ function fillExample(): void {
       >
         <template #view="{ viewId }">
           <CertDetail
-            v-if="viewId === 'summary' && data"
+            v-if="data && viewId !== 'text' && viewId !== 'pem'"
             :info="data.certificate"
             :validity="data.validity"
+            :section="viewId as CertDetailSection"
             :fingerprints="data.fingerprints"
             :public-key="data.publicKey"
             :pem="data.pem"
-          />
-          <CertExtensions
-            v-else-if="viewId === 'extensions' && data"
-            :extensions="data.certificate.extensions"
           />
           <div
             v-else-if="viewId === 'text' && data"

@@ -3,13 +3,14 @@
  * 证书详情对话框。
  *
  * 以浮层展示单张证书的完整字段。
- * 内容由共享的 `CertDetail` 渲染，弹窗本身只管开关与尺寸。
+ * 内容由共享的 `CertDetailTabs` 渲染（分区页签与 `cert-parse` 结果区一致），
+ * 弹窗本身只管开关与尺寸。
  */
 import { ElDialog } from 'element-plus/es/components/dialog/index'
 import 'element-plus/es/components/dialog/style/css'
 import { useI18n } from 'vue-i18n'
 
-import CertDetail from '@/components/tool/CertDetail.vue'
+import CertDetailTabs from '@/components/tool/CertDetailTabs.vue'
 import type {
   CertificateFingerprint,
   CertificateInfo,
@@ -50,14 +51,13 @@ const { t } = useI18n()
     destroy-on-close
     @close="close()"
   >
-    <CertDetail
+    <CertDetailTabs
       v-if="detail"
       :info="detail.info"
       :validity="detail.validity"
       :fingerprints="detail.fingerprints ?? []"
       :public-key="detail.publicKey ?? null"
       :pem="detail.pem ?? ''"
-      show-extensions
     />
   </ElDialog>
 </template>

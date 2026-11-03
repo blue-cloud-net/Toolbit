@@ -16,7 +16,6 @@ import {
   formatDays,
   hexUpper,
   joinChainPem,
-  keyExtensions,
   keyUsageEntries,
   linkMethodKey,
   linkReasonKey,
@@ -26,7 +25,6 @@ import {
   validityLevel,
   validityPercent,
 } from './certDetail'
-import type { CertificateExtension } from '@/types/certificate'
 
 describe('keyUsageEntries', () => {
   it('给出 RFC 5280 的位掩码', () => {
@@ -165,32 +163,6 @@ describe('joinChainPem', () => {
 
   it('空输入返回空串', () => {
     expect(joinChainPem([])).toBe('')
-  })
-})
-
-describe('keyExtensions', () => {
-  const ext = (oid: string, name: string): CertificateExtension => ({
-    nid: 1,
-    oid,
-    name,
-    critical: false,
-    value: '00',
-    text: '',
-  })
-
-  it('只挑实际带有的关键扩展，且顺序固定', () => {
-    const entries = keyExtensions([
-      ext('2.5.29.17', 'subjectAltName'),
-      ext('2.5.29.19', 'basicConstraints'),
-      ext('1.2.3.4', 'unknown'),
-    ])
-    expect(entries.map((item) => item.oid)).toEqual(['2.5.29.19', '2.5.29.17'])
-    expect(entries[0]?.keyName).toBe('basicConstraints')
-    expect(entries[1]?.keyName).toBe('subjectAltName')
-  })
-
-  it('没有关键扩展时返回空数组', () => {
-    expect(keyExtensions([ext('1.2.3.4', 'unknown')])).toEqual([])
   })
 })
 

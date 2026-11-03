@@ -53,11 +53,11 @@ frontend/src/
 **共享组件清单（`components/tool/`）**
 
 `Asn1Tree` `Base64FileInput` `ByteView` `CertChainTable` `CertDetail`
-`CertDetailDialog` `CodeEditor` `CodeViewer` `CopyButton` `DownloadButton`
-`EmptyState` `EncodingSelect` `ErrorAlert` `FileDropZone` `FileTextInput`
-`JsonViewer` `KeyInput` `KeyValueTable` `LoadingSkeleton` `MaterialInput`
-`ProgressStream` `QuickReference` `ResultPanel` `RunBar` `SearchField`
-`SensitiveInput` `ToolPageLayout` `ToolPanel` `ValidityTrack`
+`CertDetailDialog` `CertDetailTabs` `CodeEditor` `CodeViewer` `CopyButton`
+`DownloadButton` `EmptyState` `EncodingSelect` `ErrorAlert` `FileDropZone`
+`FileTextInput` `JsonViewer` `KeyInput` `KeyValueTable` `LoadingSkeleton`
+`MaterialInput` `ProgressStream` `QuickReference` `ResultPanel` `RunBar`
+`SearchField` `SensitiveInput` `ToolPageLayout` `ToolPanel` `ValidityTrack`
 `ValidationHint`
 
 **组合式函数清单（`composables/`）**
@@ -167,8 +167,9 @@ ToolPageLayout
 | `ByteView` | 十六进制转储 |
 | `Asn1Tree` | ASN.1 结构树 |
 | `CertChainTable` | 证书链梯（叶 → 根的竖向链：角色徽标、有效期、剩余天数、指纹、连接诊断与详情入口；断链点就地标出） |
-| `CertDetail` | 证书详情分区展示（有效期 / 身份 / 名称 / 公钥 / 用途 / 标识与指纹 / 策略 / 扩展） |
-| `CertDetailDialog` | 证书详情弹窗（内容由 `CertDetail` 渲染，弹窗只管开关与尺寸） |
+| `CertDetail` | 证书详情的**单区**展示：按 `section` 渲染一个区（摘要 / 名称与用途 / 标识与指纹 / 公钥 / 扩展 / 证书PEM） |
+| `CertDetailDialog` | 证书详情弹窗（内容由 `CertDetailTabs` 渲染，弹窗只管开关与尺寸） |
+| `CertDetailTabs` | 证书详情的分区页签容器（弹窗内用；分区与 `cert-parse` 结果区一致） |
 | `ValidityTrack` | 有效期时间轴（按剩余天数推算已过去的比例，语义色仅 success / warning / danger） |
 | `KeyValueTable` | 键值对展示（逐字段复制、语义色、可选 `hint` / `mono`） |
 | `StatGrid` | 少量关键指标的卡片网格（网段、掩码、耗时、成败台数） |

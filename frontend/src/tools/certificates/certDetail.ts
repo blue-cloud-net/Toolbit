@@ -82,7 +82,7 @@ export function validityLevel(status: string): CertLevel {
 /**
  * 剩余天数 → 紧急度。
  *
- * 阈值与 cert-lifecycle 一致：不足 30 天即视为临期。
+ * 阈值 30 天：不足 30 天即视为临期。
  */
 export function safetyLevel(daysRemaining: number): SafetyLevel {
   if (daysRemaining < 0) {
@@ -193,65 +193,6 @@ export function joinChainPem(blocks: string[]): string {
     return ''
   }
   return `${parts.join('\n')}\n`
-}
-
-/**
- * 关键扩展的登记项。
- *
- * 顺序即展示顺序：先是证书的**身份与能力**（能否签发、能干什么），
- * 再是**标识**与**分发点**。与浏览器内置证书查看器的习惯一致。
- *
- * `name` 是本地化词条的短名（对应 `tool.cert.ext.<name>`）。
- */
-export interface KeyExtension {
-  /** 扩展的点分 OID。 */
-  oid: string
-  /** 本地化词条的短名。 */
-  name: string
-}
-
-/**
- * 关键扩展登记表。
- */
-export const KEY_EXTENSIONS: readonly KeyExtension[] = [
-  { oid: '2.5.29.19', name: 'basicConstraints' },
-  { oid: '2.5.29.15', name: 'keyUsage' },
-  { oid: '2.5.29.37', name: 'extendedKeyUsage' },
-  { oid: '2.5.29.17', name: 'subjectAltName' },
-  { oid: '2.5.29.18', name: 'issuerAltName' },
-  { oid: '2.5.29.14', name: 'subjectKeyIdentifier' },
-  { oid: '2.5.29.35', name: 'authorityKeyIdentifier' },
-  { oid: '2.5.29.31', name: 'cRLDistributionPoints' },
-  { oid: '1.3.6.1.5.5.7.1.1', name: 'authorityInfoAccess' },
-  { oid: '2.5.29.32', name: 'certificatePolicies' },
-  { oid: '2.5.29.30', name: 'nameConstraints' },
-]
-
-/**
- * 挑出证书的**关键扩展**。
- *
- * 只保留该证书**实际带有**的关键扩展，并按 `KEY_EXTENSIONS` 的固定顺序排列；
- * 一个都没有时返回空数组。
- *
- * 返回的每一项附带 `keyName`（本地化短名），便于直接渲染。
- */
-export interface KeyExtensionEntry extends CertificateExtension {
-  /** 本地化词条的短名。 */
-  keyName: string
-}
-
-/**
- * 挑出证书的关键扩展。
- */
-export function keyExtensions(extensions: CertificateExtension[]): KeyExtensionEntry[] {
-  const out: KeyExtensionEntry[] = []
-  for (const item of KEY_EXTENSIONS) {
-    const found = extensions.find((ext) => ext.oid === item.oid)
-    if (found) {
-      out.push({ ...found, keyName: item.name })
-    }
-  }
-  return out
 }
 
 /**

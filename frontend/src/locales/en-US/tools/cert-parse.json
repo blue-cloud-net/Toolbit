@@ -60,6 +60,9 @@
   ],
   "views": {
     "summary": "Summary",
+    "names": "Names and usages",
+    "identifiers": "Identifiers and fingerprints",
+    "publicKey": "Public key",
     "extensions": "Extensions",
     "text": "Text view",
     "pem": "Certificate PEM"

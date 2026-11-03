@@ -2,22 +2,18 @@
 /**
  * 证书扩展展示。
  *
- * 分两段（像浏览器内置的证书查看器那样）：
+ * 只保留一张「全部扩展」表：证书里每个扩展的 OID、是否关键与可读值。
  *
- * 1. **关键扩展** —— 证书的身份与能力：能否签发（BasicConstraints）、
- *    能干什么（KeyUsage / EKU）、访问哪些名字（SAN / IAN）、谁签的
- *    （SKID / AKID）、吊销与策略信息从哪拿（CRLDP / AIA / Policies）。
- *    只列出证书**实际带有**的项，值用可读文本。
- * 2. **全部扩展** —— 证书里所有扩展的完整清单（含未知扩展的十六进制原值）。
- *
- * 两段共用同一份 `CertificateExtension[]`；未知扩展只会出现在第二段。
+ * 此前还有一段「关键扩展」（BasicConstraints / KeyUsage / EKU / SAN …），
+ * 但那些内容在「名称与用途」与「标识与指纹」页已经展开过一遍 ——
+ * 同一份信息在同一页出现两次，读者只会怀疑哪一份才是对的。
+ * 这里改为只做**完整清单**，扩展值用后端解出的可读文本。
  */
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
-import KeyValueTable, { type KeyValueRow } from '@/components/tool/KeyValueTable.vue'
-import { allExtensions, extensionValue, keyExtensions } from '@/tools/certificates/certDetail'
+import { allExtensions, extensionValue } from '@/tools/certificates/certDetail'
 import type { CertificateExtension } from '@/types/certificate'
 
 const props = withDefaults(
@@ -28,22 +24,7 @@ const props = withDefaults(
   { extensions: () => [] },
 )
 
-const { t, te } = useI18n()
-
-/** 本地化标签；缺词条时回落到扩展自身的短名。 */
-function label(name: string, fallback: string): string {
-  const key = `tool.cert.ext.${name}`
-  return te(key) ? t(key) : fallback
-}
-
-/** 关键扩展：只保留实际带有的，按固定顺序。 */
-const keyRows = computed<KeyValueRow[]>(() =>
-  keyExtensions(props.extensions).map((ext) => ({
-    label: label(ext.keyName, ext.name || ext.oid),
-    value: extensionValue(ext),
-    level: ext.critical ? ('warning' as const) : undefined,
-  })),
-)
+const { t } = useI18n()
 
 /** 全部扩展表格的列。 */
 const extensionColumns = computed<DataTableColumn[]>(() => [
@@ -69,16 +50,6 @@ const extensionRows = computed<DataTableRow[]>(() =>
 
 <template>
   <div class="cert-extensions">
-    <section
-      v-if="keyRows.length > 0"
-      class="cert-extensions__section"
-    >
-      <h3 class="cert-extensions__title">
-        {{ t('tool.cert.sections.keyExtensions') }}
-      </h3>
-      <KeyValueTable :rows="keyRows" />
-    </section>
-
     <section
       v-if="extensionRows.length > 0"
       class="cert-extensions__section"

@@ -5,6 +5,8 @@
  * `extendedKeyUsage` / `cpsUris` / `noticeNumbers`），
  * 组件必须显式处理这些 `null`，否则 `null.length` 会抛 TypeError
  * 让整页白屏（摘要页签与链详情弹窗一起挂掉）。
+ *
+ * 组件按 `section` **只渲染一个区**，因此每个用例都要指定要测的区。
  */
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
@@ -50,35 +52,41 @@ const validity: CertificateValidity = {
   daysRemaining: 9.6,
 }
 
+/** 一份公钥展开视图。 */
+const publicKey = {
+  algorithm: 'RSA',
+  bits: 2048,
+  curve: '',
+  pem: '-----BEGIN PUBLIC KEY-----\nAA\n-----END PUBLIC KEY-----',
+  spkiHex: '3000',
+  fingerprint: 'b'.repeat(64),
+  modulus: 'C0',
+  exponent: '010001',
+  x: '',
+  y: '',
+}
+
 describe('CertDetail', () => {
   it('数组字段全为 null 时不抛错（回归守卫）', () => {
-    expect(() =>
-      mount(CertDetail, {
-        ...mountOptions,
-        props: { info: emptyInfo, validity },
-      }),
-    ).not.toThrow()
+    for (const section of ['summary', 'names', 'identifiers', 'publicKey', 'extensions', 'pem'] as const) {
+      expect(() =>
+        mount(CertDetail, {
+          ...mountOptions,
+          props: { info: emptyInfo, validity, section },
+        }),
+      ).not.toThrow()
+    }
   })
 
-  it('数组字段全为 null 时仍渲染有效期、指纹与公钥', () => {
+  it('摘要区渲染有效期、指纹与公钥', () => {
     const wrapper = mount(CertDetail, {
       ...mountOptions,
       props: {
         info: emptyInfo,
         validity,
+        section: 'summary',
         fingerprints: [{ algorithm: 'sha256', value: 'a'.repeat(64) }],
-        publicKey: {
-          algorithm: 'RSA',
-          bits: 2048,
-          curve: '',
-          pem: '-----BEGIN PUBLIC KEY-----\nAA\n-----END PUBLIC KEY-----',
-          spkiHex: '3000',
-          fingerprint: 'b'.repeat(64),
-          modulus: 'C0',
-          exponent: '010001',
-          x: '',
-          y: '',
-        },
+        publicKey,
       },
     })
 
@@ -86,6 +94,31 @@ describe('CertDetail', () => {
     expect(text).toContain('9.6')
     expect(text).toContain('RSA')
     expect(text).toContain('a'.repeat(64))
+  })
+
+  it('摘要区只给要紧信息，不渲染扩展与策略', () => {
+    const wrapper = mount(CertDetail, {
+      ...mountOptions,
+      props: {
+        info: {
+          ...emptyInfo,
+          extensions: [
+            {
+              nid: 19,
+              oid: '2.5.29.19',
+              name: 'basicConstraints',
+              critical: true,
+              value: '3000',
+              text: 'CA:TRUE',
+            },
+          ],
+        },
+        validity,
+        section: 'summary',
+      },
+    })
+
+    expect(wrapper.text()).not.toContain('CA:TRUE')
   })
 
   it('有策略扩展但没有 CPS 时不崩', () => {
@@ -103,30 +136,42 @@ describe('CertDetail', () => {
     }
 
     expect(() =>
-      mount(CertDetail, { ...mountOptions, props: { info, validity } }),
+      mount(CertDetail, { ...mountOptions, props: { info, validity, section: 'identifiers' } }),
     ).not.toThrow()
   })
 
-  it('showExtensions 时渲染扩展区', () => {
-    const info: CertificateInfo = {
-      ...emptyInfo,
-      extensions: [
-        {
-          nid: 19,
-          oid: '2.5.29.19',
-          name: 'basicConstraints',
-          critical: true,
-          value: '3000',
-          text: 'CA:TRUE',
-        },
-      ],
-    }
-
+  it('扩展区渲染扩展内容', () => {
     const wrapper = mount(CertDetail, {
       ...mountOptions,
-      props: { info, validity, showExtensions: true },
+      props: {
+        info: {
+          ...emptyInfo,
+          extensions: [
+            {
+              nid: 19,
+              oid: '2.5.29.19',
+              name: 'basicConstraints',
+              critical: true,
+              value: '3000',
+              text: 'CA:TRUE',
+            },
+          ],
+        },
+        validity,
+        section: 'extensions',
+      },
     })
 
     expect(wrapper.text()).toContain('CA:TRUE')
+  })
+
+  it('公钥区渲染公钥摘要', () => {
+    const wrapper = mount(CertDetail, {
+      ...mountOptions,
+      props: { info: emptyInfo, validity, section: 'publicKey', publicKey },
+    })
+
+    expect(wrapper.text()).toContain('RSA')
+    expect(wrapper.text()).toContain('2048')
   })
 })
