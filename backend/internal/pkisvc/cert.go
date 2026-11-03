@@ -158,6 +158,17 @@ type FingerprintInfo struct {
 	Value string `json:"value"`
 }
 
+// ExtKeyUsageInfo 是一个扩展密钥用途条目。
+//
+// 同时给出**名字**与**OID**：只有 OpenSSL 对象库里登记过的 OID 才有名字，
+// 其余（如 RFC 9336 的 id-kp-documentSigning）必须靠 OID 才能定位。
+type ExtKeyUsageInfo struct {
+	// Name 是 OpenSSL 的短名（如 serverAuth）；OpenSSL 不认识该 OID 时为空。
+	Name string `json:"name"`
+	// OID 是点分 OID（如 1.3.6.1.5.5.7.3.1）。
+	OID string `json:"oid"`
+}
+
 // CertInfo 是证书的公开元信息快照。
 //
 // 它是 pkisvc 对 X.509 的**唯一**元信息出口：公开签名不出现
@@ -194,7 +205,7 @@ type CertInfo struct {
 	// KeyUsage 是密钥用途位名。
 	KeyUsage []string `json:"keyUsage"`
 	// ExtendedKeyUsage 是扩展密钥用途。
-	ExtendedKeyUsage []string `json:"extendedKeyUsage"`
+	ExtendedKeyUsage []ExtKeyUsageInfo `json:"extendedKeyUsage"`
 	// SubjectKeyID 是主题密钥标识符（大写十六进制）；无该扩展为空。
 	SubjectKeyID string `json:"subjectKeyId"`
 	// AuthorityKeyID 是签发者密钥标识符（大写十六进制）；无该扩展为空。
@@ -304,7 +315,7 @@ func Describe(c *Certificate, at time.Time, fpAlgs []string) (*CertInfo, error) 
 		PathLen:               c.cert.PathLen(),
 		SAN:                   c.cert.SAN(),
 		KeyUsage:              c.cert.KeyUsage(),
-		ExtendedKeyUsage:      c.cert.ExtendedKeyUsage(),
+		ExtendedKeyUsage:      extKeyUsageInfos(c.cert.ExtendedKeyUsage(), extKeyUsageOIDs(rawExtensions)),
 		SubjectKeyID:          hexUpper(c.cert.SubjectKeyID()),
 		AuthorityKeyID:        hexUpper(c.cert.AuthorityKeyID()),
 		SubjectHash:           fmt.Sprintf("%08X", c.cert.SubjectHash()),

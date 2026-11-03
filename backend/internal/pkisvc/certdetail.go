@@ -313,28 +313,160 @@ var keyUsageDisplayNamesMap = map[string]string{
 	"decipherOnly":     "Decipher Only",
 }
 
-// extKeyUsageDisplayNames 把 EKU 短名映射为 OpenSSL 的显示名。
-func extKeyUsageDisplayNames(names []string) []string {
-	out := make([]string, 0, len(names))
-	for _, name := range names {
-		if display, ok := extKeyUsageDisplayNamesMap[name]; ok {
-			out = append(out, display)
+// extKeyUsageInfos 把上游的 EKU 短名与自行解出的 OID 配对。
+//
+// names 是上游 `ExtendedKeyUsage()` 的返回值（OpenSSL 认识的短名；
+// 不认识时上游只能给点分 OID 本身）。
+// oids 是从扩展 DER 解出的点分 OID 列表；解不出时为 nil。
+//
+// 配对按**下标**进行：两者都源自同一份 SEQUENCE，顺序一致。
+// 上游给不出名字时先查 ekuOIDNames 补齐；仍然查不到才把 Name 留空 ——
+// 前端据此显示「只有 OID，没有名字」，而不是把 OID 冒充成名字。
+func extKeyUsageInfos(names []string, oids []string) []ExtKeyUsageInfo {
+	if len(names) == 0 {
+		return nil
+	}
+	// 有条目时返回**非 nil** 空切片的反面：交给 DTO 决定编码；
+	// 这里必须让空列表保持 nil，好让「无该扩展」编码成 null（与 san / keyUsage 一致）。
+	out := make([]ExtKeyUsageInfo, 0, len(names))
+	for i, name := range names {
+		item := ExtKeyUsageInfo{Name: name}
+		if i < len(oids) {
+			item.OID = oids[i]
+		}
+		// 上游对「OpenSSL 不认识的 OID」返回点分形式 —— 这不是名字。
+		if item.OID != "" && name == item.OID {
+			item.Name = ""
+		}
+		// 上游对象库里没有的新用途，用注册表里的短名补上。
+		if item.Name == "" {
+			item.Name = ekuOIDNames[item.OID]
+		}
+		out = append(out, item)
+	}
+	return out
+}
+
+// ekuOIDNames 补齐上游对象库尚未收录的扩展密钥用途短名。
+//
+// 上游取短名走 `OBJ_nid2sn`，其对象库止于 `1.3.6.1.5.5.7.3.32`（`cmKGA`），
+// 更晚分配的用途只能回点分 OID。短名与分配依据取自 IANA
+// 「SMI Security for PKIX Extended Key Usage Purpose」注册表；
+// 前端用这些短名映射本地化文案（`tool.cert.eku.<短名>`）。
+var ekuOIDNames = map[string]string{
+	"1.3.6.1.5.5.7.3.33": "rpcTLSClient",
+	"1.3.6.1.5.5.7.3.34": "rpcTLSServer",
+	"1.3.6.1.5.5.7.3.35": "bundleSecurity",
+	"1.3.6.1.5.5.7.3.36": "documentSigning",
+	"1.3.6.1.5.5.7.3.37": "jwt",
+	"1.3.6.1.5.5.7.3.38": "httpContentEncrypt",
+	"1.3.6.1.5.5.7.3.39": "oauthAccessTokenSigning",
+	"1.3.6.1.5.5.7.3.40": "imUri",
+	"1.3.6.1.5.5.7.3.41": "configSigning",
+	"1.3.6.1.5.5.7.3.42": "trustAnchorConfigSigning",
+	"1.3.6.1.5.5.7.3.43": "updatePackageSigning",
+	"1.3.6.1.5.5.7.3.44": "safetyCommunication",
+	"1.3.6.1.5.5.7.3.45": "oauthStatusSigning",
+}
+
+// extKeyUsageOIDs 从 extendedKeyUsage 扩展的原始 DER 里解出点分 OID 列表。
+//
+// 上游 `ExtendedKeyUsage()` 返回的是 **OpenSSL 认识**的短名；
+// 遇到 OpenSSL 对象库里没有的 OID（如 RFC 9336 的 id-kp-documentSigning），
+// 它只能返回点分 OID 本身，用户看到的就是一串没有名字的数字。
+//
+// 这里从扩展值（SEQUENCE OF OID）自行解出 OID，与上游返回的短名**按顺序配对**，
+// 让前端能同时给出「名字 + OID」，且名字缺失时也能显示权威 OID。
+//
+// 解析失败时返回 nil：调用方回落到上游给的短名列表。
+func extKeyUsageOIDs(raw []x509.Extension) []string {
+	for _, ext := range raw {
+		if ext.OID != oidExtKeyUsage {
 			continue
 		}
-		out = append(out, name)
+		content, ok := derSequenceContent(ext.Data)
+		if !ok {
+			return nil
+		}
+		items, ok := derItems(content)
+		if !ok {
+			return nil
+		}
+		out := make([]string, 0, len(items))
+		for _, item := range items {
+			oid, ok := asn1ObjectIdentifier(item.FullBytes)
+			if !ok {
+				return nil
+			}
+			out = append(out, oid)
+		}
+		return out
+	}
+	return nil
+}
+
+// extKeyUsageDisplayNames 把 EKU 短名映射为 OpenSSL 的显示名。
+func extKeyUsageDisplayNames(items []ExtKeyUsageInfo) []string {
+	out := make([]string, 0, len(items))
+	for _, item := range items {
+		if item.Name != "" {
+			if display, ok := extKeyUsageDisplayNamesMap[item.Name]; ok {
+				out = append(out, display)
+				continue
+			}
+			out = append(out, item.Name)
+			continue
+		}
+		out = append(out, item.OID)
 	}
 	return out
 }
 
 // extKeyUsageDisplayNamesMap 是 EKU 短名到 OpenSSL 显示名的映射。
+//
+// 覆盖 OpenSSL 对象库里登记的**全部** id-kp 短名 ——
+// 少一条就会让持有该用途的证书退化成一串没有名字的数字。
 var extKeyUsageDisplayNamesMap = map[string]string{
+	"anyExtendedKeyUsage": "Any Extended Key Usage",
 	"serverAuth":          "TLS Web Server Authentication",
 	"clientAuth":          "TLS Web Client Authentication",
 	"codeSigning":         "Code Signing",
 	"emailProtection":     "E-mail Protection",
 	"timeStamping":        "Time Stamping",
 	"OCSPSigning":         "OCSP Signing",
-	"anyExtendedKeyUsage": "Any Extended Key Usage",
+	"ipsecEndSystem":      "IPSEC End System Certificate",
+	"ipsecTunnel":         "IPSEC Tunnel Certificate",
+	"ipsecUser":           "IPSEC User Certificate",
+	"ipsecIKE":            "IPSEC Internet Key Exchange",
+	"DVCS":                "Dynamic Validation Certificate Signing",
+	"capwapAC":            "Control And Provisioning of Wireless Access Points",
+	"capwapWTP":           "Control And Provisioning of Wireless Termination Points",
+	"secureShellClient":   "Secure Shell Client",
+	"secureShellServer":   "Secure Shell Server",
+	"sendRouter":          "Send Router",
+	"sendProxiedRouter":   "Send Proxied Router",
+	"sendOwner":           "Send Owner",
+	"sendProxiedOwner":    "Send Proxied Owner",
+	"cmcCA":               "CMC CA",
+	"cmcRA":               "CMC RA",
+	"cmcArchive":          "CMC Archive",
+	"id-kp-bgpsec-router": "BGPsec Router",
+	"id-kp-BrandIndicatorforMessageIdentification": "Brand Indicator for Message Identification",
+	"cmKGA": "CMC Key Generation Agent",
+	// 以下来自 ekuOIDNames 的补齐表（上游对象库尚未收录）。
+	"rpcTLSClient":             "RPC TLS Client",
+	"rpcTLSServer":             "RPC TLS Server",
+	"bundleSecurity":           "Bundle Security",
+	"documentSigning":          "Document Signing",
+	"jwt":                      "JWT Signing",
+	"httpContentEncrypt":       "HTTP Content Encryption",
+	"oauthAccessTokenSigning":  "OAuth Access Token Signing",
+	"imUri":                    "Instant Messaging URI",
+	"configSigning":            "Configuration Signing",
+	"trustAnchorConfigSigning": "Trust Anchor Configuration Signing",
+	"updatePackageSigning":     "Update Package Signing",
+	"safetyCommunication":      "Safety Communication",
+	"oauthStatusSigning":       "OAuth Status Signing",
 }
 
 // keyIDText 生成密钥标识符的可读文本（keyid:AB:CD）。

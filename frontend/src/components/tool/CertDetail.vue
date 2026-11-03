@@ -273,12 +273,22 @@ const ekuColumns = computed<DataTableColumn[]>(() => [
   { key: 'value', label: t('tool.cert.fields.oid'), mono: true },
 ])
 
-/** 扩展密钥用途表格行。 */
+/**
+ * 扩展密钥用途表格行。
+ *
+ * 名字缺失时（上游对象库与其补齐表都没有这个 OID）名字列留「-」，
+ * 由右侧 OID 列给出权威标识；不把同一串数字在相邻两列各写一遍。
+ */
 const ekuRows = computed<DataTableRow[]>(() =>
-  extKeyUsageEntries(toList(props.info.extendedKeyUsage)).map((entry) => ({
-    key: entry.name,
-    cells: { name: label('eku', entry.name), value: entry.value || '-' },
-  })),
+  extKeyUsageEntries(toList(props.info.extendedKeyUsage)).map((entry, index) => {
+    // 名字缺失时留空交给单元格渲染「-」：OID 由右侧列给出，
+    // 同一串数字在相邻两列各显示一遍只会让人以为是两个字段。
+    const name = entry.name ? label('eku', entry.name) : ''
+    return {
+      key: entry.name || `eku-${index}`,
+      cells: { name: name || '-', value: entry.value || '-' },
+    }
+  }),
 )
 
 /** 标识符表。 */

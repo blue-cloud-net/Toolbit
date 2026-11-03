@@ -186,6 +186,30 @@ func TestOIDText(t *testing.T) {
 	}
 }
 
+// TestExtKeyUsageInfosFallsBackToOIDName 校验上游对象库里没有的 EKU OID
+// 会用注册表短名补齐，而不是把点分 OID 冒充成名字。
+func TestExtKeyUsageInfosFallsBackToOIDName(t *testing.T) {
+	names := []string{"serverAuth", "1.3.6.1.5.5.7.3.36", "1.3.6.1.5.5.7.3.99"}
+	oids := []string{"1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.36", "1.3.6.1.5.5.7.3.99"}
+	got := extKeyUsageInfos(names, oids)
+	if len(got) != 3 {
+		t.Fatalf("条数 = %d，期望 3", len(got))
+	}
+	if got[0].Name != "serverAuth" {
+		t.Errorf("[0].Name = %q，期望 serverAuth", got[0].Name)
+	}
+	if got[1].Name != "documentSigning" {
+		t.Errorf("[1].Name = %q，期望 documentSigning", got[1].Name)
+	}
+	if got[1].OID != "1.3.6.1.5.5.7.3.36" {
+		t.Errorf("[1].OID = %q，期望 1.3.6.1.5.5.7.3.36", got[1].OID)
+	}
+	// 注册表也没有的 OID：Name 留空，由前端回退显示 OID。
+	if got[2].Name != "" {
+		t.Errorf("[2].Name = %q，期望空串", got[2].Name)
+	}
+}
+
 func TestBigHex(t *testing.T) {
 	if got := bigHex(nil); got != "" {
 		t.Errorf("nil = %q，期望空串", got)

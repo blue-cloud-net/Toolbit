@@ -4,7 +4,7 @@
  * 只做「数据 → 展示形态」的转换，不依赖 Vue：
  * 便于在 vitest 中独立覆盖，也避免各工具页各写一份。
  */
-import type { CertificateExtension } from '@/types/certificate'
+import type { CertificateExtension, ExtKeyUsageInfo } from '@/types/certificate'
 
 /** 语义级别；与共享组件的 `level` 取值一致。 */
 export type CertLevel = 'success' | 'warning' | 'danger' | 'info' | 'muted'
@@ -23,17 +23,6 @@ export const KU_BIT_HEX: Record<string, string> = {
   cRLSign: '02',
   encipherOnly: '01',
   decipherOnly: '80',
-}
-
-/** 扩展密钥用途的点分 OID。 */
-export const EKU_OID: Record<string, string> = {
-  anyExtendedKeyUsage: '2.5.29.37.0',
-  serverAuth: '1.3.6.1.5.5.7.3.1',
-  clientAuth: '1.3.6.1.5.5.7.3.2',
-  codeSigning: '1.3.6.1.5.5.7.3.3',
-  emailProtection: '1.3.6.1.5.5.7.3.4',
-  timeStamping: '1.3.6.1.5.5.7.3.8',
-  OCSPSigning: '1.3.6.1.5.5.7.3.9',
 }
 
 /** 一个用途条目。 */
@@ -59,12 +48,15 @@ export function keyUsageEntries(names: string[]): UsageEntry[] {
 /**
  * 扩展密钥用途条目：每个用途附带其点分 OID。
  *
- * 未知短名没有登记 OID，`value` 为空串。
+ * OID 由**后端**给出（它从扩展的原始 DER 里解出），
+ * 因此 OpenSSL 对象库里没有登记的 OID 也能显示 —— 只是没有名字。
+ *
+ * 没有名字时 `name` 为空串，调用方应回落到 OID 展示。
  */
-export function extKeyUsageEntries(names: string[]): UsageEntry[] {
-  return names.map((name) => ({
-    name,
-    value: EKU_OID[name] ?? '',
+export function extKeyUsageEntries(items: ExtKeyUsageInfo[]): UsageEntry[] {
+  return items.map((item) => ({
+    name: item.name,
+    value: item.oid,
   }))
 }
 

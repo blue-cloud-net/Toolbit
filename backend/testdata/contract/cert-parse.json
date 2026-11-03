@@ -58,6 +58,36 @@
       }
     },
     {
+      "name": "扩展密钥用途含 OpenSSL 未登记的 OID",
+      "request": {
+        "input": {
+          "data": "-----BEGIN CERTIFICATE-----\nMIIDGjCCAgKgAwIBAgIUFlnF4j7mx10j0iZUvlEsmS18CdswDQYJKoZIhvcNAQEL\nBQAwGjEYMBYGA1UEAwwPZWt1LmV4YW1wbGUuY29tMB4XDTI2MTEwMzAzMjAwMFoX\nDTI3MTEwMzAzMjAwMFowGjEYMBYGA1UEAwwPZWt1LmV4YW1wbGUuY29tMIIBIjAN\nBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuFWBJUtmIXuS4OqjmzSqTyutilqG\njre+uIkhTlk3FLO95df0oplxZb8GE6I0u/v+SHzcEF2aZY/CM4Bq1WLS2aTRLr5S\nIYLq5VFA7xv/IVEKzT/tnJkI8pWlCQq4nGI1BNOUSYXQM5effu1pltIKQz85q0V8\no9tKNcPLHuHycjqmPRvBRMEcSudAq/jPYt1BqW/DfNVL65WB/bIs7+AbzEEHjZsq\nBwUsMSx6yhhJQn0StpyfHMIWlgjnDXc4W8gzZZmep95bq0Sj7uSGef2ODgaBAfpZ\nV2DB7z34h5Cacjd9FKZgnJ89QtDOhE1jzbrhoJ/VotV/E0JtnsNdo2sbhwIDAQAB\no1gwVjAnBgNVHSUEIDAeBggrBgEFBQcDAQYIKwYBBQUHAwIGCCsGAQUFBwMkMAwG\nA1UdEwEB/wQCMAAwHQYDVR0OBBYEFPIfElBCqi4CpXP/OVxtiCnsWtVbMA0GCSqG\nSIb3DQEBCwUAA4IBAQAVQJ96j92IwlWkUH3CD4NAo2UCERrTMDx7VN3EBHrTKCzV\n6/lQOSMLBQYK+hap5fP7HO1FsFzCEnGPnS9n10Asj7jV/JM21KX8ib4uOhqoGDfo\nZdAA/vHsOcAU6vrR/VjdHg923pT2phDIG3qAZfOUhqoHNCvjopvAIoHuw4VgD9Sz\n+53oUn2ma+aOVh0w8TY1bjtqLebJ52ORMUcA5v0Y6K5fInXjValmAoQxizJdzedL\nQZK7EgG/+QUQoej+BYAV1xmkA3zW6ZlUvd829rFrTtAevBhHSiSFJCm17vUVLX0+\npR+zgib/kQiwQsEQ3fHtVas49q02blxgwEkVfmkP\n-----END CERTIFICATE-----\n",
+          "format": "pem"
+        }
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "certificate": {
+            "extendedKeyUsage": [
+              {
+                "name": "serverAuth",
+                "oid": "1.3.6.1.5.5.7.3.1"
+              },
+              {
+                "name": "clientAuth",
+                "oid": "1.3.6.1.5.5.7.3.2"
+              },
+              {
+                "name": "documentSigning",
+                "oid": "1.3.6.1.5.5.7.3.36"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
       "name": "计算多种指纹",
       "request": {
         "input": {

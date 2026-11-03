@@ -44,11 +44,15 @@ describe('keyUsageEntries', () => {
 
 describe('extKeyUsageEntries', () => {
   it('给出点分 OID', () => {
-    expect(extKeyUsageEntries(['serverAuth'])[0]?.value).toBe('1.3.6.1.5.5.7.3.1')
+    const entries = extKeyUsageEntries([{ name: 'serverAuth', oid: '1.3.6.1.5.5.7.3.1' }])
+    expect(entries[0]?.value).toBe('1.3.6.1.5.5.7.3.1')
+    expect(entries[0]?.name).toBe('serverAuth')
   })
 
-  it('未知短名没有 OID', () => {
-    expect(extKeyUsageEntries(['nope'])[0]?.value).toBe('')
+  it('OpenSSL 没有登记的 OID 仍带 OID，名字为空', () => {
+    const entries = extKeyUsageEntries([{ name: '', oid: '1.3.6.1.5.5.7.3.36' }])
+    expect(entries[0]?.value).toBe('1.3.6.1.5.5.7.3.36')
+    expect(entries[0]?.name).toBe('')
   })
 })
 

@@ -61,6 +61,19 @@ export interface PublicKeyDetail {
   y: string
 }
 
+/** 一个扩展密钥用途条目。 */
+export interface ExtKeyUsageInfo {
+  /**
+   * OpenSSL 的短名（如 `serverAuth`）。
+   *
+   * OpenSSL 对象库里没有登记的 OID（如 RFC 9336 的 id-kp-documentSigning）
+   * 没有名字，这里为空串 —— 靠 `oid` 定位。
+   */
+  name: string
+  /** 点分 OID（如 `1.3.6.1.5.5.7.3.1`）。 */
+  oid: string
+}
+
 /** 证书策略。 */
 export interface CertificatePolicy {
   /** 策略标识符（点分形式）。 */
@@ -140,7 +153,7 @@ export interface CertificateInfo {
   /** 密钥用途位名；无该扩展时为 `null`。 */
   keyUsage: string[] | null
   /** 扩展密钥用途；无该扩展时为 `null`。 */
-  extendedKeyUsage: string[] | null
+  extendedKeyUsage: ExtKeyUsageInfo[] | null
   /** 主题密钥标识符（大写十六进制）。 */
   subjectKeyId: string
   /** 签发者密钥标识符（大写十六进制）。 */

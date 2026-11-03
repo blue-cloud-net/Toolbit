@@ -136,7 +136,7 @@ type CertInfoOutput struct {
 	// KeyUsage 是密钥用途位名。
 	KeyUsage []string `json:"keyUsage"`
 	// ExtendedKeyUsage 是扩展密钥用途。
-	ExtendedKeyUsage []string `json:"extendedKeyUsage"`
+	ExtendedKeyUsage []ExtKeyUsageOutput `json:"extendedKeyUsage"`
 	// SubjectKeyId 是主题密钥标识符（大写十六进制）。
 	SubjectKeyId string `json:"subjectKeyId"`
 	// AuthorityKeyId 是签发者密钥标识符（大写十六进制）。
@@ -177,6 +177,14 @@ type PublicKeyDetailOutput struct {
 	X string `json:"x"`
 	// Y 是椭圆曲线公钥点 Y 分量（大写十六进制）。
 	Y string `json:"y"`
+}
+
+// ExtKeyUsageOutput 是扩展密钥用途的输出形态。
+type ExtKeyUsageOutput struct {
+	// Name 是 OpenSSL 的短名（如 serverAuth）；OpenSSL 不认识该 OID 时为空。
+	Name string `json:"name"`
+	// Oid 是点分 OID（如 1.3.6.1.5.5.7.3.1）。
+	Oid string `json:"oid"`
 }
 
 // PolicyOutput 是证书策略的输出形态。
@@ -224,7 +232,7 @@ func certInfoOutput(info *pkisvc.CertInfo) CertInfoOutput {
 		PathLen:               info.PathLen,
 		San:                   info.SAN,
 		KeyUsage:              info.KeyUsage,
-		ExtendedKeyUsage:      info.ExtendedKeyUsage,
+		ExtendedKeyUsage:      extKeyUsageOutput(info.ExtendedKeyUsage),
 		SubjectKeyId:          info.SubjectKeyID,
 		AuthorityKeyId:        info.AuthorityKeyID,
 		SubjectHash:           info.SubjectHash,
@@ -253,6 +261,20 @@ func publicKeyDetailOutput(detail *pkisvc.PublicKeyDetail) *PublicKeyDetailOutpu
 		X:           detail.X,
 		Y:           detail.Y,
 	}
+}
+
+// extKeyUsageOutput 把扩展密钥用途列表转成输出形态。
+//
+// nil 进、nil 出：「无该扩展」时编码成 `null`，与 `san` / `keyUsage` 口径一致。
+func extKeyUsageOutput(items []pkisvc.ExtKeyUsageInfo) []ExtKeyUsageOutput {
+	if items == nil {
+		return nil
+	}
+	out := make([]ExtKeyUsageOutput, 0, len(items))
+	for _, item := range items {
+		out = append(out, ExtKeyUsageOutput{Name: item.Name, Oid: item.OID})
+	}
+	return out
 }
 
 // policiesOutput 把策略列表转成输出形态。
