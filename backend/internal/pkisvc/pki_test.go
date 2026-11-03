@@ -106,8 +106,8 @@ func TestFingerprintsAllAlgorithms(t *testing.T) {
 		if fp.Value == "" {
 			t.Errorf("算法 %q 的指纹为空", fp.Algorithm)
 		}
-		if fp.Value != strings.ToLower(fp.Value) {
-			t.Errorf("算法 %q 的指纹 %q 不是小写", fp.Algorithm, fp.Value)
+		if fp.Value != strings.ToUpper(fp.Value) {
+			t.Errorf("算法 %q 的指纹 %q 不是大写", fp.Algorithm, fp.Value)
 		}
 	}
 }

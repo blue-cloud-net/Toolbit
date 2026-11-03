@@ -175,8 +175,8 @@ func PublicKeyDetailOf(c *Certificate) (*PublicKeyDetail, error) {
 	out := &PublicKeyDetail{
 		Algorithm:   algorithmFromUpstream(pub.Algorithm().String()),
 		PEM:         string(pemBytes),
-		SPKIHex:     hex.EncodeToString(block.Bytes),
-		Fingerprint: hex.EncodeToString(sum),
+		SPKIHex:     hexUpper(block.Bytes),
+		Fingerprint: hexUpper(sum),
 	}
 
 	params, err := asym.Params(pub)

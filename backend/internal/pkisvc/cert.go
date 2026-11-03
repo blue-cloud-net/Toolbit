@@ -310,7 +310,7 @@ func Describe(c *Certificate, at time.Time, fpAlgs []string) (*CertInfo, error) 
 		SubjectHash:           fmt.Sprintf("%08X", c.cert.SubjectHash()),
 		IssuerHash:            fmt.Sprintf("%08X", c.cert.IssuerHash()),
 		Extensions:            extensionInfos(rawExtensions),
-		SignatureHex:          hex.EncodeToString(c.cert.Signature()),
+		SignatureHex:          hexUpper(c.cert.Signature()),
 		Policies:              PoliciesOf(c),
 	}
 	fillExtensionTexts(info, rawExtensions)
@@ -388,7 +388,7 @@ func Fingerprints(c *Certificate, algs []string) ([]FingerprintInfo, error) {
 		if err != nil {
 			return nil, toolerrInvalidCert("cannot compute fingerprint")
 		}
-		out = append(out, FingerprintInfo{Algorithm: name, Value: value})
+		out = append(out, FingerprintInfo{Algorithm: name, Value: strings.ToUpper(value)})
 	}
 	return out, nil
 }
@@ -463,18 +463,21 @@ func extensionInfos(extensions []x509.Extension) []ExtInfo {
 			OID:      ext.OID,
 			Name:     ext.Field,
 			Critical: ext.Critical,
-			Value:    hex.EncodeToString(ext.Data),
+			Value:    hexUpper(ext.Data),
 		})
 	}
 	return out
 }
 
 // hexUpper 把字节渲染为大写十六进制；空输入返回空串。
+//
+// `hex.EncodeToString` 产出的是**小写**，与本函数名不符 —— 这里显式转大写，
+// 让标识符（SKID / AKID）、扩展值、签名字节与指纹的十六进制大小写**全局一致**。
 func hexUpper(data []byte) string {
 	if len(data) == 0 {
 		return ""
 	}
-	return hex.EncodeToString(data)
+	return strings.ToUpper(hex.EncodeToString(data))
 }
 
 // closeCertificates 关闭一组证书句柄（忽略错误）。
