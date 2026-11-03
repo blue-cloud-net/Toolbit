@@ -141,6 +141,11 @@
   - 同步删除后端实现与单测、契约测试数据、catalog 条目、前端模块与双语词条；
     数据分类由 14 个工具变为 13 个
   - 候选与取舍理由保留在 [docs/tool-candidates.md](docs/tool-candidates.md) §2
+- **移除 `cert-lifecycle`（证书生命周期）**：工具总数 -1
+  - 其「有效期区间 / 剩余天数 / 到期倒计时」与 `cert-parse` 摘要页**完全重叠**，
+    且两处 `daysRemaining` 的口径（小数化、警告期阈值）长期各改各的
+  - 同步删除后端实现与单测、契约测试数据、catalog 条目、前端模块、示例与双语词条，
+    并清理 `docs/tools.md` / `docs/api/tools/certificates.md` 的条目与函数清单
 
 ### Fixed
 

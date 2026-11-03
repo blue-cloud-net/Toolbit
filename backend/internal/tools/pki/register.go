@@ -191,14 +191,5 @@ func Definitions() []tools.Definition {
 				return CAAGen(ctx, req.(*CAAGenRequest))
 			},
 		},
-		{
-			Slug: "cert-lifecycle",
-			NewRequest: func() tools.Request {
-				return &CertLifecycleRequest{}
-			},
-			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
-				return CertLifecycle(ctx, req.(*CertLifecycleRequest))
-			},
-		},
 	}
 }

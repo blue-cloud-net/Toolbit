@@ -57,7 +57,6 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'cert-chain-fetch': 'cloud-download',
   'ct-search': 'search',
   'domain-verify': 'globe-check',
-  'cert-lifecycle': 'calendar',
 
   // ── 编码 / Encoding ──
   base64: 'swap',

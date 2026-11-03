@@ -76,7 +76,6 @@ export const toolRegistry: Record<string, ToolLoader> = {
   'cert-chain-fetch': () => import('./certificates/cert-chain-fetch/index'),
   'ct-search': () => import('./certificates/ct-search/index'),
   'domain-verify': () => import('./certificates/domain-verify/index'),
-  'cert-lifecycle': () => import('./certificates/cert-lifecycle/index'),
   'cidr-calc': () => import('./network/cidr-calc/index'),
   'ssl-check': () => import('./network/ssl-check/index'),
   'dns-lookup': () => import('./network/dns-lookup/index'),

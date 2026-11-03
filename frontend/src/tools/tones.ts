@@ -92,7 +92,6 @@ export const TOOL_TONES: Record<string, Tone> = {
   'cert-chain-fetch': 'cyan',
   'ct-search': 'amber',
   'domain-verify': 'teal',
-  'cert-lifecycle': 'orange',
 
   // ── 编码 / Encoding ──
   base64: 'indigo',

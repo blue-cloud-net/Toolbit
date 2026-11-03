@@ -281,7 +281,6 @@
 | 证书链获取 | `cert-chain-fetch` | 从服务器抓取证书链 |
 | 证书透明度查询 | `ct-search` | 查询 CT 日志 |
 | 域名验证 | `domain-verify` | 验证域名所有权 |
-| 证书生命周期 | `cert-lifecycle` | 证书有效期区间与到期倒计时 |
 
 ### 证书解析（Certificate Parser）
 
@@ -576,8 +575,6 @@
 **常见问题**
 
 - **Q：DNS 已生效但仍不匹配？** A：检查是否有多条记录、TTL 是否未过期、期望值是否多了引号。
-
----
 
 ## 编码（Encoding）
 

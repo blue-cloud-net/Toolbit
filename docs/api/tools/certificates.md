@@ -29,7 +29,6 @@
 | [cert-chain-fetch](#cert-chain-fetch) | 证书链获取 | network | 是 |
 | [ct-search](#ct-search) | 证书透明度查询 | network | 是 |
 | [domain-verify](#domain-verify) | 域名验证 | network | 是 |
-| [cert-lifecycle](#cert-lifecycle) | 证书生命周期 | light | 否 |
 
 ---
 
@@ -871,51 +870,6 @@ JSON：`POST /api/v1/tools/cert-chain-fetch`。
 > 记在对应 `perResolver[].error` 里。
 > HTTP 方式固定访问 `https://<域名>/<路径>`，只有 `200` 且内容（忽略首尾空白）完全一致才算匹配。
 > 自定义解析器同样要过出网防护，私网地址会被拦截。
-
----
-
-## cert-lifecycle
-
-证书有效期区间与到期倒计时（Certificate Lifecycle）。
-
-### 请求
-
-| 字段 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| `certificate` | string | 是 | 证书内容（PEM 或 Base64 DER） |
-| `isPem` | bool | 否 | 内容是否为 PEM，默认 `true` |
-| `warningDays` | int | 否 | 到期提醒天数，默认 30 |
-
-### 响应
-
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `subject` | string | 主体 |
-| `issuer` | string | 签发者 |
-| `notBefore` | string | 生效时间 |
-| `notAfter` | string | 失效时间 |
-| `validDays` | number | 有效期总天数；**小数**（保留 1 位） |
-| `daysRemaining` | number | 剩余天数；**小数**（保留 1 位），已过期为负数 |
-| `hoursRemaining` | int | 剩余小时数 |
-
-> **天数的展示口径**：不足 10 天时保留 1 位小数（「9.6 天」），
-> 否则截断为整数（「820.7 天」显示成「820 天」）。
-> 服务端的 `recommendations` 文案与前端页面**使用同一口径**。
-| `status` | string | 状态 |
-| `isSelfSigned` | bool | 是否自签名 |
-| `isCA` | bool | 是否 CA 证书 |
-| `keyAlgorithm` | string | 密钥算法 |
-| `keyBits` | int | 密钥位数 |
-| `curve` | string | 椭圆曲线名 |
-| `signatureAlgorithm` | string | 签名算法 |
-| `san` | array \| null | 主体备用名列表；无该扩展时为 `null` |
-| `recommendations` | array | 续期建议 |
-
-### 错误
-
-`MISSING_FIELD`、`INVALID_CERT`、`INVALID_PEM`。
-
-> **只读查看**证书，不修改、不签发、不下载吊销列表。
 
 ---
 

@@ -718,22 +718,6 @@ tools:
     wide: false
     i18nKey: tools.domain-verify
 
-  - slug: cert-lifecycle
-    category: certificates
-    order: 24
-    name: 证书生命周期
-    nameEn: Certificate Lifecycle
-    enabled: true
-    transport: json
-    rateClass: light
-    maxBodyBytes: 1048576
-    timeoutMs: 5000
-    sensitive: false
-    requiresNetwork: false
-    autoRun: true
-    wide: false
-    i18nKey: tools.cert-lifecycle
-
   - slug: base64
     category: encoding
     order: 1
