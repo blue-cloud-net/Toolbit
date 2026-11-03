@@ -46,6 +46,14 @@
 
 > **客户端注意**：读取这些字段前必须判空（JavaScript 里 `null.length` 会直接抛异常）。
 
+### 十六进制的大小写
+
+本 API 的**全部**十六进制值统一用**大写**：标识符（`subjectKeyId` / `authorityKeyId`）、
+扩展值（`extensions[].value`）、签名字节（`signatureHex`）、指纹（`fingerprints[].value`）、
+公钥指纹与 SPKI。
+
+> 指纹过去是小写；v0.8.1 起与大写口径统一，方便肉眼比对同一份证书的两处哈希。
+
 ---
 
 ## cert-parse
@@ -90,14 +98,24 @@
 | `isCa` | bool | 是否为 CA 证书 |
 | `pathLen` | int | 路径长度约束；非 CA 或无该扩展为 `-1` |
 | `san` | array \| null | 主体备用名条目；无该扩展时为 `null` |
-| `keyUsage` / `extendedKeyUsage` | array \| null | 密钥用途 / 扩展密钥用途；无该扩展时为 `null` |
+| `keyUsage` | array \| null | 密钥用途位名；无该扩展时为 `null` |
+| `extendedKeyUsage` | array \| null | 扩展密钥用途 `[{ name, oid }]`；无该扩展时为 `null` |
 | `subjectKeyId` / `authorityKeyId` | string | 主题 / 签发者密钥标识符（大写十六进制） |
 | `subjectHash` / `issuerHash` | string | 名称的 `X509_NAME_hash` |
 | `extensions` | array | `[{ nid, oid, name, critical, value }]`；恒为数组 |
 | `selfSigned` | bool | 是否自签名 |
-| `signatureHex` | string | 签名字节的十六进制（小写） |
+| `signatureHex` | string | 签名字节的十六进制（大写） |
 | `policies` | array | certificatePolicies 扩展里的策略 `[{ oid, cpsUris, organization, noticeNumbers, explicitText }]`；恒为数组 |
 
+`extendedKeyUsage[]` 的字段：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `name` | string | 扩展密钥用途的短名（如 `serverAuth`）。上游对象库只收录到 `1.3.6.1.5.5.7.3.32`，更晚分配的用途由服务端按 IANA 注册表补上短名（如 RFC 9336 的 `documentSigning`）；两边都没有收录的 OID 才是空串 |
+| `oid` | string | 点分 OID（如 `1.3.6.1.5.5.7.3.1`）。由服务端从扩展的原始 DER 解出，**始终权威** |
+
+> 客户端展示时：`name` 非空就用本地化名称；为空就显示 `-`，OID 由相邻列给出 ——
+> **不要**把 OID 再填进名称列，同一串数字在相邻两列各写一遍会被读成两个字段。
 `policies[]` 的附加字段：
 
 | 字段 | 类型 | 说明 |
@@ -871,6 +889,8 @@ JSON：`POST /api/v1/tools/cert-chain-fetch`。
 > 记在对应 `perResolver[].error` 里。
 > HTTP 方式固定访问 `https://<域名>/<路径>`，只有 `200` 且内容（忽略首尾空白）完全一致才算匹配。
 > 自定义解析器同样要过出网防护，私网地址会被拦截。
+
+---
 
 ## oid-lookup
 

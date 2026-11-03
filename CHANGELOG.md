@@ -92,9 +92,9 @@
   - 补齐 26 个**页签**词条（`asn1-view`、`cert-chain-fetch`、`cert-chain-repair`、
     `cert-gen`、`crl-gen`、`csr-gen`、`keygen`、`ocsp-request`、`p7b-extract`、
     `pfx-parse`），`keygen` 的 `views` 从误放的 `options.views` 提升到顶层
-  - 补齐 34 处**既有**悬空键（`cert-lifecycle`、`password-policy`、`totp`、
-    `ssh-keygen`、`html-escape`、`device-headers`、`ip-range-expand`、
-    `color-convert`），并把 3 处指向错键名的代码改到正确键上
+  - 补齐 34 处**既有**悬空键（`password-policy`、`totp`、`ssh-keygen`、
+    `html-escape`、`ip-range-expand`、`color-convert` 等），并把 3 处指向错键名的
+    代码改到正确键上
   - 新增 `frontend/src/i18n/usage.test.ts`：逐个校验工具页的**字面量**键引用在
     语言包中真实存在，防止悬空键再次进入主干
 - **二维码工具页（`qr-code`）重构**：结果区从「一坨 SVG 源码」改为「预览优先」
@@ -108,22 +108,51 @@
 - **`DownloadButton` 支持二进制下载**：新增可选 `base64` 入参（与 `content` 二选一），
   二进制产物（PNG 等）不必再绕道文本下载；解码逻辑抽到
   `frontend/src/components/tool/base64.ts` 并附单元测试
-- **证书详情按浏览器内置证书查看器的形态重排**
-  - 概览新增**有效期区间**、**SHA-256 指纹**、**公钥**三张卡片（长值整行展示）
-  - 扩展区分**关键扩展**（只列证书实际带有的，可读值）与**全部扩展**（含未知扩展的完整清单），
-    两段同页签，共享组件 `CertExtensions`
-  - 链上每张证书都能单独复制 PEM；详情弹窗加宽到 `min(1100px, 92vw)`，
-    内容与 `cert-parse` 摘要页**同源同版式**
+- **证书详情改为按浏览器内置证书查看器的形态重排，一个页签只讲一件事**
+  - `cert-parse` 的摘要拆成 **7 个页签**（摘要 / 名称与用途 / 标识与指纹 / 公钥 / 扩展 /
+    文本视图 / 证书PEM），证书链的详情弹窗用同一套分区（6 个，无「文本视图」），
+    共享组件 `CertDetailTabs` + `CertDetail` + `CertExtensions`
+  - 摘要页新增**有效期区间**、**SHA-256 指纹**、**公钥**三张卡片（长值整行展示）
+  - 链上每张证书都能单独复制 PEM；详情弹窗加宽到 `min(1100px, 92vw)`
   - 「证书原文」改名「证书PEM」（上传的是 DER 时「原文」不准确），并加复制按钮
+  - 页签选中项**不持久化**：换一张证书即回到第一个页签
+- **证书详情不再把同一份数据展示两遍**
+  - **证书策略**只保留在「扩展」页签的扩展清单里，「标识与指纹」页签不再重复渲染策略表
+    （同一份 CP / CPS 与用户通告此前在两个页签各显示一遍）
+  - 删除「扩展」页签里的**关键扩展**小节：它只是「全部扩展」按 `critical` 过滤出的子集，
+    而扩展表已经用**关键**列标注过；现在「扩展」页签只有一张完整表格
+  - 「名称与用途」页签内的区块标题改为「备用名与用途」，与页签标题不再一字不差地重复
+  - 连带删除 `keyExtensions()`、`KEY_EXTENSIONS`、`KeyExtensionEntry` 与 `tool.cert.ext.*`
+    共 11 个词条，以及 7 个随之失去引用的 `tool.cert.*` 词条
+- **证书里的十六进制一律大写**
+  - 根因：`hexUpper` 内部直接调 `hex.EncodeToString`，**实际输出小写**（与函数名不符），
+    于是序列号、签名值、扩展值、指纹在不同页签里大小写混排
+  - 现在**标识符、扩展值、`signatureHex`、各级指纹、公钥指纹、SPKI** 全部大写；
+    指纹过去是小写，**破坏性**变更，调用方若按小写比较需自行归一
+  - 口径写进 [docs/api/tools/certificates.md](docs/api/tools/certificates.md)：「十六进制的大小写」
+- **扩展密钥用途改为 `{ name, oid }` 结构**
+  - **破坏性**：`extendedKeyUsage` 由 `string[]` 改为对象数组；「无该扩展」仍编码为 `null`
+  - 根因：上游对**未在 OpenSSL 对象库登记**的用途只回一个点分 OID（对象库止于
+    `1.3.6.1.5.5.7.3.32`），此前这类用途只能显示成一串数字，且分不清哪部分是名称
+  - 后端改为**从扩展的原始 DER 解出 OID**（`extKeyUsageOIDs`）再与上游名称按序配对；
+    上游把 OID 原样回吐时，改查 `ekuOIDNames`（按 IANA 注册表补 `.33`–`.45` 共 13 个短名，
+    如 `.36` → `documentSigning`）
+  - 前端删除自带的 OID → 名称映射表，**显示名以后端为准**；`tool.cert.eku.*` 由 7 条补到 39 条
+    （IPSec 四类、`secureShellClient/Server`、`sendRouter` 系列、CMC 三类、`cmKGA`、
+    `id-kp-bgpsec-router`、`id-kp-BrandIndicatorforMessageIdentification`、
+    `documentSigning`、`jwt`、`rpcTLSClient/Server` 等）
+  - 名字列在两边都查不到时显示 `-`（OID 由相邻列给出），不再把同一串数字在相邻两列各写一遍
+  - 契约测试新增一例：`extendedKeyUsage = serverAuth, clientAuth, 1.3.6.1.5.5.7.3.36`
+    ⇒ 第三条 `name` 为 `documentSigning`、`oid` 保留原值
+- **密钥用途改为单列「名称（位掩码）」**：`数字签名（0x80）`、`密钥加密（0x20）` 一行一条，
+  替代此前的「名称列 + 十六进制列」；位置与掩码的对应关系抽成 `KU_BIT_HEX` 常量表
 - **指纹算法改为复选框**：下拉多选改成一排复选框；`cert-chain-parse` 同步支持多算法
   - **破坏性**：`cert-chain-parse` 响应里 `chain[].fingerprintSha256` **删除**，
     改为 `chain[].fingerprints[]`（`{ algorithm, value }`）
   - `cert-chain-parse` 请求新增 `fingerprints`（不传时只算 SHA-256）
 - **剩余天数保留 1 位小数**：不足 10 天时显示「9.6 天」而不是「9 天」
-  - **破坏性**：`validity.daysRemaining`、`cert-lifecycle` 的 `daysRemaining` 与 `validDays`
-    由 `int` 改为 **浮点**（保留 1 位）
+  - **破坏性**：`validity.daysRemaining` 由 `int` 改为 **浮点**（保留 1 位）
   - 服务端「续期建议」文案与前端页面**统一口径**（不足 10 天保留 1 位，否则截断）
-  - `cert-lifecycle` 的警告期判定同步改用小数（9.6 天 / 阈值 10 即进入警告）
 - **「判断时刻」不再需要「设为当前时间」按钮**：留空即按当前时间，
   按钮换成「清除」（清空 = 回到当前时间）；两处 `time.Now()` 的取时刻口径也统一了
 - **整链 PEM 按 RFC 7468 严格形式拼接**：块间**恰好一个换行、没有空行**，
@@ -159,7 +188,6 @@
     TypeScript 编译器强制每个使用点判空，漏一处直接编译失败
   - 契约口径写进 [docs/api/tools/certificates.md](docs/api/tools/certificates.md)：
     「已查询、确认没有该项」编码成 `null`，结构性字段恒为 `[]`
-- **`cert-lifecycle` 的示例是空的**：「填入示例」点了没反应，改用测试用叶证书夹具
 - `ua-parser` 修正 **iOS 的 UA 串被误判为 macOS**：iPhone / iPad 的 UA 串含
   `like Mac OS X`，原判定顺序先匹配 `Mac OS X`，导致系统名与版本都取错；
   现在 iPhone / iPad 优先判定，系统版本取 `18_1` 这种下划线写法
