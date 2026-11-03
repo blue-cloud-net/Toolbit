@@ -172,7 +172,7 @@ ToolPageLayout
 | `ValidityTrack` | 有效期时间轴（按剩余天数推算已过去的比例，语义色仅 success / warning / danger） |
 | `KeyValueTable` | 键值对展示（逐字段复制、语义色、可选 `hint` / `mono`） |
 | `StatGrid` | 少量关键指标的卡片网格（网段、掩码、耗时、成败台数） |
-| `DataTable` | 多记录列表表格（列定义 + 行数据 + 逐行复制 + 滚动区 + 语义色 / 彩色标签）；`copyColumns` 指定内嵌复制列（按钮贴值右侧，`copyColumn` 仍然兼容），`badgeCopy` 指定「点击徽标即复制」的列，`nowrap` 指定**禁止换行**的列 |
+| `DataTable` | 多记录列表表格（列定义 + 行数据 + 逐行复制 + 滚动区 + 语义色 / 彩色标签）；`copyColumns` 指定内嵌复制列（按钮贴值右侧，`copyColumn` 仍然兼容），`badgeCopy` 指定「点击徽标即复制」的列，`nowrap` 指定**禁止换行**的列；`clickable` 让整行可点击（触发 `row-click`，行获得 `role="button"` 与键盘焦点），用于「表格 → 选中该条目」这类行内导航 |
 | `CopyButton` / `DownloadButton` | 复制（**图标式**，tooltip 固定为「复制」，结果用 `ElMessage` 提示） / 下载（文本走 `content`，**二进制产物**如 PNG 走 `base64`，解码逻辑见 `components/tool/base64.ts`） |
 | `EmptyState` / `ErrorAlert` / `LoadingSkeleton` | 状态展示 |
 | `ProgressStream` | 流式进度（ssl-check） |

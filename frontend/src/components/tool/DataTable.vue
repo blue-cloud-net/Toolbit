@@ -78,6 +78,14 @@ const props = withDefaults(
     empty?: string
     /** 行尾操作列的列标题；传空串表示不渲染该列。 */
     actionLabel?: string
+    /**
+     * 是否允许点击整行。
+     *
+     * 开启后行会获得 `role="button"` 与键盘焦点，
+     * 点击或按 Enter / 空格都会触发 `row-click`。
+     * 用于「子节点表格 → 选中该节点」这类行内导航。
+     */
+    clickable?: boolean
   }>(),
   {
     copyable: true,
@@ -87,8 +95,14 @@ const props = withDefaults(
     maxHeight: '420px',
     empty: '',
     actionLabel: '',
+    clickable: false,
   },
 )
+
+const emit = defineEmits<{
+  /** 用户点击某一行（整行可点击时）。 */
+  'row-click': [row: DataTableRow]
+}>()
 
 const { t } = useI18n()
 const { copy: copyText } = useCopy()
@@ -145,6 +159,31 @@ function badgeCopies(column: DataTableColumn): boolean {
 function onBadgeClick(row: DataTableRow, column: DataTableColumn): void {
   void copyText(cellText(row, column))
 }
+
+/** 事件目标是否来自行内的可交互控件（复制按钮、链接等）。 */
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest('button, a, input, select, textarea') !== null
+}
+
+/** 整行点击：向上抛出行数据；行内控件自己处理点击，不触发整行动作。 */
+function onRowClick(event: Event, row: DataTableRow): void {
+  if (isInteractiveTarget(event.target)) {
+    return
+  }
+  emit('row-click', row)
+}
+
+/** 整行键盘激活（Enter / 空格）。 */
+function onRowKeydown(event: KeyboardEvent, row: DataTableRow): void {
+  if (isInteractiveTarget(event.target)) {
+    return
+  }
+  if (event.key !== 'Enter' && event.key !== ' ') {
+    return
+  }
+  event.preventDefault()
+  onRowClick(event, row)
+}
 </script>
 
 <template>
@@ -185,6 +224,11 @@ function onBadgeClick(row: DataTableRow, column: DataTableColumn): void {
         <tr
           v-for="(row, index) in rows"
           :key="row.key ?? index"
+          :class="clickable ? 'data-table__row--clickable' : ''"
+          :role="clickable ? 'button' : undefined"
+          :tabindex="clickable ? 0 : undefined"
+          @click="clickable ? onRowClick($event, row) : undefined"
+          @keydown="clickable ? onRowKeydown($event, row) : undefined"
         >
           <td
             v-for="column in columns"
@@ -308,6 +352,16 @@ function onBadgeClick(row: DataTableRow, column: DataTableColumn): void {
 
 .data-table tbody tr:hover td {
   background: var(--tb-bg-sunken);
+}
+
+/* 整行可点击：加手型光标与焦点环，键盘用户也能定位到这一行。 */
+.data-table tbody tr.data-table__row--clickable {
+  cursor: pointer;
+}
+
+.data-table tbody tr.data-table__row--clickable:focus-visible {
+  outline: 2px solid var(--tb-primary);
+  outline-offset: -2px;
 }
 
 .data-table__action {
