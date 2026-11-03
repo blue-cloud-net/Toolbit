@@ -1,0 +1,106 @@
+oid,name,nameZh,description,descriptionZh,status,source,sourceUrl,aliases
+0,itu-t,ITU-T,International Telecommunication Union Telecommunications Standardization Sector,国际电信联盟电信标准化部门,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,itu-t
+1,iso,ISO,International Organization for Standardization,国际标准化组织,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,iso
+2,joint-iso-itu-t,ISO 与 ITU-T 联合,Joint ISO and ITU-T,ISO 与 ITU-T 联合标准,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.3,identified-organization,标识组织,Arc for organizations registered with ISO,标识组织分支,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.3.6,dod,美国国防部,United States Department of Defense,美国国防部,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.3.6.1,internet,互联网,Internet assignments administered by IANA,由 IANA 管理的互联网分配,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.3.6.1.1,directory,目录服务,Lightweight Directory Access Protocol parameters,轻量级目录访问协议参数,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.3.6.1.2,mgmt,网络管理,SNMP management registrations,SNMP 网络管理注册,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.3.6.1.2.1,mib-2,管理信息库,Management information base version 2,管理信息库第二版,current,RFC 1213,https://www.rfc-editor.org/rfc/rfc1213.html,
+1.3.6.1.2.1.1,system,系统组,System group of MIB-II,MIB-II 系统组,current,RFC 1213,https://www.rfc-editor.org/rfc/rfc1213.html,
+1.3.6.1.2.1.2,interfaces,接口组,Interfaces group of MIB-II,MIB-II 接口组,current,RFC 1213,https://www.rfc-editor.org/rfc/rfc1213.html,
+1.3.6.1.2.1.3,at,地址转换组,Address translation group of MIB-II,MIB-II 地址转换组,current,RFC 1213,https://www.rfc-editor.org/rfc/rfc1213.html,
+1.3.6.1.2.1.4,ip,IP 组,Internet protocol group of MIB-II,MIB-II IP 协议组,current,RFC 4293,https://www.rfc-editor.org/rfc/rfc4293.html,
+1.3.6.1.2.1.5,icmp,ICMP 组,ICMP group of MIB-II,MIB-II ICMP 组,current,RFC 4293,https://www.rfc-editor.org/rfc/rfc4293.html,
+1.3.6.1.2.1.6,tcp,TCP 组,TCP group of MIB-II,MIB-II TCP 组,current,RFC 4022,https://www.rfc-editor.org/rfc/rfc4022.html,
+1.3.6.1.2.1.7,udp,UDP 组,UDP group of MIB-II,MIB-II UDP 组,current,RFC 4113,https://www.rfc-editor.org/rfc/rfc4113.html,
+1.3.6.1.2.1.8,egp,EGP 组,Exterior gateway protocol group of MIB-II,MIB-II EGP 组,current,RFC 4273,https://www.rfc-editor.org/rfc/rfc4273.html,
+1.3.6.1.2.1.9,cmot,CMOT 组,CMIP over TCP group of MIB-II,MIB-II CMOT 组,current,RFC 4273,https://www.rfc-editor.org/rfc/rfc4273.html,
+1.3.6.1.2.1.10,transmission,传输组,Transmission group of MIB-II,MIB-II 传输组,current,RFC 1213,https://www.rfc-editor.org/rfc/rfc1213.html,
+1.3.6.1.2.2,pib,策略信息库,Policy information base,策略信息库,current,RFC 3159,https://www.rfc-editor.org/rfc/rfc3159.html,
+1.3.6.1.3,experimental,实验性,Experimental SNMP registrations,实验性 SNMP 注册,current,RFC 4181,https://www.rfc-editor.org/rfc/rfc4181.html,
+1.3.6.1.4,private,私有,Private SNMP registrations,私有 SNMP 注册,current,RFC 2578,https://www.rfc-editor.org/rfc/rfc2578.html,
+1.3.6.1.4.1,enterprise,私有企业,Private enterprise numbers,私有企业编号,current,RFC 9371,https://www.rfc-editor.org/rfc/rfc9371.html,
+1.3.6.1.5,security,安全,SNMP security registrations,SNMP 安全注册,current,RFC 2578,https://www.rfc-editor.org/rfc/rfc2578.html,
+1.3.6.1.5.3,integrity,完整性算法,Integrity algorithm identifiers,完整性算法标识符,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.3.6.1.5.4,confide,机密性算法,Confidentiality algorithm identifiers,机密性算法标识符,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.3.6.1.5.5,mechanisms,安全机制,Security mechanism identifiers,安全机制标识符,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.3.6.1.5.5.7,pkix,公钥基础设施,Public key infrastructure objects,公钥基础设施对象,current,RFC 7299,https://www.rfc-editor.org/rfc/rfc7299.html,
+1.3.6.1.5.5.8,ipsec,IPsec 密钥管理,IPsec key management objects,IPsec 密钥管理对象,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.3.6.1.5.5.11,ltans,长期归档与公证,Long-term archive and notary services objects,长期归档与公证服务对象,current,RFC 7036,https://www.rfc-editor.org/rfc/rfc7036.html,
+1.3.6.1.6,snmpv2,SNMPv2,SNMP version 2 objects,SNMP 第 2 版对象,current,RFC 1902,https://www.rfc-editor.org/rfc/rfc1902.html,
+1.3.6.1.6.1,snmpDomains,SNMP 传输域,SNMP transport domain identifiers,SNMP 传输域标识符,current,RFC 3417,https://www.rfc-editor.org/rfc/rfc3417.html,
+1.3.6.1.6.2,snmpProxys,SNMP 代理,SNMP proxy identifiers,SNMP 代理标识符,current,RFC 3412,https://www.rfc-editor.org/rfc/rfc3412.html,
+1.3.6.1.6.3,snmpModules,SNMP 模块,SNMP module identifiers,SNMP 模块标识符,current,RFC 3412,https://www.rfc-editor.org/rfc/rfc3412.html,
+1.3.6.1.7,mail,邮件,Mail related SNMP registrations,邮件相关 SNMP 注册,current,RFC 1495,https://www.rfc-editor.org/rfc/rfc1495.html,
+1.3.6.1.8,features,媒体特性标签,Media feature tags,媒体特性标签,current,RFC 2506,https://www.rfc-editor.org/rfc/rfc2506.html,
+1.2,member-body,成员体,ISO member-body arc,ISO 成员体分支,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.2.840,rsadsi,RSA 数据安全,RSA Data Security Inc. arc,RSA 数据安全公司分支,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.2.840.113549,rsadsi,RSA 数据安全,RSADSI arc for PKCS and S/MIME,RSADSI 分支（PKCS 与 S/MIME）,current,RFC 8017,https://www.rfc-editor.org/rfc/rfc8017.html,
+1.2.840.113549.1,pkcs,公钥密码标准,Public key cryptography standards,公钥密码标准,current,RFC 8017,https://www.rfc-editor.org/rfc/rfc8017.html,
+1.2.840.113549.1.1,pkcs-1,PKCS #1,PKCS #1 RSA encryption standard,PKCS #1 RSA 加密标准,current,RFC 8017,https://www.rfc-editor.org/rfc/rfc8017.html,
+1.2.840.113549.1.5,pkcs-5,PKCS #5,PKCS #5 password based cryptography standard,PKCS #5 口令加密标准,current,RFC 8018,https://www.rfc-editor.org/rfc/rfc8018.html,
+1.2.840.113549.1.7,pkcs-7,PKCS #7,PKCS #7 cryptographic message syntax,PKCS #7 密码消息语法,current,RFC 5652,https://www.rfc-editor.org/rfc/rfc5652.html,
+1.2.840.113549.1.9,pkcs-9,PKCS #9,PKCS #9 selected attribute types,PKCS #9 选定属性类型,current,RFC 2985,https://www.rfc-editor.org/rfc/rfc2985.html,
+1.2.840.113549.1.9.16,smime,S/MIME,S/MIME mail security objects,S/MIME 邮件安全对象,current,RFC 7107,https://www.rfc-editor.org/rfc/rfc7107.html,
+1.2.840.113549.1.10,pkcs-10,PKCS #10,PKCS #10 certification request objects,PKCS #10 证书签名请求对象,current,RFC 2986,https://www.rfc-editor.org/rfc/rfc2986.html,
+1.2.840.113549.1.12,pkcs-12,PKCS #12,PKCS #12 personal information exchange objects,PKCS #12 个人信息交换对象,current,RFC 7292,https://www.rfc-editor.org/rfc/rfc7292.html,
+1.2.840.10045,ansi-x9-62,ANSI X9.62,ANSI X9.62 elliptic curve arc,ANSI X9.62 椭圆曲线分支,current,RFC 5480,https://www.rfc-editor.org/rfc/rfc5480.html,
+1.2.840.10045.2,keyType,公钥类型,Key type arc for ANSI X9.62,ANSI X9.62 公钥类型分支,current,RFC 5480,https://www.rfc-editor.org/rfc/rfc5480.html,
+1.2.840.10045.2.1,ecPublicKey,椭圆曲线公钥,Elliptic curve public key,椭圆曲线公钥,current,RFC 5480,https://www.rfc-editor.org/rfc/rfc5480.html,
+1.2.840.10045.4,ecSigType,椭圆曲线签名,Elliptic curve signature algorithm arc,椭圆曲线签名算法分支,current,RFC 5480,https://www.rfc-editor.org/rfc/rfc5480.html,
+1.2.840.10045.4.1,ecdsa-with-SHA1,ECDSA with SHA-1,ECDSA using SHA-1,使用 SHA-1 的 ECDSA,current,RFC 3279,https://www.rfc-editor.org/rfc/rfc3279.html,
+1.2.840.10045.4.3,ecdsa-with-SHA2,ECDSA with SHA-2,ECDSA signature algorithm branch for SHA-2 based digests,使用 SHA-2 系列摘要的 ECDSA 签名算法分支,current,RFC 5758,https://www.rfc-editor.org/rfc/rfc5758.html,
+1.2.840.10045.4.3.1,ecdsa-with-SHA224,ECDSA with SHA-224,ECDSA using SHA-224,使用 SHA-224 的 ECDSA,current,RFC 5758,https://www.rfc-editor.org/rfc/rfc5758.html,
+1.2.840.10045.4.3.2,ecdsa-with-SHA256,ECDSA with SHA-256,ECDSA using SHA-256,使用 SHA-256 的 ECDSA,current,RFC 5758,https://www.rfc-editor.org/rfc/rfc5758.html,
+1.2.840.10045.4.3.3,ecdsa-with-SHA384,ECDSA with SHA-384,ECDSA using SHA-384,使用 SHA-384 的 ECDSA,current,RFC 5758,https://www.rfc-editor.org/rfc/rfc5758.html,
+1.2.840.10045.4.3.4,ecdsa-with-SHA512,ECDSA with SHA-512,ECDSA using SHA-512,使用 SHA-512 的 ECDSA,current,RFC 5758,https://www.rfc-editor.org/rfc/rfc5758.html,
+2.16,identified-organization,会标成员体,ISO identified-organization arc,ISO 会标成员体分支,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+2.16.840,ansi,ANSI,American National Standards Institute,美国国家标准学会,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+2.16.840.1,ansi-international,ANSI 国际标准,ANSI international standards arc,ANSI 国际标准分支,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+2.16.840.1.101,nist,NIST,National Institute of Standards and Technology,美国国家标准与技术研究院,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,
+2.16.840.1.101.3,nist-algorithms,NIST 算法,NIST algorithm identifiers arc,NIST 算法标识符分支,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,
+2.16.840.1.101.3.4,nist-hash,NIST 摘要与签名,NIST hash and signature algorithm identifiers,NIST 摘要与签名算法标识符,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,
+2.16.840.1.101.3.4.1,nist-symmetric,NIST 对称算法,NIST symmetric algorithm identifiers,NIST 对称算法标识符,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,
+2.16.840.1.101.3.4.2,nist-hash-alg,NIST 摘要算法,NIST hash algorithm identifiers,NIST 摘要算法标识符,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,
+2.16.840.1.101.3.4.2.1,sha256,SHA-256,SHA-256 message digest algorithm,SHA-256 消息摘要算法,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,id-sha256
+2.16.840.1.101.3.4.2.2,sha384,SHA-384,SHA-384 message digest algorithm,SHA-384 消息摘要算法,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,id-sha384
+2.16.840.1.101.3.4.2.3,sha512,SHA-512,SHA-512 message digest algorithm,SHA-512 消息摘要算法,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,id-sha512
+2.16.840.1.101.3.4.2.4,sha224,SHA-224,SHA-224 message digest algorithm,SHA-224 消息摘要算法,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,id-sha224
+2.16.840.1.101.3.4.2.5,sha512-224,SHA-512/224,SHA-512 truncated to 224 bits,截断为 224 位的 SHA-512,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,id-sha512-224
+2.16.840.1.101.3.4.2.6,sha512-256,SHA-512/256,SHA-512 truncated to 256 bits,截断为 256 位的 SHA-512,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,id-sha512-256
+2.16.840.1.101.3.4.2.7,sha3-224,SHA3-224,SHA3-224 message digest algorithm,SHA3-224 消息摘要算法,current,RFC 9688,https://www.rfc-editor.org/rfc/rfc9688.html,id-sha3-224
+2.16.840.1.101.3.4.2.8,sha3-256,SHA3-256,SHA3-256 message digest algorithm,SHA3-256 消息摘要算法,current,RFC 9688,https://www.rfc-editor.org/rfc/rfc9688.html,id-sha3-256
+2.16.840.1.101.3.4.2.9,sha3-384,SHA3-384,SHA3-384 message digest algorithm,SHA3-384 消息摘要算法,current,RFC 9688,https://www.rfc-editor.org/rfc/rfc9688.html,id-sha3-384
+2.16.840.1.101.3.4.2.10,sha3-512,SHA3-512,SHA3-512 message digest algorithm,SHA3-512 消息摘要算法,current,RFC 9688,https://www.rfc-editor.org/rfc/rfc9688.html,id-sha3-512
+2.16.840.1.101.3.4.2.11,shake128,SHAKE128,Shake128 extendable output function,Shake128 可扩展输出函数,current,RFC 9688,https://www.rfc-editor.org/rfc/rfc9688.html,id-shake128
+2.16.840.1.101.3.4.2.12,shake256,SHAKE256,Shake256 extendable output function,Shake256 可扩展输出函数,current,RFC 9688,https://www.rfc-editor.org/rfc/rfc9688.html,id-shake256
+2.16.840.1.101.3.4.3,nist-dsa,NIST DSA,NIST digital signature algorithm identifiers,NIST 数字签名算法标识符,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,
+2.16.840.1.101.3.4.3.1,dsa-with-sha1,DSA with SHA-1,Digital signature algorithm using SHA-1,使用 SHA-1 的 DSA,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,id-dsa-with-sha1
+2.16.840.1.101.3.4.3.2,dsa-with-sha224,DSA with SHA-224,Digital signature algorithm using SHA-224,使用 SHA-224 的 DSA,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,id-dsa-with-sha224
+2.16.840.1.101.3.4.3.3,dsa-with-sha256,DSA with SHA-256,Digital signature algorithm using SHA-256,使用 SHA-256 的 DSA,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,id-dsa-with-sha256
+2.16.840.1.101.3.4.3.4,dsa-with-sha384,DSA with SHA-384,Digital signature algorithm using SHA-384,使用 SHA-384 的 DSA,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,id-dsa-with-sha384
+2.16.840.1.101.3.4.3.5,dsa-with-sha512,DSA with SHA-512,Digital signature algorithm using SHA-512,使用 SHA-512 的 DSA,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,id-dsa-with-sha512
+2.16.840.1.101.3.4.4,nist-kdf,NIST 密钥派生,NIST key derivation function identifiers,NIST 密钥派生函数标识符,current,RFC 4055,https://www.rfc-editor.org/rfc/rfc4055.html,
+2.16.840.1.101.3.4.4.1,id-pbkdf2,PBKDF2,Password based key derivation function 2,基于口令的密钥派生函数 2,current,RFC 8018,https://www.rfc-editor.org/rfc/rfc8018.html,
+2.5,directory-attributes,目录服务,Directory services attribute arc,目录服务属性分支,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+2.5.4,x500-attributes,X.500 目录属性,X.500 directory attribute types,X.500 目录属性类型,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.29,x509-extensions,X.509 证书扩展,X.509 certificate extensions,X.509 证书扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+1.3.101,thawte,Thawte,Thawte cryptographic algorithm arc,Thawte 密码算法分支,current,RFC 8411,https://www.rfc-editor.org/rfc/rfc8411.html,
+1.2.156,cn,中国分支,China arc for national registrations,中国 OID 分支,current,GM/T 0006-2012,https://www.gmbz.org.cn/,china
+1.2.156.10197,gmt,国家密码管理局商用密码标准,Chinese commercial cryptography standards arc,国家密码管理局商用密码标准分支,current,GM/T 0006-2012,https://www.gmbz.org.cn/,
+1.2.156.10197.1,gm-t-1,GM/T 第一部分算法,GM/T part 1 algorithms,GM/T 第一部分规定的算法,current,GM/T 0006-2012,https://www.gmbz.org.cn/,
+1.2.156.10197.1.104,sm4,SM4 分组密码算法,SM4 block cipher algorithm,SM4 分组密码算法,current,GM/T 0002-2012,https://www.gmbz.org.cn/,
+1.2.156.10197.1.301,sm2,SM2 椭圆曲线公钥算法,SM2 elliptic curve public key algorithm,SM2 椭圆曲线公钥算法,current,GM/T 0003-2012,https://www.gmbz.org.cn/,
+1.2.156.10197.1.401,sm3,SM3 摘要算法,SM3 cryptographic hash algorithm,SM3 密码杂凑算法,current,GM/T 0004-2012,https://www.gmbz.org.cn/,
+1.2.156.10197.1.501,sm2sign-with-sm3,SM2 签名（SM3）,SM2 signature algorithm with SM3,使用 SM3 的 SM2 签名算法,current,GB/T 32918.2-2016,https://www.gmbz.org.cn/,
+1.2.156.10197.1.502,sm2keyexchange,SM2 密钥交换,SM2 elliptic curve key exchange algorithm,SM2 椭圆曲线密钥交换算法,current,GB/T 32918.3-2016,https://www.gmbz.org.cn/,
+1.2.156.10197.1.503,sm2encrypt,SM2 加密,SM2 elliptic curve public key encryption algorithm,SM2 椭圆曲线公钥加密算法,current,GB/T 32918.4-2016,https://www.gmbz.org.cn/,
+1.2.156.10197.1.504,sm3WithRSAEncryption,SM3 与 RSA 组合签名,RSA signature algorithm combined with SM3,基于 SM3 摘要的 RSA 签名算法,current,GM/T 0010-2012,https://www.gmbz.org.cn/,
+1.2.840.10040,firmware,固件,Firmware arc for legacy algorithm identifiers,遗留算法标识符的固件分支,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.2.840.10040.4,algorithm,算法,Legacy algorithm arc,遗留算法分支,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.2.840.10040.4.3,dsa-with-sha1,DSA with SHA-1,Digital signature algorithm using SHA-1,使用 SHA-1 的 DSA,deprecated,RFC 3279,https://www.rfc-editor.org/rfc/rfc3279.html,id-dsa-with-sha1
+1.2.840.10046,ansi-x9,ANSI X9,ANSI X9 arc for legacy algorithm identifiers,遗留算法标识符的 ANSI X9 分支,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.2.840.10046.2,dsa,数字签名算法,Digital signature algorithm arc,数字签名算法分支,current,IANA SMI Numbers,https://www.iana.org/assignments/smi-numbers/smi-numbers.xml,
+1.2.840.10046.2.1,id-dsa,DSA 公钥算法,Digital signature algorithm public key,数字签名算法公钥,deprecated,RFC 3279,https://www.rfc-editor.org/rfc/rfc3279.html,

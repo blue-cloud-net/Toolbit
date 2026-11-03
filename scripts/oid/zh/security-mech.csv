@@ -1,0 +1,34 @@
+oid,nameZh,descriptionZh
+1.3.6.1.2.0,预留,该弧段保留未分配
+1.3.6.1.4.0,预留,该弧段保留未分配
+1.3.6.1.5.0,预留,该弧段保留未分配
+1.3.6.1.5.1,Kerberos v4,第 4 版 Kerberos 协议对象
+1.3.6.1.5.2,Kerberos v5,第 5 版 Kerberos 协议对象
+1.3.6.1.5.5.0,预留,该弧段保留未分配
+1.3.6.1.5.5.1,SPKM,简单公钥机制（SPKM）标识符
+1.3.6.1.5.5.2,SNEGO,简单 GSS-API 协商机制标识符
+1.3.6.1.5.5.3,PIM,基于 PEM 的身份更新机制标识符
+1.3.6.1.5.5.4,MIM,基于 MSP 的身份更新机制标识符
+1.3.6.1.5.5.5,p7im,基于 PKCS #7 的身份更新机制标识符
+1.3.6.1.5.5.6,meim,基于 MOSS 的身份更新机制标识符
+1.3.6.1.5.5.9,LIPKEY,基于 SPKM 的 LIPKEY 机制标识符
+1.3.6.1.5.5.10,IAKERB,IAKERB GSS-API 机制标识符
+1.3.6.1.5.5.12,msec,组播安全机制标识符
+1.3.6.1.5.5.13,gsscma,GSS_C_MA 机制属性标识符
+1.3.6.1.5.5.14,SCRAM-SHA-1,SCRAM-SHA-1 认证机制标识符
+1.3.6.1.5.5.15,abfab,面向 Web 联邦接入的应用桥接机制标识符
+1.3.6.1.5.5.16,OpenID 2.0,OpenID 2.0 认证机制标识符
+1.3.6.1.5.5.17,SAML 2.0,安全断言标记语言（SAML）2.0 机制标识符
+1.3.6.1.5.5.18,SCRAM-SHA-256,SCRAM-SHA-256 认证机制标识符
+1.3.6.1.5.6,名称系统类型,名称系统标识符分支
+1.3.6.1.5.7,安全服务,安全服务标识符分支
+1.3.6.1.6.1.1,SNMP over UDP,基于 UDP 传输的 SNMP 域
+1.3.6.1.6.1.2,SNMP over CLNS,基于 CLNS 传输的 SNMP 域
+1.3.6.1.6.1.3,SNMP over CONS,基于 CONS 传输的 SNMP 域
+1.3.6.1.6.1.4,SNMP over DDP,基于 DDP 传输的 SNMP 域
+1.3.6.1.6.1.5,SNMP over IPX,基于 IPX 传输的 SNMP 域
+1.3.6.1.6.1.6,SNMP over IEEE 802,基于 IEEE 802 传输的 SNMP 域
+1.3.6.1.6.1.7,SNMP over SSH,基于 SSH 传输模型的 SNMP 域
+1.3.6.1.6.1.8,SNMP over TLS over TCP,基于 TLS over TCP 传输的 SNMP 域
+1.3.6.1.6.1.9,SNMP over DTLS over UDP,基于 DTLS over UDP 传输的 SNMP 域
+1.3.6.1.5.5.7.18.20,ER 全部内容,期望返回证据记录（ER）的全部内容

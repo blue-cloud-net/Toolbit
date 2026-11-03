@@ -1,0 +1,98 @@
+{
+  "name": "OID Lookup",
+  "description": "Browse the OID tree by object identifier, read official names, descriptions and sources, and search by name or Chinese keyword.",
+  "category": "Certificates",
+  "actions": {
+    "lookup": "Look up"
+  },
+  "sections": {
+    "tree": "OID tree"
+  },
+  "fields": {
+    "search": "Search OID or name",
+    "quick": "Quick access"
+  },
+  "options": {
+    "kind": {
+      "root": "Root node",
+      "branch": "Branch node",
+      "leaf": "Leaf node"
+    },
+    "status": {
+      "current": "Current",
+      "reserved": "Reserved",
+      "deprecated": "Deprecated",
+      "obsolete": "Obsolete"
+    }
+  },
+  "results": {
+    "detail": "Node detail",
+    "breadcrumb": "Node path",
+    "tree": "OID tree",
+    "oid": "OID",
+    "arc": "Arc",
+    "name": "Official name",
+    "nameZh": "Chinese name",
+    "description": "Official description",
+    "descriptionZh": "Chinese description",
+    "source": "Source",
+    "aliases": "Aliases",
+    "kind": "Node kind",
+    "childCount": "Children",
+    "status": "Status",
+    "matches": "{count} matches",
+    "nearest": "Nearest ancestor",
+    "expand": "Expand node",
+    "collapse": "Collapse node",
+    "loadMore": "Load more children",
+    "empty": "No matching node"
+  },
+  "examples": [
+    {
+      "label": "PKIX extended key purposes",
+      "value": "1.3.6.1.5.5.7.3"
+    },
+    {
+      "label": "X.509 certificate extensions",
+      "value": "2.5.29"
+    },
+    {
+      "label": "PKCS #1 (RSA)",
+      "value": "1.2.840.113549.1.1"
+    },
+    {
+      "label": "NIST algorithms",
+      "value": "2.16.840.1.101.3.4"
+    },
+    {
+      "label": "Chinese GM/T standards",
+      "value": "1.2.156.10197"
+    },
+    {
+      "label": "SNMP management information base",
+      "value": "1.3.6.1.2.1"
+    }
+  ],
+  "hints": {
+    "search": "Type an OID, an English name, a Chinese name or a keyword from the description; exact matches come first.",
+    "searchPlaceholder": "e.g. 1.3.6.1.5.5.7.3.36 or subjectAltName",
+    "loading": "Loading the OID tree…",
+    "notFound": "This OID is not in the current dataset; the missing arc is {suffix}.",
+    "usage": "The expandable OID tree is on the left: click a node name for its detail, click the arrow to expand or collapse it (branches load on demand). The right panel shows the path, official name, description, source and children of the selected node. The data is a snapshot of the official IANA and IETF registries; nothing is fetched from the network.",
+    "note": "The dataset covers PKIX, PKCS, S/MIME, X.509 extensions, the Chinese national crypto arc and the main SNMP branches; private enterprise numbers and the full MIB object tree are out of scope."
+  },
+  "faq": [
+    {
+      "q": "Why can some OIDs not be found?",
+      "a": "The dataset covers the standard registries (PKIX, PKCS, S/MIME, X.509 extensions, the Chinese national crypto arc, the main SNMP branches). Private enterprise numbers — tens of thousands of vendor nodes under 1.3.6.1.4.1 — and the full MIB object tree are out of scope. When a syntactically valid OID is not covered, the tool reports the nearest covered ancestor so you can tell which branch it belongs to."
+    },
+    {
+      "q": "Why do the English and Chinese names differ?",
+      "a": "The English name is the official ASN.1 name from the registry; the Chinese name is this project's translation kept alongside it. Both are shown so you can cross-check against certificates, source code and third-party tools. When a Chinese name is missing the official English one is used."
+    },
+    {
+      "q": "Does this tool make network requests?",
+      "a": "No. Everything comes from a built-in snapshot; queries are answered locally on the server and no certificate or key material is read or modified."
+    }
+  ]
+}

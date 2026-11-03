@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | [crypto.md](tools/crypto.md) | 加密 | 10 |
 | [keys.md](tools/keys.md) | 密钥 | 7 |
-| [certificates.md](tools/certificates.md) | 证书 | 23 |
+| [certificates.md](tools/certificates.md) | 证书 | 24 |
 | [encoding.md](tools/encoding.md) | 编码 | 9 |
 | [formatting.md](tools/formatting.md) | 格式化 | 9 |
 | [text.md](tools/text.md) | 文本 | 7 |

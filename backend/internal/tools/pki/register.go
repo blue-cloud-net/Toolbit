@@ -191,5 +191,14 @@ func Definitions() []tools.Definition {
 				return CAAGen(ctx, req.(*CAAGenRequest))
 			},
 		},
+		{
+			Slug: "oid-lookup",
+			NewRequest: func() tools.Request {
+				return &OIDLookupRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return OIDLookup(ctx, req.(*OIDLookupRequest))
+			},
+		},
 	}
 }

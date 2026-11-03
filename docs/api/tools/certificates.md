@@ -29,6 +29,7 @@
 | [cert-chain-fetch](#cert-chain-fetch) | 证书链获取 | network | 是 |
 | [ct-search](#ct-search) | 证书透明度查询 | network | 是 |
 | [domain-verify](#domain-verify) | 域名验证 | network | 是 |
+| [oid-lookup](#oid-lookup) | OID 查询 | light | 否 |
 
 ---
 
@@ -870,6 +871,72 @@ JSON：`POST /api/v1/tools/cert-chain-fetch`。
 > 记在对应 `perResolver[].error` 里。
 > HTTP 方式固定访问 `https://<域名>/<路径>`，只有 `200` 且内容（忽略首尾空白）完全一致才算匹配。
 > 自定义解析器同样要过出网防护，私网地址会被拦截。
+
+## oid-lookup
+
+OID（对象标识符）树状查询（**不出网**）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `oid` | string | 否 | 待查询的对象标识符；空表示浏览**根节点**（`0` / `1` / `2`） |
+| `query` | string | 否 | 搜索词；按 OID、英文名、中文名、说明与别名做子串匹配 |
+| `offset` | int | 否 | 分页偏移量，默认 `0` |
+| `limit` | int | 否 | 单页条数，默认 `50`，上限 `200` |
+
+> `oid` 与 `query` **互斥**：同时给出返回 `INVALID_FIELD`。
+> 两者都不给时返回**根节点**。
+> `oid` 会被归一化：去掉空白、`OID:` 前缀与首尾的点（` OID:1.2.3. ` → `1.2.3`）。
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `mode` | string | 查询模式：`root` \| `node` \| `search` |
+| `oid` | string | 规范化后的查询 OID；搜索模式为空串 |
+| `query` | string | 规范化后的搜索词；非搜索模式为空串 |
+| `matched` | bool | 是否命中精确节点 |
+| `node` | object \| null | 命中的节点；未命中时为 `null` |
+| `path` | array | 命中节点的祖先链（从根到父节点）；未命中时是最近祖先的路径（含最近祖先自身） |
+| `pathChildren` | object | 祖先链各层的子节点，键为父 OID |
+| `children` | array | 命中节点的直接子节点（已分页） |
+| `total` | number | 子节点总数；搜索模式下是命中总数 |
+| `offset` / `limit` | number | 本页的分页参数 |
+| `hasMore` | bool | 是否还有下一页 |
+| `matches` | array | 搜索结果 `[{ node, path }]`；非搜索模式为空数组 |
+| `nearestOid` | string | 未命中时的最近祖先 OID |
+| `missingSuffix` | string | 相对最近祖先缺失的弧后缀（如 `.9999`） |
+| `dataVersion` | string | 数据集版本 |
+
+`node` 的字段：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `oid` | string | 点分十进制对象标识符 |
+| `arc` | string | 末弧号 |
+| `name` | string | 官方英文名 |
+| `nameZh` | string | 中文名 |
+| `description` | string | 官方英文说明 |
+| `descriptionZh` | string | 中文说明 |
+| `kind` | string | `root` \| `branch` \| `leaf` |
+| `status` | string | `current` \| `reserved` \| `deprecated` \| `obsolete` |
+| `source` | string | 来源标注，如 `RFC 5280` |
+| `sourceUrl` | string | 来源链接；无链接时为空串 |
+| `aliases` | array | 历史别名与常见写法 |
+| `childCount` | number | 直接子节点数量 |
+
+### 错误
+
+`INVALID_FIELD`。
+
+> **未收录不是错误**：语法合法但不在数据集里的 OID 返回 `200`，
+> `matched: false`，并给出 `nearestOid` 与 `missingSuffix`。
+> 非法 OID 语法（如 `1.2.3.x`）才返回 `INVALID_FIELD`，错误**不回显**用户输入。
+>
+> 数据来自**内置快照**：IANA SMI / PKIX / S/MIME 注册表、IETF RFC、ITU-T 与
+> GM/T 标准，**不联网**。收录范围与取舍见
+> `backend/internal/tools/pki/dataset/README.md`。
 
 ---
 

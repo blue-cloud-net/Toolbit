@@ -1,0 +1,58 @@
+oid,name,nameZh,description,descriptionZh,status,source,sourceUrl,aliases
+2.5.4.0,objectClass,对象类别,X.500 object class attribute,X.500 对象类别属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.3,commonName,通用名称,X.500 common name attribute,X.500 通用名称（CN）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,cn;CN
+2.5.4.4,surname,姓,X.500 surname attribute,X.500 姓（SURNAME）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.5,serialNumber,序列号,X.500 serial number attribute,X.500 序列号属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,serialNumber;SERIALNUMBER
+2.5.4.6,countryName,国家名,X.500 country name attribute,X.500 国家名（C）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,c;C
+2.5.4.7,localityName,地区名,X.500 locality name attribute,X.500 地区名（L）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,l;L
+2.5.4.8,stateOrProvinceName,州或省,X.500 state or province name attribute,X.500 州或省（ST）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,st;ST
+2.5.4.9,streetAddress,街道地址,X.500 street address attribute,X.500 街道地址属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.10,organizationName,组织名,X.500 organization name attribute,X.500 组织名（O）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,o;O
+2.5.4.11,organizationalUnitName,组织单位名,X.500 organizational unit name attribute,X.500 组织单位名（OU）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,ou;OU
+2.5.4.12,title,职务,X.500 title attribute,X.500 职务（Title）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.13,description,描述,X.500 description attribute,X.500 描述属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.14,searchGuide,检索指南,X.500 search guide attribute,X.500 检索指南属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.15,businessCategory,业务类别,X.500 business category attribute,X.500 业务类别属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.16,postalAddress,邮寄地址,X.500 postal address attribute,X.500 邮寄地址属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.17,postalCode,邮政编码,X.500 postal code attribute,X.500 邮政编码属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.18,postOfficeBox,邮政信箱,X.500 post office box attribute,X.500 邮政信箱属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.20,telephoneNumber,电话号码,X.500 telephone number attribute,X.500 电话号码属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.41,name,名称,X.500 name attribute,X.500 名称（Name）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.42,givenName,名,X.500 given name attribute,X.500 名（Given Name）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.43,initials,缩写,X.500 initials attribute,X.500 缩写（Initials）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.44,generationQualifier,世代标识,X.500 generation qualifier attribute,X.500 世代标识（Generation Qualifier）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.45,uniqueIdentifier,唯一标识符,X.500 unique identifier attribute,X.500 唯一标识符（UID）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,uid;UID
+2.5.4.46,dnQualifier,区分名限定符,X.500 DN qualifier attribute,X.500 区分名限定符（DNQ）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.65,pseudonym,假名,X.500 pseudonym attribute,X.500 假名（Pseudonym）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.97,organizationIdentifier,组织标识符,X.500 organization identifier attribute,X.500 组织标识符属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.98,organization,组织,X.500 organization attribute,X.500 组织（Organization）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.99,domainComponent,域名组件,X.500 domain component attribute,X.500 域名组件（DC）属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,dc;DC
+2.5.4.104,organizationBusinessCategory,组织业务类别,X.500 organization business category attribute,X.500 组织业务类别属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.105,organizationPostalAddress,组织邮寄地址,X.500 organization postal address attribute,X.500 组织邮寄地址属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.4.106,organizationPostalCode,组织邮政编码,X.500 organization postal code attribute,X.500 组织邮政编码属性,current,RFC 4519,https://www.rfc-editor.org/rfc/rfc4519.html,
+2.5.29.9,subjectDirectoryAttributes,主体目录属性,X.509 subject directory attributes extension,X.509 主体目录属性扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.14,subjectKeyIdentifier,主体密钥标识符,X.509 subject key identifier extension,X.509 主体密钥标识符（SKI）扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,SKI
+2.5.29.15,keyUsage,密钥用途,X.509 key usage extension,X.509 密钥用途（Key Usage）扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,keyUsage
+2.5.29.16,privateKeyUsagePeriod,私钥使用期,X.509 private key usage period extension,X.509 私钥使用期扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.17,subjectAltName,主体备用名称,X.509 subject alternative name extension,X.509 主体备用名称（SAN）扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,SAN
+2.5.29.18,issuerAltName,颁发者备用名称,X.509 issuer alternative name extension,X.509 颁发者备用名称扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.19,basicConstraints,基本约束,X.509 basic constraints extension,X.509 基本约束（Basic Constraints）扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.20,cRLNumber,CRL 序号,X.509 CRL number extension,X.509 CRL 编号扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.21,crlReason,吊销原因,X.509 CRL reason code extension,X.509 CRL 原因码扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.23,holdInstructionCode,挂起指令码,X.509 hold instruction code extension,X.509 证书挂起指令码扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.24,invalidityDate,失效日期,X.509 invalidity date extension,X.509 证书失效日期扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.27,deltaCRLIndicator,增量 CRL 指示,X.509 delta CRL indicator extension,X.509 增量 CRL 指示扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.28,issuingDistributionPoint,颁发分发点,X.509 issuing distribution point extension,X.509 颁发分发点（IDP）扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,IDP
+2.5.29.29,certificateIssuer,证书颁发者,X.509 certificate issuer extension,X.509 证书颁发者扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.30,nameConstraints,名称约束,X.509 name constraints extension,X.509 名称约束（Name Constraints）扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,NC
+2.5.29.31,cRLDistributionPoints,CRL 分发点,X.509 CRL distribution points extension,X.509 CRL 分发点扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.32,certificatePolicies,证书策略,X.509 certificate policies extension,X.509 证书策略（Certificate Policies）扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.33,policyMappings,策略映射,X.509 policy mappings extension,X.509 策略映射扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.35,authorityKeyIdentifier,颁发者密钥标识符,X.509 authority key identifier extension,X.509 颁发者密钥标识符（AKI）扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,AKI
+2.5.29.36,policyConstraints,策略约束,X.509 policy constraints extension,X.509 策略约束扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.37,extendedKeyUsage,扩展密钥用途,X.509 extended key usage extension,X.509 扩展密钥用途（EKU）扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,EKU
+2.5.29.37.0,anyExtendedKeyUsage,任意扩展密钥用途,X.509 any extended key usage,X.509 任意扩展密钥用途,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.38,authorityInformationAccess,颁发者信息访问,X.509 authority information access extension,X.509 颁发者信息访问（AIA）扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,AIA
+2.5.29.39,subjectInformationAccess,主体信息访问,X.509 subject information access extension,X.509 主体信息访问（SIA）扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,SIA
+2.5.29.40,cRLScope,CRL 作用域,X.509 CRL scope extension,X.509 CRL 作用域扩展,current,RFC 5280,https://www.rfc-editor.org/rfc/rfc5280.html,
+2.5.29.54,noRevAvail,无吊销信息可用,X.509 no revocation information available extension,X.509 无吊销信息可用扩展,current,RFC 9589,https://www.rfc-editor.org/rfc/rfc9589.html,

@@ -28,6 +28,8 @@ backend/tmp/
 *.db-wal
 /data/
 /tmp/
+# IANA 注册表下载缓存（scripts/oid/gen-oid-dataset.mjs 自动生成）
+scripts/oid/.cache/
 # air 开发环境下的统计库（TOOLBIT_DB_PATH=./tmp/stats.db 之外的默认位置）
 backend/data/
 

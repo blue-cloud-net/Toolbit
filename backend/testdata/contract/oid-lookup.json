@@ -1,0 +1,123 @@
+{
+  "slug": "oid-lookup",
+  "description": "OID 树状查询的契约测试数据。",
+  "cases": [
+    {
+      "name": "空请求返回根节点",
+      "request": {},
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "root", "total": 3 }
+      }
+    },
+    {
+      "name": "按精确 OID 查询",
+      "request": { "oid": "1.3.6.1.5.5.7.3.36" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "node", "oid": "1.3.6.1.5.5.7.3.36", "matched": true }
+      }
+    },
+    {
+      "name": "查询 X.509 主体备用名称扩展",
+      "request": { "oid": "2.5.29.17" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "node", "oid": "2.5.29.17", "matched": true }
+      }
+    },
+    {
+      "name": "查询国密 SM2 公钥算法",
+      "request": { "oid": "1.2.156.10197.1.301" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "node", "oid": "1.2.156.10197.1.301", "matched": true }
+      }
+    },
+    {
+      "name": "未收录的 OID 返回最近祖先",
+      "request": { "oid": "1.3.6.1.5.5.7.3.9999" },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "mode": "node",
+          "matched": false,
+          "nearestOid": "1.3.6.1.5.5.7.3",
+          "missingSuffix": ".9999"
+        }
+      }
+    },
+    {
+      "name": "按名称搜索",
+      "request": { "query": "subjectAltName" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "search", "query": "subjectAltName" }
+      }
+    },
+    {
+      "name": "按中文名搜索",
+      "request": { "query": "主体备用名称" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "search", "query": "主体备用名称" }
+      }
+    },
+    {
+      "name": "按 OID 搜索",
+      "request": { "query": "1.2.840.113549.1.1.11" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "search" }
+      }
+    },
+    {
+      "name": "搜索无命中返回空数组",
+      "request": { "query": "zzz-not-an-oid" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "search", "total": 0 }
+      }
+    },
+    {
+      "name": "子节点分页",
+      "request": { "oid": "1.3.6.1.5.5.7.3", "limit": 5 },
+      "expect": {
+        "code": 0,
+        "dataContains": { "mode": "node", "offset": 0, "limit": 5, "hasMore": true }
+      }
+    },
+    {
+      "name": "输入归一化：去掉前缀与首尾点",
+      "request": { "oid": " OID:1.3.6.1.5.5.7.3.36 " },
+      "expect": {
+        "code": 0,
+        "dataContains": { "oid": "1.3.6.1.5.5.7.3.36", "matched": true }
+      }
+    },
+    {
+      "name": "oid 与 query 互斥",
+      "request": { "oid": "1.2.3", "query": "x" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "非法 OID 语法",
+      "request": { "oid": "1.2.3.x" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "limit 超出上限",
+      "request": { "limit": 1000 },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

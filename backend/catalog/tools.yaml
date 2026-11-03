@@ -718,6 +718,22 @@ tools:
     wide: false
     i18nKey: tools.domain-verify
 
+  - slug: oid-lookup
+    category: certificates
+    order: 24
+    name: OID 查询
+    nameEn: OID Lookup
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: true
+    i18nKey: tools.oid-lookup
+
   - slug: base64
     category: encoding
     order: 1
