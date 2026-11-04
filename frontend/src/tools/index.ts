@@ -85,7 +85,6 @@ export const toolRegistry: Record<string, ToolLoader> = {
   'websocket-test': () => import('./network/websocket-test/index'),
   'mime-lookup': () => import('./network/mime-lookup/index'),
   'http-status': () => import('./network/http-status/index'),
-  'ip-range-expand': () => import('./network/ip-range-expand/index'),
   'ua-parser': () => import('./network/ua-parser/index'),
   'header-generator': () => import('./network/header-generator/index'),
 

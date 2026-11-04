@@ -81,15 +81,6 @@ func Definitions(g *netguard.Guard) []tools.Definition {
 			},
 		},
 		{
-			Slug: "ip-range-expand",
-			NewRequest: func() tools.Request {
-				return &IPRangeRequest{}
-			},
-			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
-				return IPRange(ctx, req.(*IPRangeRequest))
-			},
-		},
-		{
 			Slug: "mime-lookup",
 			NewRequest: func() tools.Request {
 				return &MimeLookupRequest{}

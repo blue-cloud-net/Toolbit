@@ -2,11 +2,15 @@
 /**
  * CIDR 计算工具页。
  *
- * 结果用页签呈现：**概览**（统计卡片 + 地址区间条 + 前缀位图）与
- * **子网**（拆分 / 反推得到的 CIDR 列表）。全文复制仍由 `ResultPanel` 提供。
+ * 结果用页签呈现：**概览**（统计卡片 + 地址区间条 + 前缀位图）、
+ * **子网**（拆分 / 反推得到的 CIDR 列表）与
+ * **地址**（展开得到的逐个地址列表，仅在勾选「展开地址」时出现）。
+ * 全文复制仍由 `ResultPanel` 提供。
  */
 import { ElButton } from 'element-plus/es/components/button/index'
 import 'element-plus/es/components/button/style/css'
+import { ElCheckbox } from 'element-plus/es/components/checkbox/index'
+import 'element-plus/es/components/checkbox/style/css'
 import { ElInput } from 'element-plus/es/components/input/index'
 import 'element-plus/es/components/input/style/css'
 import { ElInputNumber } from 'element-plus/es/components/input-number/index'
@@ -44,6 +48,12 @@ interface CIDRCalcResult {
   totalAddresses: string
   cidrs: string[]
   range: string[]
+  /** 展开的地址列表；仅 expand 为 true 时非空。 */
+  addresses: string[]
+  /** 待展开范围内的地址总数（十进制字符串）。 */
+  addressCount: string
+  /** 地址列表是否因超出上限而被截断。 */
+  truncated: boolean
 }
 
 interface FaqItem {
@@ -54,6 +64,9 @@ interface FaqItem {
 /** 子网标签网格一次展示的上限；超出折叠。 */
 const SUBNET_PREVIEW = 64
 
+/** 展开地址列表一次展示的上限；超出折叠。 */
+const ADDRESS_PREVIEW = 256
+
 const { t, tm } = useI18n()
 
 const mode = ref<'cidr' | 'range'>(DEFAULT_EXAMPLE.mode)
@@ -62,20 +75,32 @@ const start = ref(DEFAULT_EXAMPLE.start)
 const end = ref(DEFAULT_EXAMPLE.end)
 const split = ref(0)
 
+/** 是否把地址范围展开成逐个地址列表。 */
+const expand = ref(false)
+
+/** 展开条数上限。 */
+const limit = ref(1024)
+
 /** 子网列表是否展开全部。 */
 const showAllSubnets = ref(false)
+
+/** 地址列表是否展开全部。 */
+const showAllAddresses = ref(false)
 
 const { state, data, meta, error, run: execute, reset: resetRun } =
   useToolRun<CIDRCalcResult>({ slug: 'cidr-calc' })
 
 const running = computed(() => state.value === 'loading')
 
-/** 结果页签：概览 + 子网（仅在有子网时出现）。 */
+/** 结果页签：概览 + 子网（仅在有子网时出现）+ 地址（仅在展开时出现）。 */
 const views = computed<ResultView[]>(() => {
   const list: ResultView[] = [{ id: 'overview', label: t('tools.cidr-calc.views.overview') }]
   const subnets = subnetList.value
   if (subnets.length > 0) {
     list.push({ id: 'subnets', label: t('tools.cidr-calc.views.subnets') })
+  }
+  if (addressList.value.length > 0) {
+    list.push({ id: 'addresses', label: t('tools.cidr-calc.views.addresses') })
   }
   return list
 })
@@ -102,6 +127,19 @@ const subnetsTruncated = computed(
 /** 展示的子网。 */
 const visibleSubnets = computed(() =>
   subnetsTruncated.value ? subnetList.value.slice(0, SUBNET_PREVIEW) : subnetList.value,
+)
+
+/** 地址列表：展开得到的逐个地址。 */
+const addressList = computed<string[]>(() => data.value?.addresses ?? [])
+
+/** 是否折叠了地址列表。 */
+const addressesTruncated = computed(
+  () => addressList.value.length > ADDRESS_PREVIEW && !showAllAddresses.value,
+)
+
+/** 展示的地址。 */
+const visibleAddresses = computed(() =>
+  addressesTruncated.value ? addressList.value.slice(0, ADDRESS_PREVIEW) : addressList.value,
 )
 
 /** 结果文本：结构化摘要 + 子网列表。 */
@@ -131,6 +169,9 @@ const resultText = computed(() => {
   if (value.range.length > 0) {
     lines.push('', ...value.range)
   }
+  if (value.addresses.length > 0) {
+    lines.push('', ...value.addresses)
+  }
   return lines.join('\n')
 })
 
@@ -158,6 +199,20 @@ const stats = computed<StatGridItem[]>(() => {
     label: t('tools.cidr-calc.results.usableRange'),
     value: `${value.firstUsable} – ${value.lastUsable}`,
   })
+  if (value.addresses.length > 0) {
+    items.push({
+      label: t('tools.cidr-calc.results.addressCount'),
+      value: value.addressCount,
+    })
+    if (value.truncated) {
+      items.push({
+        label: t('tools.cidr-calc.results.truncated'),
+        value: t('common.states.yes'),
+        level: 'warning',
+        mono: false,
+      })
+    }
+  }
   return items
 })
 
@@ -174,14 +229,17 @@ function run(): void {
     mode.value === 'cidr'
       ? { cidr: cidr.value, ...(split.value > 0 ? { split: split.value } : {}) }
       : { start: start.value, end: end.value }
-  void execute(payload)
+  void execute({
+    ...payload,
+    ...(expand.value ? { expand: true, limit: limit.value } : {}),
+  })
 }
 
 /** 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。 */
 useAutoRun({
   slug: 'cidr-calc',
   run,
-  watch: [mode, cidr, start, end, split],
+  watch: [mode, cidr, start, end, split, expand, limit],
 })
 
 function reset(): void {
@@ -190,7 +248,10 @@ function reset(): void {
   start.value = DEFAULT_EXAMPLE.start
   end.value = DEFAULT_EXAMPLE.end
   split.value = 0
+  expand.value = false
+  limit.value = 1024
   showAllSubnets.value = false
+  showAllAddresses.value = false
   activeView.value = 'overview'
   resetRun()
 }
@@ -267,11 +328,41 @@ function reset(): void {
             <span class="field__label">{{ t('tools.cidr-calc.fields.split') }}</span>
             <ElInputNumber
               v-model="split"
-              class="field__input"
+              class="field__number"
               :min="0"
               :max="128"
             />
           </label>
+
+          <label class="field field--check">
+            <ElCheckbox
+              v-model="expand"
+              :aria-label="t('tools.cidr-calc.fields.expand')"
+            >
+              {{ t('tools.cidr-calc.fields.expand') }}
+            </ElCheckbox>
+          </label>
+
+          <label
+            v-if="expand"
+            class="field"
+          >
+            <span class="field__label">{{ t('tools.cidr-calc.fields.limit') }}</span>
+            <ElInputNumber
+              v-model="limit"
+              class="field__number"
+              :min="1"
+              :max="4096"
+              :aria-label="t('tools.cidr-calc.fields.limit')"
+            />
+          </label>
+
+          <p
+            v-if="expand"
+            class="field__hint"
+          >
+            {{ t('tools.cidr-calc.hints.expand') }}
+          </p>
         </template>
 
         <template #footer>
@@ -334,6 +425,42 @@ function reset(): void {
                 {{ t('tools.cidr-calc.hints.bits', { prefix: data.prefix, bits: data.version === 4 ? 32 : 128 }) }}
               </p>
             </section>
+          </template>
+
+          <template v-else-if="viewId === 'addresses'">
+            <div class="subnets">
+              <div
+                v-for="item in visibleAddresses"
+                :key="item"
+                class="subnet"
+              >
+                <span class="subnet__value tb-mono">{{ item }}</span>
+                <CopyButton
+                  :text="item"
+                  size="small"
+                />
+              </div>
+            </div>
+
+            <p
+              v-if="addressesTruncated"
+              class="section__hint"
+            >
+              {{ t('tools.cidr-calc.hints.addressTruncated', {
+                shown: ADDRESS_PREVIEW,
+                total: addressList.length,
+              }) }}
+            </p>
+
+            <ElButton
+              v-if="addressesTruncated || (addressList.length > ADDRESS_PREVIEW && showAllAddresses)"
+              size="small"
+              @click="showAllAddresses = !showAllAddresses"
+            >
+              {{ showAllAddresses
+                ? t('tools.cidr-calc.actions.collapse')
+                : t('tools.cidr-calc.actions.showAll', { count: addressList.length }) }}
+            </ElButton>
           </template>
 
           <template v-else>

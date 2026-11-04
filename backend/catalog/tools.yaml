@@ -1630,22 +1630,6 @@ tools:
     wide: false
     i18nKey: tools.header-generator
 
-  - slug: ip-range-expand
-    category: network
-    order: 11
-    name: IP 段展开
-    nameEn: IP Range Expander
-    enabled: true
-    transport: json
-    rateClass: light
-    maxBodyBytes: 1048576
-    timeoutMs: 5000
-    sensitive: false
-    requiresNetwork: false
-    autoRun: true
-    wide: false
-    i18nKey: tools.ip-range-expand
-
   - slug: pdf-sign-verify
     category: documents
     order: 1

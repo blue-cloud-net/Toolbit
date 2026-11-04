@@ -2,7 +2,7 @@
 
 > 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-11-02
 
-覆盖 **11** 个网络类工具。其中 4 个**需要出网**，`websocket-test` 为**纯前端**工具（无后端端点），
+覆盖 **10** 个网络类工具。其中 4 个**需要出网**，`websocket-test` 为**纯前端**工具（无后端端点），
 `mime-lookup`、`http-status` 与 `dns-servers` 为**纯查表**工具（不出网）。
 
 | slug | 名称 | 传输 | 端点 |
@@ -17,7 +17,6 @@
 | [http-status](#http-status) | HTTP 状态码查询 | JSON | `POST /api/v1/tools/http-status` |
 | [ua-parser](#ua-parser) | UA 解析 | JSON | `POST /api/v1/tools/ua-parser` |
 | [header-generator](#header-generator) | 请求头生成 | JSON | `POST /api/v1/tools/header-generator` |
-| [ip-range-expand](#ip-range-expand) | IP 段展开 | JSON | `POST /api/v1/tools/ip-range-expand` |
 
 ---
 
@@ -72,6 +71,8 @@ CIDR 子网计算（**不出网**）。
 | `cidr` | string | 二选一 | 如 `192.168.1.0/24` |
 | `start` / `end` | string | 二选一 | 地址范围（反推 CIDR） |
 | `split` | number | 否 | 按指定前缀长度拆分；仅 `cidr` 模式支持 |
+| `expand` | boolean | 否 | 是否把地址区间展开成逐个地址列表；默认 `false` |
+| `limit` | number | 否 | 展开条数上限；默认 `1024`，最大 `4096` |
 
 ### 响应
 
@@ -88,15 +89,20 @@ CIDR 子网计算（**不出网**）。
 | `totalAddresses` | string | 地址总数（十进制字符串） |
 | `cidrs` | array | 按 `split` 拆分后的子网 |
 | `range` | array | 范围反推得到的最小 CIDR 集合 |
+| `addresses` | array | 展开得到的逐个地址；仅 `expand` 为 `true` 时非空 |
+| `addressCount` | string | 待展开范围内的地址总数（十进制字符串） |
+| `truncated` | boolean | 地址列表是否因超出 `limit` 而被截断 |
 
 ### 错误
 
 `INVALID_CIDR`、`INVALID_FIELD`、`MISSING_FIELD`、`TOO_MANY_ITEMS`。
 
 > IPv4 与 IPv6 **分别**计算，**不**混合。
-> `hostCount` 与 `totalAddresses` 用字符串表达：IPv6 的地址数量可达 2¹²⁸，超出 64 位整数。
+> `hostCount`、`totalAddresses` 与 `addressCount` 用字符串表达：IPv6 的地址数量可达 2¹²⁸，超出 64 位整数。
 > IPv4 的 `/31` 计 2 个可用地址、`/32` 计 1 个；IPv6 无广播概念，全部地址可用。
 > 一次拆分或反推最多产出 **256** 个子网，超出返回 `TOO_MANY_ITEMS`。
+> `expand` 的展开区间：`cidr` 模式取网段的**全部**地址（含网络地址与广播地址），
+> 范围模式取 `start`..`end` 闭区间；`addressCount` 给出该区间的地址总数，与 `limit` 无关。
 
 ---
 
@@ -505,40 +511,6 @@ HTTP 状态码查询（**不出网**）。
 
 > 生成的 UA 是**常见组合**，不代表任何真实浏览器。
 > 自定义请求头按名称字典序输出，顺序稳定。
-
----
-
-## ip-range-expand
-
-IP 段与 CIDR 互转及批量展开（IP Range Expander）。
-
-### 请求
-
-| 字段 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| `mode` | string | 否 | `expand` 展开 / `toCidr` 转 CIDR / `toRange` 转区间 |
-| `cidr` | string | 否 | 网段；`expand` 与 `toRange` 模式使用 |
-| `start` | string | 否 | 起始地址；`toCidr` 模式使用 |
-| `end` | string | 否 | 结束地址；`toCidr` 模式使用 |
-| `limit` | int | 否 | 展开条数上限，默认 1024 |
-
-### 响应
-
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `mode` | string | 模式 |
-| `cidrs` | array | 规范化后的 CIDR 列表 |
-| `start` | string | 起始地址 |
-| `end` | string | 结束地址 |
-| `count` | int | 地址总数 |
-| `addresses` | array | 展开的地址列表 |
-| `truncated` | bool | 地址列表是否被上限截断 |
-
-### 错误
-
-`MISSING_FIELD`、`INVALID_FIELD`。
-
-> 展开条数上限受 `limit` 约束，超出时 `truncated` 为 `true`。
 
 ---
 

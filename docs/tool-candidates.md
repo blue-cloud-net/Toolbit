@@ -73,7 +73,7 @@
 | `file-analyze` | 数据 | 文件类型识别与元数据提取（魔数、MIME、大小、摘要） | `mimetype` 已在依赖树，提升为直接依赖 | 零新依赖 | S | P2 |
 | `text-stats` | 文本 | 字数 / 行数 / 字符统计，中英文分别计数 | 无 | 零新依赖 | S | P2 |
 | `wifi-qr` | 数据 | 访客 WiFi 批量二维码生成 | 复用 `qr-code` 的生成能力；**已移除**（能力与 `qr-code` 重叠，且会明文回显含网络口令的载荷，改由 `qr-code` 承担二维码生成） | 零新依赖 | S | P2 |
-| `ip-range-expand` | 网络 | IP 段与 CIDR 互转、批量展开 | 扩充 `cidr-calc` | 零新依赖 | S–M | P2 |
+| `ip-range-expand` | 网络 | IP 段与 CIDR 互转、批量展开 | **已并入 `cidr-calc`**（互转能力与 `cidr-calc` 重复，展开能力作为 `expand` 选项并入） | 零新依赖 | S–M | P2 |
 | `id-generator` | 数据 | UUID / ULID / 雪花 ID / NanoID 统一生成 | 扩充 `uuid-gen` 优于新增 slug | 零新依赖 | S | P2 |
 | `mock-data` | 数据 | 按字段类型生成假数据 | 无 | 零新依赖 | M | P2 |
 | `lookup-table` | 系统 | 速查表：端口号、Linux 退出码、时间戳格式 | [roadmap.md](roadmap.md) §16.1 已列 | 零新依赖 | S | P2 |
@@ -104,6 +104,9 @@
 
 批次 C 含 **2** 个新增 slug，工具总数由 **100** 变为 **102**；其中 `cert-lifecycle`
 在交付前被移除（能力与 `cert-parse` 重叠），实际为 **101**。
+
+此后 `ip-range-expand` 也被移除（互转能力与 `cidr-calc` 重叠，展开能力并入 `cidr-calc`），
+工具总数为 **101**。
 
 ---
 

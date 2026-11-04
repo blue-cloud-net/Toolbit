@@ -76,7 +76,7 @@ RC 是 `1.0.0` 的**预发布标识**，与 `0.x` 是两条独立轨道。
 | `v1.0.0-rc.N` | 发布候选 | 0 | 70 | 待开始 |
 | `v1.0.0` | **正式发布（GA）** | 0 | 70 | 待开始 |
 
-工具总数 **102**，与 [`backend/catalog/tools.yaml`](../backend/catalog/tools.yaml) 一致。
+工具总数 **101**，与 [`backend/catalog/tools.yaml`](../backend/catalog/tools.yaml) 一致。
 
 ### 2.1 依赖顺序
 
@@ -127,7 +127,7 @@ flowchart LR
 
 - catalog、错误码、配置项、契约四者互相一致，并由 `scripts/check-docs.mjs` 校验；
 - `markdownlint-cli2` 零问题；内部链接零断链；
-- 102 个工具的请求 / 响应契约全部落档。
+- 101 个工具的请求 / 响应契约全部落档。
 
 > 本版本**不含任何可运行代码**，`backend/internal/*` 与 `frontend/` 尚未落地。
 
@@ -931,7 +931,7 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 
 | 工具 | 状态 | 传输 | 说明 |
 | --- | --- | --- | --- |
-| `cidr-calc` | ✅ | JSON | 纯计算，含范围反推与拆分 |
+| `cidr-calc` | ✅ | JSON | 纯计算，含范围反推、拆分与地址展开 |
 | `ssl-check` | ✅ | WebSocket | 流式进度 + 结果；链验证区分 `chainValid` / `verified` |
 | `dns-lookup` | ✅ | JSON | udp / tcp / dot / doh 四种协议 |
 | `dns-tester` | ✅ | JSON | RDAP 优先、whois 43 端口回退；dnssec / ptr |
@@ -956,7 +956,7 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 
 | # | 任务 | 落点 | 状态 |
 | --- | --- | --- | --- |
-| N6 | `cidr-calc`（含范围反推、拆分、IPv6 大数） | `backend/internal/tools/network/cidr.go` | ✅ |
+| N6 | `cidr-calc`（含范围反推、拆分、地址展开、IPv6 大数） | `backend/internal/tools/network/cidr.go` | ✅ |
 | N7 | `dns-lookup`（四种协议） | `backend/internal/tools/network/dns.go` | ✅ |
 | N8 | `dns-tester`（RDAP / whois / dnssec / ptr） | `backend/internal/tools/network/{dnstester,whois}.go` | ✅ |
 | N9 | `cert-chain-fetch` + `domain-verify` | `backend/internal/tools/network/{chainfetch,domainverify}.go` | ✅ |

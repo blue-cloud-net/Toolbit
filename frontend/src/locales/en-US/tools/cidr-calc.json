@@ -1,6 +1,6 @@
 {
   "name": "CIDR Calculator",
-  "description": "Compute network address, mask, usable hosts and subnets, or convert an address range back into CIDR blocks.",
+  "description": "Compute network address, mask, usable hosts and subnets, convert an address range back into CIDR blocks, or expand a block into an address list.",
   "category": "Network",
   "actions": {
     "calculate": "Calculate",
@@ -12,7 +12,9 @@
     "cidr": "CIDR block",
     "start": "Start address",
     "end": "End address",
-    "split": "Split prefix"
+    "split": "Split prefix",
+    "expand": "Expand address list",
+    "limit": "Expand limit"
   },
   "options": {
     "modeCidr": "CIDR block",
@@ -20,7 +22,8 @@
   },
   "views": {
     "overview": "Overview",
-    "subnets": "Subnets"
+    "subnets": "Subnets",
+    "addresses": "Addresses"
   },
   "results": {
     "output": "Result",
@@ -33,7 +36,9 @@
     "hostCount": "Usable hosts",
     "usableRange": "Usable range",
     "range": "Address range",
-    "prefixBits": "Prefix bitmap"
+    "prefixBits": "Prefix bitmap",
+    "addressCount": "Total expanded addresses",
+    "truncated": "Truncated"
   },
   "examples": [
     {
@@ -45,7 +50,9 @@
     "split": "The split prefix must not be shorter than the original one; at most 256 subnets per call.",
     "hostCount": "For IPv4 a `/31` counts 2 usable hosts and a `/32` counts 1; IPv6 has no unusable addresses.",
     "bits": "Filled squares are the network bits (the first {prefix} of {bits} bits); hollow squares are host bits.",
-    "subnetTruncated": "Showing the first {shown} of {total}."
+    "subnetTruncated": "Showing the first {shown} of {total}.",
+    "expand": "Expansion lists every address in the block (including the network and broadcast addresses); the count is capped by the limit.",
+    "addressTruncated": "Showing the first {shown} of {total}."
   },
   "faq": [
     {
@@ -59,6 +66,10 @@
     {
       "q": "Does IPv6 have a broadcast address?",
       "a": "No. The `broadcast` field is empty for IPv6."
+    },
+    {
+      "q": "Why is the expanded address list truncated?",
+      "a": "Expansion enumerates addresses one by one, so a large block would exhaust memory and the response size; the list is therefore capped by the expand limit and flagged."
     }
   ]
 }

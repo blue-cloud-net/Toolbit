@@ -157,7 +157,6 @@ export const TOOL_TONES: Record<string, Tone> = {
   'websocket-test': 'violet',
   'ua-parser': 'amber',
   'header-generator': 'orange',
-  'ip-range-expand': 'orange',
   'mime-lookup': 'indigo',
   'http-status': 'cyan',
 

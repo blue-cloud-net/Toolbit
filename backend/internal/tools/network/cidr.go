@@ -13,6 +13,14 @@ import (
 // maxSplitCIDRs 是一次拆分允许的子网数量上限。
 const maxSplitCIDRs = 256
 
+// maxExpandAddresses 是展开地址数的上限。
+//
+// 展开是逐地址枚举，大网段会耗尽内存与响应体。
+const maxExpandAddresses = 4096
+
+// defaultExpandLimit 是展开地址数的默认上限。
+const defaultExpandLimit = 1024
+
 // tooManyItems 构造条目数超限的错误。
 func tooManyItems(field string, actual int) *toolerr.Error {
 	return toolerr.Newf(toolerr.CodeTooManyItems, map[string]any{
@@ -37,6 +45,10 @@ type CIDRCalcRequest struct {
 	End string `json:"end"`
 	// Split 是按指定前缀长度拆分网段；0 表示不拆分。
 	Split int `json:"split"`
+	// Expand 是否把地址范围展开成地址列表。
+	Expand bool `json:"expand"`
+	// Limit 是展开地址数的上限；0 表示用默认值。
+	Limit int `json:"limit"`
 }
 
 // CIDRCalcResult 是 CIDR 计算工具的响应。
@@ -67,6 +79,12 @@ type CIDRCalcResult struct {
 	CIDRs []string `json:"cidrs"`
 	// Range 是地址范围反推出的最小 CIDR 集合（仅范围输入时非空）。
 	Range []string `json:"range"`
+	// Addresses 是展开的地址列表；仅 Expand 为 true 时非空。
+	Addresses []string `json:"addresses"`
+	// AddressCount 是待展开范围内的地址总数（十进制字符串）。
+	AddressCount string `json:"addressCount"`
+	// Truncated 表示地址列表因超出上限而被截断。
+	Truncated bool `json:"truncated"`
 }
 
 // Validate 做字段级校验。
@@ -97,6 +115,9 @@ func (r *CIDRCalcRequest) Validate() error {
 			return tools.InvalidField("split", []string{"1..128"}, r.Split)
 		}
 	}
+	if r.Limit < 0 || r.Limit > maxExpandAddresses {
+		return tools.InvalidField("limit", []int{0, maxExpandAddresses}, r.Limit)
+	}
 	return nil
 }
 
@@ -125,6 +146,12 @@ func calcFromPrefix(req *CIDRCalcRequest) (tools.Result, error) {
 			return tools.Result{}, err
 		}
 		result.CIDRs = cidrs
+	}
+	if req.Expand {
+		// 展开区间取网段的**全部**地址（含网络地址与广播地址）。
+		first := prefix.Masked().Addr()
+		last := lastAddr(first, addressTotal(prefix))
+		applyExpansion(&result, first, last, req.Limit)
 	}
 	return tools.Result{Data: result}, nil
 }
@@ -162,7 +189,44 @@ func calcFromRange(req *CIDRCalcRequest) (tools.Result, error) {
 		return tools.Result{}, err
 	}
 	result.Range = out
+	if req.Expand {
+		applyExpansion(&result, first, last, req.Limit)
+	}
 	return tools.Result{Data: result}, nil
+}
+
+// applyExpansion 填充结果中的地址展开相关字段。
+//
+// 展开是逐地址枚举，大网段会耗尽内存与响应体，因此按 limit 截断。
+func applyExpansion(result *CIDRCalcResult, first, last netip.Addr, limit int) {
+	if limit <= 0 {
+		limit = defaultExpandLimit
+	}
+	bits := bitsOf(first)
+	base := addrToBig(first)
+	end := addrToBig(last)
+
+	// 闭区间内的地址总数。
+	total := new(big.Int).Sub(end, base)
+	total.Add(total, big.NewInt(1))
+	result.AddressCount = total.String()
+
+	addresses := make([]string, 0, limit)
+	one := big.NewInt(1)
+	cur := new(big.Int).Set(base)
+	for {
+		addresses = append(addresses, bigToAddr(cur, bits).String())
+		if cur.Cmp(end) >= 0 {
+			break
+		}
+		if len(addresses) >= limit {
+			// 还没走到末地址就撞到上限：截断。
+			result.Truncated = true
+			break
+		}
+		cur.Add(cur, one)
+	}
+	result.Addresses = addresses
 }
 
 // describePrefix 汇总一个网段的信息。
@@ -187,6 +251,7 @@ func describePrefix(prefix netip.Prefix) (CIDRCalcResult, error) {
 		HostCount:      hostCount(bits, prefix.Bits()).String(),
 		CIDRs:          []string{},
 		Range:          []string{},
+		Addresses:      []string{},
 	}
 
 	firstUsable, lastUsable := usableRange(bits, network, last)
@@ -265,6 +330,16 @@ func lastAddr(network netip.Addr, total *big.Int) netip.Addr {
 	sum := new(big.Int).Add(base, total)
 	sum.Sub(sum, big.NewInt(1))
 	return bigToAddr(sum, bitsOf(network))
+}
+
+// addressTotal 返回网段内的地址总数。
+func addressTotal(prefix netip.Prefix) *big.Int {
+	bits := bitsOf(prefix.Addr())
+	full := bits - prefix.Bits()
+	if full < 0 {
+		return big.NewInt(0)
+	}
+	return new(big.Int).Lsh(big.NewInt(1), uint(full))
 }
 
 // splitPrefix 按目标前缀长度拆分网段。

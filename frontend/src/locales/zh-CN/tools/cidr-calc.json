@@ -1,6 +1,6 @@
 {
   "name": "CIDR 计算",
-  "description": "计算网段地址、掩码、可用主机数与拆分结果，也可由地址范围反推 CIDR。",
+  "description": "计算网段地址、掩码、可用主机数与拆分结果，也可由地址范围反推 CIDR，还能把网段逐个展开成地址列表。",
   "category": "网络",
   "actions": {
     "calculate": "计算",
@@ -12,7 +12,9 @@
     "cidr": "网段",
     "start": "起始地址",
     "end": "结束地址",
-    "split": "拆分前缀"
+    "split": "拆分前缀",
+    "expand": "展开地址列表",
+    "limit": "展开上限"
   },
   "options": {
     "modeCidr": "网段",
@@ -20,7 +22,8 @@
   },
   "views": {
     "overview": "概览",
-    "subnets": "子网"
+    "subnets": "子网",
+    "addresses": "地址"
   },
   "results": {
     "output": "计算结果",
@@ -33,7 +36,9 @@
     "hostCount": "可用主机数",
     "usableRange": "可用地址区间",
     "range": "地址区间",
-    "prefixBits": "前缀位图"
+    "prefixBits": "前缀位图",
+    "addressCount": "展开地址总数",
+    "truncated": "已截断"
   },
   "examples": [
     {
@@ -45,7 +50,9 @@
     "split": "拆分前缀必须不小于原前缀；一次最多拆出 256 个子网。",
     "hostCount": "IPv4 的 `/31` 计 2 个可用地址、`/32` 计 1 个；IPv6 全部地址可用。",
     "bits": "实心方块是网络位（共 {bits} 位中的前 {prefix} 位），空心方块是主机位。",
-    "subnetTruncated": "仅显示前 {shown} 条，共 {total} 条。"
+    "subnetTruncated": "仅显示前 {shown} 条，共 {total} 条。",
+    "expand": "展开会逐个列出网段内的地址（含网络地址与广播地址），条数受上限约束。",
+    "addressTruncated": "仅显示前 {shown} 条，共 {total} 条。"
   },
   "faq": [
     {
@@ -59,6 +66,10 @@
     {
       "q": "IPv6 有广播地址吗？",
       "a": "没有。IPv6 的 `broadcast` 字段为空。"
+    },
+    {
+      "q": "展开的地址列表为什么被截断？",
+      "a": "展开是逐地址枚举，大网段会耗尽内存与响应体，因此按「展开上限」截断并标记。"
     }
   ]
 }

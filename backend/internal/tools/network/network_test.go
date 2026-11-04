@@ -171,6 +171,12 @@ func TestCIDRCalcValidate(t *testing.T) {
 	if err := (&CIDRCalcRequest{Start: "10.0.0.1", End: "10.0.0.9", Split: 24}).Validate(); err == nil {
 		t.Fatal("范围模式下不允许 split")
 	}
+	if err := (&CIDRCalcRequest{CIDR: "10.0.0.0/24", Limit: maxExpandAddresses + 1}).Validate(); err == nil {
+		t.Fatal("超出上限的 limit 应当报错")
+	}
+	if err := (&CIDRCalcRequest{CIDR: "10.0.0.0/24", Limit: -1}).Validate(); err == nil {
+		t.Fatal("负数的 limit 应当报错")
+	}
 }
 
 func TestDNSLookupValidate(t *testing.T) {
@@ -426,5 +432,135 @@ func TestCIDRCalcAddressFamilyConsistency(t *testing.T) {
 	}
 	if out.LastAddress != "::ffff:192.168.1.255" {
 		t.Errorf("lastAddress = %q，期望 ::ffff:192.168.1.255", out.LastAddress)
+	}
+}
+
+// TestCIDRCalcExpand 断言网段被逐个展开成地址列表。
+func TestCIDRCalcExpand(t *testing.T) {
+	t.Parallel()
+
+	result, err := CIDRCalc(context.Background(), &CIDRCalcRequest{
+		CIDR:   "192.168.1.0/30",
+		Expand: true,
+	})
+	if err != nil {
+		t.Fatalf("展开失败：%v", err)
+	}
+	out := result.Data.(CIDRCalcResult)
+	want := []string{"192.168.1.0", "192.168.1.1", "192.168.1.2", "192.168.1.3"}
+	if len(out.Addresses) != len(want) {
+		t.Fatalf("addresses = %v，期望 %v", out.Addresses, want)
+	}
+	for i := range want {
+		if out.Addresses[i] != want[i] {
+			t.Fatalf("addresses = %v，期望 %v", out.Addresses, want)
+		}
+	}
+	if out.AddressCount != "4" {
+		t.Errorf("addressCount = %s，期望 4", out.AddressCount)
+	}
+	if out.Truncated {
+		t.Error("未超限时不应标记截断")
+	}
+}
+
+// TestCIDRCalcExpandRange 断言范围模式按起止地址展开。
+func TestCIDRCalcExpandRange(t *testing.T) {
+	t.Parallel()
+
+	result, err := CIDRCalc(context.Background(), &CIDRCalcRequest{
+		Start:  "10.0.0.2",
+		End:    "10.0.0.5",
+		Expand: true,
+	})
+	if err != nil {
+		t.Fatalf("展开失败：%v", err)
+	}
+	out := result.Data.(CIDRCalcResult)
+	want := []string{"10.0.0.2", "10.0.0.3", "10.0.0.4", "10.0.0.5"}
+	if len(out.Addresses) != len(want) {
+		t.Fatalf("addresses = %v，期望 %v", out.Addresses, want)
+	}
+	for i := range want {
+		if out.Addresses[i] != want[i] {
+			t.Fatalf("addresses = %v，期望 %v", out.Addresses, want)
+		}
+	}
+	if out.AddressCount != "4" {
+		t.Errorf("addressCount = %s，期望 4", out.AddressCount)
+	}
+}
+
+// TestCIDRCalcExpandTruncated 断言超出上限时截断并标记。
+func TestCIDRCalcExpandTruncated(t *testing.T) {
+	t.Parallel()
+
+	result, err := CIDRCalc(context.Background(), &CIDRCalcRequest{
+		CIDR:   "10.0.0.0/24",
+		Expand: true,
+		Limit:  4,
+	})
+	if err != nil {
+		t.Fatalf("展开失败：%v", err)
+	}
+	out := result.Data.(CIDRCalcResult)
+	if len(out.Addresses) != 4 {
+		t.Fatalf("addresses 数量 = %d，期望 4", len(out.Addresses))
+	}
+	if !out.Truncated {
+		t.Error("超出上限时应当标记截断")
+	}
+	// 总数仍按实际区间给出，不受上限影响。
+	if out.AddressCount != "256" {
+		t.Errorf("addressCount = %s，期望 256", out.AddressCount)
+	}
+}
+
+// TestCIDRCalcExpandIPv6 断言 IPv6 网段也能展开，且首末地址成对。
+func TestCIDRCalcExpandIPv6(t *testing.T) {
+	t.Parallel()
+
+	result, err := CIDRCalc(context.Background(), &CIDRCalcRequest{
+		CIDR:   "2001:db8::/126",
+		Expand: true,
+	})
+	if err != nil {
+		t.Fatalf("展开失败：%v", err)
+	}
+	out := result.Data.(CIDRCalcResult)
+	want := []string{"2001:db8::", "2001:db8::1", "2001:db8::2", "2001:db8::3"}
+	if len(out.Addresses) != len(want) {
+		t.Fatalf("addresses = %v，期望 %v", out.Addresses, want)
+	}
+	for i := range want {
+		if out.Addresses[i] != want[i] {
+			t.Fatalf("addresses = %v，期望 %v", out.Addresses, want)
+		}
+	}
+}
+
+// TestCIDRCalcExpandAddressFamilyConsistency 断言首末地址与展开列表同属一个地址族。
+//
+// 4-in-6 前缀（::ffff:a.b.c.d/120）曾让 network 走 16 字节形式、
+// last 走 4 字节形式，首末地址族不一致。
+func TestCIDRCalcExpandAddressFamilyConsistency(t *testing.T) {
+	t.Parallel()
+
+	result, err := CIDRCalc(context.Background(), &CIDRCalcRequest{
+		CIDR:   "::ffff:192.168.1.0/120",
+		Expand: true,
+	})
+	if err != nil {
+		t.Fatalf("计算失败：%v", err)
+	}
+	out := result.Data.(CIDRCalcResult)
+	if out.FirstAddress != out.Addresses[0] {
+		t.Errorf("firstAddress = %q，与展开首项 %q 不一致", out.FirstAddress, out.Addresses[0])
+	}
+	if out.LastAddress != out.Addresses[len(out.Addresses)-1] {
+		t.Errorf("lastAddress = %q，与展开末项 %q 不一致", out.LastAddress, out.Addresses[len(out.Addresses)-1])
+	}
+	if out.AddressCount != "256" {
+		t.Errorf("addressCount = %s，期望 256", out.AddressCount)
 	}
 }

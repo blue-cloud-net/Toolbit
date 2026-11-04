@@ -75,6 +75,65 @@
       }
     },
     {
+      "name": "不展开时地址列表为空数组",
+      "request": {
+        "cidr": "192.168.1.0/24"
+      },
+      "expect": {
+        "code": 200,
+        "dataContains": {
+          "addresses": []
+        }
+      }
+    },
+    {
+      "name": "展开网段为地址列表",
+      "request": {
+        "cidr": "192.168.1.0/30",
+        "expand": true
+      },
+      "expect": {
+        "code": 200,
+        "dataContains": {
+          "addressCount": "4",
+          "truncated": false,
+          "addresses": [
+            "192.168.1.0",
+            "192.168.1.1",
+            "192.168.1.2",
+            "192.168.1.3"
+          ]
+        }
+      }
+    },
+    {
+      "name": "展开超出上限时截断",
+      "request": {
+        "cidr": "10.0.0.0/24",
+        "expand": true,
+        "limit": 4
+      },
+      "expect": {
+        "code": 200,
+        "dataContains": {
+          "addressCount": "256",
+          "truncated": true
+        }
+      }
+    },
+    {
+      "name": "展开上限越界",
+      "request": {
+        "cidr": "10.0.0.0/24",
+        "expand": true,
+        "limit": 99999
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
       "name": "网段非法",
       "request": {
         "cidr": "999.1.1.0/24"
