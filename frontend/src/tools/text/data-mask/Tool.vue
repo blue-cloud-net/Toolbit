@@ -17,10 +17,14 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/text/data-mask/example'
@@ -66,6 +70,41 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本：脱敏后的内容。 */
 const resultText = computed(() => data.value?.masked ?? '')
+
+/** 摘要卡片：1 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'total', label: t('tools.data-mask.results.total') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 明细表格列定义（第 1 组）。 */
+const tableColumns0 = computed<DataTableColumn[]>(() => [
+  { key: 'type', label: t('tools.data-mask.results.matchType'), mono: true },
+  { key: 'count', label: t('tools.data-mask.results.matchCount'), align: 'right' },
+  { key: 'sample', label: t('tools.data-mask.results.matchSample'), mono: true },
+])
+
+/** 明细表格行（第 1 组）。 */
+const tableRows0 = computed<DataTableRow[]>(() =>
+  (data.value?.matches ?? []).map((item) => ({
+    key: ((m) => m.type)(item),
+    cells: ((m) => ({ type: m.type, count: String(m.count), sample: m.sample }))(item),
+  })),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.data-mask.views.summary') },
+  { id: 'masked', label: t('tools.data-mask.views.masked') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 /** 结论徽章：命中数量。 */
 const verdict = computed(() => {
@@ -216,9 +255,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -226,35 +266,34 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :verdict="verdict"
+        :views="views"
         :title="t('tools.data-mask.results.masked')"
         @retry="run"
       >
-        <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.data-mask.results.total') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.total ?? 0 }}
-              </dd>
-            </div>
-            <div
-              v-for="item in data?.matches ?? []"
-              :key="item.type"
-              class="detail__row"
-            >
-              <dt class="tb-mono">
-                {{ item.type }}
-              </dt>
-              <dd class="tb-mono">
-                {{ item.count }} · {{ item.sample }}
-              </dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
+
+            <DataTable
+              v-if="tableRows0.length > 0"
+              class="table"
+              :columns="tableColumns0"
+              :rows="tableRows0"
+              :copy-column="'sample'"
+            />
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'masked' && data"
+            :label="t('tools.data-mask.views.masked')"
+            :content="String(data.masked ?? '')"
+          />
         </template>
       </ResultPanel>
     </template>

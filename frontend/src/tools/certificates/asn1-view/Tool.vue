@@ -181,7 +181,7 @@ function fillExample(): void {
             <span class="field__label">{{ t('tools.asn1-view.fields.maxDepth') }}</span>
             <ElInputNumber
               v-model="maxDepth"
-              class="field__input"
+              class="field__number"
               :min="0"
               :max="64"
             />

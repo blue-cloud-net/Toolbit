@@ -371,7 +371,7 @@ function fillExample(index: number): void {
             <span class="field__label">{{ t('tools.protobuf-decoder.fields.maxDepth') }}</span>
             <ElInputNumber
               v-model="maxDepth"
-              class="field__input"
+              class="field__number"
               :min="0"
               :max="128"
             />
@@ -381,7 +381,7 @@ function fillExample(index: number): void {
             <span class="field__label">{{ t('tools.protobuf-decoder.fields.maxFields') }}</span>
             <ElInputNumber
               v-model="maxFields"
-              class="field__input"
+              class="field__number"
               :min="1"
               :max="100000"
             />
@@ -414,9 +414,10 @@ function fillExample(index: number): void {
           <RunBar
             :running="running"
             :disabled="input === ''"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>

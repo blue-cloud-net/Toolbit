@@ -230,7 +230,7 @@ function fillExample(): void {
               <span class="field__label">{{ t('tools.ecdh.fields.kdfLength') }}</span>
               <ElInputNumber
                 v-model="length"
-                class="field__input"
+                class="field__number"
                 :min="1"
                 :max="1048576"
                 :aria-label="t('tools.ecdh.fields.kdfLength')"
@@ -281,6 +281,7 @@ function fillExample(): void {
         :meta="meta"
         :error="error"
         :title="t('tools.ecdh.results.sharedSecret')"
+        hide-text
         @retry="run"
       >
         <template

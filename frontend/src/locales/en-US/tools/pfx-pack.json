@@ -14,7 +14,13 @@
   },
   "options": {},
   "results": {
-    "output": "Container (base64)"
+    "output": "Container (base64)",
+    "encoding": "Encoding",
+    "length": "Size"
+  },
+  "views": {
+    "summary": "Summary",
+    "output": "PKCS#12 output"
   },
   "examples": [
     {

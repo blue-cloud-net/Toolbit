@@ -24,7 +24,11 @@
     "error": "错误信息",
     "position": "错误位置",
     "captureGroups": "捕获组数",
-    "suggestions": "改进建议"
+    "suggestions": "改进建议",
+    "suggestionCode": "建议标识",
+    "suggestionPriority": "优先级",
+    "suggestionMessage": "建议说明",
+    "reason": "错误原因"
   },
   "examples": [
     {

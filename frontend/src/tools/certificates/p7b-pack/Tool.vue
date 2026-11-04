@@ -8,8 +8,10 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import MaterialInput from '@/components/tool/MaterialInput.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -48,6 +50,29 @@ const {
 const running = computed(() => state.value === 'loading')
 
 const resultText = computed(() => (data.value ? data.value.pem : ''))
+
+/** 结果摘要：证书张数与容器字节数。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    { label: t('tools.p7b-pack.results.certCount'), value: String(result.certCount) },
+    { label: t('tools.p7b-pack.results.length'), value: `${result.length} B` },
+  ]
+})
+
+/** 结果页签：摘要 / PEM / DER。 */
+const views: ResultView[] = [
+  { id: 'summary', label: t('tools.p7b-pack.views.summary') },
+  { id: 'pem', label: t('tools.p7b-pack.views.pem') },
+  { id: 'der', label: t('tools.p7b-pack.views.der') },
+]
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
+
 const faq = computed<FaqItem[]>(() => tm('tools.p7b-pack.faq') as FaqItem[])
 
 function run(): void {
@@ -99,13 +124,39 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.p7b-pack.results.output')"
+        :views="views"
+        hide-text
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'pem' && data"
+            :label="t('tools.p7b-pack.views.pem')"
+            :content="data.pem"
+            filename="bundle.p7b.pem"
+            mime="application/x-pem-file"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'der' && data"
+            :label="t('tools.p7b-pack.views.der')"
+            :content="data.derBase64"
+            filename="bundle.p7b.der.b64"
+            mime="text/plain"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

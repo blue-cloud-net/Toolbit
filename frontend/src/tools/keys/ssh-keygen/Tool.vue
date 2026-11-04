@@ -13,10 +13,13 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/keys/ssh-keygen/example'
@@ -59,6 +62,29 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本：私钥。 */
 const resultText = computed(() => data.value?.privateKey ?? '')
+
+/** 摘要卡片：4 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'algorithm', label: t('tools.ssh-keygen.results.algorithm') },
+      { key: 'bits', label: t('tools.ssh-keygen.results.bits') },
+      { key: 'comment', label: t('tools.ssh-keygen.results.comment') },
+      { key: 'fingerprint', label: t('tools.ssh-keygen.results.fingerprint'), wide: true },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.ssh-keygen.views.summary') },
+  { id: 'key', label: t('tools.ssh-keygen.views.key') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.ssh-keygen.faq') as FaqItem[])
 
@@ -159,9 +185,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -169,34 +196,25 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
+        :views="views"
         :title="t('tools.ssh-keygen.results.privateKey')"
         @retry="run"
       >
-        <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.ssh-keygen.results.fingerprint') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.fingerprint ?? '' }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.ssh-keygen.results.authorizedKey') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.authorizedKey ?? '' }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.ssh-keygen.results.publicKey') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.publicKey ?? '' }}
-              </dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'key' && data"
+            :label="t('tools.ssh-keygen.views.key')"
+            :content="String(data.privateKey ?? '')"
+          />
         </template>
       </ResultPanel>
     </template>

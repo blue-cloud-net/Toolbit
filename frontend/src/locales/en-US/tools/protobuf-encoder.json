@@ -30,6 +30,10 @@
       "json": "JSON text"
     }
   },
+  "views": {
+    "summary": "Summary",
+    "output": "Encoded output"
+  },
   "results": {
     "output": "Encoded result",
     "byteLength": "Byte length",

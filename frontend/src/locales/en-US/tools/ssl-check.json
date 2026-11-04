@@ -15,13 +15,33 @@
     "timeoutMs": "Timeout (ms)"
   },
   "options": {},
+  "views": {
+    "summary": "Summary",
+    "chain": "Certificate chain",
+    "pem": "Certificate PEM"
+  },
   "results": {
     "output": "Result",
     "progress": "Progress",
     "chain": "Certificate chain",
     "grade": "Security grade {grade}",
     "checkPass": "Passed",
-    "checkFail": "Failed"
+    "checkFail": "Failed",
+    "endpoint": "Endpoint",
+    "address": "Resolved address",
+    "version": "Protocol version",
+    "cipher": "Cipher suite",
+    "chainValid": "Chain valid",
+    "verified": "Verified",
+    "implicitTrust": "System trust",
+    "ocspStapled": "OCSP stapled",
+    "certCount": "Certificates",
+    "chainErrors": "Chain errors",
+    "certIndex": "#",
+    "certSubject": "Subject",
+    "certIssuer": "Issuer",
+    "certValidity": "Validity",
+    "noCerts": "No certificate returned"
   },
   "examples": [
     {

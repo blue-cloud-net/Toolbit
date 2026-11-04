@@ -14,7 +14,9 @@
   "results": {
     "compose": "Configuration",
     "serviceCount": "Service count",
-    "warnings": "Warnings"
+    "warnings": "Warnings",
+    "warningCount": "Warnings",
+    "warning": "Warning"
   },
   "examples": [
     {
@@ -35,5 +37,9 @@
       "q": "Are health checks and resource limits supported?",
       "a": "Not yet; the first version focuses on ports, environment, volumes and dependencies."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "compose": "Compose file"
+  }
 }

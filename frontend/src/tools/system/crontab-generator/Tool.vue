@@ -13,11 +13,14 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import ProductText from '@/components/tool/ProductText.vue'
 import QuickReference from '@/components/tool/QuickReference.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES, type CronPreset } from '@/tools/system/crontab-generator/example'
@@ -79,6 +82,27 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本：生成的表达式。 */
 const resultText = computed(() => data.value?.expression ?? '')
+
+/** 摘要卡片：2 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'description', label: t('tools.crontab-generator.results.description') },
+      { key: 'timezone', label: t('tools.crontab-generator.results.timezone') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.crontab-generator.views.summary') },
+  { id: 'expression', label: t('tools.crontab-generator.views.expression') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 /** 接下来的触发时间。 */
 const occurrences = computed<CronOccurrence[]>(() => data.value?.occurrences ?? [])
@@ -303,9 +327,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -313,47 +338,43 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
+        :views="views"
         :title="t('tools.crontab-generator.results.expression')"
         @retry="run"
       >
-        <template
-          v-if="data"
-          #extra
-        >
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.crontab-generator.results.description') }}</dt>
-              <dd>{{ data?.description }}</dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.crontab-generator.results.timezone') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.timezone }}
-              </dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
 
-          <div
-            v-if="occurrences.length > 0"
-            class="occurrences"
-          >
-            <span class="occurrences__label">
-              {{ t('tools.crontab-generator.results.occurrences') }}
-            </span>
-            <ol class="occurrences__list">
-              <li
-                v-for="(item, index) in occurrences"
-                :key="index"
-                class="occurrences__item tb-mono"
-              >
-                {{ item.time }}
-              </li>
-            </ol>
-          </div>
+            <div
+              v-if="occurrences.length > 0"
+              class="occurrences"
+            >
+              <span class="occurrences__label">
+                {{ t('tools.crontab-generator.results.occurrences') }}
+              </span>
+              <ol class="occurrences__list">
+                <li
+                  v-for="(item, index) in occurrences"
+                  :key="index"
+                  class="occurrences__item tb-mono"
+                >
+                  {{ item.time }}
+                </li>
+              </ol>
+            </div>
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'expression' && data"
+            :label="t('tools.crontab-generator.views.expression')"
+            :content="String(data.expression ?? '')"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -391,28 +412,9 @@ function fillExample(index: number): void {
 </template>
 
 <style scoped>
-.detail {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-  margin: var(--tb-space-3) 0 0;
-}
 
-.detail__row {
-  display: flex;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-sm);
-}
 
-.detail__row dt {
-  min-width: 96px;
-  color: var(--tb-text-tertiary);
-}
 
-.detail__row dd {
-  margin: 0;
-  word-break: break-all;
-}
 
 .occurrences {
   margin-top: var(--tb-space-3);

@@ -13,9 +13,12 @@ import { computed, onScopeDispose, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { ApiError, streamURL } from '@/api/client'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import KeyValueTable, { type KeyValueRow } from '@/components/tool/KeyValueTable.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { localizeError, type LocalizedError } from '@/i18n/errors'
@@ -111,6 +114,85 @@ const checkRows = computed<KeyValueRow[]>(() => {
     level: check.passed ? ('success' as const) : ('danger' as const),
   }))
 })
+
+/** 结果页签：摘要 / 证书链 / PEM。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.ssl-check.views.summary') },
+  { id: 'chain', label: t('tools.ssl-check.views.chain') },
+  { id: 'pem', label: t('tools.ssl-check.views.pem') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
+
+/** 握手参数卡片。 */
+const sessionStats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const items: StatGridItem[] = [
+    { label: t('tools.ssl-check.results.endpoint'), value: `${result.host}:${result.port}` },
+    { label: t('tools.ssl-check.results.address'), value: result.addr, wide: true },
+    { label: t('tools.ssl-check.results.version'), value: result.negotiatedVersion },
+    { label: t('tools.ssl-check.results.cipher'), value: result.cipherSuite, wide: true },
+    {
+      label: t('tools.ssl-check.results.chainValid'),
+      value: result.chainValid ? t('common.states.yes') : t('common.states.no'),
+      level: result.chainValid ? ('success' as const) : ('danger' as const),
+    },
+    {
+      label: t('tools.ssl-check.results.verified'),
+      value: result.verified ? t('common.states.yes') : t('common.states.no'),
+      level: result.verified ? ('success' as const) : ('danger' as const),
+    },
+    {
+      label: t('tools.ssl-check.results.implicitTrust'),
+      value: result.implicitTrust ? t('common.states.yes') : t('common.states.no'),
+      level: result.implicitTrust ? ('success' as const) : ('warning' as const),
+    },
+    {
+      label: t('tools.ssl-check.results.ocspStapled'),
+      value: result.ocspStapled ? t('common.states.yes') : t('common.states.no'),
+    },
+    { label: t('tools.ssl-check.results.certCount'), value: String(result.certificates.length) },
+  ]
+  if (result.chainErrors.length > 0) {
+    items.push({
+      label: t('tools.ssl-check.results.chainErrors'),
+      value: result.chainErrors.join(', '),
+      level: 'danger',
+      wide: true,
+    })
+  }
+  return items
+})
+
+/** 证书链表格列定义。 */
+const chainColumns = computed<DataTableColumn[]>(() => [
+  { key: 'index', label: t('tools.ssl-check.results.certIndex'), align: 'right' },
+  { key: 'subject', label: t('tools.ssl-check.results.certSubject'), mono: true },
+  { key: 'issuer', label: t('tools.ssl-check.results.certIssuer'), mono: true },
+  { key: 'validity', label: t('tools.ssl-check.results.certValidity'), mono: true },
+])
+
+/** 证书链表格行。 */
+const chainRows = computed<DataTableRow[]>(() =>
+  (data.value?.certificates ?? []).map((cert, index) => ({
+    key: `${index}-${cert.info?.subjectText ?? 'unparsed'}`,
+    cells: {
+      index: String(index),
+      subject: cert.info?.subjectText ?? '-',
+      issuer: cert.info?.issuerText ?? '-',
+      validity: cert.info ? `${cert.info.notBefore} ~ ${cert.info.notAfter}` : '-',
+    },
+  })),
+)
+
+/** 证书链 PEM 全文。 */
+const chainPem = computed(() =>
+  (data.value?.certificates ?? []).map((cert) => cert.pem.trimEnd()).join('\n\n'),
+)
 
 const progressText = computed(() => {
   if (!progress.value) {
@@ -278,7 +360,7 @@ function reset(): void {
             <span class="field__label">{{ t('tools.ssl-check.fields.port') }}</span>
             <ElInputNumber
               v-model="port"
-              class="field__input"
+              class="field__number"
               :min="1"
               :max="65535"
             />
@@ -318,19 +400,43 @@ function reset(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="controlState"
         :text="resultText"
         :meta="meta"
         :error="error"
         :verdict="verdict"
         :title="t('tools.ssl-check.results.output')"
+        :views="views"
+        download-filename="ssl-chain.pem"
+        download-mime="application/x-pem-file"
         @retry="run"
       >
-        <template
-          v-if="checkRows.length > 0"
-          #extra
-        >
-          <KeyValueTable :rows="checkRows" />
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="sessionStats" />
+
+            <KeyValueTable
+              v-if="checkRows.length > 0"
+              :rows="checkRows"
+            />
+          </template>
+
+          <DataTable
+            v-else-if="viewId === 'chain' && data"
+            class="table"
+            :columns="chainColumns"
+            :rows="chainRows"
+            :empty="t('tools.ssl-check.results.noCerts')"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'pem' && data"
+            :label="t('tools.ssl-check.views.pem')"
+            :content="chainPem"
+            filename="ssl-chain.pem"
+            mime="application/x-pem-file"
+          />
         </template>
       </ResultPanel>
     </template>

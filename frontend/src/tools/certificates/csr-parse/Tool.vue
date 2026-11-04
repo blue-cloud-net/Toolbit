@@ -197,6 +197,7 @@ function fillExample(): void {
         :meta="meta"
         :error="error"
         :title="t('tools.csr-parse.results.info')"
+        hide-text
         @retry="run"
       >
         <template

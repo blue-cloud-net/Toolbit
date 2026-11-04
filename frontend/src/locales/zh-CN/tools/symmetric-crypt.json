@@ -46,6 +46,10 @@
       "none": "不填充"
     }
   },
+  "views": {
+    "summary": "摘要",
+    "output": "密文"
+  },
   "results": {
     "output": "输出结果",
     "tag": "认证标签",

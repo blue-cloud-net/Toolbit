@@ -76,5 +76,9 @@
       "q": "Do I still need to review the result?",
       "a": "Yes. Dialect details still differ, and the tool only guarantees that the token sequence is unchanged."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "output": "Formatted output"
+  }
 }

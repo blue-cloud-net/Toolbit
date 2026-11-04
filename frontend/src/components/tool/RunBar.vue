@@ -10,7 +10,13 @@
  */
 import { ElButton } from 'element-plus/es/components/button/index'
 import 'element-plus/es/components/button/style/css'
-import { onBeforeUnmount, onMounted } from 'vue'
+import {
+  ElDropdown,
+  ElDropdownItem,
+  ElDropdownMenu,
+} from 'element-plus/es/components/dropdown/index'
+import 'element-plus/es/components/dropdown/style/css'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const props = withDefaults(
@@ -21,8 +27,14 @@ const props = withDefaults(
     disabled?: boolean
     /** 是否显示示例按钮。 */
     showExample?: boolean
+    /**
+     * 示例列表；元素只需要 `label`。
+     *
+     * 长度 ≥ 2 时「填入示例」变成下拉菜单，否则是单按钮。
+     */
+    examples?: readonly { label: string }[]
   }>(),
-  { running: false, disabled: false, showExample: true },
+  { running: false, disabled: false, showExample: true, examples: () => [] },
 )
 
 const emit = defineEmits<{
@@ -30,11 +42,25 @@ const emit = defineEmits<{
   run: []
   /** 重置。 */
   reset: []
-  /** 填入示例。 */
+  /** 填入示例（不区分下标，用于单一示例）。 */
   example: []
+  /** 填入指定下标的示例。 */
+  fill: [index: number]
 }>()
 
 const { t } = useI18n()
+
+/** 是否用下拉菜单形式展示示例。 */
+const hasMenu = computed(() => props.examples.length > 1)
+
+/** 点击下拉项：按 command 取回下标后 emit。 */
+function onMenuCommand(key: string | number | object): void {
+  const index = Number(key)
+  if (!Number.isFinite(index)) {
+    return
+  }
+  emit('fill', index)
+}
 
 /** 处理按键：`Ctrl / ⌘ + Enter` 触发运行（焦点在工具页任意控件内均有效）。 */
 function onKeydown(event: KeyboardEvent): void {
@@ -73,8 +99,28 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown, true))
       >
         {{ t('common.actions.reset') }}
       </ElButton>
+      <ElDropdown
+        v-if="showExample && hasMenu"
+        trigger="click"
+        @command="onMenuCommand"
+      >
+        <ElButton size="default">
+          {{ t('common.actions.example') }}
+        </ElButton>
+        <template #dropdown>
+          <ElDropdownMenu>
+            <ElDropdownItem
+              v-for="(item, index) in examples"
+              :key="index"
+              :command="index"
+            >
+              {{ item.label }}
+            </ElDropdownItem>
+          </ElDropdownMenu>
+        </template>
+      </ElDropdown>
       <ElButton
-        v-if="showExample"
+        v-else-if="showExample"
         size="default"
         @click="emit('example')"
       >

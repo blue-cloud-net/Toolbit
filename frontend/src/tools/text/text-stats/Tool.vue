@@ -11,8 +11,10 @@ import { useI18n } from 'vue-i18n'
 
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/text/text-stats/example'
@@ -64,6 +66,25 @@ const resultText = computed(() => {
   }
   return `${data.value.words} words / ${data.value.characters} chars`
 })
+
+/** 摘要卡片：9 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'characters', label: t('tools.text-stats.results.characters') },
+      { key: 'charactersNoSpace', label: t('tools.text-stats.results.charactersNoSpace') },
+      { key: 'chineseChars', label: t('tools.text-stats.results.chineseChars') },
+      { key: 'englishWords', label: t('tools.text-stats.results.englishWords') },
+      { key: 'digits', label: t('tools.text-stats.results.digits') },
+      { key: 'punctuation', label: t('tools.text-stats.results.punctuation') },
+      { key: 'lines', label: t('tools.text-stats.results.lines') },
+      { key: 'paragraphs', label: t('tools.text-stats.results.paragraphs') },
+      { key: 'bytes', label: t('tools.text-stats.results.bytes') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
 
 const faq = computed<FaqItem[]>(() => tm('tools.text-stats.faq') as FaqItem[])
 
@@ -129,9 +150,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -144,65 +166,11 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.text-stats.results.words')"
+        hide-text
         @retry="run"
       >
         <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.text-stats.results.characters') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.characters ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.text-stats.results.charactersNoSpace') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.charactersNoSpace ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.text-stats.results.chineseChars') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.chineseChars ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.text-stats.results.englishWords') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.englishWords ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.text-stats.results.digits') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.digits ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.text-stats.results.punctuation') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.punctuation ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.text-stats.results.lines') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.lines ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.text-stats.results.paragraphs') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.paragraphs ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.text-stats.results.bytes') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.bytes ?? 0 }}
-              </dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
         </template>
       </ResultPanel>
     </template>

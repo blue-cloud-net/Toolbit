@@ -36,6 +36,21 @@
   "results": {
     "rules": "Rules",
     "commands": "Commands",
+    "notes": "Notes",
+    "note": "Note",
+    "tool": "Firewall",
+    "scenario": "Scenario",
+    "ruleCount": "Rules",
+    "action": "Action",
+    "protocol": "Protocol",
+    "port": "Port",
+    "source": "Source",
+    "description": "Description"
+  },
+  "views": {
+    "summary": "Summary",
+    "rules": "Rules",
+    "commands": "Commands",
     "notes": "Notes"
   },
   "examples": [

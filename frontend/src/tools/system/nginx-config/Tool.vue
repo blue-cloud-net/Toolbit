@@ -15,10 +15,14 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import WarningList from '@/components/tool/WarningList.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/system/nginx-config/example'
@@ -68,6 +72,28 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本：配置文本。 */
 const resultText = computed(() => data.value?.config ?? '')
+
+/** 摘要卡片：3 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'mode', label: t('tools.nginx-config.results.mode') },
+      { key: 'sections', label: t('tools.nginx-config.results.sections'), format: (v) => (Array.isArray(v) ? v.join(' · ') : ''), wide: true },
+      { key: 'warnings', label: t('tools.nginx-config.results.warningCount'), format: (v) => (Array.isArray(v) ? String(v.length) : '0') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.nginx-config.views.summary') },
+  { id: 'config', label: t('tools.nginx-config.views.config') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.nginx-config.faq') as FaqItem[])
 
@@ -344,9 +370,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -354,33 +381,30 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
+        :views="views"
         :title="t('tools.nginx-config.results.config')"
         @retry="run"
       >
-        <template #extra>
-          <dl class="detail">
-            <div
-              v-if="data && data.sections.length > 0"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.nginx-config.results.sections') }}</dt>
-              <dd class="tb-mono">
-                {{ data.sections.join(' · ') }}
-              </dd>
-            </div>
-            <div
-              v-for="(warning, index) in data?.warnings ?? []"
-              :key="index"
-              class="detail__row"
-            >
-              <dt>!</dt>
-              <dd>{{ warning }}</dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
+
+            <WarningList
+              :items="data?.warnings"
+              :label="t('tools.nginx-config.results.warning')"
+            />
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'config' && data"
+            :label="t('tools.nginx-config.views.config')"
+            :content="String(data.config ?? '')"
+          />
         </template>
       </ResultPanel>
     </template>

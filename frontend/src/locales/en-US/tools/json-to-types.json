@@ -20,7 +20,8 @@
   },
   "results": {
     "output": "Type definitions",
-    "typeCount": "Type count"
+    "typeCount": "Type count",
+    "language": "Target language"
   },
   "examples": [
     {
@@ -45,5 +46,9 @@
       "q": "How are array element types determined?",
       "a": "Each item is inferred and merged; conflicting types become a union."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "output": "Type definitions"
+  }
 }

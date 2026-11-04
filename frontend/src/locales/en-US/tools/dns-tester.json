@@ -16,6 +16,10 @@
     "dnssec": "DNSSEC",
     "ptr": "Reverse DNS"
   },
+  "views": {
+    "summary": "Summary",
+    "raw": "Raw JSON"
+  },
   "results": {
     "output": "Result",
     "source": "Source",
@@ -37,7 +41,8 @@
     "reverse": "Reverse name",
     "addresses": "Forward addresses",
     "names": "Reverse names",
-    "rawJson": "Raw JSON"
+    "rawJson": "Raw JSON",
+    "registry": "Registry"
   },
   "examples": [
     {

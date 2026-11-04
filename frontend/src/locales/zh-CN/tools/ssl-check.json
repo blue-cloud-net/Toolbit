@@ -15,13 +15,33 @@
     "timeoutMs": "超时（毫秒）"
   },
   "options": {},
+  "views": {
+    "summary": "摘要",
+    "chain": "证书链",
+    "pem": "证书 PEM"
+  },
   "results": {
     "output": "检测结果",
     "progress": "探测进度",
     "chain": "证书链",
     "grade": "安全评级 {grade}",
     "checkPass": "通过",
-    "checkFail": "未通过"
+    "checkFail": "未通过",
+    "endpoint": "端点",
+    "address": "解析地址",
+    "version": "协议版本",
+    "cipher": "密码套件",
+    "chainValid": "证书链有效",
+    "verified": "已通过验证",
+    "implicitTrust": "系统信任",
+    "ocspStapled": "OCSP 装订",
+    "certCount": "证书张数",
+    "chainErrors": "链错误",
+    "certIndex": "#",
+    "certSubject": "主题",
+    "certIssuer": "签发者",
+    "certValidity": "有效期",
+    "noCerts": "没有取到证书"
   },
   "examples": [
     {

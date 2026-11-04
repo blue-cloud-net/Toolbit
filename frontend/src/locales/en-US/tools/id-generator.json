@@ -23,7 +23,8 @@
   "results": {
     "ids": "Generated IDs",
     "count": "Count",
-    "length": "Length"
+    "length": "Length",
+    "format": "Format"
   },
   "examples": [
     {
@@ -48,5 +49,9 @@
       "q": "ULID or UUID?",
       "a": "Choose ULID when you need time ordering or a readable prefix; choose UUID for uniqueness alone."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "ids": "Generated IDs"
+  }
 }

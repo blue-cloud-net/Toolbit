@@ -15,10 +15,14 @@ import 'element-plus/es/components/input-number/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/text/regex-build/example'
@@ -82,6 +86,42 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本：生成的表达式。 */
 const resultText = computed(() => data.value?.pattern ?? '')
+
+/** 摘要卡片：3 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'valid', label: t('tools.regex-build.results.validity'), format: (v) => (v ? t('tools.regex-build.results.valid') : t('tools.regex-build.results.error')), booleanLevel: { true: 'success', false: 'danger' } },
+      { key: 'captureGroups', label: t('tools.regex-build.results.captureGroups') },
+      { key: 'error.message', label: t('tools.regex-build.results.error') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 明细表格列定义（第 1 组）。 */
+const tableColumns0 = computed<DataTableColumn[]>(() => [
+  { key: 'description', label: t('tools.regex-build.results.explainMeaning') },
+  { key: 'fragment', label: t('tools.regex-build.results.explainFragment'), mono: true },
+])
+
+/** 明细表格行（第 1 组）。 */
+const tableRows0 = computed<DataTableRow[]>(() =>
+  (data.value?.explanation ?? []).map((item) => ({
+    key: ((m) => m.part)(item),
+    cells: ((m) => ({ description: m.description, fragment: m.fragment }))(item),
+  })),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.regex-build.views.summary') },
+  { id: 'pattern', label: t('tools.regex-build.views.pattern') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 /** 结论徽章：表达式是否合法。 */
 const verdict = computed(() => {
@@ -254,9 +294,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -264,36 +305,34 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :verdict="verdict"
+        :views="views"
         :title="t('tools.regex-build.results.pattern')"
         @retry="run"
       >
-        <template #extra>
-          <dl class="detail">
-            <div
-              v-for="item in data?.explanation ?? []"
-              :key="item.part"
-              class="detail__row"
-            >
-              <dt>{{ item.description }}</dt>
-              <dd class="tb-mono">
-                {{ item.fragment }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.error"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.regex-build.results.error') }}</dt>
-              <dd class="tb-mono">
-                {{ data.error.message }}
-              </dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
+
+            <DataTable
+              v-if="tableRows0.length > 0"
+              class="table"
+              :columns="tableColumns0"
+              :rows="tableRows0"
+              :copy-column="'fragment'"
+            />
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'pattern' && data"
+            :label="t('tools.regex-build.views.pattern')"
+            :content="String(data.pattern ?? '')"
+          />
         </template>
       </ResultPanel>
     </template>

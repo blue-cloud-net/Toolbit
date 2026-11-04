@@ -9,6 +9,10 @@
     "key": "Key"
   },
   "options": {},
+  "views": {
+    "summary": "Summary",
+    "pem": "Normalized key"
+  },
   "results": {
     "info": "Key information",
     "algorithm": "Algorithm",

@@ -15,7 +15,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CodeEditor from '@/components/tool/CodeEditor.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
@@ -64,6 +64,21 @@ const resultText = computed(() => data.value?.html ?? '')
 
 /** 目录条目。 */
 const toc = computed<TocEntry[]>(() => data.value?.toc ?? [])
+
+/** 结果页签：HTML 产物 / 目录。 */
+const views = computed<ResultView[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    { id: 'html', label: t('tools.markdown-preview.views.html') },
+    { id: 'toc', label: t('tools.markdown-preview.views.toc') },
+  ]
+})
+
+/** 当前页签；默认停在「HTML」。 */
+const activeView = ref('html')
 
 const faq = computed<FaqItem[]>(() => tm('tools.markdown-preview.faq') as FaqItem[])
 
@@ -175,9 +190,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -185,41 +201,44 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.markdown-preview.results.output')"
+        :views="views"
+        hide-text
         @retry="run"
       >
-        <template
-          v-if="data"
-          #extra
-        >
-          <h3 class="group__title">
-            {{ t('tools.markdown-preview.results.toc') }}
-          </h3>
+        <template #view="{ viewId }">
+          <pre
+            v-if="viewId === 'html' && data"
+            class="product"
+          ><code>{{ data.html }}</code></pre>
 
-          <ul
-            v-if="toc.length > 0"
-            class="toc"
-          >
-            <li
-              v-for="entry in toc"
-              :key="entry.id"
-              class="toc__item"
-              :style="{ paddingLeft: indentOf(entry.level) }"
+          <template v-else-if="viewId === 'toc'">
+            <ul
+              v-if="toc.length > 0"
+              class="toc"
             >
-              <span class="toc__text">{{ entry.text }}</span>
-              <span class="toc__id tb-mono">#{{ entry.id }}</span>
-            </li>
-          </ul>
-          <p
-            v-else
-            class="toc__empty"
-          >
-            {{ t('tools.markdown-preview.results.empty') }}
-          </p>
+              <li
+                v-for="entry in toc"
+                :key="entry.id"
+                class="toc__item"
+                :style="{ paddingLeft: indentOf(entry.level) }"
+              >
+                <span class="toc__text">{{ entry.text }}</span>
+                <span class="toc__id tb-mono">#{{ entry.id }}</span>
+              </li>
+            </ul>
+            <p
+              v-else
+              class="toc__empty"
+            >
+              {{ t('tools.markdown-preview.results.empty') }}
+            </p>
+          </template>
         </template>
       </ResultPanel>
     </template>

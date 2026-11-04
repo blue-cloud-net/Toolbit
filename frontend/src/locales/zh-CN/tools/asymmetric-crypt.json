@@ -36,7 +36,14 @@
     }
   },
   "results": {
-    "output": "输出结果"
+    "output": "输出结果",
+    "algorithm": "算法",
+    "format": "格式",
+    "order": "密文顺序"
+  },
+  "views": {
+    "summary": "摘要",
+    "output": "产物"
   },
   "examples": [
     {

@@ -10,7 +10,14 @@
   },
   "options": {},
   "results": {
-    "output": "Certificate bag (PEM)"
+    "output": "Certificate bag (PEM)",
+    "certCount": "Certificates",
+    "length": "Size"
+  },
+  "views": {
+    "summary": "Summary",
+    "pem": "PEM output",
+    "der": "DER (Base64)"
   },
   "examples": [
     {

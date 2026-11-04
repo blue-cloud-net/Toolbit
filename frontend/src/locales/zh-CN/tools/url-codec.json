@@ -34,8 +34,14 @@
       "host": "主机",
       "port": "端口",
       "path": "路径",
-      "query": "查询串"
+      "query": "查询串",
+      "key": "参数名",
+      "value": "参数值"
     }
+  },
+  "views": {
+    "summary": "摘要",
+    "output": "产物"
   },
   "examples": [
     {

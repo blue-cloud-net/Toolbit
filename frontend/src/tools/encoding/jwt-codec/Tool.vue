@@ -12,10 +12,13 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CodeEditor from '@/components/tool/CodeEditor.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/encoding/jwt-codec/example'
 
@@ -80,6 +83,29 @@ const resultText = computed(() => {
   }
   return JSON.stringify(view, null, 2)
 })
+
+/** 摘要卡片：4 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'valid', label: t('tools.jwt-codec.results.validity'), format: (v) => (v ? t('tools.jwt-codec.results.valid') : t('tools.jwt-codec.results.invalid')) },
+      { key: 'signature', label: t('tools.jwt-codec.results.signature') },
+      { key: '', label: t('tools.jwt-codec.results.expired'), format: () => t('tools.jwt-codec.results.expiredHint') },
+      { key: '', label: t('tools.jwt-codec.results.notYetValid'), format: () => t('tools.jwt-codec.results.notYetValidHint') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 解码结果。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.jwt-codec.views.summary') },
+  { id: 'decoded', label: t('tools.jwt-codec.views.decoded') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 /** 解析 JSON 对象；内容不是对象时返回 undefined。 */
 function parseJsonObject(text: string): Record<string, unknown> | undefined {
@@ -326,9 +352,10 @@ function onKeydown(event: KeyboardEvent): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -336,55 +363,30 @@ function onKeydown(event: KeyboardEvent): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.jwt-codec.results.output')"
+        :views="views"
+        download-filename="jwt.json"
+        download-mime="application/json;charset=utf-8"
         @retry="run"
       >
-        <template
-          v-if="data"
-          #extra
-        >
-          <dl class="detail">
-            <div
-              v-if="data?.valid !== undefined"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.jwt-codec.results.validity') }}</dt>
-              <dd :class="data?.valid ? 'detail__ok' : 'detail__bad'">
-                {{ data?.valid ? t('tools.jwt-codec.results.valid') : t('tools.jwt-codec.results.invalid') }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.signature"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.jwt-codec.results.signature') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.signature }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.status?.expired"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.jwt-codec.results.expired') }}</dt>
-              <dd>
-                {{ t('tools.jwt-codec.results.expiredHint') }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.status?.notYetValid"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.jwt-codec.results.notYetValid') }}</dt>
-              <dd>
-                {{ t('tools.jwt-codec.results.notYetValidHint') }}
-              </dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'decoded' && data"
+            :label="t('tools.jwt-codec.views.decoded')"
+            :content="resultText"
+            filename="jwt.json"
+            mime="application/json;charset=utf-8"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -420,28 +422,9 @@ function onKeydown(event: KeyboardEvent): void {
   color: var(--tb-danger);
 }
 
-.detail {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-  margin: var(--tb-space-3) 0 0;
-}
 
-.detail__row {
-  display: flex;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-sm);
-}
 
-.detail__row dt {
-  min-width: 96px;
-  color: var(--tb-text-tertiary);
-}
 
-.detail__row dd {
-  margin: 0;
-  word-break: break-all;
-}
 
 .detail__ok {
   color: var(--tb-success);

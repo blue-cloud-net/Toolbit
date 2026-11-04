@@ -12,7 +12,8 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -119,6 +120,15 @@ const resultText = computed(() => {
 
 const faq = computed<FaqItem[]>(() => tm('tools.dns-tester.faq') as FaqItem[])
 
+/** 结果页签：摘要 / 原始 JSON。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.dns-tester.views.summary') },
+  { id: 'raw', label: t('tools.dns-tester.views.raw') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
+
 /** 摘要统计卡片。 */
 const stats = computed<StatGridItem[]>(() => {
   const result = data.value
@@ -210,6 +220,19 @@ const chainColumns = computed<DataTableColumn[]>(() => [
   { key: 'level', label: t('tools.dns-tester.results.chainLevels'), align: 'right' },
   { key: 'detail', label: t('tools.dns-tester.results.chainDetail'), mono: true },
 ])
+
+/** 注册局表格列定义。 */
+const registryColumns = computed<DataTableColumn[]>(() => [
+  { key: 'registry', label: t('tools.dns-tester.results.registry'), mono: true },
+])
+
+/** 注册局表格行。 */
+const registryRows = computed<DataTableRow[]>(() =>
+  (data.value?.whois?.registries ?? []).map((item, index) => ({
+    key: `${item}-${index}`,
+    cells: { registry: item },
+  })),
+)
 
 /** 信任链表格行。 */
 const chainRows = computed<DataTableRow[]>(() =>
@@ -310,52 +333,61 @@ function reset(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.dns-tester.results.output')"
+        :views="views"
+        download-filename="dns-tester.json"
+        download-mime="application/json;charset=utf-8"
         @retry="run"
       >
-        <template
-          v-if="data"
-          #extra
-        >
-          <StatGrid :items="stats" />
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
 
-          <DataTable
-            v-if="nameServerRows.length > 0"
-            class="table"
-            :columns="nameServerColumns"
-            :rows="nameServerRows"
-            :copy-column="'server'"
+            <DataTable
+              v-if="nameServerRows.length > 0"
+              class="table"
+              :columns="nameServerColumns"
+              :rows="nameServerRows"
+              :copy-column="'server'"
+            />
+
+            <DataTable
+              v-if="statusRows.length > 0"
+              class="table"
+              :columns="statusColumns"
+              :rows="statusRows"
+              :copy-column="'status'"
+            />
+
+            <DataTable
+              v-if="registryRows.length > 0"
+              class="table"
+              :columns="registryColumns"
+              :rows="registryRows"
+              :copy-column="'registry'"
+            />
+
+            <DataTable
+              v-if="chainRows.length > 0"
+              class="table"
+              :columns="chainColumns"
+              :rows="chainRows"
+              :copy-column="'detail'"
+            />
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'raw'"
+            :label="t('tools.dns-tester.views.raw')"
+            :content="rawJson"
+            filename="dns-tester.json"
+            mime="application/json;charset=utf-8"
           />
-
-          <DataTable
-            v-if="statusRows.length > 0"
-            class="table"
-            :columns="statusColumns"
-            :rows="statusRows"
-            :copy-column="'status'"
-          />
-
-          <DataTable
-            v-if="chainRows.length > 0"
-            class="table"
-            :columns="chainColumns"
-            :rows="chainRows"
-            :copy-column="'detail'"
-          />
-
-          <details
-            v-if="rawJson !== ''"
-            class="raw"
-          >
-            <summary class="raw__summary">
-              {{ t('tools.dns-tester.results.rawJson') }}
-            </summary>
-            <pre class="raw__body"><code>{{ rawJson }}</code></pre>
-          </details>
         </template>
       </ResultPanel>
     </template>

@@ -63,5 +63,9 @@
       "q": "What does minify remove?",
       "a": "Only blank lines and trailing whitespace; everything else is kept as is."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "output": "Formatted output"
+  }
 }

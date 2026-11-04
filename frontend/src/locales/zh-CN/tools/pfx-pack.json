@@ -14,7 +14,13 @@
   },
   "options": {},
   "results": {
-    "output": "容器内容（base64）"
+    "output": "容器内容（base64）",
+    "encoding": "输出编码",
+    "length": "容器字节数"
+  },
+  "views": {
+    "summary": "摘要",
+    "output": "PKCS#12 产物"
   },
   "examples": [
     {

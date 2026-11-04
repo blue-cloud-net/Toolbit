@@ -11,11 +11,14 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import ProductText from '@/components/tool/ProductText.vue'
 import QuickReference from '@/components/tool/QuickReference.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { DEFAULT_EXAMPLE } from '@/tools/encoding/number-base/example'
@@ -59,6 +62,27 @@ bindInput((text) => {
 })
 
 const resultText = computed(() => data.value?.result ?? '')
+
+/** 摘要卡片：2 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'from', label: t('tools.number-base.results.from') },
+      { key: 'to', label: t('tools.number-base.results.to') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.number-base.views.summary') },
+  { id: 'result', label: t('tools.number-base.views.result') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 const running = computed(() => state.value === 'loading')
 
 /** 常用进制（2–36 中挑出高频项）。 */
@@ -208,14 +232,29 @@ function onKeydown(event: KeyboardEvent): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.number-base.results.output')"
         :use-as-input="useAsInput"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'result' && data"
+            :label="t('tools.number-base.views.result')"
+            :content="String(data.result ?? '')"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #reference>

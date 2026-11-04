@@ -46,6 +46,10 @@
       "none": "No padding"
     }
   },
+  "views": {
+    "summary": "Summary",
+    "output": "Ciphertext"
+  },
   "results": {
     "output": "Output",
     "tag": "Authentication tag",

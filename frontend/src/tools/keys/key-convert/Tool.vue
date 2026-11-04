@@ -11,10 +11,13 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import KeyInput from '@/components/tool/KeyInput.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useToolRun } from '@/composables/useToolRun'
 import { DEFAULT_EXAMPLE } from '@/tools/keys/key-convert/example'
 
@@ -69,6 +72,30 @@ const resultText = computed(() => {
   }
   return result.key.pem
 })
+
+/** 摘要卡片：5 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'detected.algorithm', label: t('tools.key-convert.results.algorithm') },
+      { key: 'detected.format', label: t('tools.key-convert.results.format') },
+      { key: 'detected.bits', label: t('tools.key-convert.results.bits') },
+      { key: 'detected.curve', label: t('tools.key-convert.results.curve') },
+      { key: 'detected.encrypted', label: t('tools.key-convert.results.encrypted'), format: (v) => (v ? t('common.states.yes') : t('common.states.no')), booleanLevel: { true: 'warning', false: 'muted' } },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.key-convert.views.summary') },
+  { id: 'pem', label: t('tools.key-convert.views.pem') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.key-convert.faq') as FaqItem[])
 
@@ -174,13 +201,28 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.key-convert.results.key')"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'pem' && data"
+            :label="t('tools.key-convert.views.pem')"
+            :content="String(data.key.pem ?? '')"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

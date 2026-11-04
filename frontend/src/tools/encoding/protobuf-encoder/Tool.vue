@@ -17,7 +17,8 @@ import { useI18n } from 'vue-i18n'
 
 import CodeEditor from '@/components/tool/CodeEditor.vue'
 import EncodingSelect from '@/components/tool/EncodingSelect.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -102,6 +103,20 @@ const stats = computed<StatGridItem[]>(() => {
 
 /** 结果文本。 */
 const resultText = computed(() => data.value?.output ?? '')
+
+/** 结果页签：摘要 / 编码结果。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.protobuf-encoder.views.summary') },
+  { id: 'output', label: t('tools.protobuf-encoder.views.output') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
+
+/** 产物文件名：随输出编码变化，避免把十六进制文本存成二进制。 */
+const outputFilename = computed(() =>
+  outputEncoding.value === 'hex' ? 'protobuf.hex' : 'protobuf.b64',
+)
 
 /** 追加一个空字段。 */
 function addField(): void {
@@ -330,9 +345,10 @@ function fillExample(index: number): void {
           <RunBar
             :running="running"
             :disabled="mode === 'wire' && fields.length === 0 && editorMode === 'table'"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -340,18 +356,29 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.protobuf-encoder.results.output')"
+        :views="views"
         :use-as-input="useAsInput"
-        download-filename="protobuf.bin"
-        download-mime="application/octet-stream"
+        :download-filename="outputFilename"
         @retry="run"
       >
-        <template #summary>
-          <StatGrid :items="stats" />
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary'"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'output' && data"
+            :label="t('tools.protobuf-encoder.views.output')"
+            :content="data.output"
+            :filename="outputFilename"
+          />
         </template>
       </ResultPanel>
     </template>

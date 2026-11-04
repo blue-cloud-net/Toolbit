@@ -177,7 +177,7 @@ function reset(): void {
             <span class="field__label">{{ t('tools.cert-chain-fetch.fields.port') }}</span>
             <ElInputNumber
               v-model="port"
-              class="field__input"
+              class="field__number"
               :min="1"
               :max="65535"
             />

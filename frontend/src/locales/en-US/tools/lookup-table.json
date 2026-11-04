@@ -21,7 +21,14 @@
     "notMatched": "Not found",
     "entry": "Entry",
     "candidates": "Candidates",
-    "dataVersion": "Dataset version"
+    "dataVersion": "Dataset version",
+    "kind": "Kind",
+    "query": "Query",
+    "extra": "Extra",
+    "candidateKey": "Candidate key",
+    "candidateLabel": "Candidate name",
+    "candidateDescription": "Candidate description",
+    "entryDescription": "Entry description"
   },
   "examples": [
     {

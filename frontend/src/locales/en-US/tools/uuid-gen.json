@@ -22,7 +22,8 @@
   "results": {
     "output": "Generated UUIDs",
     "count": "Generated count",
-    "item": "Item {index}"
+    "item": "Item {index}",
+    "version": "Version"
   },
   "examples": [
     {

@@ -40,5 +40,9 @@
       "q": "What if the type is not recognised?",
       "a": "It falls back to application/octet-stream with a bin extension."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "digest": "File digest"
+  }
 }

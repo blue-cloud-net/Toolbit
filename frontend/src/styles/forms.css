@@ -36,6 +36,26 @@
   width: 100%;
 }
 
+/*
+ * 短值控件的宽度上限。
+ *
+ * 内容列在超宽屏下达 1760px（`--tb-container-w`），控件若不设上限，
+ * 一个下拉会被拉成一条 1700px 的长条，右侧全是空白，
+ * 视觉上与「本来就该是长串」的文本框混为一谈。
+ *
+ * 因此按**取值形态**分档：
+ *   - 下拉 / 单选组：取值是枚举，240px 足够显示最长选项；
+ *   - 数字：取值是 1–3 位数，160px 足够；
+ *   - 文本框 / 文本域：**不设上限** —— 它们的取值天然是长串。
+ */
+.field__select {
+  max-width: 240px;
+}
+
+.field__number {
+  max-width: 160px;
+}
+
 .field__hint {
   margin: 0;
   font-size: var(--tb-font-xs);
@@ -55,6 +75,38 @@
   gap: var(--tb-space-3);
 }
 
+/*
+ * 字段行内的字段按「短值」处理：不增长，宽度封顶 240px，
+ * 一行里几个短值控件就紧凑地排在左侧，右侧留白。
+ */
 .field-row > .field {
-  flex: 1 1 180px;
+  flex: 0 1 240px;
+  max-width: 240px;
+}
+
+/*
+ * 长值输入（URL、密钥、口令、表达式…）需要占满剩余宽度：
+ * 给该字段加 `.field--grow`。
+ */
+.field-row > .field.field--grow {
+  flex: 1 1 320px;
+  max-width: none;
+}
+
+/*
+ * 极短值（cron 的分 / 时 / 日字段、时区名、捕获组名…）用不着 240px，
+ * 给该字段加 `.field--narrow`。
+ */
+.field-row > .field.field--narrow {
+  flex: 0 1 140px;
+  max-width: 140px;
+}
+
+/*
+ * 文本域所在的字段必须整行：文本域换行后会挤成一条窄缝，
+ * 因此它所在的字段强制独占一行，不参与同行分栏。
+ */
+.field-row > .field:has(.field__textarea) {
+  flex-basis: 100%;
+  max-width: none;
 }

@@ -11,10 +11,13 @@ import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES, type PermBit, type PermClass } from '@/tools/system/chmod-calc/example'
@@ -74,6 +77,26 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本：八进制形式。 */
 const resultText = computed(() => data.value?.octal ?? '')
+
+/** 摘要卡片：1 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'octal', label: t('tools.chmod-calc.results.octal') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.chmod-calc.views.summary') },
+  { id: 'octal', label: t('tools.chmod-calc.views.octal') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 /** 三个权限类别的明细。 */
 const classes = computed<PermClassInfo[]>(() => data.value?.classes ?? [])
@@ -220,9 +243,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -230,60 +254,60 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
+        :views="views"
         :title="t('tools.chmod-calc.results.octal')"
         @retry="run"
       >
-        <template
-          v-if="data"
-          #extra
-        >
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.chmod-calc.results.symbolic') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.symbolic }}
-              </dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
 
-          <ul class="classes">
-            <li
-              v-for="item in classes"
-              :key="item.class"
-              class="perm"
-            >
-              <div class="perm__head">
-                <span class="perm__class">
-                  {{ classLabel(item.class) }}
-                </span>
-                <span class="perm__symbol tb-mono">
-                  {{ item.symbol }}
-                </span>
-                <span class="perm__numeric tb-mono">
-                  {{ item.numeric }}
-                </span>
-              </div>
+            <ul class="classes">
+              <li
+                v-for="item in classes"
+                :key="item.class"
+                class="perm"
+              >
+                <div class="perm__head">
+                  <span class="perm__class">
+                    {{ classLabel(item.class) }}
+                  </span>
+                  <span class="perm__symbol tb-mono">
+                    {{ item.symbol }}
+                  </span>
+                  <span class="perm__numeric tb-mono">
+                    {{ item.numeric }}
+                  </span>
+                </div>
 
-              <div class="perm__bits">
-                <span
-                  v-for="bit in BITS"
-                  :key="bit"
-                  class="perm__bit"
-                  :class="{ 'perm__bit--on': bitOn(item, bit) }"
-                >
-                  {{ t(`tools.chmod-calc.options.bit.${bit}`) }}
-                </span>
-              </div>
+                <div class="perm__bits">
+                  <span
+                    v-for="bit in BITS"
+                    :key="bit"
+                    class="perm__bit"
+                    :class="{ 'perm__bit--on': bitOn(item, bit) }"
+                  >
+                    {{ t(`tools.chmod-calc.options.bit.${bit}`) }}
+                  </span>
+                </div>
 
-              <p class="perm__meaning">
-                {{ meaningText(item) }}
-              </p>
-            </li>
-          </ul>
+                <p class="perm__meaning">
+                  {{ meaningText(item) }}
+                </p>
+              </li>
+            </ul>
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'octal' && data"
+            :label="t('tools.chmod-calc.views.octal')"
+            :content="String(data.octal ?? '')"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -319,28 +343,9 @@ function fillExample(index: number): void {
   gap: var(--tb-space-2) var(--tb-space-4);
 }
 
-.detail {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-  margin: var(--tb-space-3) 0 0;
-}
 
-.detail__row {
-  display: flex;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-sm);
-}
 
-.detail__row dt {
-  min-width: 96px;
-  color: var(--tb-text-tertiary);
-}
 
-.detail__row dd {
-  margin: 0;
-  word-break: break-all;
-}
 
 .classes {
   display: flex;

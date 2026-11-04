@@ -25,6 +25,10 @@
     "id": "Anchor",
     "empty": "The document has no headings."
   },
+  "views": {
+    "html": "HTML output",
+    "toc": "Table of contents"
+  },
   "examples": [
     {
       "label": "Headings and a table",

@@ -9,6 +9,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import AppIcon from '@/components/common/AppIcon.vue'
+import { useCopy } from '@/composables/useCopy'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePrefsStore } from '@/stores/prefs'
 import { isImplemented } from '@/tools'
@@ -39,6 +40,7 @@ const props = withDefaults(
 const { t, locale } = useI18n()
 const prefs = usePrefsStore()
 const catalog = useCatalogStore()
+const { copy } = useCopy()
 
 const displayName = computed(() => (locale.value === 'en-US' ? props.nameEn : props.name))
 const implemented = computed(() => isImplemented(props.slug))
@@ -71,6 +73,9 @@ const favoriteLabel = computed(() =>
   favorite.value ? t('tool.favorite.remove') : t('tool.favorite.add'),
 )
 
+/** 该工具是否处理密钥 / 证书等敏感材料（由 catalog 的 `sensitive` 字段决定）。 */
+const sensitive = computed(() => catalog.getTool(props.slug)?.sensitive === true)
+
 /** 工具图标名：未登记时回落到所属分类的图标。 */
 const iconName = computed(() => {
   const cat = category.value
@@ -84,6 +89,14 @@ const toneVars = computed(() =>
 
 function toggleFavorite(): void {
   prefs.toggleFavorite(props.slug)
+}
+
+/** 复制当前工具页的完整链接（含域名，便于直接分享）。 */
+function copyLink(): void {
+  if (typeof window === 'undefined') {
+    return
+  }
+  void copy(window.location.href)
 }
 
 /** 词条可能尚未登记（工具 chunk 未加载），缺失时返回空串。 */
@@ -260,6 +273,20 @@ onBeforeUnmount(() => {
             :size="20"
           />
         </button>
+
+        <button
+          v-if="implemented"
+          type="button"
+          class="tool-page__favorite"
+          :aria-label="t('tool.share.copyLink')"
+          :title="t('tool.share.copyLink')"
+          @click="copyLink"
+        >
+          <AppIcon
+            name="link"
+            :size="20"
+          />
+        </button>
       </div>
 
       <p
@@ -278,6 +305,25 @@ onBeforeUnmount(() => {
     </div>
 
     <template v-else>
+      <aside
+        v-if="sensitive"
+        class="tool-page__security"
+        role="note"
+      >
+        <AppIcon
+          name="shield-check"
+          :size="18"
+        />
+        <div class="tool-page__security-text">
+          <p class="tool-page__security-title">
+            {{ t('tool.security.title') }}
+          </p>
+          <p class="tool-page__security-body">
+            {{ t('tool.security.body') }}
+          </p>
+        </div>
+      </aside>
+
       <div
         ref="grid"
         class="tool-page__grid"
@@ -487,12 +533,42 @@ onBeforeUnmount(() => {
   border-radius: var(--tb-radius-panel);
 }
 
+/* 敏感材料提示条：低调偏安全色，不抢结果区视线 */
+.tool-page__security {
+  display: flex;
+  gap: var(--tb-space-2);
+  align-items: flex-start;
+  padding: var(--tb-space-2) var(--tb-space-3);
+  font-size: var(--tb-font-xs);
+  color: var(--tb-text-secondary);
+  background: var(--tb-bg-elevated);
+  border: 1px solid var(--tb-border);
+  border-left: 3px solid var(--tb-accent);
+  border-radius: var(--tb-radius-control);
+}
+
+.tool-page__security-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tool-page__security-title {
+  margin: 0;
+  font-weight: 600;
+  color: var(--tb-text);
+}
+
+.tool-page__security-body {
+  margin: 0;
+  line-height: 1.5;
+}
+
 .tool-page__grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--tb-space-4);
 }
-
 .tool-page__primary,
 .tool-page__secondary {
   display: flex;

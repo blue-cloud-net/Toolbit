@@ -16,10 +16,13 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useToolRun } from '@/composables/useToolRun'
 import { DEFAULT_EXAMPLE } from '@/tools/crypto/password-gen/example'
 
@@ -72,6 +75,28 @@ const {
 
 const running = computed(() => state.value === 'loading')
 const resultText = computed(() => (data.value?.passwords ?? []).join('\n'))
+
+/** 摘要卡片：3 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'entropyBits', label: t('tools.password-gen.results.entropyBits') },
+      { key: 'template', label: t('tools.password-gen.results.template') },
+      { key: 'poolSize', label: t('tools.password-gen.results.poolSize') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.password-gen.views.summary') },
+  { id: 'passwords', label: t('tools.password-gen.views.passwords') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 const entropyText = computed(() => {
   const parts: string[] = []
   if (typeof data.value?.entropyBits === 'number' && data.value.entropyBits > 0) {
@@ -161,7 +186,7 @@ function fillExample(): void {
               <span class="field__label">{{ t('tools.password-gen.fields.length') }}</span>
               <ElInputNumber
                 v-model="length"
-                class="field__input"
+                class="field__number"
                 :min="4"
                 :max="128"
                 :aria-label="t('tools.password-gen.fields.length')"
@@ -172,7 +197,7 @@ function fillExample(): void {
               <span class="field__label">{{ t('tools.password-gen.fields.count') }}</span>
               <ElInputNumber
                 v-model="count"
-                class="field__input"
+                class="field__number"
                 :min="1"
                 :max="100"
                 :aria-label="t('tools.password-gen.fields.count')"
@@ -240,7 +265,7 @@ function fillExample(): void {
               <span class="field__label">{{ t('tools.password-gen.fields.wordCount') }}</span>
               <ElInputNumber
                 v-model="wordCount"
-                class="field__input"
+                class="field__number"
                 :min="1"
                 :max="12"
                 :aria-label="t('tools.password-gen.fields.wordCount')"
@@ -317,13 +342,28 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.password-gen.results.passwords')"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'passwords' && data"
+            :label="t('tools.password-gen.views.passwords')"
+            :content="(data.passwords ?? []).join('\n')"
+          />
+        </template>
+      </ResultPanel>
       <p
         v-if="entropyText"
         class="prose"

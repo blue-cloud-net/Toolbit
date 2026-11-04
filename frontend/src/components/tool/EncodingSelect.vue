@@ -60,7 +60,12 @@ function optionLabel(value: string): string {
 </template>
 
 <style scoped>
+/*
+ * 编码下拉：取值是枚举，宽度封顶 240px（与 `forms.css` 的 `.field__select` 同档）。
+ * `min-width` 保证在窄容器里也不会被压到看不清。
+ */
 .encoding-select {
   min-width: 120px;
+  max-width: 240px;
 }
 </style>

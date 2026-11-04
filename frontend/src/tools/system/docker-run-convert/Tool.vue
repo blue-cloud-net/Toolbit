@@ -19,6 +19,7 @@ import RunBar from '@/components/tool/RunBar.vue'
 import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import WarningList from '@/components/tool/WarningList.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/system/docker-run-convert/example'
@@ -276,9 +277,10 @@ function useResultAsInput(text: string): boolean {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -307,21 +309,10 @@ function useResultAsInput(text: string): boolean {
             :empty="t('tools.docker-run-convert.results.empty')"
           />
 
-          <dl
-            v-if="(data?.unsupported ?? []).length > 0"
-            class="detail"
-          >
-            <div
-              v-for="(item, index) in data?.unsupported ?? []"
-              :key="index"
-              class="detail__row"
-            >
-              <dt>!</dt>
-              <dd class="tb-mono">
-                {{ item }}
-              </dd>
-            </div>
-          </dl>
+          <WarningList
+            :items="data?.unsupported"
+            :label="t('tools.docker-run-convert.results.unsupported')"
+          />
         </template>
       </ResultPanel>
     </template>

@@ -22,7 +22,10 @@
   "results": {
     "masked": "脱敏结果",
     "total": "命中总数",
-    "count": "命中次数"
+    "count": "命中次数",
+    "matchType": "脱敏类型",
+    "matchCount": "命中次数",
+    "matchSample": "脱敏样例"
   },
   "examples": [
     {
@@ -47,5 +50,9 @@
       "q": "脱敏结果能直接用于生产吗？",
       "a": "它按常见格式识别，可能漏掉格式特殊的值，请配合业务侧校验。"
     }
-  ]
+  ],
+  "views": {
+    "summary": "摘要",
+    "masked": "脱敏结果"
+  }
 }

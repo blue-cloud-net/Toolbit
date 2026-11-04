@@ -13,10 +13,13 @@ import 'element-plus/es/components/checkbox/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/text/text-diff/example'
@@ -107,6 +110,29 @@ const resultText = computed(() => {
     })
     .join('\n')
 })
+
+/** 摘要卡片：4 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'stat.added', label: t('tools.text-diff.results.added') },
+      { key: 'stat.removed', label: t('tools.text-diff.results.removed') },
+      { key: 'stat.unchanged', label: t('tools.text-diff.results.unchanged') },
+      { key: 'stat.changes', label: t('tools.text-diff.results.changes') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 差异明细。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.text-diff.views.summary') },
+  { id: 'diff', label: t('tools.text-diff.views.diff') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 /** 结论徽章：两侧是否一致。 */
 const verdict = computed(() => {
@@ -231,9 +257,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -241,41 +268,29 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :verdict="verdict"
         :title="t('tools.text-diff.results.summary')"
+        :views="views"
+        download-filename="diff.txt"
         @retry="run"
       >
-        <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.text-diff.results.added') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.stat.added ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.text-diff.results.removed') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.stat.removed ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.text-diff.results.unchanged') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.stat.unchanged ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.text-diff.results.changes') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.stat.changes ?? 0 }}
-              </dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'diff' && data"
+            :label="t('tools.text-diff.views.diff')"
+            :content="resultText"
+            filename="diff.txt"
+          />
         </template>
       </ResultPanel>
     </template>

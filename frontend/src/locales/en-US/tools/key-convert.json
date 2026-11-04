@@ -13,7 +13,16 @@
   "options": {},
   "results": {
     "key": "Converted key",
-    "detected": "Detected source key"
+    "detected": "Detected source key",
+    "algorithm": "Algorithm",
+    "bits": "Bits",
+    "curve": "Curve",
+    "encrypted": "Encrypted",
+    "format": "Format"
+  },
+  "views": {
+    "summary": "Summary",
+    "pem": "PEM output"
   },
   "examples": [
     {

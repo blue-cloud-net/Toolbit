@@ -13,7 +13,12 @@
   },
   "options": {},
   "results": {
-    "output": "Converted material"
+    "output": "Converted material",
+    "format": "Output format"
+  },
+  "views": {
+    "summary": "Summary",
+    "output": "Output"
   },
   "examples": [
     {

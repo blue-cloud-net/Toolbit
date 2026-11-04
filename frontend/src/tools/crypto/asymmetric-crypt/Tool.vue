@@ -13,10 +13,13 @@ import { useI18n } from 'vue-i18n'
 
 import EncodingSelect from '@/components/tool/EncodingSelect.vue'
 import KeyInput from '@/components/tool/KeyInput.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useToolRun } from '@/composables/useToolRun'
 import { DEFAULT_EXAMPLE } from '@/tools/crypto/asymmetric-crypt/example'
 
@@ -68,6 +71,28 @@ bindInput((text) => {
 const running = computed(() => state.value === 'loading')
 const isRSA = computed(() => algorithm.value === 'RSA')
 const resultText = computed(() => data.value?.output ?? '')
+
+/** 摘要卡片：3 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'algorithm', label: t('tools.asymmetric-crypt.results.algorithm') },
+      { key: 'order', label: t('tools.asymmetric-crypt.results.order') },
+      { key: 'format', label: t('tools.asymmetric-crypt.results.format') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.asymmetric-crypt.views.summary') },
+  { id: 'output', label: t('tools.asymmetric-crypt.views.output') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.asymmetric-crypt.faq') as FaqItem[])
 
@@ -263,14 +288,29 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.asymmetric-crypt.results.output')"
         :use-as-input="useAsInput"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'output' && data"
+            :label="t('tools.asymmetric-crypt.views.output')"
+            :content="String(data.output ?? '')"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

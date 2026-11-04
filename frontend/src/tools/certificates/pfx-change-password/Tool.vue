@@ -10,8 +10,10 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import MaterialInput from '@/components/tool/MaterialInput.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -48,6 +50,34 @@ const {
 const running = computed(() => state.value === 'loading')
 
 const resultText = computed(() => (data.value ? data.value.base64 : ''))
+
+/** 结果摘要：编码与字节数。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    {
+      label: t('tools.pfx-change-password.results.encoding'),
+      value: result.encoding,
+    },
+    {
+      label: t('tools.pfx-change-password.results.length'),
+      value: `${result.length} B`,
+    },
+  ]
+})
+
+/** 结果页签：摘要 / 产物。 */
+const views: ResultView[] = [
+  { id: 'summary', label: t('tools.pfx-change-password.views.summary') },
+  { id: 'output', label: t('tools.pfx-change-password.views.output') },
+]
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
+
 const faq = computed<FaqItem[]>(
   () => tm('tools.pfx-change-password.faq') as FaqItem[],
 )
@@ -129,13 +159,31 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.pfx-change-password.results.output')"
+        :views="views"
+        hide-text
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'output' && data"
+            :label="t('tools.pfx-change-password.views.output')"
+            :content="data.base64"
+            filename="bundle.p12"
+            mime="application/x-pkcs12"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

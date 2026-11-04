@@ -13,10 +13,14 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/encoding/url-codec/example'
@@ -70,9 +74,47 @@ bindInput((text) => {
 })
 
 const resultText = computed(() => data.value?.output ?? '')
+
+/** 摘要卡片：5 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'parsed.scheme', label: t('tools.url-codec.results.parts.scheme') },
+      { key: 'parsed.host', label: t('tools.url-codec.results.parts.host') },
+      { key: 'parsed.port', label: t('tools.url-codec.results.parts.port') },
+      { key: 'parsed.path', label: t('tools.url-codec.results.parts.path') },
+      { key: 'parsed.query', label: t('tools.url-codec.results.parts.query'), wide: true },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.url-codec.views.summary') },
+  { id: 'output', label: t('tools.url-codec.views.output') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 const running = computed(() => state.value === 'loading')
 
 const parsed = computed(() => data.value?.parsed ?? null)
+
+/** 查询参数明细表列定义。 */
+const paramColumns: DataTableColumn[] = [
+  { key: 'key', label: t('tools.url-codec.results.parts.key'), mono: true },
+  { key: 'value', label: t('tools.url-codec.results.parts.value'), mono: true },
+]
+
+/** 查询参数明细行。 */
+const paramRows = computed<DataTableRow[]>(() =>
+  (parsed.value?.params ?? []).map((param) => ({
+    key: param.key,
+    cells: { key: param.key, value: param.value },
+  })),
+)
 
 const faq = computed<FaqItem[]>(() => tm('tools.url-codec.faq') as FaqItem[])
 
@@ -221,9 +263,10 @@ function onKeydown(event: KeyboardEvent): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -231,72 +274,34 @@ function onKeydown(event: KeyboardEvent): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.url-codec.results.output')"
         :use-as-input="useAsInput"
+        :views="views"
         @retry="run"
       >
-        <template
-          v-if="parsed"
-          #extra
-        >
-          <dl class="parts">
-            <div class="parts__row">
-              <dt>
-                {{ t('tools.url-codec.results.parts.scheme') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ parsed.scheme || '—' }}
-              </dd>
-            </div>
-            <div class="parts__row">
-              <dt>
-                {{ t('tools.url-codec.results.parts.host') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ parsed.host || '—' }}
-              </dd>
-            </div>
-            <div class="parts__row">
-              <dt>
-                {{ t('tools.url-codec.results.parts.port') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ parsed.port || '—' }}
-              </dd>
-            </div>
-            <div class="parts__row">
-              <dt>
-                {{ t('tools.url-codec.results.parts.path') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ parsed.path || '—' }}
-              </dd>
-            </div>
-            <div class="parts__row">
-              <dt>
-                {{ t('tools.url-codec.results.parts.query') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ parsed.query || '—' }}
-              </dd>
-            </div>
-            <div
-              v-for="param in parsed.params"
-              :key="param.key"
-              class="parts__row"
-            >
-              <dt class="tb-mono">
-                {{ param.key }}
-              </dt>
-              <dd class="tb-mono">
-                {{ param.value }}
-              </dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
+
+            <DataTable
+              v-if="paramRows.length > 0"
+              class="table"
+              :columns="paramColumns"
+              :rows="paramRows"
+              copy-column="value"
+            />
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'output' && data"
+            :label="t('tools.url-codec.views.output')"
+            :content="String(data.output ?? '')"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -326,26 +331,7 @@ function onKeydown(event: KeyboardEvent): void {
 </template>
 
 <style scoped>
-.parts {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-  margin: var(--tb-space-3) 0 0;
-}
-
-.parts__row {
-  display: flex;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-sm);
-}
-
-.parts__row dt {
-  min-width: 96px;
-  color: var(--tb-text-tertiary);
-}
-
-.parts__row dd {
-  margin: 0;
-  word-break: break-all;
+.table {
+  margin-top: var(--tb-space-3);
 }
 </style>

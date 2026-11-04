@@ -112,10 +112,20 @@ ToolPageLayout
 ├── ToolPanel
 │   ├── 输入区（FieldRow / FileDropZone / KeyInput / MaterialInput ...）
 │   ├── 参数区（按工具）
-│   ├── RunBar：运行 / 重置 / 填入示例
+│   ├── RunBar：运行 / 重置 / 填入示例（示例 ≥ 2 条时降级为下拉菜单）
 │   └── ResultPanel：idle / loading / success / error
 └── 内容区：使用说明 / 输入输出说明 / FAQ / 相关工具 / 安全提示
 ```
+
+- 标题行的**复制链接**按钮**必须**存在（`useCopy` + `window.location.href`），
+  便于把工具页直接分享出去；**禁止**只靠地址栏复制。
+- catalog 中 `sensitive: true` 的工具，标题下方**必须**渲染安全提示条
+  （`tool.security.title` / `tool.security.body`）：写明「输入只在本次请求内使用、
+  算完即丢、不保存不记录不回显」。该提示由 `ToolPageLayout` 统一渲染，
+  工具页**禁止**各自再写一份。
+- `RunBar` 的 `examples` 为**数据源**：长度 ≥ 2 时「填入示例」渲染为 `ElDropdown`
+  并 `emit('fill', index)`，只有一条时才保留单击即填。
+  **禁止**把多示例工具的示例写死成只填第一条（`@example="fillExample(0)"`）。
 
 - 布局默认**单列上下**；catalog 中标记 `wide: true` 的工具在视口 ≥1280 时切换为左右分栏。
 - 双栏时两列**等高**，且列内不设滚动条 —— 内容超出时由页面整体滚动。
@@ -173,6 +183,9 @@ ToolPageLayout
 | `ValidityTrack` | 有效期时间轴（按剩余天数推算已过去的比例，语义色仅 success / warning / danger） |
 | `KeyValueTable` | 键值对展示（逐字段复制、语义色、可选 `hint` / `mono`） |
 | `StatGrid` | 少量关键指标的卡片网格（网段、掩码、耗时、成败台数） |
+| `ProductText` | **产物**文本展示：顶部一行标题 + 复制 / 下载，下方等宽文本块（超高可滚动）。供结果页签里的「产物」使用——密文、PEM、十六进制、生成的区域文件等**本质就是文本**的内容，**禁止**硬拆成表格 |
+| `WarningList` | 警告 / 提示列表（单列等宽文本 + 逐条复制）。结果区里的 `warnings` / `notes` / `hints` 一律走它，**禁止**再手写 `<ul>` |
+| `summary.ts`（工具函数） | `buildSummary(source, fields, { yes, no })` 按字段清单生成 `StatGridItem[]`（支持 `a.b` 点路径、`mono`、`level` / `levelBy` / `booleanLevel`、`wide`）；`listRows(values, key)` 把字符串数组转成单列表格行 |
 | `DataTable` | 多记录列表表格（列定义 + 行数据 + 逐行复制 + 滚动区 + 语义色 / 彩色标签）；`copyColumns` 指定内嵌复制列（按钮贴值右侧，`copyColumn` 仍然兼容），`badgeCopy` 指定「点击徽标即复制」的列，`nowrap` 指定**禁止换行**的列；`clickable` 让整行可点击（触发 `row-click`，行获得 `role="button"` 与键盘焦点），用于「表格 → 选中该条目」这类行内导航 |
 | `CopyButton` / `DownloadButton` | 复制（**图标式**，tooltip 固定为「复制」，结果用 `ElMessage` 提示） / 下载（文本走 `content`，**二进制产物**如 PNG 走 `base64`，解码逻辑见 `components/tool/base64.ts`） |
 | `EmptyState` / `ErrorAlert` / `LoadingSkeleton` | 状态展示 |
@@ -292,6 +305,13 @@ ToolPageLayout
 - 断点约定：640 / 768 / 900 / 1024 / 1280 / 1536；
   **禁止**出现未登记的魔法数字。
 - 动效：150–200ms `ease-out`；**必须**响应 `prefers-reduced-motion`。
+- **表单控件宽度必须受控**（`styles/forms.css`），**禁止**让单行控件撑满面板：
+  - `field__select` 上限 240px、`field__number` 上限 160px；
+  - `.field-row` 内的字段默认 `flex: 0 1 240px`、上限 240px；
+  - 需要占满剩余空间的字段加 `.field--grow`（`flex: 1 1 320px`，不限上限）；
+    窄字段（端口号、位数、选项开关）加 `.field--narrow`（上限 140px）；
+  - 含 `.field__textarea` 的字段自动占满整行（`flex-basis: 100%`）。
+  多行文本、代码块、材料输入是**天然占满整行**的例外，不得收窄。
 
 ### 8.5 品牌标识
 
@@ -354,6 +374,14 @@ ToolPageLayout
   或 `CertChainTable`。**禁止**在 `resultText` 里拼 `key: value` 行再把结构化信息塞进单一文本块。
 - **产物文本与摘要分离。** PEM / DER / 十六进制 / 生成的配置等「产物」放独立页签（`ResultPanel` 的 `views`）
   并提供 `DownloadButton`；默认页签**必须**停在「摘要」。
+- **产物页签里用 `ProductText`，不要裸 `<pre>`。** `ProductText` 自带标签行与复制 / 下载按钮；
+  只有确属「就是一段文本」时才直接写 `<pre class="product">`（如 HTML 预览这类需要保留原始排版的场景）。
+- **摘要页签里的字段用 `summary.ts` 生成。** `buildSummary(data, fields, { yes, no })` 支持点路径取值与
+  布尔值的语义色（`booleanLevel` / `levelBy`），**禁止**在工具页手写 `label / value` 数组再逐个判断空值。
+- **警告与提示用 `WarningList`。** `warnings` / `notes` / `hints` 一律走它并由它负责逐条复制，
+  **禁止**在结果区手写 `<ul>` 或 `class="detail"` 之类的自造列表。
+- **禁止自造结果列表布局。** 历史上各工具手写的 `class="detail"` / `detail__row` 列表已全部迁到
+  `StatGrid` / `KeyValueTable` / `DataTable` / `ProductText`；新增工具**不得**再引入同类手写样式。
 - `resultText` 仍然**必须**提供：它是全文复制与下载的数据源，结构化展示**不得**以牺牲复制能力为代价。
 - **结构化已覆盖的内容不再重复展示。** 结果以 `DataTable` / `KeyValueTable` / `StatGrid` 呈现且覆盖同样内容时，
   原始文本**必须**用 `ResultPanel` 的 `hideText` 隐藏（仍作复制 / 下载数据源）；

@@ -21,7 +21,15 @@
     "headingCount": "Headings",
     "linkCount": "Links",
     "codeBlockCount": "Code blocks",
-    "wordCount": "Word count"
+    "wordCount": "Word count",
+    "warning": "Warning",
+    "mode": "Mode",
+    "gfm": "GFM enabled"
+  },
+  "views": {
+    "summary": "Summary",
+    "output": "Output",
+    "warnings": "Warnings"
   },
   "examples": [
     {

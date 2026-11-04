@@ -15,8 +15,10 @@ import CodeEditor from '@/components/tool/CodeEditor.vue'
 import JsonViewer, { type JsonNode } from '@/components/tool/JsonViewer.vue'
 import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { useValidation } from '@/composables/useValidation'
@@ -71,6 +73,31 @@ bindInput((text) => {
 })
 
 const resultText = computed(() => data.value?.output ?? '')
+
+/** 摘要卡片：合法性、错误位置与原因。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      {
+        key: 'valid',
+        label: t('tools.json-format.results.validity'),
+        format: (v) => (v ? t('tools.json-format.results.valid') : t('tools.json-format.results.invalid')),
+        booleanLevel: { true: 'success', false: 'danger' },
+      },
+      {
+        key: 'error',
+        label: t('tools.json-format.results.position'),
+        format: (v) => {
+          const p = v as { line?: number; column?: number } | null
+          return p && p.line !== undefined ? `${p.line}:${p.column}` : ''
+        },
+      },
+      { key: 'error.message', label: t('tools.json-format.results.reason') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
 const running = computed(() => state.value === 'loading')
 
 /** 结果视图页签。 */
@@ -245,9 +272,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -287,30 +315,7 @@ function fillExample(index: number): void {
           v-if="data"
           #extra
         >
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.json-format.results.validity') }}</dt>
-              <dd :class="data?.valid ? 'detail__ok' : 'detail__bad'">
-                {{ data?.valid ? t('tools.json-format.results.valid') : t('tools.json-format.results.invalid') }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.error"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.json-format.results.position') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.error?.line }}:{{ data?.error?.column }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.error"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.json-format.results.reason') }}</dt>
-              <dd>{{ data?.error?.message }}</dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
         </template>
       </ResultPanel>
     </template>

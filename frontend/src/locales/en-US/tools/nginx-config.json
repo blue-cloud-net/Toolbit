@@ -32,7 +32,10 @@
   "results": {
     "config": "Configuration",
     "sections": "Sections",
-    "warnings": "Warnings"
+    "warnings": "Warnings",
+    "mode": "Mode",
+    "warningCount": "Warnings",
+    "warning": "Warning"
   },
   "examples": [
     {
@@ -57,5 +60,9 @@
       "q": "Does it obtain certificates?",
       "a": "No. You supply the certificate and key paths; the tool neither accesses the network nor touches a certificate service."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "config": "Configuration"
+  }
 }

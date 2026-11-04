@@ -70,5 +70,9 @@
       "q": "Is the generated signature trustworthy?",
       "a": "The signature is computed on the server with Tongsuo; the frontend performs no cryptography. The same secret and input always yield the same signature."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "decoded": "Decoded payload"
+  }
 }

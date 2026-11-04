@@ -17,6 +17,8 @@ import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/data/uuid-gen/example'
 import type { UUIDVersion } from '@/tools/data/uuid-gen/example'
@@ -56,7 +58,17 @@ const running = computed(() => state.value === 'loading')
 const resultText = computed(() => (data.value?.uuids ?? []).join('\n'))
 
 /** 结果条数。 */
-const resultCount = computed(() => data.value?.count ?? 0)
+/** 摘要卡片：生成数量与版本。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'count', label: t('tools.uuid-gen.results.count') },
+      { key: 'version', label: t('tools.uuid-gen.results.version') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
 
 const faq = computed<FaqItem[]>(() => tm('tools.uuid-gen.faq') as FaqItem[])
 
@@ -137,7 +149,7 @@ function fillExample(index: number): void {
               <span class="field__label">{{ t('tools.uuid-gen.fields.count') }}</span>
               <ElInputNumber
                 v-model="count"
-                class="field__input tb-mono"
+                class="field__number tb-mono"
                 :min="1"
                 :max="MAX_COUNT"
                 :step="1"
@@ -180,9 +192,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -195,22 +208,14 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.uuid-gen.results.output')"
+        hide-text
         @retry="run"
       >
         <template
           v-if="data"
           #extra
         >
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>
-                {{ t('tools.uuid-gen.results.count') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ resultCount }}
-              </dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
 
           <ol class="uuids">
             <li

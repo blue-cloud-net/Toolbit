@@ -12,10 +12,13 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import EncodingSelect from '@/components/tool/EncodingSelect.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/encoding/gzip-deflate/example'
 
@@ -64,6 +67,27 @@ bindInput((text) => {
 })
 
 const resultText = computed(() => data.value?.output ?? '')
+
+/** 摘要卡片：2 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'encoding', label: t('tools.gzip-deflate.results.encoding') },
+      { key: 'ratio', label: t('tools.gzip-deflate.results.ratio'), format: () => ratioText.value },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.gzip-deflate.views.summary') },
+  { id: 'output', label: t('tools.gzip-deflate.views.output') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 const running = computed(() => state.value === 'loading')
 
 /** 可选的传输编码。 */
@@ -244,9 +268,10 @@ function onKeydown(event: KeyboardEvent): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -254,28 +279,26 @@ function onKeydown(event: KeyboardEvent): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
+        :views="views"
         :title="t('tools.gzip-deflate.results.output')"
         :use-as-input="useAsInput"
         @retry="run"
       >
-        <template
-          v-if="data"
-          #extra
-        >
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.gzip-deflate.results.encoding') }}</dt>
-              <dd>{{ data?.encoding }}</dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.gzip-deflate.results.ratio') }}</dt>
-              <dd>{{ ratioText }}</dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'output' && data"
+            :label="t('tools.gzip-deflate.views.output')"
+            :content="String(data.output ?? '')"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -305,28 +328,9 @@ function onKeydown(event: KeyboardEvent): void {
 </template>
 
 <style scoped>
-.detail {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-  margin: var(--tb-space-3) 0 0;
-}
 
-.detail__row {
-  display: flex;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-sm);
-}
 
-.detail__row dt {
-  min-width: 96px;
-  color: var(--tb-text-tertiary);
-}
 
-.detail__row dd {
-  margin: 0;
-  word-break: break-all;
-}
 
 .prose {
   margin: 0;

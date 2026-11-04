@@ -60,5 +60,9 @@
       "q": "Why is SHA1 the default?",
       "a": "SHA1 has the widest compatibility; choose SHA256 or SHA512 where stronger security matters."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "code": "Code"
+  }
 }

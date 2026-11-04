@@ -35,7 +35,12 @@
   },
   "results": {
     "output": "输出结果",
-    "outputHint": "结果可直接复制。"
+    "outputHint": "结果可直接复制。",
+    "encoding": "编码结果"
+  },
+  "views": {
+    "summary": "摘要",
+    "output": "产物"
   },
   "examples": [
     {

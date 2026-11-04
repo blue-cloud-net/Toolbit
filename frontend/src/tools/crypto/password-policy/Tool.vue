@@ -233,7 +233,7 @@ function fillExample(index: number): void {
             <span class="field__label">{{ t('tools.password-policy.fields.minLength') }}</span>
             <ElInputNumber
               v-model="minLength"
-              class="field__select"
+              class="field__number"
               :min="1"
               :max="128"
               :aria-label="t('tools.password-policy.fields.minLength')"
@@ -244,7 +244,7 @@ function fillExample(index: number): void {
             <span class="field__label">{{ t('tools.password-policy.fields.maxLength') }}</span>
             <ElInputNumber
               v-model="maxLength"
-              class="field__select"
+              class="field__number"
               :min="1"
               :max="1024"
               :aria-label="t('tools.password-policy.fields.maxLength')"
@@ -291,7 +291,7 @@ function fillExample(index: number): void {
             <span class="field__label">{{ t('tools.password-policy.fields.maxRepeatRun') }}</span>
             <ElInputNumber
               v-model="maxRepeatRun"
-              class="field__select"
+              class="field__number"
               :min="1"
               :max="16"
               :aria-label="t('tools.password-policy.fields.maxRepeatRun')"
@@ -306,9 +306,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>

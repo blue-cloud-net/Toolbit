@@ -61,5 +61,9 @@
       "q": "Will `<br>` get a closing tag?",
       "a": "No. Void elements such as `br`, `img` and `input` are emitted as they are, without an end tag."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "output": "Formatted output"
+  }
 }

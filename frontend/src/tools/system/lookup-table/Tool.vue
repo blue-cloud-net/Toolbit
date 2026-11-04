@@ -13,8 +13,11 @@ import { useI18n } from 'vue-i18n'
 
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/system/lookup-table/example'
@@ -78,6 +81,54 @@ const resultText = computed(() => {
     .map((candidate) => `${candidate.label}\t${candidate.description}`)
     .join('\n')
 })
+
+/** 摘要卡片：命中情况与数据版本。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'kind', label: t('tools.lookup-table.results.kind') },
+      { key: 'query', label: t('tools.lookup-table.results.query') },
+      {
+        key: 'entry.label',
+        label: t('tools.lookup-table.results.entry'),
+        format: (v) => (typeof v === 'string' ? v : ''),
+        wide: true,
+      },
+      {
+        key: 'entry.extra',
+        label: t('tools.lookup-table.results.extra'),
+        format: (v) => (Array.isArray(v) ? v.join(' · ') : ''),
+        wide: true,
+      },      {
+        key: 'entry.description',
+        label: t('tools.lookup-table.results.entryDescription'),
+        format: (v) => (typeof v === 'string' ? v : ''),
+        wide: true,
+      },      { key: 'dataVersion', label: t('tools.lookup-table.results.dataVersion') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 候选条目表格列定义。 */
+const candidateColumns = computed<DataTableColumn[]>(() => [
+  { key: 'key', label: t('tools.lookup-table.results.candidateKey'), mono: true },
+  { key: 'label', label: t('tools.lookup-table.results.candidateLabel') },
+  { key: 'description', label: t('tools.lookup-table.results.candidateDescription') },
+])
+
+/** 候选条目表格行。 */
+const candidateRows = computed<DataTableRow[]>(() =>
+  (data.value?.candidates ?? []).map((candidate) => ({
+    key: candidate.key,
+    cells: {
+      key: candidate.key,
+      label: candidate.label,
+      description: candidate.description,
+    },
+  })),
+)
 
 /** 结论徽章：是否精确命中。 */
 const verdict = computed(() => {
@@ -176,9 +227,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -192,36 +244,19 @@ function fillExample(index: number): void {
         :error="error"
         :verdict="verdict"
         :title="t('tools.lookup-table.results.entry')"
+        hide-text
         @retry="run"
       >
         <template #extra>
-          <dl class="detail">
-            <div
-              v-if="data?.entry"
-              class="detail__row"
-            >
-              <dt>{{ data.entry.label }}</dt>
-              <dd class="tb-mono">
-                {{ data.entry.extra.join(' · ') }}
-              </dd>
-            </div>
-            <div
-              v-for="candidate in data?.candidates ?? []"
-              :key="candidate.key"
-              class="detail__row"
-            >
-              <dt class="tb-mono">
-                {{ candidate.key }}
-              </dt>
-              <dd>{{ candidate.label }}</dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.lookup-table.results.dataVersion') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.dataVersion ?? '' }}
-              </dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
+
+          <DataTable
+            v-if="candidateRows.length > 0"
+            class="table"
+            :columns="candidateColumns"
+            :rows="candidateRows"
+            :copy-column="'key'"
+          />
         </template>
       </ResultPanel>
     </template>

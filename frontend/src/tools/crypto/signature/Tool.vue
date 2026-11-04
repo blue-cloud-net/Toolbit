@@ -13,10 +13,13 @@ import { useI18n } from 'vue-i18n'
 
 import EncodingSelect from '@/components/tool/EncodingSelect.vue'
 import KeyInput from '@/components/tool/KeyInput.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useToolRun } from '@/composables/useToolRun'
 import { DEFAULT_EXAMPLE } from '@/tools/crypto/signature/example'
 
@@ -104,6 +107,28 @@ const resultText = computed(() => {
   }
   return ''
 })
+
+/** 摘要卡片：3 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'algorithm', label: t('tools.signature.results.algorithm') },
+      { key: 'hash', label: t('tools.signature.results.hash') },
+      { key: 'valid', label: t('tools.signature.results.validity'), format: (v) => (v === undefined ? '' : (v ? t('tools.signature.results.valid') : t('tools.signature.results.invalid'))), booleanLevel: { true: 'success', false: 'danger' } },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.signature.views.summary') },
+  { id: 'signature', label: t('tools.signature.views.signature') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.signature.faq') as FaqItem[])
 
@@ -348,6 +373,7 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
@@ -355,8 +381,22 @@ function fillExample(): void {
         :verdict="verdict"
         :title="t('tools.signature.results.output')"
         :use-as-input="useAsInput"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'signature' && data"
+            :label="t('tools.signature.views.signature')"
+            :content="String(data.signature ?? '')"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

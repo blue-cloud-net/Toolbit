@@ -68,5 +68,9 @@
       "q": "支持 TypeScript 吗？",
       "a": "不支持。工具按 ECMAScript 语法解析，类型标注会被判为语法错误。"
     }
-  ]
+  ],
+  "views": {
+    "summary": "摘要",
+    "output": "格式化结果"
+  }
 }

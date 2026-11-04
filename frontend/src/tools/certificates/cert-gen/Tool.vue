@@ -315,7 +315,7 @@ function fillExample(): void {
             <span class="field__label">{{ t('tools.cert-gen.fields.notAfterDays') }}</span>
             <ElInputNumber
               v-model="notAfterDays"
-              class="field__input"
+              class="field__number"
               :min="1"
               :max="3650"
             />

@@ -243,7 +243,7 @@ function fillExample(index: number): void {
               <span class="field__label">{{ t('tools.eml-parser.fields.maxAttachmentBytes') }}</span>
               <ElInputNumber
                 v-model="maxAttachmentBytes"
-                class="field__input tb-mono"
+                class="field__number tb-mono"
                 :min="0"
                 :max="52428800"
                 :step="1"
@@ -260,9 +260,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>

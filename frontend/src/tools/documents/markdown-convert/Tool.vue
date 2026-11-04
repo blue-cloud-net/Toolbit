@@ -13,10 +13,13 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import WarningList from '@/components/tool/WarningList.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/documents/markdown-convert/example'
@@ -53,6 +56,41 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本。 */
 const resultText = computed(() => data.value?.output ?? '')
+
+/** 结果摘要：模式与 GFM 开关。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    { label: t('tools.markdown-convert.results.mode'), value: result.mode },
+    {
+      label: t('tools.markdown-convert.results.gfm'),
+      value: result.gfm ? t('common.states.yes') : t('common.states.no'),
+      level: result.gfm ? 'success' : 'muted',
+    },
+  ]
+})
+
+/** 结果页签：摘要 / 产物 / 警告。 */
+const views = computed<ResultView[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const list: ResultView[] = [
+    { id: 'summary', label: t('tools.markdown-convert.views.summary') },
+    { id: 'output', label: t('tools.markdown-convert.views.output') },
+  ]
+  if (result.warnings.length > 0) {
+    list.push({ id: 'warnings', label: t('tools.markdown-convert.views.warnings') })
+  }
+  return list
+})
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.markdown-convert.faq') as FaqItem[])
 
@@ -146,9 +184,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -156,24 +195,33 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.markdown-convert.results.output')"
+        :views="views"
+        hide-text
         @retry="run"
       >
-        <template #extra>
-          <dl class="detail">
-            <div
-              v-for="(warning, index) in data?.warnings ?? []"
-              :key="index"
-              class="detail__row"
-            >
-              <dt>!</dt>
-              <dd>{{ warning }}</dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'output' && data"
+            :label="t('tools.markdown-convert.views.output')"
+            :content="data.output"
+          />
+
+          <WarningList
+            v-else-if="viewId === 'warnings'"
+            :items="data?.warnings"
+            :label="t('tools.markdown-convert.results.warning')"
+          />
         </template>
       </ResultPanel>
     </template>

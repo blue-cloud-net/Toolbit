@@ -14,7 +14,9 @@
   "results": {
     "compose": "配置内容",
     "serviceCount": "服务数量",
-    "warnings": "提示"
+    "warnings": "提示",
+    "warningCount": "提示数",
+    "warning": "提示"
   },
   "examples": [
     {
@@ -35,5 +37,9 @@
       "q": "支持健康检查与资源限制吗？",
       "a": "暂不支持，首版聚焦端口、环境变量、卷与依赖。"
     }
-  ]
+  ],
+  "views": {
+    "summary": "摘要",
+    "compose": "Compose 文件"
+  }
 }

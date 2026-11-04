@@ -13,7 +13,16 @@
   "options": {},
   "results": {
     "key": "转换结果",
-    "detected": "识别到的源密钥"
+    "detected": "识别到的源密钥",
+    "algorithm": "算法",
+    "bits": "位数",
+    "curve": "曲线",
+    "encrypted": "已加密",
+    "format": "格式"
+  },
+  "views": {
+    "summary": "摘要",
+    "pem": "PEM 产物"
   },
   "examples": [
     {

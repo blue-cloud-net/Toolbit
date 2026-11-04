@@ -18,6 +18,11 @@
     "dnsCname": "DNS CNAME",
     "httpFile": "站点文件"
   },
+  "views": {
+    "summary": "摘要",
+    "resolvers": "解析器明细",
+    "body": "响应正文"
+  },
   "results": {
     "output": "验证结果",
     "perResolver": "逐解析器结果",

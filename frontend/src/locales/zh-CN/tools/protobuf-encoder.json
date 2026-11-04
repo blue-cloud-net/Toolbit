@@ -30,6 +30,10 @@
       "json": "JSON 文本"
     }
   },
+  "views": {
+    "summary": "摘要",
+    "output": "编码结果"
+  },
   "results": {
     "output": "编码结果",
     "byteLength": "字节长度",

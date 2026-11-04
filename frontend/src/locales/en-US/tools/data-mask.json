@@ -22,7 +22,10 @@
   "results": {
     "masked": "Masked text",
     "total": "Total matches",
-    "count": "Match count"
+    "count": "Match count",
+    "matchType": "Mask type",
+    "matchCount": "Hits",
+    "matchSample": "Sample"
   },
   "examples": [
     {
@@ -47,5 +50,9 @@
       "q": "Is the output production-ready?",
       "a": "It recognises common formats and may miss unusual ones, so keep validating on the business side."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "masked": "Masked text"
+  }
 }

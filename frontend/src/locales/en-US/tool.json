@@ -258,6 +258,15 @@
     "add": "Add to favorites",
     "remove": "Remove from favorites"
   },
+  "security": {
+    "title": "This tool handles sensitive material",
+    "body": "Keys, passphrases, and certificates are used only for this request and discarded right after. Nothing is stored, logged, or echoed back. Avoid pasting production credentials on shared devices."
+  },
+  "share": {
+    "copyLink": "Copy link to this tool",
+    "copied": "Link copied",
+    "failed": "Could not copy the link"
+  },
   "key": {
     "fields": {
       "key": "Key content",

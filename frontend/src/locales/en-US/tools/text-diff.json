@@ -48,5 +48,9 @@
       "q": "How are array length changes handled in JSON mode?",
       "a": "Items are compared by index: extra elements are marked as inserted and missing ones as deleted."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "diff": "Differences"
+  }
 }

@@ -14,7 +14,8 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -57,6 +58,15 @@ const running = computed(() => state.value === 'loading')
 const resultText = computed(() =>
   data.value ? data.value.zoneLines.join('\n') : '',
 )
+
+/** 结果页签：摘要 / 区域文件。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.caa-gen.views.summary') },
+  { id: 'zone', label: t('tools.caa-gen.views.zone') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.caa-gen.faq') as FaqItem[])
 
@@ -165,7 +175,7 @@ function fillExample(): void {
             <span class="field__label">{{ t('tools.caa-gen.fields.ttl') }}</span>
             <ElInputNumber
               v-model="ttl"
-              class="field__input"
+              class="field__number"
               :min="0"
             />
           </label>
@@ -185,25 +195,34 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.caa-gen.results.output')"
+        :views="views"
+        download-filename="caa-zone.txt"
         @retry="run"
       >
-        <template
-          v-if="data"
-          #extra
-        >
-          <StatGrid :items="stats" />
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
 
-          <DataTable
-            class="table"
-            :columns="recordColumns"
-            :rows="recordRows"
-            :copy-column="'value'"
-            :empty="t('tools.caa-gen.results.empty')"
+            <DataTable
+              class="table"
+              :columns="recordColumns"
+              :rows="recordRows"
+              :copy-column="'value'"
+              :empty="t('tools.caa-gen.results.empty')"
+            />
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'zone' && data"
+            :label="t('tools.caa-gen.views.zone')"
+            :content="resultText"
+            filename="caa-zone.txt"
           />
         </template>
       </ResultPanel>

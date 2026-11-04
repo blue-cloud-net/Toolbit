@@ -11,10 +11,13 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import MaterialInput from '@/components/tool/MaterialInput.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useToolRun } from '@/composables/useToolRun'
 import { DEFAULT_EXAMPLE } from '@/tools/certificates/pem-der/example'
 
@@ -74,6 +77,28 @@ const resultText = computed(() => {
     result.output.data,
   ].join('\n')
 })
+
+/** 摘要卡片：3 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'blockCount', label: t('tools.pem-der.results.blockCount') },
+      { key: 'output.format', label: t('tools.pem-der.results.format') },
+      { key: 'output.encoding', label: t('tools.pem-der.results.encoding') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.pem-der.views.summary') },
+  { id: 'output', label: t('tools.pem-der.views.output') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.pem-der.faq') as FaqItem[])
 
@@ -171,14 +196,29 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.pem-der.results.output')"
         :use-as-input="useAsInput"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'output' && data"
+            :label="t('tools.pem-der.views.output')"
+            :content="String(data.output.data ?? '')"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

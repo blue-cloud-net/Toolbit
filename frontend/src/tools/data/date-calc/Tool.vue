@@ -15,8 +15,10 @@ import { useI18n } from 'vue-i18n'
 
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/data/date-calc/example'
@@ -67,6 +69,19 @@ const resultText = computed(() => {
   }
   return String(result.diffDays)
 })
+
+/** 摘要卡片：3 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'resultDate', label: t('tools.date-calc.results.resultDate') },
+      { key: 'diffDays', label: t('tools.date-calc.results.diffDays') },
+      { key: 'workdays', label: t('tools.date-calc.results.workdays') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
 
 /** 是否需要结束日期。 */
 const needsDateB = computed(
@@ -215,7 +230,7 @@ function fillExample(index: number): void {
               <span class="field__label">{{ t('tools.date-calc.fields.days') }}</span>
               <ElInputNumber
                 v-model="days"
-                class="field__input tb-mono"
+                class="field__number tb-mono"
                 :step="1"
                 :aria-label="t('tools.date-calc.fields.days')"
               />
@@ -284,9 +299,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -299,41 +315,14 @@ function fillExample(index: number): void {
         :meta="meta"
         :error="error"
         :title="t('tools.date-calc.results.output')"
+        hide-text
         @retry="run"
       >
         <template
           v-if="data"
           #extra
         >
-          <dl class="detail">
-            <div
-              v-if="data?.resultDate"
-              class="detail__row"
-            >
-              <dt>
-                {{ t('tools.date-calc.results.resultDate') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ data?.resultDate }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>
-                {{ t('tools.date-calc.results.diffDays') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ data?.diffDays }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>
-                {{ t('tools.date-calc.results.workdays') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ data?.workdays }}
-              </dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
         </template>
       </ResultPanel>
     </template>
@@ -363,28 +352,9 @@ function fillExample(index: number): void {
 </template>
 
 <style scoped>
-.detail {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-  margin: var(--tb-space-3) 0 0;
-}
 
-.detail__row {
-  display: flex;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-sm);
-}
 
-.detail__row dt {
-  min-width: 96px;
-  color: var(--tb-text-tertiary);
-}
 
-.detail__row dd {
-  margin: 0;
-  word-break: break-all;
-}
 
 .prose {
   margin: 0;

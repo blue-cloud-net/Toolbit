@@ -59,5 +59,9 @@
       "q": "Is there a size limit?",
       "a": "Yes. Decompressed output above the limit is rejected so that decompression bombs cannot exhaust memory."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "output": "Output"
+  }
 }

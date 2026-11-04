@@ -13,10 +13,13 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/crypto/totp/example'
@@ -64,6 +67,28 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本：验证码。 */
 const resultText = computed(() => data.value?.code ?? '')
+
+/** 摘要卡片：3 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'remaining', label: t('tools.totp.results.remaining') },
+      { key: 'counter', label: t('tools.totp.results.counter') },
+      { key: 'uri', label: t('tools.totp.results.uri'), wide: true },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.totp.views.summary') },
+  { id: 'code', label: t('tools.totp.views.code') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 /** 结论徽章：验证结果。 */
 const verdict = computed(() => {
@@ -247,9 +272,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -257,38 +283,26 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :verdict="verdict"
+        :views="views"
         :title="t('tools.totp.results.code')"
         @retry="run"
       >
-        <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.totp.results.remaining') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.remaining ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.totp.results.counter') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.counter ?? 0 }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.uri"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.totp.results.uri') }}</dt>
-              <dd class="tb-mono">
-                {{ data.uri }}
-              </dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'code' && data"
+            :label="t('tools.totp.views.code')"
+            :content="String(data.code ?? '')"
+          />
         </template>
       </ResultPanel>
     </template>

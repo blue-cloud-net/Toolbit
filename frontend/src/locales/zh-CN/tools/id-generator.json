@@ -23,7 +23,8 @@
   "results": {
     "ids": "生成的 ID",
     "count": "数量",
-    "length": "长度"
+    "length": "长度",
+    "format": "格式"
   },
   "examples": [
     {
@@ -48,5 +49,9 @@
       "q": "ULID 和 UUID 怎么选？",
       "a": "需要按时间排序或可读前缀选 ULID；只需要唯一性选 UUID。"
     }
-  ]
+  ],
+  "views": {
+    "summary": "摘要",
+    "ids": "生成的标识"
+  }
 }

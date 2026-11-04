@@ -200,7 +200,7 @@ function fillExample(index: number): void {
             <span class="field__label">{{ t('tools.mock-data.fields.count') }}</span>
             <ElInputNumber
               v-model="count"
-              class="field__select"
+              class="field__number"
               :min="0"
               :max="100"
               :aria-label="t('tools.mock-data.fields.count')"
@@ -244,9 +244,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>

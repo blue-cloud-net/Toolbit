@@ -13,8 +13,10 @@ import { useI18n } from 'vue-i18n'
 
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/data/id-validator/example'
@@ -65,6 +67,22 @@ const resultText = computed(() => {
   }
   return data.value.valid ? data.value.normalized : data.value.issue
 })
+
+/** 摘要卡片：5 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'region', label: t('tools.id-validator.results.region') },
+      { key: 'normalized', label: t('tools.id-validator.results.normalized'), wide: true },
+      { key: 'birthday', label: t('tools.id-validator.results.birthday') },
+      { key: 'gender', label: t('tools.id-validator.results.gender') },
+      { key: 'checkDigit', label: t('tools.id-validator.results.checkDigit') },
+      { key: 'issue', label: t('tools.id-validator.results.issue') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
 
 /** 结论徽章：校验是否通过。 */
 const verdict = computed(() => {
@@ -171,9 +189,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -187,56 +206,11 @@ function fillExample(index: number): void {
         :error="error"
         :verdict="verdict"
         :title="t('tools.id-validator.results.normalized')"
+        hide-text
         @retry="run"
       >
         <template #extra>
-          <dl class="detail">
-            <div
-              v-if="data?.region"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.id-validator.results.region') }}</dt>
-              <dd class="tb-mono">
-                {{ data.region }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.birthday"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.id-validator.results.birthday') }}</dt>
-              <dd class="tb-mono">
-                {{ data.birthday }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.gender"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.id-validator.results.gender') }}</dt>
-              <dd class="tb-mono">
-                {{ data.gender }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.checkDigit"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.id-validator.results.checkDigit') }}</dt>
-              <dd class="tb-mono">
-                {{ data.checkDigit }}
-              </dd>
-            </div>
-            <div
-              v-if="data && !data.valid"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.id-validator.results.issue') }}</dt>
-              <dd class="tb-mono">
-                {{ data.issue }}
-              </dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
         </template>
       </ResultPanel>
     </template>

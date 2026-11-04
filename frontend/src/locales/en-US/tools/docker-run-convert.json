@@ -25,7 +25,8 @@
     "service": "Service",
     "serviceCount": "Services",
     "command": "Command",
-    "empty": "No service to show"
+    "empty": "No service to show",
+    "unsupported": "Unsupported arguments"
   },
   "examples": [
     {

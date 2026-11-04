@@ -215,6 +215,7 @@ function fillExample(): void {
         :meta="meta"
         :error="error"
         :title="t('tools.ocsp-response.results.output')"
+        hide-text
         @retry="run"
       >
         <template

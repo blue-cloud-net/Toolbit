@@ -213,6 +213,7 @@ function fillExample(): void {
         :error="error"
         :verdict="verdict"
         :title="t('tools.revocation-check.results.output')"
+        hide-text
         @retry="run"
       >
         <template

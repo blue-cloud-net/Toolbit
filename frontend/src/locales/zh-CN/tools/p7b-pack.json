@@ -10,7 +10,14 @@
   },
   "options": {},
   "results": {
-    "output": "证书袋（PEM）"
+    "output": "证书袋（PEM）",
+    "certCount": "证书张数",
+    "length": "容器字节数"
+  },
+  "views": {
+    "summary": "摘要",
+    "pem": "PEM 产物",
+    "der": "DER（Base64）"
   },
   "examples": [
     {

@@ -11,10 +11,13 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/encoding/html-escape/example'
@@ -50,6 +53,26 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本。 */
 const resultText = computed(() => data.value?.output ?? '')
+
+/** 摘要卡片：1 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'entityCount', label: t('tools.html-escape.results.entityCount') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.html-escape.views.summary') },
+  { id: 'output', label: t('tools.html-escape.views.output') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.html-escape.faq') as FaqItem[])
 
@@ -131,9 +154,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -141,22 +165,25 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
+        :views="views"
         :title="t('tools.html-escape.results.output')"
         @retry="run"
       >
-        <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.html-escape.results.entityCount') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.entityCount ?? 0 }}
-              </dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'output' && data"
+            :label="t('tools.html-escape.views.output')"
+            :content="String(data.output ?? '')"
+          />
         </template>
       </ResultPanel>
     </template>

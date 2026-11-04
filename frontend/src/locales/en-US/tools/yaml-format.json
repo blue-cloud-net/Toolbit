@@ -63,5 +63,9 @@
       "q": "Are anchors and aliases safe?",
       "a": "Aliases can expand a document exponentially, so the tool counts aliases and nesting depth before expanding and rejects anything above the limit."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "output": "Formatted output"
+  }
 }

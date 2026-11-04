@@ -22,7 +22,8 @@
     "fingerprint": "Fingerprint",
     "bits": "RSA bits",
     "comment": "Comment",
-    "authorizedKey": "authorized_keys entry"
+    "authorizedKey": "authorized_keys entry",
+    "algorithm": "Algorithm"
   },
   "examples": [
     {
@@ -48,5 +49,9 @@
       "q": "What format is the private key in?",
       "a": "The openssh-key-v1 format, which can be written straight to ~/.ssh/id_ed25519."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "key": "Private key"
+  }
 }

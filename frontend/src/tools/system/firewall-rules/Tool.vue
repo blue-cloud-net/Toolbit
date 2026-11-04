@@ -11,10 +11,14 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import WarningList from '@/components/tool/WarningList.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/system/firewall-rules/example'
@@ -69,6 +73,62 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本：可执行命令。 */
 const resultText = computed(() => data.value?.commands.join('\n') ?? '')
+
+/** 结果摘要：防火墙工具与场景。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    { label: t('tools.firewall-rules.results.tool'), value: result.tool, mono: true },
+    { label: t('tools.firewall-rules.results.scenario'), value: result.scenario },
+    { label: t('tools.firewall-rules.results.ruleCount'), value: String(result.rules.length) },
+  ]
+})
+
+/** 规则表列定义。 */
+const ruleColumns: DataTableColumn[] = [
+  { key: 'action', label: t('tools.firewall-rules.results.action'), mono: true },
+  { key: 'protocol', label: t('tools.firewall-rules.results.protocol'), mono: true },
+  { key: 'port', label: t('tools.firewall-rules.results.port'), mono: true },
+  { key: 'source', label: t('tools.firewall-rules.results.source'), mono: true },
+  { key: 'description', label: t('tools.firewall-rules.results.description') },
+]
+
+/** 规则表行。 */
+const ruleRows = computed<DataTableRow[]>(() =>
+  (data.value?.rules ?? []).map((rule, index) => ({
+    key: `${rule.action}-${rule.port}-${index}`,
+    cells: {
+      action: rule.action,
+      protocol: rule.protocol,
+      port: rule.port,
+      source: rule.source || '—',
+      description: rule.description,
+    },
+  })),
+)
+
+/** 结果页签：摘要 / 规则 / 命令 / 提示。 */
+const views = computed<ResultView[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  const list: ResultView[] = [
+    { id: 'summary', label: t('tools.firewall-rules.views.summary') },
+    { id: 'rules', label: t('tools.firewall-rules.views.rules') },
+    { id: 'commands', label: t('tools.firewall-rules.views.commands') },
+  ]
+  if (result.notes.length > 0) {
+    list.push({ id: 'notes', label: t('tools.firewall-rules.views.notes') })
+  }
+  return list
+})
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.firewall-rules.faq') as FaqItem[])
 
@@ -238,9 +298,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -248,24 +309,42 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.firewall-rules.results.commands')"
+        :views="views"
+        hide-text
         @retry="run"
       >
-        <template #extra>
-          <dl class="detail">
-            <div
-              v-for="(note, index) in data?.notes ?? []"
-              :key="index"
-              class="detail__row"
-            >
-              <dt>!</dt>
-              <dd>{{ note }}</dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <DataTable
+            v-else-if="viewId === 'rules'"
+            :columns="ruleColumns"
+            :rows="ruleRows"
+            copy-column="port"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'commands' && data"
+            :label="t('tools.firewall-rules.views.commands')"
+            :content="resultText"
+            filename="firewall-rules.sh"
+            mime="text/x-shellscript"
+          />
+
+          <WarningList
+            v-else-if="viewId === 'notes'"
+            :items="data?.notes"
+            :label="t('tools.firewall-rules.results.note')"
+          />
         </template>
       </ResultPanel>
     </template>

@@ -34,8 +34,14 @@
       "host": "Host",
       "port": "Port",
       "path": "Path",
-      "query": "Query"
+      "query": "Query",
+      "key": "Name",
+      "value": "Value"
     }
+  },
+  "views": {
+    "summary": "Summary",
+    "output": "Output"
   },
   "examples": [
     {

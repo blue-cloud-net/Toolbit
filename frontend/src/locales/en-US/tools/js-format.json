@@ -68,5 +68,9 @@
       "q": "Is TypeScript supported?",
       "a": "No. The tool parses ECMAScript syntax, so type annotations are reported as syntax errors."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "output": "Formatted output"
+  }
 }

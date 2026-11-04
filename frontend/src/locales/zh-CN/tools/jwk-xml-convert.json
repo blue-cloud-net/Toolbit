@@ -13,7 +13,12 @@
   },
   "options": {},
   "results": {
-    "output": "转换结果"
+    "output": "转换结果",
+    "format": "输出格式"
+  },
+  "views": {
+    "summary": "摘要",
+    "output": "产物"
   },
   "examples": [
     {

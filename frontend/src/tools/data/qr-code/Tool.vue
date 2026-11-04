@@ -408,7 +408,7 @@ bindInput((value) => {
                 <span class="field__label">{{ t('tools.qr-code.fields.size') }}</span>
                 <ElInputNumber
                   v-model="size"
-                  class="field__input tb-mono"
+                  class="field__number tb-mono"
                   :min="1"
                   :max="40"
                   :step="1"
@@ -420,7 +420,7 @@ bindInput((value) => {
                 <span class="field__label">{{ t('tools.qr-code.fields.margin') }}</span>
                 <ElInputNumber
                   v-model="margin"
-                  class="field__input tb-mono"
+                  class="field__number tb-mono"
                   :min="0"
                   :max="16"
                   :step="1"
@@ -516,9 +516,10 @@ bindInput((value) => {
           <RunBar
             :running="running"
             :disabled="runDisabled"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>

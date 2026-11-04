@@ -18,6 +18,11 @@
     "dnsCname": "DNS CNAME",
     "httpFile": "Site file"
   },
+  "views": {
+    "summary": "Summary",
+    "resolvers": "Resolvers",
+    "body": "Response body"
+  },
   "results": {
     "output": "Result",
     "perResolver": "Per-resolver results",

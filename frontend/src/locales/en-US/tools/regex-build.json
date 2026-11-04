@@ -33,7 +33,11 @@
     "pattern": "Generated pattern",
     "valid": "Valid",
     "explanation": "Per-part explanation",
-    "error": "Error message"
+    "error": "Error message",
+    "validity": "Validity",
+    "captureGroups": "Capture groups",
+    "explainMeaning": "Meaning",
+    "explainFragment": "Fragment"
   },
   "examples": [
     {
@@ -58,5 +62,9 @@
       "q": "Are special characters in the prefix escaped?",
       "a": "Yes. Regex metacharacters in the prefix and suffix are escaped and matched literally."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "pattern": "Generated pattern"
+  }
 }

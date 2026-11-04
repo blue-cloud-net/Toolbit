@@ -299,6 +299,7 @@ function fillExample(): void {
         :verdict="verdict"
         :title="t('tools.cert-chain-verify.results.info')"
         :use-as-input="useAsInput"
+        hide-text
         @retry="run"
       >
         <template

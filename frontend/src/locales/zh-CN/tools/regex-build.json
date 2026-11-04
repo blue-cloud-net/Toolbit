@@ -33,7 +33,11 @@
     "pattern": "生成的表达式",
     "valid": "语法合法",
     "explanation": "逐段释义",
-    "error": "错误信息"
+    "error": "错误信息",
+    "validity": "合法性",
+    "captureGroups": "捕获组数",
+    "explainMeaning": "片段含义",
+    "explainFragment": "表达式片段"
   },
   "examples": [
     {
@@ -58,5 +62,9 @@
       "q": "固定前缀里的特殊字符会转义吗？",
       "a": "会。前后缀中的正则元字符会被转义，按字面量匹配。"
     }
-  ]
+  ],
+  "views": {
+    "summary": "摘要",
+    "pattern": "生成的表达式"
+  }
 }

@@ -18,10 +18,13 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CodeEditor from '@/components/tool/CodeEditor.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import {
@@ -88,6 +91,27 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本：生成的命令。 */
 const resultText = computed(() => data.value?.command ?? '')
+
+/** 摘要卡片：2 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'shell', label: t('tools.curl-generator.results.shell') },
+      { key: 'placeholders', label: t('tools.curl-generator.results.placeholders'), format: () => placeholderText.value, wide: true },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.curl-generator.views.summary') },
+  { id: 'command', label: t('tools.curl-generator.views.command') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 /** 被占位符替代的字段。 */
 const placeholders = computed<string[]>(() => data.value?.placeholders ?? [])
@@ -415,9 +439,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -425,41 +450,32 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
+        :views="views"
         :title="t('tools.curl-generator.results.command')"
         @retry="run"
       >
-        <template
-          v-if="data"
-          #extra
-        >
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.curl-generator.results.shell') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.shell }}
-              </dd>
-            </div>
-            <div
-              v-if="placeholders.length > 0"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.curl-generator.results.placeholders') }}</dt>
-              <dd class="tb-mono">
-                {{ placeholderText }}
-              </dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
 
-          <p
-            v-if="placeholders.length > 0"
-            class="notice"
-          >
-            {{ t('tools.curl-generator.hints.placeholders') }}
-          </p>
+            <p
+              v-if="placeholders.length > 0"
+              class="notice"
+            >
+              {{ t('tools.curl-generator.hints.placeholders') }}
+            </p>
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'command' && data"
+            :label="t('tools.curl-generator.views.command')"
+            :content="String(data.command ?? '')"
+          />
         </template>
       </ResultPanel>
     </template>
@@ -512,28 +528,9 @@ function fillExample(index: number): void {
   color: var(--tb-danger);
 }
 
-.detail {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-  margin: var(--tb-space-3) 0 0;
-}
 
-.detail__row {
-  display: flex;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-sm);
-}
 
-.detail__row dt {
-  min-width: 96px;
-  color: var(--tb-text-tertiary);
-}
 
-.detail__row dd {
-  margin: 0;
-  word-break: break-all;
-}
 
 .notice {
   margin: var(--tb-space-2) 0 0;

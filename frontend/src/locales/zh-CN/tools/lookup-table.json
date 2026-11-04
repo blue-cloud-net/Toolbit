@@ -21,7 +21,14 @@
     "notMatched": "未命中",
     "entry": "条目",
     "candidates": "候选",
-    "dataVersion": "数据集版本"
+    "dataVersion": "数据集版本",
+    "kind": "类别",
+    "query": "查询词",
+    "extra": "附加信息",
+    "candidateKey": "候选键",
+    "candidateLabel": "候选名称",
+    "candidateDescription": "候选说明",
+    "entryDescription": "条目说明"
   },
   "examples": [
     {

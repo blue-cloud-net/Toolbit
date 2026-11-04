@@ -25,7 +25,8 @@
     "service": "服务",
     "serviceCount": "服务数量",
     "command": "命令",
-    "empty": "没有可展示的服务"
+    "empty": "没有可展示的服务",
+    "unsupported": "不支持的参数"
   },
   "examples": [
     {

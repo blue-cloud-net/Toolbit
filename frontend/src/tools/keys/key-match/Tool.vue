@@ -165,6 +165,7 @@ function fillExample(): void {
         :error="error"
         :verdict="verdict"
         :title="t('tools.key-match.results.result')"
+        hide-text
         @retry="run"
       >
         <template

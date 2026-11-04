@@ -22,7 +22,8 @@
     "fingerprint": "指纹",
     "bits": "RSA 位数",
     "comment": "注释",
-    "authorizedKey": "authorized_keys 条目"
+    "authorizedKey": "authorized_keys 条目",
+    "algorithm": "算法"
   },
   "examples": [
     {
@@ -48,5 +49,9 @@
       "q": "私钥格式是什么？",
       "a": "OpenSSH 的 openssh-key-v1 格式，可直接写入 ~/.ssh/id_ed25519。"
     }
-  ]
+  ],
+  "views": {
+    "summary": "摘要",
+    "key": "私钥"
+  }
 }

@@ -105,7 +105,7 @@ function reset(): void {
             <span class="field__label">{{ t('tools.ct-search.fields.limit') }}</span>
             <ElInputNumber
               v-model="limit"
-              class="field__input"
+              class="field__number"
               :min="1"
               :max="100"
             />

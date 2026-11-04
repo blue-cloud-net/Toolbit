@@ -36,6 +36,13 @@
     }
   },
   "results": {
+    "output": "Output",
+    "algorithm": "Algorithm",
+    "format": "Format",
+    "order": "Ciphertext order"
+  },
+  "views": {
+    "summary": "Summary",
     "output": "Output"
   },
   "examples": [

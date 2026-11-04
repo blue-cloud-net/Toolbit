@@ -16,6 +16,10 @@
     "dnssec": "DNSSEC",
     "ptr": "反向解析"
   },
+  "views": {
+    "summary": "摘要",
+    "raw": "原始 JSON"
+  },
   "results": {
     "output": "检测结果",
     "source": "数据来源",
@@ -37,7 +41,8 @@
     "reverse": "反向域名",
     "addresses": "正向地址",
     "names": "反向名字",
-    "rawJson": "原始 JSON"
+    "rawJson": "原始 JSON",
+    "registry": "注册局"
   },
   "examples": [
     {

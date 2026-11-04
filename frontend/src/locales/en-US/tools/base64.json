@@ -35,7 +35,12 @@
   },
   "results": {
     "output": "Output",
-    "outputHint": "The result can be copied directly."
+    "outputHint": "The result can be copied directly.",
+    "encoding": "Encoded"
+  },
+  "views": {
+    "summary": "Summary",
+    "output": "Output"
   },
   "examples": [
     {

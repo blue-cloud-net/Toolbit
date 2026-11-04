@@ -218,7 +218,7 @@ function fillExample(): void {
             <span class="field__label">{{ t('tools.crl-gen.fields.nextUpdateDays') }}</span>
             <ElInputNumber
               v-model="nextUpdateDays"
-              class="field__input"
+              class="field__number"
               :min="1"
               :max="3650"
             />

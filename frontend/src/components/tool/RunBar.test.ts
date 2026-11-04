@@ -102,3 +102,43 @@ describe('runBar 快捷键', () => {
     expect(wrapper.emitted('run')).toBeUndefined()
   })
 })
+
+describe('runBar 示例接线', () => {
+  it('只给一个示例时是普通按钮，点击 emit example', async () => {
+    const wrapper = mountRunBar({ examples: [{ label: '唯一示例' }] })
+    const buttons = wrapper.findAll('button')
+    const example = buttons.find((b) => !b.text().includes('运行') && !b.text().includes('重置'))
+
+    expect(example).toBeDefined()
+    await example!.trigger('click')
+
+    expect(wrapper.emitted('example')).toHaveLength(1)
+    expect(wrapper.emitted('fill')).toBeUndefined()
+  })
+
+  it('不给示例时同样回落到 example 事件', async () => {
+    const wrapper = mountRunBar()
+    const buttons = wrapper.findAll('button')
+    const example = buttons.find((b) => !b.text().includes('运行') && !b.text().includes('重置'))
+
+    await example!.trigger('click')
+
+    expect(wrapper.emitted('example')).toHaveLength(1)
+  })
+
+  it('多个示例时渲染下拉触发器，而不是直接触发 example', async () => {
+    const wrapper = mountRunBar({
+      examples: [{ label: '示例一' }, { label: '示例二' }],
+    })
+    const dropdown = wrapper.find('.el-dropdown')
+
+    expect(dropdown.exists()).toBe(true)
+
+    const trigger = dropdown.find('button')
+    await trigger.trigger('click')
+
+    // 下拉只展开菜单，不应当直接填入示例。
+    expect(wrapper.emitted('example')).toBeUndefined()
+    expect(wrapper.emitted('fill')).toBeUndefined()
+  })
+})

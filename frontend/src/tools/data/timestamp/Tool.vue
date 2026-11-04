@@ -13,8 +13,10 @@ import { useI18n } from 'vue-i18n'
 
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/data/timestamp/example'
@@ -74,6 +76,22 @@ useAutoRun({
   run,
   watch: [operation, value, unit, timezone],
 })
+
+/** 摘要卡片：6 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'timestamp.s', label: t('tools.timestamp.results.seconds') },
+      { key: 'timestamp.ms', label: t('tools.timestamp.results.milliseconds') },
+      { key: 'iso8601', label: t('tools.timestamp.results.iso8601') },
+      { key: 'rfc3339', label: t('tools.timestamp.results.rfc3339') },
+      { key: 'local', label: t('tools.timestamp.results.local') },
+      { key: 'utc', label: t('tools.timestamp.results.utc') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
 
 /** 重置表单与结果。 */
 function reset(): void {
@@ -201,9 +219,10 @@ function onKeydown(event: KeyboardEvent): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -216,62 +235,14 @@ function onKeydown(event: KeyboardEvent): void {
         :meta="meta"
         :error="error"
         :title="t('tools.timestamp.results.output')"
+        hide-text
         @retry="run"
       >
         <template
           v-if="data"
           #extra
         >
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>
-                {{ t('tools.timestamp.results.seconds') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ data?.timestamp.s }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>
-                {{ t('tools.timestamp.results.milliseconds') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ data?.timestamp.ms }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>
-                {{ t('tools.timestamp.results.iso8601') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ data?.iso8601 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>
-                {{ t('tools.timestamp.results.rfc3339') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ data?.rfc3339 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>
-                {{ t('tools.timestamp.results.local') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ data?.local }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>
-                {{ t('tools.timestamp.results.utc') }}
-              </dt>
-              <dd class="tb-mono">
-                {{ data?.utc }}
-              </dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
         </template>
       </ResultPanel>
     </template>
@@ -301,28 +272,9 @@ function onKeydown(event: KeyboardEvent): void {
 </template>
 
 <style scoped>
-.detail {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-  margin: var(--tb-space-3) 0 0;
-}
 
-.detail__row {
-  display: flex;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-sm);
-}
 
-.detail__row dt {
-  min-width: 96px;
-  color: var(--tb-text-tertiary);
-}
 
-.detail__row dd {
-  margin: 0;
-  word-break: break-all;
-}
 
 .prose {
   margin: 0;

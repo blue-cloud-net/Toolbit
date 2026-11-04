@@ -12,6 +12,10 @@
     "ttl": "TTL（秒）"
   },
   "options": {},
+  "views": {
+    "summary": "摘要",
+    "zone": "区域文件"
+  },
   "results": {
     "output": "区域文件行",
     "domain": "域名",

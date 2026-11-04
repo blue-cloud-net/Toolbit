@@ -21,7 +21,15 @@
     "headingCount": "标题数",
     "linkCount": "链接数",
     "codeBlockCount": "代码块数",
-    "wordCount": "字数"
+    "wordCount": "字数",
+    "warning": "提示",
+    "mode": "模式",
+    "gfm": "启用 GFM"
+  },
+  "views": {
+    "summary": "摘要",
+    "output": "产物",
+    "warnings": "警告"
   },
   "examples": [
     {

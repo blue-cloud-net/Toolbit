@@ -32,7 +32,10 @@
   "results": {
     "config": "配置文本",
     "sections": "配置段",
-    "warnings": "提示"
+    "warnings": "提示",
+    "mode": "配置模式",
+    "warningCount": "提示数",
+    "warning": "提示"
   },
   "examples": [
     {
@@ -57,5 +60,9 @@
       "q": "会自动申请证书吗？",
       "a": "不会。证书与私钥路径由你填写，工具不联网也不触碰证书服务。"
     }
-  ]
+  ],
+  "views": {
+    "summary": "摘要",
+    "config": "配置内容"
+  }
 }

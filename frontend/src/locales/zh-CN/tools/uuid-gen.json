@@ -22,7 +22,8 @@
   "results": {
     "output": "生成的 UUID",
     "count": "生成条数",
-    "item": "第 {index} 条"
+    "item": "第 {index} 条",
+    "version": "版本"
   },
   "examples": [
     {

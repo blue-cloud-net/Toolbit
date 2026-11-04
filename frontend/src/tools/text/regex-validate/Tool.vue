@@ -15,8 +15,11 @@ import { useI18n } from 'vue-i18n'
 
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/text/regex-validate/example'
@@ -89,7 +92,40 @@ const verdict = computed(() => {
     : { level: 'danger' as const, label: t('tools.regex-validate.results.invalid') }
 })
 
+/** 摘要卡片：3 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'dialect', label: t('tools.regex-validate.results.dialect') },
+      { key: 'captureGroups', label: t('tools.regex-validate.results.captureGroups') },
+      { key: 'error.position', label: t('tools.regex-validate.results.position') },
+      { key: 'error.message', label: t('tools.regex-validate.results.reason'), wide: true },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
 const faq = computed<FaqItem[]>(() => tm('tools.regex-validate.faq') as FaqItem[])
+
+/** 建议表格列定义。 */
+const suggestionColumns = computed<DataTableColumn[]>(() => [
+  { key: 'code', label: t('tools.regex-validate.results.suggestionCode'), mono: true },
+  { key: 'priority', label: t('tools.regex-validate.results.suggestionPriority') },
+  { key: 'message', label: t('tools.regex-validate.results.suggestionMessage') },
+])
+
+/** 建议表格行。 */
+const suggestionRows = computed<DataTableRow[]>(() =>
+  (data.value?.suggestions ?? []).map((suggestion) => ({
+    key: suggestion.code,
+    cells: {
+      code: suggestion.code,
+      priority: suggestion.priority,
+      message: suggestion.message,
+    },
+  })),
+)
 
 /** 运行当前输入。 */
 function run(): void {
@@ -176,9 +212,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -192,48 +229,19 @@ function fillExample(index: number): void {
         :error="error"
         :verdict="verdict"
         :title="t('tools.regex-validate.results.error')"
+        hide-text
         @retry="run"
       >
         <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.regex-validate.results.dialect') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.dialect ?? '' }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.regex-validate.results.captureGroups') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.captureGroups ?? 0 }}
-              </dd>
-            </div>
-            <div
-              v-if="data?.error?.position"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.regex-validate.results.position') }}</dt>
-              <dd class="tb-mono">
-                {{ data.error.position }}
-              </dd>
-            </div>
-            <div
-              v-if="data && data.suggestions.length > 0"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.regex-validate.results.suggestions') }}</dt>
-              <dd>
-                <ul class="detail__list">
-                  <li
-                    v-for="suggestion in data.suggestions"
-                    :key="suggestion.code"
-                  >
-                    {{ suggestion.message }}
-                  </li>
-                </ul>
-              </dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
+
+          <DataTable
+            v-if="suggestionRows.length > 0"
+            class="table"
+            :columns="suggestionColumns"
+            :rows="suggestionRows"
+            :copy-column="'message'"
+          />
         </template>
       </ResultPanel>
     </template>

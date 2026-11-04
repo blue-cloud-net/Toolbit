@@ -18,8 +18,10 @@ import DataTable, { type DataTableColumn, type DataTableRow } from '@/components
 import QuickReference from '@/components/tool/QuickReference.vue'
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/text/regex-tester/example'
 
@@ -113,6 +115,17 @@ const maxMatchesValue = computed(() => {
   }
   return Math.min(Math.trunc(value), MAX_MATCH_LIMIT)
 })
+
+/** 摘要卡片：1 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'count', label: t('tools.regex-tester.results.count') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
 
 const faq = computed<FaqItem[]>(() => tm('tools.regex-tester.faq') as FaqItem[])
 
@@ -277,7 +290,7 @@ function fillExample(index: number): void {
               <span class="field__label">{{ t('tools.regex-tester.fields.maxMatches') }}</span>
               <ElInputNumber
                 v-model="maxMatches"
-                class="field__input"
+                class="field__number"
                 :min="0"
                 :max="MAX_MATCH_LIMIT"
                 :aria-label="t('tools.regex-tester.fields.maxMatches')"
@@ -306,9 +319,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -329,12 +343,7 @@ function fillExample(index: number): void {
           v-if="data"
           #extra
         >
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.regex-tester.results.count') }}</dt>
-              <dd>{{ data?.count }}</dd>
-            </div>
-          </dl>
+          <StatGrid :items="stats" />
 
           <p
             v-if="data?.truncated"
@@ -393,27 +402,9 @@ function fillExample(index: number): void {
   gap: var(--tb-space-2) var(--tb-space-4);
 }
 
-.detail {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-  margin: var(--tb-space-3) 0 0;
-}
 
-.detail__row {
-  display: flex;
-  gap: var(--tb-space-2);
-  font-size: var(--tb-font-sm);
-}
 
-.detail__row dt {
-  min-width: 96px;
-  color: var(--tb-text-tertiary);
-}
 
-.detail__row dd {
-  margin: 0;
-}
 
 .notice {
   margin: var(--tb-space-2) 0 0;

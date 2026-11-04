@@ -208,6 +208,7 @@ function fillExample(): void {
         :verdict="verdict"
         :title="t('tools.crl-parse.results.info')"
         :use-as-input="useAsInput"
+        hide-text
         @retry="run"
       >
         <template

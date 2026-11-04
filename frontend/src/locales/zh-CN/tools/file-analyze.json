@@ -40,5 +40,9 @@
       "q": "识别不出类型怎么办？",
       "a": "会归为 application/octet-stream 并给出扩展名 bin。"
     }
-  ]
+  ],
+  "views": {
+    "summary": "摘要",
+    "digest": "文件摘要"
+  }
 }

@@ -12,8 +12,10 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useToolRun } from '@/composables/useToolRun'
@@ -59,6 +61,26 @@ bindInput((text) => {
 const running = computed(() => state.value === 'loading')
 
 const resultText = computed(() => data.value?.output.data ?? '')
+
+/** 结果摘要：输出格式。 */
+const stats = computed<StatGridItem[]>(() => {
+  const result = data.value
+  if (!result) {
+    return []
+  }
+  return [
+    { label: t('tools.jwk-xml-convert.results.format'), value: result.output.format },
+  ]
+})
+
+/** 结果页签：摘要 / 产物。 */
+const views: ResultView[] = [
+  { id: 'summary', label: t('tools.jwk-xml-convert.views.summary') },
+  { id: 'output', label: t('tools.jwk-xml-convert.views.output') },
+]
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.jwk-xml-convert.faq') as FaqItem[])
 
@@ -183,14 +205,30 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.jwk-xml-convert.results.output')"
         :use-as-input="useAsInput"
+        :views="views"
+        hide-text
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'output' && data"
+            :label="t('tools.jwk-xml-convert.views.output')"
+            :content="data.output.data"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

@@ -9,10 +9,14 @@ import 'element-plus/es/components/input/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import WarningList from '@/components/tool/WarningList.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/system/docker-compose-gen/example'
@@ -68,6 +72,27 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本：配置内容。 */
 const resultText = computed(() => data.value?.compose ?? '')
+
+/** 摘要卡片：2 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'serviceCount', label: t('tools.docker-compose-gen.results.serviceCount') },
+      { key: 'warnings', label: t('tools.docker-compose-gen.results.warningCount'), format: (v) => (Array.isArray(v) ? String(v.length) : '0') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.docker-compose-gen.views.summary') },
+  { id: 'compose', label: t('tools.docker-compose-gen.views.compose') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.docker-compose-gen.faq') as FaqItem[])
 
@@ -156,9 +181,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -166,30 +192,30 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
+        :views="views"
         :title="t('tools.docker-compose-gen.results.compose')"
         @retry="run"
       >
-        <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.docker-compose-gen.results.serviceCount') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.serviceCount ?? 0 }}
-              </dd>
-            </div>
-            <div
-              v-for="(warning, index) in data?.warnings ?? []"
-              :key="index"
-              class="detail__row"
-            >
-              <dt>!</dt>
-              <dd>{{ warning }}</dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
+
+            <WarningList
+              :items="data?.warnings"
+              :label="t('tools.docker-compose-gen.results.warning')"
+            />
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'compose' && data"
+            :label="t('tools.docker-compose-gen.views.compose')"
+            :content="String(data.compose ?? '')"
+          />
         </template>
       </ResultPanel>
     </template>

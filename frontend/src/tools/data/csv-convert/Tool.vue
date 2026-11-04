@@ -13,10 +13,13 @@ import 'element-plus/es/components/select/style/css'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/data/csv-convert/example'
@@ -57,6 +60,28 @@ const running = computed(() => state.value === 'loading')
 
 /** 结果文本：转换结果。 */
 const resultText = computed(() => data.value?.output ?? '')
+
+/** 摘要卡片：3 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'rowCount', label: t('tools.csv-convert.results.rowCount') },
+      { key: 'columnCount', label: t('tools.csv-convert.results.columnCount') },
+      { key: 'columns', label: t('tools.csv-convert.results.columns'), format: (v) => (Array.isArray(v) ? v.join(', ') : ''), wide: true },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.csv-convert.views.summary') },
+  { id: 'output', label: t('tools.csv-convert.views.output') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 const faq = computed<FaqItem[]>(() => tm('tools.csv-convert.faq') as FaqItem[])
 
@@ -181,9 +206,10 @@ function fillExample(index: number): void {
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -191,37 +217,25 @@ function fillExample(index: number): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
+        :views="views"
         :title="t('tools.csv-convert.results.output')"
         @retry="run"
       >
-        <template #extra>
-          <dl class="detail">
-            <div class="detail__row">
-              <dt>{{ t('tools.csv-convert.results.rowCount') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.rowCount ?? 0 }}
-              </dd>
-            </div>
-            <div class="detail__row">
-              <dt>{{ t('tools.csv-convert.results.columnCount') }}</dt>
-              <dd class="tb-mono">
-                {{ data?.columnCount ?? 0 }}
-              </dd>
-            </div>
-            <div
-              v-if="data && data.columns.length > 0"
-              class="detail__row"
-            >
-              <dt>{{ t('tools.csv-convert.results.columns') }}</dt>
-              <dd class="tb-mono">
-                {{ data.columns.join(', ') }}
-              </dd>
-            </div>
-          </dl>
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
+          </template>
+
+          <ProductText
+            v-else-if="viewId === 'output' && data"
+            :label="t('tools.csv-convert.views.output')"
+            :content="String(data.output ?? '')"
+          />
         </template>
       </ResultPanel>
     </template>

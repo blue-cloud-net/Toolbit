@@ -12,7 +12,8 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import StatGrid, { type StatGridItem } from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
@@ -81,6 +82,21 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.domain-verify.faq') as FaqItem[])
+
+/** 结果页签：摘要 / 解析器明细 / 响应正文。 */
+const views = computed<ResultView[]>(() => {
+  const list: ResultView[] = [
+    { id: 'summary', label: t('tools.domain-verify.views.summary') },
+    { id: 'resolvers', label: t('tools.domain-verify.views.resolvers') },
+  ]
+  if (data.value?.type === 'http-file') {
+    list.push({ id: 'body', label: t('tools.domain-verify.views.body') })
+  }
+  return list
+})
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 /** 摘要统计卡片。 */
 const stats = computed<StatGridItem[]>(() => {
@@ -268,12 +284,14 @@ function reset(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :verdict="verdict"
         :title="t('tools.domain-verify.results.output')"
+        :views="views"
         @retry="run"
       >
         <template
@@ -284,13 +302,13 @@ function reset(): void {
           <span v-if="summary.failed > 0">{{ t('tool.result.summary.failed') }} {{ summary.failed }}</span>
         </template>
 
-        <template
-          v-if="data"
-          #extra
-        >
-          <StatGrid :items="stats" />
+        <template #view="{ viewId }">
+          <template v-if="viewId === 'summary' && data">
+            <StatGrid :items="stats" />
+          </template>
 
           <DataTable
+            v-else-if="viewId === 'resolvers' && data"
             class="table"
             :columns="resolverColumns"
             :rows="resolverRows"
@@ -298,10 +316,11 @@ function reset(): void {
             :empty="t('tools.domain-verify.results.empty')"
           />
 
-          <pre
-            v-if="data.type === 'http-file' && data.bodyPreview !== ''"
-            class="product"
-          ><code>{{ data.bodyPreview }}</code></pre>
+          <ProductText
+            v-else-if="viewId === 'body' && data"
+            :label="t('tools.domain-verify.views.body')"
+            :content="data.bodyPreview"
+          />
         </template>
       </ResultPanel>
     </template>

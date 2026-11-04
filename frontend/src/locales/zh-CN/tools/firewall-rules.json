@@ -36,7 +36,22 @@
   "results": {
     "rules": "规则列表",
     "commands": "可执行命令",
-    "notes": "使用提示"
+    "notes": "使用提示",
+    "note": "备注",
+    "tool": "防火墙工具",
+    "scenario": "场景",
+    "ruleCount": "规则条数",
+    "action": "动作",
+    "protocol": "协议",
+    "port": "端口",
+    "source": "来源",
+    "description": "说明"
+  },
+  "views": {
+    "summary": "摘要",
+    "rules": "规则",
+    "commands": "命令",
+    "notes": "提示"
   },
   "examples": [
     {

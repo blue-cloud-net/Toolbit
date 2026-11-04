@@ -25,6 +25,10 @@
     "id": "锚点",
     "empty": "文档中没有标题。"
   },
+  "views": {
+    "html": "HTML 产物",
+    "toc": "目录"
+  },
   "examples": [
     {
       "label": "标题与表格",

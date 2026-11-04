@@ -47,5 +47,9 @@
       "q": "Why are the columns sorted?",
       "a": "Objects are unordered, so sorting keeps the header identical for the same data and makes diffs meaningful."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "output": "Converted output"
+  }
 }

@@ -11,6 +11,14 @@
 
 ### Changed
 
+- **UA 工具改名并重新定位**（**Breaking**：API 路径变更）
+  - `ua-parser` → **`ua-header-parse`**，显示名改为「**UA 头解析**」：
+    解析的是 **User-Agent 请求头**，标题与描述同步点明这一点
+  - `header-generator` → **`ua-header-gen`**，显示名改为「**UA 头生成**」：
+    以 **User-Agent 为核心**产出整组客户端请求头，与「UA 头解析」形成正向 / 反向一对
+  - **旧端点不再存在**：`POST /api/v1/tools/ua-parser` 与 `POST /api/v1/tools/header-generator`
+    一律返回 `TOOL_NOT_FOUND`，**不**保留别名
+  - 两个工具从未发布过，因此未发布段中提及它们的历史条目一并改为最终名称
 - **结果区全面结构化**：28 个此前把多字段压成 `key: value` 文本行的工具改为结构化展示
   - 新增三个共享组件并登记进 `docs/standards/01-frontend.md` §4.3：
     `DataTable`（多记录表格：列定义 + 行数据 + 逐行复制 + 滚动区）、
@@ -27,6 +35,35 @@
   - **其它**：`caa-gen` 的 CAA 记录改为表格
   - `docs/standards/01-frontend.md` §10 新增硬规则：多字段结果**禁止**压成文本行，
     产物与摘要**必须**分离，页签选中项**禁止**持久化
+- **产物展示统一到 `ProductText`，警告统一到 `WarningList`**
+  - 新增 `ProductText`：标签行 + 复制 / 下载 + 可滚动的等宽文本块，供结果页签里的「产物」
+    （密文、PEM、生成的配置、区域文件等）使用，取代各工具手写的 `<pre>` + 按钮组合
+  - 新增 `WarningList`：单列等宽文本 + 逐条复制，供 `warnings` / `notes` / `hints` 使用，
+    取代 `docker-compose-gen`、`nginx-config`、`firewall-rules`、`markdown-convert`、
+    `docker-run-convert` 里各自的 `<ul>` 手写列表
+  - 新增 `components/tool/summary.ts`：`buildSummary` 按字段清单生成 `StatGridItem[]`
+    （支持 `a.b` 点路径、`mono`、`level` / `levelBy` / `booleanLevel`、`wide`），
+    `listRows` 把字符串数组转成单列表格行；工具页不再手写 `label / value` 数组
+  - 工具页里手写的 `class="detail"` / `detail__row` 结果列表**全部清零**：
+    `StatGrid` / `KeyValueTable` / `DataTable` / `ProductText` 覆盖后，原始文本用 `hideText` 隐藏
+  - 本轮改造的工具：`pfx-pack`、`pfx-change-password`、`p7b-pack`、`jwk-xml-convert`、
+    `markdown-convert`、`markdown-preview`、`firewall-rules`（摘要 / 规则表 / 命令产物 / 提示四页签）、
+    `url-codec`（查询参数明细改 `DataTable`）
+- **表单控件宽度受控**
+  - 单行控件不再撑满面板：`field__select` ≤ 240px、`field__number` ≤ 160px、
+    `.field-row` 内字段默认 `flex: 0 1 240px`；新增 `.field--grow`（占满剩余空间）与
+    `.field--narrow`（≤ 140px）；含文本域的字段自动占满整行
+  - 顺手修正 16 处把 `ElInputNumber` 错标为 `field__select` 的类名
+  - `docs/standards/01-frontend.md` §8.4 新增宽度约束条款
+- **`RunBar` 支持多示例下拉**
+  - 新增 `examples` 属性：长度 ≥ 2 时「填入示例」渲染为下拉菜单并 `emit('fill', index)`，
+    只有一条时保持单击即填
+  - 修正此前 `@example="fillExample(0)"` 把示例写死成第一条的问题：45 个多示例工具里
+    已有 50 个工具接线（其中 33 个原本就写了 `fillExample(index)` 却从未收到过 index）
+- **工具页补「复制链接」与敏感材料提示**
+  - 标题行新增复制链接按钮（`useCopy` + `window.location.href`），复用既有 `copyLink` 词条位
+  - catalog 中 `sensitive: true` 的 22 个工具，标题下方新增安全提示条：
+    输入只在本次请求内使用、算完即丢、不保存不记录不回显。该字段此前已贯通前后端却从未渲染
 - **结果区不再重复展示与表格等价的原始文本**
   - `ResultPanel` 新增 `hideText`：结果已由 `DataTable` / `StatGrid` 覆盖时不再渲染 `<pre>` 文本块，
     文本仍作复制 / 下载 / 回填的数据源
@@ -162,8 +199,8 @@
 
 ### Removed
 
-- **移除 `device-headers`（请求头生成与 UA 解析）**：能力拆分为 `ua-parser` 与
-  `header-generator` 两个工具，原 slug 与端点不再存在
+- **移除 `device-headers`（请求头生成与 UA 解析）**：能力拆分为 `ua-header-parse` 与
+  `ua-header-gen` 两个工具，原 slug 与端点不再存在
 - **移除 `ip-range-expand`（IP 段展开）**：工具总数 -1
   - 其三个模式中，「地址转 CIDR」与「CIDR 转地址」**完全重复** `cidr-calc` 已有的
     范围反推与首末地址，且两套实现各写一份「最长前缀不越界」的贪心算法，
@@ -196,7 +233,7 @@
   - 根因：大整数与地址的互转函数在还原时做了 `Unmap`，
     而 `AsSlice` 对 4-in-6 地址返回 16 字节，两者**不再互逆**
   - 互转函数改为不做 `Unmap`，地址族的归一化统一在输入边界完成；
-    新增单测断言首末地址与网段地址同属一个地址族
+    新增单测断言首末地址与展开列表首末项一致
 - **`cert-parse` 与 `cert-chain-parse` 的结果区整片空白**（白屏）
   - 根因：上游在**扩展缺失**时返回 `nil`（`SAN` / `KeyUsage` / `ExtendedKeyUsage`），
     DTO 原样透传 ⇒ JSON 里是 `null`；前端 `CertDetail` 直接读 `.length`，
@@ -207,7 +244,7 @@
     TypeScript 编译器强制每个使用点判空，漏一处直接编译失败
   - 契约口径写进 [docs/api/tools/certificates.md](docs/api/tools/certificates.md)：
     「已查询、确认没有该项」编码成 `null`，结构性字段恒为 `[]`
-- `ua-parser` 修正 **iOS 的 UA 串被误判为 macOS**：iPhone / iPad 的 UA 串含
+- `ua-header-parse` 修正 **iOS 的 UA 串被误判为 macOS**：iPhone / iPad 的 UA 串含
   `like Mac OS X`，原判定顺序先匹配 `Mac OS X`，导致系统名与版本都取错；
   现在 iPhone / iPad 优先判定，系统版本取 `18_1` 这种下划线写法
 - `DataTable` 的**长地址列会被压成竖排单字**：单元格默认 `overflow-wrap: anywhere`，
@@ -299,10 +336,10 @@
   - 纯文本转换：不连接守护进程，也不拉取镜像
 - **拆分 `device-headers` 为两个工具**：原「请求头生成与 UA 解析」承担两件事，
   现按职责拆开（工具总数 +1）
-  - **`ua-parser`（UA 解析）**：只做 UA 串的**反向**解析，输出浏览器、浏览器版本、
+  - **`ua-header-parse`（UA 头解析）**：只做 UA 串的**反向**解析，输出浏览器、浏览器版本、
     操作系统、系统版本、设备类型（桌面 / 移动 / 平板 / 爬虫）与渲染引擎；
     输入为空返回 `MISSING_FIELD`，超过 1024 字符返回 `INVALID_FIELD`
-  - **`header-generator`（请求头生成）**：只做**正向**生成，按平台（Chrome / Firefox /
+  - **`ua-header-gen`（UA 头生成）**：只做**正向**生成，按平台（Chrome / Firefox /
     Safari / Edge / Android / iOS / curl）与版本产出完整请求头，并支持追加自定义请求头；
     自定义请求头按名称字典序输出，顺序稳定
   - 两者都**不出网**：识别规则与模板都是内置快照，不查在线 UA 数据库

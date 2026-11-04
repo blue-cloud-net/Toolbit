@@ -43,5 +43,9 @@
       "q": "Does it prevent XSS?",
       "a": "No. Escaping is only one layer; pair it with context-aware output and sanitisation."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "output": "Output"
+  }
 }

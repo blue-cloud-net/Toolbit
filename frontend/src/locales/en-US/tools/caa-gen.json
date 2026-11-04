@@ -12,6 +12,10 @@
     "ttl": "TTL (seconds)"
   },
   "options": {},
+  "views": {
+    "summary": "Summary",
+    "zone": "Zone file"
+  },
   "results": {
     "output": "Zone file lines",
     "domain": "Domain",

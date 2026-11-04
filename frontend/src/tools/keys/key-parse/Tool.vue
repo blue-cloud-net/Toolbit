@@ -10,7 +10,8 @@ import { useI18n } from 'vue-i18n'
 
 import KeyInput from '@/components/tool/KeyInput.vue'
 import KeyValueTable, { type KeyValueRow } from '@/components/tool/KeyValueTable.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
@@ -84,6 +85,15 @@ const resultText = computed(() => {
 })
 
 const faq = computed<FaqItem[]>(() => tm('tools.key-parse.faq') as FaqItem[])
+
+/** 结果页签：摘要 / 规范化密钥。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.key-parse.views.summary') },
+  { id: 'pem', label: t('tools.key-parse.views.pem') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 
 /** 结构化字段：逐项可复制。 */
 const detailRows = computed<KeyValueRow[]>(() => {
@@ -165,19 +175,28 @@ function fillExample(): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.key-parse.results.info')"
+        :views="views"
         download-filename="key.txt"
         @retry="run"
       >
-        <template
-          v-if="detailRows.length > 0"
-          #extra
-        >
-          <KeyValueTable :rows="detailRows" />
+        <template #view="{ viewId }">
+          <KeyValueTable
+            v-if="viewId === 'summary'"
+            :rows="detailRows"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'pem' && data"
+            :label="t('tools.key-parse.views.pem')"
+            :content="data.normalizedPem"
+            filename="key.txt"
+          />
         </template>
       </ResultPanel>
     </template>

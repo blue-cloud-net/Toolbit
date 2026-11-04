@@ -24,7 +24,11 @@
     "error": "Error message",
     "position": "Error position",
     "captureGroups": "Capture groups",
-    "suggestions": "Suggestions"
+    "suggestions": "Suggestions",
+    "suggestionCode": "Code",
+    "suggestionPriority": "Priority",
+    "suggestionMessage": "Message",
+    "reason": "Error reason"
   },
   "examples": [
     {

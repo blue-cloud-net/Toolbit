@@ -63,5 +63,9 @@
       "q": "Are DTDs and entities supported?",
       "a": "No. The tool only parses markup and text; it does not resolve DTD declarations or custom entities."
     }
-  ]
+  ],
+  "views": {
+    "summary": "Summary",
+    "output": "Formatted output"
+  }
 }

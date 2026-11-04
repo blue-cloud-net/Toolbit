@@ -17,11 +17,14 @@ import { useI18n } from 'vue-i18n'
 
 import AppIcon from '@/components/common/AppIcon.vue'
 import EncodingSelect from '@/components/tool/EncodingSelect.vue'
-import ResultPanel from '@/components/tool/ResultPanel.vue'
+import ProductText from '@/components/tool/ProductText.vue'
+import ResultPanel, { type ResultView } from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
+import StatGrid from '@/components/tool/StatGrid.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import ValidationHint from '@/components/tool/ValidationHint.vue'
+import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { useValidation } from '@/composables/useValidation'
@@ -92,6 +95,26 @@ bindInput((text) => {
 })
 
 const resultText = computed(() => data.value?.output ?? '')
+
+/** 摘要卡片：1 项关键字段。 */
+const stats = computed(() =>
+  buildSummary(
+    data.value as unknown as Record<string, unknown> | null,
+    [
+      { key: 'encoding', label: t('tools.base64.results.encoding') },
+    ],
+    { yes: t('common.states.yes'), no: t('common.states.no') },
+  ),
+)
+
+/** 结果页签：摘要 / 产物。 */
+const views = computed<ResultView[]>(() => [
+  { id: 'summary', label: t('tools.base64.views.summary') },
+  { id: 'output', label: t('tools.base64.views.output') },
+])
+
+/** 当前页签；默认停在「摘要」。 */
+const activeView = ref('summary')
 const running = computed(() => state.value === 'loading')
 
 const inputEncodings = computed<readonly InputEncoding[]>(() =>
@@ -358,14 +381,29 @@ function onKeydown(event: KeyboardEvent): void {
 
     <template #result>
       <ResultPanel
+        v-model:active-view="activeView"
         :state="state"
         :text="resultText"
         :meta="meta"
         :error="error"
         :title="t('tools.base64.results.output')"
         :use-as-input="useAsInput"
+        :views="views"
         @retry="run"
-      />
+      >
+        <template #view="{ viewId }">
+          <StatGrid
+            v-if="viewId === 'summary' && data"
+            :items="stats"
+          />
+
+          <ProductText
+            v-else-if="viewId === 'output' && data"
+            :label="t('tools.base64.views.output')"
+            :content="String(data.output ?? '')"
+          />
+        </template>
+      </ResultPanel>
     </template>
 
     <template #usage>

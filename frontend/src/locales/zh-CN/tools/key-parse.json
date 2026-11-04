@@ -9,6 +9,10 @@
     "key": "密钥"
   },
   "options": {},
+  "views": {
+    "summary": "摘要",
+    "pem": "规范化密钥"
+  },
   "results": {
     "info": "密钥信息",
     "algorithm": "算法",
