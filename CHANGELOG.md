@@ -178,6 +178,13 @@
 
 ### Fixed
 
+- **`cidr-calc` 对 IPv4-mapped IPv6 前缀（`::ffff:a.b.c.d/120`）给出地址族不一致的结果**：
+  `network` 与 `firstAddress` 走 16 字节形式（`::ffff:192.168.1.0`），
+  `lastAddress` 却走 4 字节形式（`192.168.1.255`），两者无法互相比较
+  - 根因：大整数与地址的互转函数在还原时做了 `Unmap`，
+    而 `AsSlice` 对 4-in-6 地址返回 16 字节，两者**不再互逆**
+  - 互转函数改为不做 `Unmap`，地址族的归一化统一在输入边界完成；
+    新增单测断言首末地址与网段地址同属一个地址族
 - **`cert-parse` 与 `cert-chain-parse` 的结果区整片空白**（白屏）
   - 根因：上游在**扩展缺失**时返回 `nil`（`SAN` / `KeyUsage` / `ExtendedKeyUsage`），
     DTO 原样透传 ⇒ JSON 里是 `null`；前端 `CertDetail` 直接读 `.length`，

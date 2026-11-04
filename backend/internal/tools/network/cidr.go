@@ -356,6 +356,9 @@ func addrToBig(addr netip.Addr) *big.Int {
 }
 
 // bigToAddr 把大整数转成地址。
+//
+// **不**做 Unmap：AsSlice 对 4-in-6 地址返回 16 字节，若在此折回 4 字节，
+// 与 addrToBig 不再互逆，大数运算会漂移。地址族的归一化在输入边界完成。
 func bigToAddr(v *big.Int, bits int) netip.Addr {
 	size := bits / 8
 	raw := v.Bytes()
@@ -365,7 +368,7 @@ func bigToAddr(v *big.Int, bits int) netip.Addr {
 	buf := make([]byte, size)
 	copy(buf[size-len(raw):], raw)
 	addr, _ := netip.AddrFromSlice(buf)
-	return addr.Unmap()
+	return addr
 }
 
 // commonPrefix 返回覆盖 first..last 的最小公共前缀。

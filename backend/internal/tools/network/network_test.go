@@ -408,3 +408,23 @@ func TestVcardValue(t *testing.T) {
 		t.Errorf("缺失属性应返回空，实际 %q", got)
 	}
 }
+
+// TestCIDRCalcAddressFamilyConsistency 断言首末地址与网段地址同属一个地址族。
+//
+// 4-in-6 前缀（::ffff:a.b.c.d/120）曾让 network 走 16 字节形式、
+// last 走 4 字节形式，首末地址族不一致。
+func TestCIDRCalcAddressFamilyConsistency(t *testing.T) {
+	t.Parallel()
+
+	result, err := CIDRCalc(context.Background(), &CIDRCalcRequest{CIDR: "::ffff:192.168.1.0/120"})
+	if err != nil {
+		t.Fatalf("计算失败：%v", err)
+	}
+	out := result.Data.(CIDRCalcResult)
+	if out.FirstAddress != "::ffff:192.168.1.0" {
+		t.Errorf("firstAddress = %q，期望 ::ffff:192.168.1.0", out.FirstAddress)
+	}
+	if out.LastAddress != "::ffff:192.168.1.255" {
+		t.Errorf("lastAddress = %q，期望 ::ffff:192.168.1.255", out.LastAddress)
+	}
+}
