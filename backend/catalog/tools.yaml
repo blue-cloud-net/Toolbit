@@ -1598,11 +1598,11 @@ tools:
     wide: false
     i18nKey: tools.http-status
 
-  - slug: ua-parser
+  - slug: ua-header-parse
     category: network
     order: 9
-    name: UA 解析
-    nameEn: User-Agent Parser
+    name: UA 头解析
+    nameEn: UA Header Parser
     enabled: true
     transport: json
     rateClass: light
@@ -1612,13 +1612,13 @@ tools:
     requiresNetwork: false
     autoRun: true
     wide: false
-    i18nKey: tools.ua-parser
+    i18nKey: tools.ua-header-parse
 
-  - slug: header-generator
+  - slug: ua-header-gen
     category: network
     order: 10
-    name: 请求头生成
-    nameEn: Header Generator
+    name: UA 头生成
+    nameEn: UA Header Generator
     enabled: true
     transport: json
     rateClass: light
@@ -1628,7 +1628,7 @@ tools:
     requiresNetwork: false
     autoRun: true
     wide: false
-    i18nKey: tools.header-generator
+    i18nKey: tools.ua-header-gen
 
   - slug: pdf-sign-verify
     category: documents

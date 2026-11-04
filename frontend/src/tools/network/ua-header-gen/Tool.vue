@@ -22,9 +22,9 @@ import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
-import { EXAMPLES } from '@/tools/network/header-generator/example'
+import { EXAMPLES } from '@/tools/network/ua-header-gen/example'
 
-/** 后端 header-generator 工具的响应。 */
+/** 后端 ua-header-gen 工具的响应。 */
 interface HeaderGeneratorResult {
   /** 生成的请求头。 */
   headers: Array<{ name: string; value: string }>
@@ -51,7 +51,7 @@ const referer = ref('')
 const customHeaders = ref('')
 
 const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<HeaderGeneratorResult>(
-  { slug: 'header-generator' },
+  { slug: 'ua-header-gen' },
 )
 
 const running = computed(() => state.value === 'loading')
@@ -73,7 +73,7 @@ const statItems = computed<StatGridItem[]>(() => {
   }
   return [
     {
-      label: t('tools.header-generator.results.userAgent'),
+      label: t('tools.ua-header-gen.results.userAgent'),
       value: result.userAgent || '—',
     },
   ]
@@ -87,7 +87,7 @@ const headerRows = computed<DataTableRow[]>(() =>
   })),
 )
 
-const faq = computed<FaqItem[]>(() => tm('tools.header-generator.faq') as FaqItem[])
+const faq = computed<FaqItem[]>(() => tm('tools.ua-header-gen.faq') as FaqItem[])
 
 /**
  * 自定义请求头：把「每行一条 `名称: 值`」的文本解析成对象。
@@ -129,7 +129,7 @@ function run(): void {
 
 // 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。
 useAutoRun({
-  slug: 'header-generator',
+  slug: 'ua-header-gen',
   run,
   watch: [platform, version, os, acceptLanguage, referer, customHeaders],
   enabled: () => true,
@@ -159,75 +159,75 @@ function fillExample(index: number): void {
 
 <template>
   <ToolPageLayout
-    slug="header-generator"
-    :name="t('tools.header-generator.name')"
+    slug="ua-header-gen"
+    :name="t('tools.ua-header-gen.name')"
     name-en="Header Generator"
   >
     <template #panel>
       <ToolPanel>
         <template #input>
           <label class="field">
-            <span class="field__label">{{ t('tools.header-generator.fields.platform') }}</span>
+            <span class="field__label">{{ t('tools.ua-header-gen.fields.platform') }}</span>
             <ElSelect
               v-model="platform"
               class="field__select"
-              :aria-label="t('tools.header-generator.fields.platform')"
+              :aria-label="t('tools.ua-header-gen.fields.platform')"
             >
               <ElOption
                 v-for="name in PLATFORMS"
                 :key="name"
-                :label="t(`tools.header-generator.options.platform.${name}`)"
+                :label="t(`tools.ua-header-gen.options.platform.${name}`)"
                 :value="name"
               />
             </ElSelect>
           </label>
 
           <label class="field field--grow">
-            <span class="field__label">{{ t('tools.header-generator.fields.version') }}</span>
+            <span class="field__label">{{ t('tools.ua-header-gen.fields.version') }}</span>
             <ElInput
               v-model="version"
               class="field__input tb-mono"
               placeholder="120.0.0.0"
               autocomplete="off"
-              :aria-label="t('tools.header-generator.fields.version')"
+              :aria-label="t('tools.ua-header-gen.fields.version')"
             />
           </label>
 
           <label class="field field--grow">
-            <span class="field__label">{{ t('tools.header-generator.fields.os') }}</span>
+            <span class="field__label">{{ t('tools.ua-header-gen.fields.os') }}</span>
             <ElInput
               v-model="os"
               class="field__input tb-mono"
               placeholder="Windows NT 10.0; Win64; x64"
               autocomplete="off"
-              :aria-label="t('tools.header-generator.fields.os')"
+              :aria-label="t('tools.ua-header-gen.fields.os')"
             />
           </label>
         </template>
 
         <template #options>
           <label class="field field--grow">
-            <span class="field__label">{{ t('tools.header-generator.fields.acceptLanguage') }}</span>
+            <span class="field__label">{{ t('tools.ua-header-gen.fields.acceptLanguage') }}</span>
             <ElInput
               v-model="acceptLanguage"
               class="field__input tb-mono"
               autocomplete="off"
-              :aria-label="t('tools.header-generator.fields.acceptLanguage')"
+              :aria-label="t('tools.ua-header-gen.fields.acceptLanguage')"
             />
           </label>
 
           <label class="field field--grow">
-            <span class="field__label">{{ t('tools.header-generator.fields.referer') }}</span>
+            <span class="field__label">{{ t('tools.ua-header-gen.fields.referer') }}</span>
             <ElInput
               v-model="referer"
               class="field__input tb-mono"
               autocomplete="off"
-              :aria-label="t('tools.header-generator.fields.referer')"
+              :aria-label="t('tools.ua-header-gen.fields.referer')"
             />
           </label>
 
           <label class="field field--grow">
-            <span class="field__label">{{ t('tools.header-generator.fields.customHeaders') }}</span>
+            <span class="field__label">{{ t('tools.ua-header-gen.fields.customHeaders') }}</span>
             <ElInput
               v-model="customHeaders"
               class="field__input tb-mono"
@@ -235,21 +235,22 @@ function fillExample(index: number): void {
               :rows="3"
               placeholder="X-Trace-Id: abc123"
               autocomplete="off"
-              :aria-label="t('tools.header-generator.fields.customHeaders')"
+              :aria-label="t('tools.ua-header-gen.fields.customHeaders')"
             />
           </label>
 
           <p class="field__hint">
-            {{ t('tools.header-generator.hints.customHeaders') }}
+            {{ t('tools.ua-header-gen.hints.customHeaders') }}
           </p>
         </template>
 
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -261,7 +262,7 @@ function fillExample(index: number): void {
         :text="resultText"
         :meta="meta"
         :error="error"
-        :title="t('tools.header-generator.results.headers')"
+        :title="t('tools.ua-header-gen.results.headers')"
         hide-text
         @retry="run"
       >
@@ -269,16 +270,16 @@ function fillExample(index: number): void {
           <StatGrid :items="statItems" />
           <DataTable
             v-if="headerRows.length > 0"
-            class="header-generator__table"
+            class="ua-header-gen__table"
             :columns="[
               {
                 key: 'name',
-                label: t('tools.header-generator.results.headerName'),
+                label: t('tools.ua-header-gen.results.headerName'),
                 mono: true,
               },
               {
                 key: 'value',
-                label: t('tools.header-generator.results.headerValue'),
+                label: t('tools.ua-header-gen.results.headerValue'),
                 mono: true,
               },
             ]"
@@ -308,7 +309,7 @@ function fillExample(index: number): void {
 </template>
 
 <style scoped>
-.header-generator__table {
+.ua-header-gen__table {
   margin-top: var(--tb-space-3);
 }
 </style>

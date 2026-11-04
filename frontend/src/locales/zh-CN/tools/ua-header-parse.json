@@ -1,6 +1,6 @@
 {
-  "name": "UA 解析",
-  "description": "把 User-Agent 串拆成浏览器、操作系统、设备类型与渲染引擎。",
+  "name": "UA 头解析",
+  "description": "把 User-Agent 请求头拆成浏览器、操作系统、设备类型与渲染引擎。",
   "category": "网络",
   "actions": {
     "run": "解析"

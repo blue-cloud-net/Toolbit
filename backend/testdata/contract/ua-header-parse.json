@@ -1,6 +1,6 @@
 {
-  "slug": "ua-parser",
-  "description": "UA 解析工具的契约测试数据。",
+  "slug": "ua-header-parse",
+  "description": "UA 头解析工具的契约测试数据。",
   "cases": [
     {
       "name": "解析 Chrome on Windows",

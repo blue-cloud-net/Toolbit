@@ -20,7 +20,7 @@
 | [文本](#文本text) | 7 | 正则测试、文本转换、文本对比、正则校验、正则生成、数据脱敏、文本统计 |
 | [数据](#数据data) | 13 | 时间戳、UUID、日期计算、国家代码、行政区划、二维码、号码校验、CSV 转换、JSON 转类型、模拟数据、归档查看、文件识别、ID 生成 |
 | [系统](#系统system) | 8 | cURL、Crontab、权限计算、Nginx 配置生成、防火墙规则生成、Compose 配置生成、Docker run 互转、速查表 |
-| [网络](#网络network) | 10 | CIDR、SSL 检测、DNS 查询、DNS 服务器大全、DNS 测试、WebSocket 测试、MIME 类型、HTTP 状态码、UA 解析、请求头生成 |
+| [网络](#网络network) | 10 | CIDR、SSL 检测、DNS 查询、DNS 服务器大全、DNS 测试、WebSocket 测试、MIME 类型、HTTP 状态码、UA 头解析、UA 头生成 |
 | [文档](#文档documents) | 4 | PDF 签名校验、Markdown 预览、EML 解析、Markdown 转换 |
 
 ---
@@ -1049,8 +1049,8 @@
 | WebSocket 测试 | `websocket-test` | 浏览器直连测试 |
 | MIME 类型查询 | `mime-lookup` | 媒体类型全集浏览与检索（键入即时筛选） |
 | HTTP 状态码查询 | `http-status` | 状态码全集浏览与检索（键入即时筛选） |
-| UA 解析 | `ua-parser` | 把 User-Agent 串拆成浏览器、系统、设备类型与渲染引擎 |
-| 请求头生成 | `header-generator` | 按平台与版本生成一组客户端请求头 |
+| UA 头解析 | `ua-header-parse` | 把 User-Agent 请求头拆成浏览器、系统、设备类型与渲染引擎 |
+| UA 头生成 | `ua-header-gen` | 以 User-Agent 为核心，按平台与版本生成一组客户端请求头 |
 
 ### CIDR 计算（CIDR Calculator）
 
@@ -1165,9 +1165,9 @@
 
 ---
 
-### UA 解析（User-Agent Parser）
+### UA 头解析（UA Header Parser）
 
-- **用途**：把 User-Agent 串拆成浏览器、版本、操作系统、设备类型与渲染引擎。
+- **用途**：把 User-Agent 请求头拆成浏览器、版本、操作系统、设备类型与渲染引擎。
 - **输入**：待解析的 User-Agent 串。
 - **输出**：统计卡片（浏览器、浏览器版本、操作系统、系统版本、设备类型、渲染引擎、是否爬虫）。
 - **默认**：无；输入为空时返回 `MISSING_FIELD`。
@@ -1181,9 +1181,9 @@
 
 ---
 
-### 请求头生成（Header Generator）
+### UA 头生成（UA Header Generator）
 
-- **用途**：按平台与版本生成一组常见客户端请求头（User-Agent、Accept、Accept-Language、Accept-Encoding、Upgrade-Insecure-Requests）。
+- **用途**：以 User-Agent 为核心，按平台与版本生成一组常见客户端请求头（User-Agent、Accept、Accept-Language、Accept-Encoding、Upgrade-Insecure-Requests）。
 - **输入**：平台（Chrome / Firefox / Safari / Edge / Android / iOS / curl）、版本号、操作系统、Accept-Language、Referer；自定义请求头每行一条，格式为 `名称: 值`。
 - **输出**：UA 串卡片与请求头表格（名称、取值，逐行可复制）。
 - **默认**：Chrome 桌面版；版本号与操作系统留空时用该平台的内置默认值。

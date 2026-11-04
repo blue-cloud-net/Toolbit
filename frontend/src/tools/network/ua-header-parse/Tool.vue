@@ -18,9 +18,9 @@ import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
-import { EXAMPLES } from '@/tools/network/ua-parser/example'
+import { EXAMPLES } from '@/tools/network/ua-header-parse/example'
 
-/** 后端 ua-parser 工具的响应。 */
+/** 后端 ua-header-parse 工具的响应。 */
 interface UAParserResult {
   /** 规范化后的 UA 串。 */
   userAgent: string
@@ -53,7 +53,7 @@ const userAgent = ref(
 )
 
 const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<UAParserResult>({
-  slug: 'ua-parser',
+  slug: 'ua-header-parse',
 })
 
 const running = computed(() => state.value === 'loading')
@@ -68,18 +68,18 @@ const statItems = computed<StatGridItem[]>(() => {
     return []
   }
   const items: StatGridItem[] = [
-    { label: t('tools.ua-parser.results.browser'), value: result.browser || '—' },
+    { label: t('tools.ua-header-parse.results.browser'), value: result.browser || '—' },
     {
-      label: t('tools.ua-parser.results.browserVersion'),
+      label: t('tools.ua-header-parse.results.browserVersion'),
       value: result.browserVersion || '—',
     },
-    { label: t('tools.ua-parser.results.os'), value: result.os || '—' },
-    { label: t('tools.ua-parser.results.osVersion'), value: result.osVersion || '—' },
-    { label: t('tools.ua-parser.results.deviceType'), value: result.deviceType || '—' },
-    { label: t('tools.ua-parser.results.engine'), value: result.engine || '—' },
+    { label: t('tools.ua-header-parse.results.os'), value: result.os || '—' },
+    { label: t('tools.ua-header-parse.results.osVersion'), value: result.osVersion || '—' },
+    { label: t('tools.ua-header-parse.results.deviceType'), value: result.deviceType || '—' },
+    { label: t('tools.ua-header-parse.results.engine'), value: result.engine || '—' },
   ]
   items.push({
-    label: t('tools.ua-parser.results.isBot'),
+    label: t('tools.ua-header-parse.results.isBot'),
     value: result.isBot ? t('common.states.yes') : t('common.states.no'),
     level: result.isBot ? 'warning' : 'success',
     mono: false,
@@ -87,7 +87,7 @@ const statItems = computed<StatGridItem[]>(() => {
   return items
 })
 
-const faq = computed<FaqItem[]>(() => tm('tools.ua-parser.faq') as FaqItem[])
+const faq = computed<FaqItem[]>(() => tm('tools.ua-header-parse.faq') as FaqItem[])
 
 /** 运行当前输入。 */
 function run(): void {
@@ -96,7 +96,7 @@ function run(): void {
 
 // 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。
 useAutoRun({
-  slug: 'ua-parser',
+  slug: 'ua-header-parse',
   run,
   watch: [userAgent],
   enabled: () => true,
@@ -122,38 +122,39 @@ function fillExample(index: number): void {
 
 <template>
   <ToolPageLayout
-    slug="ua-parser"
-    :name="t('tools.ua-parser.name')"
+    slug="ua-header-parse"
+    :name="t('tools.ua-header-parse.name')"
     name-en="User-Agent Parser"
   >
     <template #panel>
       <ToolPanel>
         <template #input>
           <label class="field field--grow">
-            <span class="field__label">{{ t('tools.ua-parser.fields.userAgent') }}</span>
+            <span class="field__label">{{ t('tools.ua-header-parse.fields.userAgent') }}</span>
             <ElInput
               v-model="userAgent"
               class="field__input tb-mono"
               type="textarea"
               :rows="4"
               autocomplete="off"
-              :aria-label="t('tools.ua-parser.fields.userAgent')"
+              :aria-label="t('tools.ua-header-parse.fields.userAgent')"
             />
           </label>
         </template>
 
         <template #options>
           <p class="field__hint">
-            {{ t('tools.ua-parser.hints.output') }}
+            {{ t('tools.ua-header-parse.hints.output') }}
           </p>
         </template>
 
         <template #footer>
           <RunBar
             :running="running"
+            :examples="EXAMPLES"
             @run="run"
             @reset="reset"
-            @example="fillExample(0)"
+            @fill="fillExample"
           />
         </template>
       </ToolPanel>
@@ -165,7 +166,7 @@ function fillExample(index: number): void {
         :text="resultText"
         :meta="meta"
         :error="error"
-        :title="t('tools.ua-parser.results.title')"
+        :title="t('tools.ua-header-parse.results.title')"
         hide-text
         @retry="run"
       >

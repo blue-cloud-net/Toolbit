@@ -1,13 +1,13 @@
 /**
- * ua-parser 工具模块。
+ * ua-header-parse 工具模块。
  *
  * 默认导出工具组件；`messages` 是该工具的双语词条，
  * 由路由容器在组件加载后登记，避免进入初始包。
  */
 import type { Component } from 'vue'
 
-import enUS from '@/locales/en-US/tools/ua-parser.json'
-import zhCN from '@/locales/zh-CN/tools/ua-parser.json'
+import enUS from '@/locales/en-US/tools/ua-header-parse.json'
+import zhCN from '@/locales/zh-CN/tools/ua-header-parse.json'
 
 import Tool from './Tool.vue'
 

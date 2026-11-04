@@ -1,6 +1,6 @@
 {
-  "name": "Header Generator",
-  "description": "Generate a set of client request headers for a platform and version, with optional custom headers.",
+  "name": "UA Header Generator",
+  "description": "Generate a set of client request headers centred on the User-Agent, for a platform and version, with optional custom headers.",
   "category": "Network",
   "actions": {
     "run": "Generate"

@@ -1,6 +1,6 @@
 {
-  "name": "User-Agent Parser",
-  "description": "Break a User-Agent string down into browser, operating system, device type and rendering engine.",
+  "name": "UA Header Parser",
+  "description": "Break a User-Agent request header down into browser, operating system, device type and rendering engine.",
   "category": "Network",
   "actions": {
     "run": "Parse"

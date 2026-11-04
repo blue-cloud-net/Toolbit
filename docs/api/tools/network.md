@@ -15,8 +15,8 @@
 | [websocket-test](#websocket-test) | WebSocket 测试 | 浏览器原生 | 无 |
 | [mime-lookup](#mime-lookup) | MIME 类型查询 | JSON | `POST /api/v1/tools/mime-lookup` |
 | [http-status](#http-status) | HTTP 状态码查询 | JSON | `POST /api/v1/tools/http-status` |
-| [ua-parser](#ua-parser) | UA 解析 | JSON | `POST /api/v1/tools/ua-parser` |
-| [header-generator](#header-generator) | 请求头生成 | JSON | `POST /api/v1/tools/header-generator` |
+| [ua-header-parse](#ua-header-parse) | UA 头解析 | JSON | `POST /api/v1/tools/ua-header-parse` |
+| [ua-header-gen](#ua-header-gen) | UA 头生成 | JSON | `POST /api/v1/tools/ua-header-gen` |
 
 ---
 
@@ -451,9 +451,9 @@ HTTP 状态码查询（**不出网**）。
 
 ---
 
-## ua-parser
+## ua-header-parse
 
-把 User-Agent 串拆成结构化字段（User-Agent Parser）。
+把 User-Agent 请求头拆成结构化字段（UA Header Parser）。
 
 ### 请求
 
@@ -483,9 +483,9 @@ HTTP 状态码查询（**不出网**）。
 
 ---
 
-## header-generator
+## ua-header-gen
 
-按平台与版本生成一组客户端请求头（Header Generator）。
+按平台与版本生成一组客户端请求头（UA Header Generator）。
 
 ### 请求
 

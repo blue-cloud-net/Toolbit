@@ -1,6 +1,6 @@
 {
-  "slug": "header-generator",
-  "description": "请求头生成工具的契约测试数据。",
+  "slug": "ua-header-gen",
+  "description": "UA 头生成工具的契约测试数据。",
   "cases": [
     {
       "name": "生成 Chrome 请求头",

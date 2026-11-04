@@ -85,8 +85,8 @@ export const toolRegistry: Record<string, ToolLoader> = {
   'websocket-test': () => import('./network/websocket-test/index'),
   'mime-lookup': () => import('./network/mime-lookup/index'),
   'http-status': () => import('./network/http-status/index'),
-  'ua-parser': () => import('./network/ua-parser/index'),
-  'header-generator': () => import('./network/header-generator/index'),
+  'ua-header-parse': () => import('./network/ua-header-parse/index'),
+  'ua-header-gen': () => import('./network/ua-header-gen/index'),
 
   // ── 文本 / Text ──
   'regex-tester': () => import('./text/regex-tester/index'),

@@ -32,8 +32,8 @@
 | `firewall-rules` | 系统 | 防火墙规则生成：按场景拼装 iptables / UFW / nftables 规则，支持批量导出 | 无；与 `nginx-config` 同族 | 零新依赖 | M | P0 |
 | `regex-validate` | 文本 | 正则表达式语法校验：只校验不匹配，输出是否合法、错误位置与方言提示 | 与 `regex-tester` 共用同一条 RE2 编译路径与方言判定，不重复实现方言逻辑 | 零新依赖 | S | P0 |
 | `regex-build` | 文本 | 正则表达式生成：由结构化选项（字符类、量词、分组、前后缀、常用模板）拼装表达式并给出释义 | 无；生成结果仍按 RE2 方言校验，非法组合即时报错 | 零新依赖 | M | P1 |
-| `ua-parser` | 网络 | User-Agent（UA）解析：把 UA 串拆成浏览器、版本、操作系统、设备类型与渲染引擎 | 无；`http-status` / `mime-lookup` 同属速查族；由原 `device-headers` 拆分而来 | 零新依赖 | S | P0 |
-| `header-generator` | 网络 | 客户端请求头生成：按平台与浏览器版本生成完整请求头，可追加自定义请求头 | 无；`curl-generator` 同属「构造」族；由原 `device-headers` 拆分而来 | 零新依赖 | S | P0 |
+| `ua-header-parse` | 网络 | User-Agent（UA）头解析：把 UA 请求头拆成浏览器、版本、操作系统、设备类型与渲染引擎 | 无；`http-status` / `mime-lookup` 同属速查族；由原 `device-headers` 拆分而来 | 零新依赖 | S | P0 |
+| `ua-header-gen` | 网络 | UA 头生成：以 User-Agent 为核心，按平台与浏览器版本生成完整请求头，可追加自定义请求头 | 无；`curl-generator` 同属「构造」族；由原 `device-headers` 拆分而来 | 零新依赖 | S | P0 |
 | `ssh-keygen` | 密钥 | SSH 私钥生成：产出 OpenSSH 格式（`openssh-key-v1`）密钥对、`authorized_keys` 公钥行与 SHA256 指纹 | 与 `keygen` 互补：`keygen` 产出 PKCS#8 / SPKI PEM，本项产出 OpenSSH 格式；密钥材料复用既有算法能力 | 零新依赖（受 §3 边界约束） | M | P1 |
 
 ### 1.2 既有工具增强（✅ v0.8.0 已交付）
@@ -122,7 +122,7 @@
 | ECIES / DES / 3DES | **受阻** | 已是缺口 I-02 与 I-05，上游补齐后再入契约 |
 | `regex-build` | **可以** | 纯字符串拼装，不涉及密码学运算；产出结果按 RE2 方言校验 |
 | `nginx-config` / `firewall-rules` | **可以** | 纯模板拼装，不出网、不涉及密码学 |
-| `ua-parser` / `header-generator` 的 UA 库 | **需边界** | UA 数据需要更新机制；首版只支持内置常见平台与自定义填写，**不引入**在线 UA 查询 |
+| `ua-header-parse` / `ua-header-gen` 的 UA 库 | **需边界** | UA 数据需要更新机制；首版只支持内置常见平台与自定义填写，**不引入**在线 UA 查询 |
 | 一切出网类需求 | **需单独评审** | SSRF 校验、限流与出网总开关要求见 [standards/06-security.md](standards/06-security.md) |
 | 任何新增依赖 | **需说明理由** | 变更 `backend/go.mod` 必须在提交信息写明 `adds: <pkg> <version>`（AGENTS §12） |
 | `hash-calc` 扩充摘要算法（SHA3 / BLAKE2 / CRC32 等） | **需先确认上游** | 现支持 SM3 / MD5 / SHA1 / SHA224 / SHA256 / SHA384 / SHA512；新增算法须经 `cryptosvc` 转调 Tongsuo，上游无入口则走上游 issue，**不得**用标准库 `crypto/*` 兜底 |

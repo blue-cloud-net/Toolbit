@@ -35,7 +35,7 @@ func HeaderPlatforms() []string {
 	}
 }
 
-// HeaderGeneratorRequest 是 header-generator 工具的请求。
+// HeaderGeneratorRequest 是 ua-header-gen 工具的请求。
 type HeaderGeneratorRequest struct {
 	// Platform 是平台；留空用 chrome。
 	Platform string `json:"platform"`
@@ -59,7 +59,7 @@ type HeaderEntry struct {
 	Value string `json:"value"`
 }
 
-// HeaderGeneratorResult 是 header-generator 工具的响应。
+// HeaderGeneratorResult 是 ua-header-gen 工具的响应。
 type HeaderGeneratorResult struct {
 	// Headers 是生成的请求头。
 	Headers []HeaderEntry `json:"headers"`

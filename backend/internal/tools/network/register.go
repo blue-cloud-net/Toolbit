@@ -63,7 +63,7 @@ func Definitions(g *netguard.Guard) []tools.Definition {
 			},
 		},
 		{
-			Slug: "ua-parser",
+			Slug: "ua-header-parse",
 			NewRequest: func() tools.Request {
 				return &UAParserRequest{}
 			},
@@ -72,7 +72,7 @@ func Definitions(g *netguard.Guard) []tools.Definition {
 			},
 		},
 		{
-			Slug: "header-generator",
+			Slug: "ua-header-gen",
 			NewRequest: func() tools.Request {
 				return &HeaderGeneratorRequest{}
 			},

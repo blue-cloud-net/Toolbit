@@ -155,8 +155,8 @@ export const TOOL_TONES: Record<string, Tone> = {
   'dns-servers': 'cyan',
   'dns-tester': 'teal',
   'websocket-test': 'violet',
-  'ua-parser': 'amber',
-  'header-generator': 'orange',
+  'ua-header-parse': 'amber',
+  'ua-header-gen': 'orange',
   'mime-lookup': 'indigo',
   'http-status': 'cyan',
 

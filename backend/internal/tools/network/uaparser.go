@@ -7,13 +7,13 @@ import (
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
 )
 
-// UAParserRequest 是 ua-parser 工具的请求。
+// UAParserRequest 是 ua-header-parse 工具的请求。
 type UAParserRequest struct {
 	// UserAgent 是待解析的 User-Agent 串。
 	UserAgent string `json:"userAgent"`
 }
 
-// UAParserResult 是 ua-parser 工具的响应。
+// UAParserResult 是 ua-header-parse 工具的响应。
 type UAParserResult struct {
 	// UserAgent 是规范化后的 UA 串。
 	UserAgent string `json:"userAgent"`

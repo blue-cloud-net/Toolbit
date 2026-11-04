@@ -120,8 +120,8 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'dns-servers': 'list',
   'dns-tester': 'pulse',
   'websocket-test': 'connection',
-  'ua-parser': 'monitor',
-  'header-generator': 'list',
+  'ua-header-parse': 'monitor',
+  'ua-header-gen': 'list',
   'mime-lookup': 'tag',
   'http-status': 'globe-check',
 

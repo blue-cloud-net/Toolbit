@@ -1,6 +1,6 @@
 {
-  "name": "请求头生成",
-  "description": "按平台与版本生成一组客户端请求头，可追加自定义请求头。",
+  "name": "UA 头生成",
+  "description": "以 User-Agent 为核心，按平台与版本生成一组客户端请求头，可追加自定义请求头。",
   "category": "网络",
   "actions": {
     "run": "生成"
