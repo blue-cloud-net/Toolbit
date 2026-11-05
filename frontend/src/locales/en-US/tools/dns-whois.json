@@ -1,0 +1,61 @@
+{
+  "name": "WHOIS Lookup",
+  "description": "Look up the registration details of a domain name or IP address.",
+  "category": "Network",
+  "actions": {
+    "lookup": "Look up registration"
+  },
+  "fields": {
+    "domain": "Domain",
+    "ip": "IP address"
+  },
+  "options": {
+    "source": {
+      "rdap": "RDAP",
+      "whois": "WHOIS"
+    }
+  },
+  "results": {
+    "output": "Registration details",
+    "source": "Source",
+    "registrar": "Registrar",
+    "creationDate": "Created",
+    "expirationDate": "Expires",
+    "updatedDate": "Updated",
+    "registrantCountry": "Registrant country / region",
+    "nameServers": "Name servers",
+    "nameServer": "Name server",
+    "statusCount": "Status count",
+    "statusItem": "Status",
+    "registry": "Registry / registrar",
+    "registries": "Registries queried"
+  },
+  "examples": [
+    {
+      "label": "Look up example.com",
+      "value": "example.com"
+    }
+  ],
+  "hints": {
+    "query": "Give either a domain or an address; when both are present the address wins.",
+    "output": "RDAP over HTTPS is tried first, then the whois port 43 as a fallback; both need network access."
+  },
+  "views": {
+    "summary": "Summary",
+    "raw": "Raw JSON"
+  },
+  "faq": [
+    {
+      "q": "Why can the lookup come back empty?",
+      "a": "Usually the target has no RDAP service and the whois server is unreachable; the domain may also be unregistered or already deleted."
+    },
+    {
+      "q": "Why is there no registrant identity?",
+      "a": "Most registries hide personal details under privacy rules and only keep the country or region."
+    },
+    {
+      "q": "Are lookups stored?",
+      "a": "No. The server keeps nothing about the query and only records anonymous call counters."
+    }
+  ]
+}

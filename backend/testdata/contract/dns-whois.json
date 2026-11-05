@@ -1,0 +1,30 @@
+{
+  "slug": "dns-whois",
+  "description": "WHOIS 查询的契约测试数据。查询本身需真实外网，因此本文件只覆盖可离线判定的校验路径。",
+  "cases": [
+    {
+      "name": "缺少域名与地址",
+      "request": {},
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
+      }
+    },
+    {
+      "name": "地址格式非法",
+      "request": { "ip": "not-an-ip" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "域名格式非法",
+      "request": { "domain": "bad domain" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_DOMAIN"
+      }
+    }
+  ]
+}

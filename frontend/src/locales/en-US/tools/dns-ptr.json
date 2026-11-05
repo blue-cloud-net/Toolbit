@@ -1,0 +1,49 @@
+{
+  "name": "PTR Reverse Lookup",
+  "description": "Turn an IP address into its host name and check that forward and reverse records agree.",
+  "category": "Network",
+  "actions": {
+    "lookup": "Reverse lookup"
+  },
+  "fields": {
+    "ip": "IP address",
+    "domain": "Domain"
+  },
+  "options": {},
+  "results": {
+    "output": "Reverse lookup result",
+    "reverse": "Reverse name",
+    "addresses": "Forward addresses",
+    "address": "Address",
+    "names": "Host names",
+    "name": "Host name"
+  },
+  "examples": [
+    {
+      "label": "Reverse 8.8.8.8",
+      "value": "8.8.8.8"
+    }
+  ],
+  "hints": {
+    "query": "Give an IP address to reverse it directly; with only a domain the first forward address is resolved first.",
+    "output": "The host names found by the reverse lookup are resolved forward again, so mismatches between forward and reverse records become visible."
+  },
+  "views": {
+    "summary": "Summary",
+    "raw": "Raw JSON"
+  },
+  "faq": [
+    {
+      "q": "Is an empty reverse lookup normal?",
+      "a": "Yes. Many cloud hosts and containers ship without PTR records, especially when the security group forbids arbitrary reverse lookups."
+    },
+    {
+      "q": "Why do the forward addresses and the reverse result disagree?",
+      "a": "The PTR record is out of sync: forward resolution uses the A or AAAA records while the reverse lookup uses the in-addr.arpa record of the IP."
+    },
+    {
+      "q": "Is IPv6 supported?",
+      "a": "Yes. IPv6 uses the ip6.arpa form of reverse names and follows the same resolution logic."
+    }
+  ]
+}

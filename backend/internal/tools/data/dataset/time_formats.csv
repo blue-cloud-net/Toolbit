@@ -1,0 +1,14 @@
+key,label,description,example,category
+unix,Unix 秒级时间戳,以 1970-01-01T00:00:00Z 为纪元的秒数,1793275200,epoch
+unix-ms,Unix 毫秒级时间戳,以纪元为起点的毫秒数,1793275200000,epoch
+unix-us,Unix 微秒级时间戳,以纪元为起点的微秒数,1793275200000000,epoch
+unix-ns,Unix 纳秒级时间戳,以纪元为起点的纳秒数,1793275200000000000,epoch
+iso8601,ISO 8601,国际标准化日期时间格式,2026-10-29T12:00:00Z,standard
+rfc3339,RFC 3339,带时区偏移的日期时间格式,2026-10-29T20:00:00+08:00,standard
+rfc2822,RFC 2822,邮件头使用的日期时间格式,"Thu, 29 Oct 2026 20:00:00 +0800",standard
+http-date,HTTP 日期,HTTP 协议头使用的日期格式,"Thu, 29 Oct 2026 12:00:00 GMT",standard
+sql-datetime,SQL 日期时间,数据库常用的日期时间字面量,2026-10-29 20:00:00,standard
+excel-serial,Excel 序列号,以 1899-12-30 为起点的天数,46322.5,numeric
+ticks,Windows 计时,自 0001-01-01 起的 100 纳秒计数,639288720000000000,numeric
+julian,儒略日,以公元前 4713 年为起点的连续天数,2461343,numeric
+day-count,日计数,自 1970-01-01 起的整日数,20755,epoch

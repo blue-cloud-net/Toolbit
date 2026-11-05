@@ -122,7 +122,7 @@ func decode(t *testing.T, rec *httptest.ResponseRecorder) envelope {
 	return env
 }
 
-func TestCatalogEndpointReturns101Tools(t *testing.T) {
+func TestCatalogEndpointReturns105Tools(t *testing.T) {
 	h := newTestServer(t)
 	rec := get(t, h, "/api/v1/tools")
 
@@ -148,8 +148,8 @@ func TestCatalogEndpointReturns101Tools(t *testing.T) {
 	if err := json.Unmarshal(env.Data, &data); err != nil {
 		t.Fatalf("解析 data 失败: %v", err)
 	}
-	if len(data.Tools) != 101 {
-		t.Errorf("工具数量 = %d，期望 101", len(data.Tools))
+	if len(data.Tools) != 105 {
+		t.Errorf("工具数量 = %d，期望 105", len(data.Tools))
 	}
 	if len(data.Categories) != 10 {
 		t.Errorf("分类数量 = %d，期望 10", len(data.Categories))
@@ -385,11 +385,11 @@ func TestHealthEndpoints(t *testing.T) {
 	if err := json.Unmarshal(rec.Body.Bytes(), &health); err != nil {
 		t.Fatalf("解析健康信息失败: %v", err)
 	}
-	if health.Tools.Total != 101 {
-		t.Errorf("工具总数 = %d，期望 101", health.Tools.Total)
+	if health.Tools.Total != 105 {
+		t.Errorf("工具总数 = %d，期望 105", health.Tools.Total)
 	}
-	if health.Tools.Enabled != 101 {
-		t.Errorf("启用工具数 = %d，期望 101", health.Tools.Enabled)
+	if health.Tools.Enabled != 105 {
+		t.Errorf("启用工具数 = %d，期望 105", health.Tools.Enabled)
 	}
 }
 

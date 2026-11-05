@@ -51,7 +51,7 @@
 
 ## 4. 出网安全（SSRF）
 
-涉及网络的工具：`dns-lookup` `dns-tester` `ssl-check` `cert-chain-fetch` `ct-search` `domain-verify` `websocket-test` `pdf-sign-verify`（可选）。
+涉及网络的工具：`dns-lookup` `dns-whois` `dnssec-check` `dns-ptr` `ssl-check` `cert-chain-fetch` `ct-search` `domain-verify` `websocket-test` `pdf-sign-verify`（可选）。
 
 **必须**
 

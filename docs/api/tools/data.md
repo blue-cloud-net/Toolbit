@@ -2,11 +2,12 @@
 
 > 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-10-29
 
-覆盖 **13** 个数据类工具。端点均为 `POST /api/v1/tools/{slug}`。
+覆盖 **14** 个数据类工具。端点均为 `POST /api/v1/tools/{slug}`。
 
 | slug | 名称 | 档位 |
 | --- | --- | --- |
 | [timestamp](#timestamp) | 时间戳转换 | light |
+| [time-format](#time-format) | 时间格式速查 | light |
 | [uuid-gen](#uuid-gen) | UUID 生成 | light |
 | [date-calc](#date-calc) | 日期计算 | light |
 | [country-code](#country-code) | 国家代码 | light |
@@ -427,6 +428,42 @@ CSV 与 JSON 互转（CSV Converter）。
 `INVALID_FIELD`。
 
 > 雪花 ID 的纪元与节点号由请求指定，**不保证**全局唯一。
+
+---
+
+## time-format
+
+速查常见日期时间格式的定义与示例值（Date & Time Format Reference）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `query` | string | 否 | 查询词：格式标识（如 `unix-ms`）或关键字；缺省返回全量 |
+| `category` | string | 否 | `epoch` `standard` `numeric`；为空表示不过滤 |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `query` | string | 规范化后的查询词 |
+| `kind` | string | 查询方式：`all` `keyword` |
+| `matched` | bool | 是否命中格式条目 |
+| `key` | string | 命中的格式标识 |
+| `label` | string | 命中的格式名称 |
+| `description` | string | 命中的中文说明 |
+| `example` | string | 命中的示例值 |
+| `category` | string | 命中的格式分类 |
+| `matches` | array | 命中的条目 `{ key, label, description, example, category }` |
+| `total` | number | 命中条数 |
+| `datasetTotal` | number | 数据集条目数 |
+| `dataVersion` | string | 数据集版本 |
+
+### 错误
+
+`INVALID_FIELD`。
+
+> 内置数据集离线查询，**不出网**；示例值对应同一时刻 `2026-10-29T12:00:00Z`。
 
 ---
 

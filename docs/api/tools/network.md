@@ -1,9 +1,9 @@
 # 网络 API
 
-> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-11-02
+> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-11-05
 
-覆盖 **10** 个网络类工具。其中 4 个**需要出网**，`websocket-test` 为**纯前端**工具（无后端端点），
-`mime-lookup`、`http-status` 与 `dns-servers` 为**纯查表**工具（不出网）。
+覆盖 **13** 个网络类工具。其中 6 个**需要出网**，`websocket-test` 为**纯前端**工具（无后端端点），
+`mime-lookup`、`http-status`、`dns-servers` 与 `common-ports` 为**纯查表**工具（不出网）。
 
 | slug | 名称 | 传输 | 端点 |
 | --- | --- | --- | --- |
@@ -11,7 +11,10 @@
 | [ssl-check](#ssl-check) | SSL 证书检测 | WebSocket | `GET /api/v1/tools/ssl-check/stream` |
 | [dns-lookup](#dns-lookup) | DNS 查询 | JSON | `POST /api/v1/tools/dns-lookup` |
 | [dns-servers](#dns-servers) | DNS 服务器大全 | JSON | `POST /api/v1/tools/dns-servers` |
-| [dns-tester](#dns-tester) | DNS 多记录测试 | JSON | `POST /api/v1/tools/dns-tester` |
+| [dns-whois](#dns-whois) | WHOIS 查询 | JSON | `POST /api/v1/tools/dns-whois` |
+| [dnssec-check](#dnssec-check) | DNSSEC 检测 | JSON | `POST /api/v1/tools/dnssec-check` |
+| [dns-ptr](#dns-ptr) | PTR 反向解析 | JSON | `POST /api/v1/tools/dns-ptr` |
+| [common-ports](#common-ports) | 常用端口查询 | JSON | `POST /api/v1/tools/common-ports` |
 | [websocket-test](#websocket-test) | WebSocket 测试 | 浏览器原生 | 无 |
 | [mime-lookup](#mime-lookup) | MIME 类型查询 | JSON | `POST /api/v1/tools/mime-lookup` |
 | [http-status](#http-status) | HTTP 状态码查询 | JSON | `POST /api/v1/tools/http-status` |
@@ -289,45 +292,162 @@ DNS 服务器目录（**纯查表，不出网**）。
 
 ---
 
-## dns-tester
+## dns-whois
 
-DNS 综合检测（需出网）。
+域名 / IP 注册信息查询（需出网）。
 
 ### 请求
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `action` | string | 是 | `whois` \| `dnssec` \| `ptr` |
-| `domain` | string | 视 action | 域名 |
-| `ip` | string | 视 action | IP 地址（`ptr` 可用它代替域名） |
+| `domain` | string | 二选一 | 域名 |
+| `ip` | string | 二选一 | IP 地址；给出时优先于 `domain` |
 | `timeoutMs` | int | 否 | 超时，默认 `20000` |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `action` | string | 回显动作 |
-| `whois` | object \| null | 仅 `whois` |
-| `dnssec` | object \| null | 仅 `dnssec` |
-| `ptr` | object \| null | 仅 `ptr` |
+| `query` | string | 实际查询的目标：域名或 IP |
+| `whois` | object \| null | 注册信息；结构见下 |
 
-各动作的载荷：
+`whois` 的结构：
 
-| `action` | 载荷结构 |
-| --- | --- |
-| `whois` | `{ source, registrar, creationDate, expirationDate, updatedDate, nameServers[], status[], registrantCountry, registries[] }` |
-| `dnssec` | `{ supported, dnssecEnabled, dsPresent, sigPresent, chainOfTrust[] }` |
-| `ptr` | `{ reverse, addresses[], names[] }` |
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `source` | string | 数据来源：`rdap` 或 `whois` |
+| `registrar` | string | 注册商 |
+| `creationDate` | string | 注册时间 |
+| `expirationDate` | string | 到期时间 |
+| `updatedDate` | string | 最后更新时间 |
+| `nameServers` | array | 名称服务器 |
+| `status` | array | 状态码列表 |
+| `registrantCountry` | string | 注册人国家 / 地区 |
+| `registries` | array | 查询过的注册局 / 注册商主机 |
 
 ### 错误
 
-`INVALID_FIELD`、`MISSING_FIELD`、`DNS_ERROR`、`UPSTREAM_ERROR`、`UPSTREAM_TIMEOUT`、
-`SSRF_BLOCKED`、`NETWORK_DISABLED`。
+`MISSING_FIELD`、`INVALID_FIELD`、`INVALID_DOMAIN`、`UPSTREAM_ERROR`、
+`UPSTREAM_TIMEOUT`、`SSRF_BLOCKED`、`NETWORK_DISABLED`。
 
-> `whois` 先走 RDAP（`https://rdap.org`，HTTPS 443），失败后回退到 whois 协议
+> 先走 RDAP（`https://rdap.org`，HTTPS 443），失败后回退到 whois 协议
 > （`whois.iana.org:43`，按 `refer:` 最多再跳 1 次）。端口由服务端固定，用户无法指定。
 > 部分注册局限制查询或脱敏，**缺失字段以空串表示**。
-> `dnssec` 逐级向上查 DS（最多 3 级），并结合 DNSKEY 判断是否已启用。
+
+---
+
+## dnssec-check
+
+域名 DNSSEC 部署检测（需出网）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `domain` | string | 是 | 要检查的域名 |
+| `timeoutMs` | int | 否 | 超时，默认 `20000` |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `domain` | string | 被检查的域名 |
+| `dnssec` | object \| null | 检查结果；结构见下 |
+
+`dnssec` 的结构：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `supported` | bool | 该域名是否可以启用 DNSSEC |
+| `dnssecEnabled` | bool | 当前是否已启用（存在 DS 或 DNSKEY） |
+| `dsPresent` | bool | 是否存在 DS 记录 |
+| `sigPresent` | bool | 响应中是否带 RRSIG |
+| `chainOfTrust` | array | 逐级 DS 的结果，形如 `example.com: DS 存在` |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_DOMAIN`、`DNS_ERROR`、`UPSTREAM_ERROR`、`UPSTREAM_TIMEOUT`、
+`SSRF_BLOCKED`、`NETWORK_DISABLED`。
+
+> 逐级向上查 DS（最多 3 级），并结合 DNSKEY 判断是否已启用。
+
+---
+
+## dns-ptr
+
+PTR 反向解析（需出网）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `domain` | string | 二选一 | 域名；只给域名时先正向解析取第一个地址再反查 |
+| `ip` | string | 二选一 | IP 地址；给出时优先于 `domain` |
+| `timeoutMs` | int | 否 | 超时，默认 `20000` |
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `query` | string | 实际查询的目标：域名或 IP |
+| `ptr` | object \| null | 反向解析结果；结构见下 |
+
+`ptr` 的结构：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `reverse` | string | 查询的反向域名 |
+| `addresses` | array | 正向解析到的地址 |
+| `names` | array | 反向解析到的名字 |
+
+### 错误
+
+`MISSING_FIELD`、`INVALID_FIELD`、`INVALID_DOMAIN`、`DNS_ERROR`、`UPSTREAM_ERROR`、
+`UPSTREAM_TIMEOUT`、`SSRF_BLOCKED`、`NETWORK_DISABLED`。
+
+> 反查出的名字会再做一次正向解析，用于暴露「反向与正向不一致」。
+
+---
+
+## common-ports
+
+常用端口查询（**纯查表，不出网**）。
+
+### 请求
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `query` | string | 否 | 查询词：端口号（如 `443`）或关键字（如 `https`）；缺省返回全量 |
+| `category` | string | 否 | 服务分类过滤；为空表示不过滤 |
+
+`category` 取值：`web` `mail` `file` `remote` `database` `messaging` `directory`
+`network` `devops`。
+
+### 响应
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `query` | string | 规范化后的查询词 |
+| `kind` | string | 查询方式：`all` \| `port` \| `keyword` |
+| `matched` | bool | 是否命中端口条目 |
+| `port` | number | 命中的端口号；未命中为 `0` |
+| `label` | string | 命中的服务名称 |
+| `description` | string | 命中的中文说明 |
+| `protocols` | array | 命中的传输协议 |
+| `category` | string | 命中的服务分类 |
+| `matches` | array | 命中的条目列表 |
+| `total` | number | 命中条数 |
+| `datasetTotal` | number | 数据集条目数 |
+| `dataVersion` | string | 数据集版本（当前 `2026-11`） |
+
+`matches[]` 的每一项是 `{ port, label, description, protocols[], category }`。
+
+### 错误
+
+`INVALID_FIELD`：`category` 取值非法，或 `query` 超过 253 字符。
+
+> 端口条目补上了服务分类（Web、邮件、文件传输、远程登录、数据库与缓存等 9 类）；
+> 页面**键入即筛选**，搜索词与分类过滤在前端本地完成，无需点击「运行」。
 > `ptr` 在完成反向解析后会对每个名字再做一次正向解析，用于暴露正反不一致。
 
 ---

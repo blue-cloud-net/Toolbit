@@ -1,0 +1,50 @@
+port,label,description,protocols,category
+20,FTP,文件传输协议默认端口,udp,file
+21,FTP-Control,文件传输协议控制端口,tcp,file
+22,SSH,安全远程登录与隧道端口,tcp,remote
+23,Telnet,明文远程登录端口（不推荐使用）,tcp,remote
+25,SMTP,邮件发送端口,tcp;udp,mail
+53,DNS,域名解析端口,tcp;udp,network
+67,DHCP-Server,动态地址分配服务端端口,udp,network
+68,DHCP-Client,动态地址分配客户端端口,udp,network
+69,TFTP,简单文件传输协议端口,udp,file
+80,HTTP,超文本传输协议端口,tcp;udp,web
+110,POP3,邮局协议第 3 版（明文）,tcp,mail
+123,NTP,网络时间协议端口,udp,network
+143,IMAP,邮局协议第 4 版,tcp,mail
+161,SNMP,简单网络管理协议端口,udp,network
+389,LDAP,目录访问协议端口,tcp;udp,directory
+443,HTTPS,加密的 HTTP 端口,tcp;udp,web
+445,SMB,Windows 文件共享端口,tcp,file
+465,SMTPS,加密的 SMTP 端口,tcp,mail
+514,Syslog,系统日志传输端口,udp,network
+587,SMTP-Submission,邮件提交端口,tcp,mail
+636,LDAPS,加密的 LDAP 端口,tcp,directory
+873,rsync,增量文件同步端口,tcp,file
+993,IMAPS,加密的 IMAP 端口,tcp,mail
+995,POP3S,加密的 POP3 端口,tcp,mail
+1080,SOCKS,SOCKS 代理端口,tcp,network
+1433,MSSQL,SQL Server 默认端口,tcp,database
+1521,Oracle,Oracle 数据库默认端口,tcp,database
+2049,NFS,网络文件系统端口,tcp;udp,file
+2375,Docker-API,未加密的 Docker 远程 API 端口,tcp,devops
+2376,Docker-API-TLS,加密的 Docker 远程 API 端口,tcp,devops
+3000,Grafana,可视化面板默认端口,tcp,web
+3306,MySQL,MySQL 数据库默认端口,tcp,database
+3389,RDP,Windows 远程桌面端口,tcp,remote
+5000,Docker-Registry,私有镜像仓库端口,tcp,devops
+5432,PostgreSQL,PostgreSQL 数据库默认端口,tcp,database
+5433,PostgreSQL-Alt,PostgreSQL 备用端口,tcp,database
+5672,AMQP,消息队列协议端口,tcp,messaging
+5900,VNC,远程桌面控制端口,tcp,remote
+6379,Redis,Redis 缓存端口,tcp,database
+8000,HTTP-Alt,常用的备用 HTTP 端口,tcp,web
+8080,HTTP-Proxy,常用的代理与备用 HTTP 端口,tcp,web
+8443,HTTPS-Alt,常用的备用 HTTPS 端口,tcp,web
+8888,HTTP-Dev,开发环境常用的 HTTP 端口,tcp,web
+9000,SonarQube,代码质量平台端口,tcp,web
+9090,Prometheus,指标采集端口,tcp,web
+9200,Elasticsearch,搜索引擎默认端口,tcp,database
+11211,Memcached,内存缓存端口,tcp,database
+15672,RabbitMQ,消息队列管理界面端口,tcp,messaging
+27017,MongoDB,MongoDB 数据库默认端口,tcp,database

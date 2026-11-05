@@ -1,0 +1,54 @@
+{
+  "slug": "exit-code",
+  "description": "退出码查询的契约测试数据。",
+  "cases": [
+    {
+      "name": "按退出码查 127",
+      "request": { "query": "127" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "code", "matched": true, "code": 127, "type": "failure" }
+      }
+    },
+    {
+      "name": "按关键字查段错误",
+      "request": { "query": "段错误" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "keyword", "matched": true, "code": 139 }
+      }
+    },
+    {
+      "name": "空请求返回全量列表",
+      "request": {},
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "all", "total": 17, "datasetTotal": 17 }
+      }
+    },
+    {
+      "name": "按类别过滤",
+      "request": { "type": "signal" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "keyword", "total": 10 }
+      }
+    },
+    {
+      "name": "未收录的退出码",
+      "request": { "query": "42" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "code", "matched": false, "total": 0 }
+      }
+    },
+    {
+      "name": "非法类别",
+      "request": { "type": "bogus" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

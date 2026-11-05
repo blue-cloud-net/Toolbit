@@ -90,6 +90,7 @@ export const TOOL_ICONS: Record<string, IconName> = {
 
   // ── 数据 / Data ──
   timestamp: 'clock',
+  'time-format': 'calendar',
   'uuid-gen': 'fingerprint',
   'date-calc': 'calendar',
   'country-code': 'globe',
@@ -107,7 +108,7 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'curl-generator': 'terminal',
   'crontab-generator': 'clock',
   'chmod-calc': 'shield',
-  'lookup-table': 'list',
+  'exit-code': 'terminal',
   'nginx-config': 'terminal',
   'firewall-rules': 'shield',
   'docker-compose-gen': 'box',
@@ -118,12 +119,15 @@ export const TOOL_ICONS: Record<string, IconName> = {
   'ssl-check': 'shield-check',
   'dns-lookup': 'globe',
   'dns-servers': 'list',
-  'dns-tester': 'pulse',
+  'dns-whois': 'file-search',
+  'dnssec-check': 'shield-check',
+  'dns-ptr': 'pulse',
   'websocket-test': 'connection',
   'ua-header-parse': 'monitor',
   'ua-header-gen': 'list',
   'mime-lookup': 'tag',
   'http-status': 'globe-check',
+  'common-ports': 'sitemap',
 
   // ── 文档 / Documents ──
   'pdf-sign-verify': 'document-check',

@@ -1,10 +1,10 @@
 /**
- * dns-tester 工具模块。
+ * time-format 工具模块。
  */
 import type { Component } from 'vue'
 
-import enUS from '@/locales/en-US/tools/dns-tester.json'
-import zhCN from '@/locales/zh-CN/tools/dns-tester.json'
+import enUS from '@/locales/en-US/tools/time-format.json'
+import zhCN from '@/locales/zh-CN/tools/time-format.json'
 
 import Tool from './Tool.vue'
 

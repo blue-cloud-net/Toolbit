@@ -1,0 +1,61 @@
+{
+  "name": "WHOIS 查询",
+  "description": "查询域名或 IP 的注册信息。",
+  "category": "网络",
+  "actions": {
+    "lookup": "查询注册信息"
+  },
+  "fields": {
+    "domain": "域名",
+    "ip": "IP 地址"
+  },
+  "options": {
+    "source": {
+      "rdap": "RDAP",
+      "whois": "WHOIS"
+    }
+  },
+  "results": {
+    "output": "注册信息",
+    "source": "数据来源",
+    "registrar": "注册商",
+    "creationDate": "注册时间",
+    "expirationDate": "到期时间",
+    "updatedDate": "最后更新",
+    "registrantCountry": "注册人国家 / 地区",
+    "nameServers": "名称服务器",
+    "nameServer": "名称服务器",
+    "statusCount": "状态数",
+    "statusItem": "状态",
+    "registry": "注册局 / 注册商",
+    "registries": "查询过的注册局"
+  },
+  "examples": [
+    {
+      "label": "查询 example.com",
+      "value": "example.com"
+    }
+  ],
+  "hints": {
+    "query": "域名与地址二选一即可；两者都填时以地址为准。",
+    "output": "优先走 RDAP（HTTPS，结构化），失败时回退到 whois 43 端口；两条路径都要出网。"
+  },
+  "views": {
+    "summary": "摘要",
+    "raw": "原始 JSON"
+  },
+  "faq": [
+    {
+      "q": "查不到注册信息是什么原因？",
+      "a": "多数情况是目标不支持 RDAP 且 whois 服务器不可达；也可能是域名尚未注册或已被删除。"
+    },
+    {
+      "q": "注册人信息为什么看不到？",
+      "a": "多数注册局按隐私保护规则隐去了个人身份，只保留国家 / 地区。"
+    },
+    {
+      "q": "查询会留下记录吗？",
+      "a": "服务端不存储任何查询内容，只做匿名调用统计。"
+    }
+  ]
+}

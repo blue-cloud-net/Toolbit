@@ -1,0 +1,59 @@
+{
+  "name": "Exit Code Lookup",
+  "description": "Look up what Linux and Unix command exit codes mean.",
+  "category": "System",
+  "actions": {
+    "lookup": "Look up exit code"
+  },
+  "fields": {
+    "query": "Search",
+    "type": "Category"
+  },
+  "options": {
+    "type": {
+      "all": "All",
+      "success": "Successful exit",
+      "failure": "Failed exit",
+      "signal": "Killed by signal"
+    }
+  },
+  "results": {
+    "title": "Exit code list",
+    "code": "Exit code",
+    "label": "Meaning",
+    "type": "Category",
+    "description": "Explanation",
+    "total": "Matches",
+    "datasetTotal": "Dataset entries",
+    "dataVersion": "Dataset version",
+    "empty": "No matching exit code"
+  },
+  "examples": [
+    {
+      "label": "127 command not found",
+      "value": "127"
+    },
+    {
+      "label": "Search for segmentation fault",
+      "value": "segfault"
+    }
+  ],
+  "hints": {
+    "query": "Accepts an exit code (127) or a keyword; typing filters locally, there is nothing to run.",
+    "output": "Every exit code is listed by default; typing a search term or picking a category narrows the list instantly, row by row as \"code / meaning / category / explanation\"."
+  },
+  "faq": [
+    {
+      "q": "Why does 137 show up so often in containers?",
+      "a": "137 = 128 + 9 means the process was killed by SIGKILL, most often because the OOM killer ran out of memory."
+    },
+    {
+      "q": "Does exit code 0 guarantee success?",
+      "a": "Not always. A zero exit only means the command considered itself successful; errors inside a script may never be checked."
+    },
+    {
+      "q": "What is the difference between 126 and 127?",
+      "a": "126 means the command was found but could not be executed, usually a permission problem; 127 means the command does not exist or is not on PATH."
+    }
+  ]
+}

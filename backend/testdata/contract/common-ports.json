@@ -1,0 +1,70 @@
+{
+  "slug": "common-ports",
+  "description": "常用端口查询的契约测试数据。",
+  "cases": [
+    {
+      "name": "按端口号查 443",
+      "request": { "query": "443" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "port", "matched": true, "port": 443, "label": "HTTPS" }
+      }
+    },
+    {
+      "name": "按服务名查 SSH",
+      "request": { "query": "ssh" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "keyword", "matched": true, "port": 22 }
+      }
+    },
+    {
+      "name": "按协议检索",
+      "request": { "query": "udp" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "keyword" }
+      }
+    },
+    {
+      "name": "空请求返回全量列表",
+      "request": {},
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "all", "total": 49, "datasetTotal": 49 }
+      }
+    },
+    {
+      "name": "按分类过滤",
+      "request": { "category": "database" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "keyword", "total": 9 }
+      }
+    },
+    {
+      "name": "关键字与分类叠加",
+      "request": { "query": "redis", "category": "database" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "total": 1, "port": 6379 }
+      }
+    },
+    {
+      "name": "未收录的端口",
+      "request": { "query": "65535" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "port", "matched": false, "total": 0 }
+      }
+    },
+    {
+      "name": "非法分类",
+      "request": { "category": "bogus" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}

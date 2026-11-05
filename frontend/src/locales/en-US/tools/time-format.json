@@ -1,0 +1,60 @@
+{
+  "name": "Date & Time Format Reference",
+  "description": "Look up the definition and sample value of common date and time formats.",
+  "category": "Data",
+  "actions": {
+    "lookup": "Look up format"
+  },
+  "fields": {
+    "query": "Search",
+    "category": "Format category"
+  },
+  "options": {
+    "category": {
+      "all": "All",
+      "epoch": "Timestamps & counters",
+      "standard": "Standard date formats",
+      "numeric": "Numeric epochs"
+    }
+  },
+  "results": {
+    "title": "Format list",
+    "key": "Key",
+    "label": "Name",
+    "category": "Category",
+    "example": "Example",
+    "description": "Explanation",
+    "total": "Matches",
+    "datasetTotal": "Dataset entries",
+    "dataVersion": "Dataset version",
+    "empty": "No matching format"
+  },
+  "examples": [
+    {
+      "label": "Unix milliseconds",
+      "value": "unix-ms"
+    },
+    {
+      "label": "Search for RFC formats",
+      "value": "rfc"
+    }
+  ],
+  "hints": {
+    "query": "Accepts a format key (unix-ms), a name (ISO 8601) or a keyword; typing filters locally, there is nothing to run.",
+    "output": "Every sample describes the same instant, 2026-10-29T12:00:00Z, so the formats can be compared side by side."
+  },
+  "faq": [
+    {
+      "q": "Can these formats be converted into each other?",
+      "a": "Yes, they all describe the same instant; converting only shifts the epoch and the precision, never the absolute time."
+    },
+    {
+      "q": "Why does the Excel serial carry a fraction?",
+      "a": "It counts one day as 1, so the integer part is midnight and the fraction is the share of the day that has passed."
+    },
+    {
+      "q": "How is this different from the timestamp converter?",
+      "a": "The converter computes the representations of a given moment; this page is a reference table and takes no time input."
+    }
+  ]
+}

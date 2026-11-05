@@ -1,0 +1,49 @@
+{
+  "name": "DNSSEC 检测",
+  "description": "检查域名的 DNSSEC 部署情况与信任链。",
+  "category": "网络",
+  "actions": {
+    "check": "检测 DNSSEC"
+  },
+  "fields": {
+    "domain": "域名"
+  },
+  "options": {},
+  "results": {
+    "output": "检测结果",
+    "supported": "可以启用 DNSSEC",
+    "dnssecEnabled": "已启用 DNSSEC",
+    "dsPresent": "存在 DS 记录",
+    "sigPresent": "响应带 RRSIG",
+    "chainLevels": "信任链层数",
+    "chainDetail": "逐级结果"
+  },
+  "examples": [
+    {
+      "label": "检查 example.com",
+      "value": "example.com"
+    }
+  ],
+  "hints": {
+    "domain": "填要检测的域名；检测要出网查询 DS 与 DNSKEY 记录。",
+    "output": "信任链从该域名逐级向上追溯（最多 3 级），列出每一级是否存在 DS 记录。"
+  },
+  "views": {
+    "summary": "摘要",
+    "raw": "原始 JSON"
+  },
+  "faq": [
+    {
+      "q": "DS 记录和 DNSKEY 有什么区别？",
+      "a": "DS 记录把父区的信任锚点指向子区，DNSKEY 则是子区自己的公钥；两者都存在才说明 DNSSEC 已启用。"
+    },
+    {
+      "q": "没有 DS 记录就是没有 DNSSEC 吗？",
+      "a": "不一定，父区可能压根没有签名；这种情况下域名的自有签名仍然会被检测。"
+    },
+    {
+      "q": "为什么检查结果与实际解析不一致？",
+      "a": "检测走系统解析器，不同解析器的缓存与路径可能不同，DNSSEC 验证失败通常发生在递归服务器一侧。"
+    }
+  ]
+}

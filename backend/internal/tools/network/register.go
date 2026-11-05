@@ -33,10 +33,33 @@ func Definitions(g *netguard.Guard) []tools.Definition {
 			},
 		},
 		{
-			Slug:       "dns-tester",
-			NewRequest: func() tools.Request { return &DNSTesterRequest{} },
+			Slug:       "dns-whois",
+			NewRequest: func() tools.Request { return &DNSWhoisRequest{} },
 			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
-				return DNSTester(ctx, g, req.(*DNSTesterRequest))
+				return DNSWhois(ctx, g, req.(*DNSWhoisRequest))
+			},
+		},
+		{
+			Slug:       "dnssec-check",
+			NewRequest: func() tools.Request { return &DNSSECCheckRequest{} },
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return DNSSECCheck(ctx, g, req.(*DNSSECCheckRequest))
+			},
+		},
+		{
+			Slug:       "dns-ptr",
+			NewRequest: func() tools.Request { return &DNSPTRRequest{} },
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return DNSPTR(ctx, g, req.(*DNSPTRRequest))
+			},
+		},
+		{
+			// common-ports 是**纯查表**工具：内置端口快照，不出网，
+			// 因此不需要 netguard 守卫。
+			Slug:       "common-ports",
+			NewRequest: func() tools.Request { return &CommonPortRequest{} },
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return CommonPorts(ctx, req.(*CommonPortRequest))
 			},
 		},
 		{

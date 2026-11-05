@@ -125,6 +125,7 @@ export const TOOL_TONES: Record<string, Tone> = {
 
   // ── 数据 / Data ──
   timestamp: 'sky',
+  'time-format': 'teal',
   'uuid-gen': 'indigo',
   'date-calc': 'blue',
   'country-code': 'green',
@@ -146,19 +147,22 @@ export const TOOL_TONES: Record<string, Tone> = {
   'firewall-rules': 'rose',
   'docker-compose-gen': 'blue',
   'docker-run-convert': 'indigo',
-  'lookup-table': 'violet',
+  'exit-code': 'violet',
 
   // ── 网络 / Network ──
   'cidr-calc': 'sky',
   'ssl-check': 'green',
   'dns-lookup': 'blue',
   'dns-servers': 'cyan',
-  'dns-tester': 'teal',
+  'dns-whois': 'amber',
+  'dnssec-check': 'teal',
+  'dns-ptr': 'lime',
   'websocket-test': 'violet',
   'ua-header-parse': 'amber',
   'ua-header-gen': 'orange',
   'mime-lookup': 'indigo',
   'http-status': 'cyan',
+  'common-ports': 'rose',
 
   // ── 文档 / Documents ──
   'pdf-sign-verify': 'rose',

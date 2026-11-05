@@ -13,7 +13,7 @@
 | [firewall-rules](#firewall-rules) | 防火墙规则生成 |
 | [docker-compose-gen](#docker-compose-gen) | Compose 配置生成 |
 | [docker-run-convert](#docker-run-convert) | docker run 与 Compose 互转 |
-| [lookup-table](#lookup-table) | 速查表 |
+| [exit-code](#exit-code) | 退出码查询 |
 
 ---
 
@@ -267,31 +267,36 @@ Unix 权限计算与解释。
 
 ---
 
-## lookup-table
+## exit-code
 
-查询端口、退出码与时间戳格式（Lookup Table）。
+查询 Linux / Unix 命令退出码的含义（Exit Code Lookup）。
 
 ### 请求
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `kind` | string | 否 | `port` `exitcode` `timestamp`，默认 `port` |
-| `key` | string | 是 | 查询词：端口号、退出码或关键字 |
+| `query` | string | 否 | 查询词：退出码（如 `127`）或关键字；缺省返回全量 |
+| `type` | string | 否 | `success` `failure` `signal`；为空表示不过滤 |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `kind` | string | 类别 |
 | `query` | string | 规范化后的查询词 |
-| `matched` | bool | 是否精确命中 |
-| `entry` | object | 命中的条目 `{ kind, key, label, description, extra[] }`；未命中时为 `null` |
-| `candidates` | array | 模糊检索的候选条目 |
+| `kind` | string | 查询方式：`all` `code` `keyword` |
+| `matched` | bool | 是否命中退出码条目 |
+| `code` | number | 命中的退出码；未命中为 `0` |
+| `label` | string | 命中的简短名称 |
+| `description` | string | 命中的中文说明 |
+| `type` | string | 命中的类别 |
+| `matches` | array | 命中的条目 `{ code, label, description, type }` |
+| `total` | number | 命中条数 |
+| `datasetTotal` | number | 数据集条目数 |
 | `dataVersion` | string | 数据集版本 |
 
 ### 错误
 
-`MISSING_FIELD`、`INVALID_FIELD`。
+`INVALID_FIELD`。
 
 > 内置数据集离线查询，**不出网**；数据集版本随发布更新。
 

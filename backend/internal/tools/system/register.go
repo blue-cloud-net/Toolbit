@@ -87,12 +87,12 @@ func Definitions() []tools.Definition {
 			},
 		},
 		{
-			Slug: "lookup-table",
+			Slug: "exit-code",
 			NewRequest: func() tools.Request {
-				return &LookupTableRequest{}
+				return &ExitCodeRequest{}
 			},
 			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
-				return LookupTable(ctx, req.(*LookupTableRequest))
+				return ExitCodes(ctx, req.(*ExitCodeRequest))
 			},
 		},
 	}

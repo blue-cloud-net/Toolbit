@@ -1,0 +1,18 @@
+code,label,description,type
+0,成功,命令正常执行完毕,success
+1,通用错误,一般性失败或未指定错误,failure
+2,用法错误,命令行用法不当,failure
+126,命令无法执行,找到命令但无法执行（通常是权限不足）,failure
+127,命令未找到,命令不存在或不在 PATH 中,failure
+128,无效参数,用于退出码区间的基值,failure
+130,被信号中断,进程被 SIGINT 中断（Ctrl+C）,signal
+131,被信号终止,进程被 SIGQUIT 终止,signal
+134,进程异常终止,进程被 SIGABRT 中止（通常是断言失败或内存错误）,signal
+135,总线错误,进程被 SIGBUS 终止,signal
+136,浮点异常,进程被 SIGFPE 终止,signal
+137,被强制杀死,进程被 SIGKILL 终止（常见于内存不足 OOM）,signal
+138,总线错误,进程被 SIGBUS 终止,signal
+139,段错误,进程被 SIGSEGV 终止（非法内存访问）,signal
+143,被请求终止,进程被 SIGTERM 终止（常见的优雅退出）,signal
+149,被强制杀死,进程被 SIGKILL 终止,signal
+255,退出状态无效,退出码超出有效范围,failure

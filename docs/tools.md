@@ -1,8 +1,8 @@
 # 工具清单与使用说明
 
-> 状态：Stable ｜ 适用版本：v0.7.0 ｜ 最后更新：2026-11-02
+> 状态：Stable ｜ 适用版本：v0.7.0 ｜ 最后更新：2026-11-05
 
-本文面向**最终用户**，介绍 101 个工具的用途、输入输出、默认行为与注意事项。
+本文面向**最终用户**，介绍 105 个工具的用途、输入输出、默认行为与注意事项。
 
 工具的技术契约见 [api/](api/)，工具元数据的事实来源是 [`backend/catalog/tools.yaml`](../backend/catalog/tools.yaml)。
 
@@ -18,9 +18,9 @@
 | [编码](#编码encoding) | 9 | Base64、URL、JWT、进制、编码转换、GZip、HTML 转义、Protobuf 解码 / 编码 |
 | [格式化](#格式化formatting) | 9 | JSON、JS、SQL、HTML、XML、TOML、YAML、格式转换、颜色转换 |
 | [文本](#文本text) | 7 | 正则测试、文本转换、文本对比、正则校验、正则生成、数据脱敏、文本统计 |
-| [数据](#数据data) | 13 | 时间戳、UUID、日期计算、国家代码、行政区划、二维码、号码校验、CSV 转换、JSON 转类型、模拟数据、归档查看、文件识别、ID 生成 |
-| [系统](#系统system) | 8 | cURL、Crontab、权限计算、Nginx 配置生成、防火墙规则生成、Compose 配置生成、Docker run 互转、速查表 |
-| [网络](#网络network) | 10 | CIDR、SSL 检测、DNS 查询、DNS 服务器大全、DNS 测试、WebSocket 测试、MIME 类型、HTTP 状态码、UA 头解析、UA 头生成 |
+| [数据](#数据data) | 14 | 时间戳、时间格式速查、UUID、日期计算、国家代码、行政区划、二维码、号码校验、CSV 转换、JSON 转类型、模拟数据、归档查看、文件识别、ID 生成 |
+| [系统](#系统system) | 8 | cURL、Crontab、权限计算、Nginx 配置生成、防火墙规则生成、Compose 配置生成、Docker run 互转、退出码查询 |
+| [网络](#网络network) | 13 | CIDR、SSL 检测、DNS 查询、DNS 服务器大全、WHOIS 查询、DNSSEC 检测、PTR 反向解析、常用端口查询、WebSocket 测试、MIME 类型、HTTP 状态码、UA 头解析、UA 头生成 |
 | [文档](#文档documents) | 4 | PDF 签名校验、Markdown 预览、EML 解析、Markdown 转换 |
 
 ---
@@ -883,6 +883,7 @@
 | 工具 | slug | 一句话用途 |
 | --- | --- | --- |
 | 时间戳转换 | `timestamp` | 时间戳 ↔ 日期 |
+| 时间格式速查 | `time-format` | 常见日期时间格式的定义与示例值（键入即时筛选） |
 | UUID 生成 | `uuid-gen` | 批量生成 UUID |
 | 日期计算 | `date-calc` | 日期差与加减 |
 | 国家代码 | `country-code` | ISO 3166 查询（首字母筛选） |
@@ -982,7 +983,7 @@
 | 防火墙规则生成 | `firewall-rules` | 生成 ufw / firewalld / iptables / nftables 规则 |
 | Compose 配置生成 | `docker-compose-gen` | 由服务定义生成 Compose 配置 |
 | docker run 互转 | `docker-run-convert` | `docker run` 命令与 Compose 配置双向转换 |
-| 速查表 | `lookup-table` | 查询端口、退出码与时间戳格式 |
+| 退出码查询 | `exit-code` | Linux / Unix 命令退出码的含义（键入即时筛选） |
 
 ### cURL 命令生成（cURL Generator）
 
@@ -1045,7 +1046,10 @@
 | SSL 证书检测 | `ssl-check` | 现场握手并检查证书链 |
 | DNS 查询 | `dns-lookup` | 多服务器（主用 / 备用 / TCP / DoT / DoH）对比查询各类 DNS 记录 |
 | DNS 服务器大全 | `dns-servers` | 常用公共 DNS 的 UDP / TCP / DoT / DoH 端点清单（键入即时筛选） |
-| DNS 多记录测试 | `dns-tester` | whois / DNSSEC / PTR 检测 |
+| WHOIS 查询 | `dns-whois` | 域名 / IP 的注册信息（RDAP 优先，whois 回退） |
+| DNSSEC 检测 | `dnssec-check` | DS 记录、RRSIG 与信任链逐级检查 |
+| PTR 反向解析 | `dns-ptr` | 地址反查名字，并复核反向与正向是否一致 |
+| 常用端口查询 | `common-ports` | 常用端口号与服务分类清单（键入即时筛选） |
 | WebSocket 测试 | `websocket-test` | 浏览器直连测试 |
 | MIME 类型查询 | `mime-lookup` | 媒体类型全集浏览与检索（键入即时筛选） |
 | HTTP 状态码查询 | `http-status` | 状态码全集浏览与检索（键入即时筛选） |

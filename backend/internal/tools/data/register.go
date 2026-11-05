@@ -34,6 +34,15 @@ func Definitions() []tools.Definition {
 			},
 		},
 		{
+			Slug: "time-format",
+			NewRequest: func() tools.Request {
+				return &TimeFormatRequest{}
+			},
+			Handle: func(ctx context.Context, req tools.Request) (tools.Result, error) {
+				return TimeFormats(ctx, req.(*TimeFormatRequest))
+			},
+		},
+		{
 			Slug: "uuid-gen",
 			NewRequest: func() tools.Request {
 				return &UUIDGenRequest{}

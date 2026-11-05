@@ -1150,9 +1150,25 @@ tools:
     wide: false
     i18nKey: tools.timestamp
 
-  - slug: uuid-gen
+  - slug: time-format
     category: data
     order: 2
+    name: 时间格式速查
+    nameEn: Date & Time Format Reference
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.time-format
+
+  - slug: uuid-gen
+    category: data
+    order: 3
     name: UUID 生成
     nameEn: UUID Generator
     enabled: true
@@ -1168,7 +1184,7 @@ tools:
 
   - slug: date-calc
     category: data
-    order: 3
+    order: 4
     name: 日期计算
     nameEn: Date Calculator
     enabled: true
@@ -1184,7 +1200,7 @@ tools:
 
   - slug: country-code
     category: data
-    order: 4
+    order: 5
     name: 国家代码
     nameEn: Country Codes
     enabled: true
@@ -1200,7 +1216,7 @@ tools:
 
   - slug: cn-regions
     category: data
-    order: 5
+    order: 6
     name: 中国行政区划
     nameEn: China Administrative Regions
     enabled: true
@@ -1216,7 +1232,7 @@ tools:
 
   - slug: qr-code
     category: data
-    order: 6
+    order: 7
     name: 二维码生成
     nameEn: QR Code Generator
     enabled: true
@@ -1232,7 +1248,7 @@ tools:
 
   - slug: id-validator
     category: data
-    order: 7
+    order: 8
     name: 证件号码校验
     nameEn: ID Validator
     enabled: true
@@ -1248,7 +1264,7 @@ tools:
 
   - slug: csv-convert
     category: data
-    order: 8
+    order: 9
     name: CSV 转换
     nameEn: CSV Converter
     enabled: true
@@ -1264,7 +1280,7 @@ tools:
 
   - slug: json-to-types
     category: data
-    order: 9
+    order: 10
     name: JSON 转类型定义
     nameEn: JSON to Types
     enabled: true
@@ -1280,7 +1296,7 @@ tools:
 
   - slug: mock-data
     category: data
-    order: 10
+    order: 11
     name: 假数据生成
     nameEn: Mock Data Generator
     enabled: true
@@ -1296,7 +1312,7 @@ tools:
 
   - slug: archive-inspect
     category: data
-    order: 11
+    order: 12
     name: 归档内容查看
     nameEn: Archive Inspector
     enabled: true
@@ -1312,7 +1328,7 @@ tools:
 
   - slug: file-analyze
     category: data
-    order: 12
+    order: 13
     name: 文件类型识别
     nameEn: File Analyzer
     enabled: true
@@ -1328,7 +1344,7 @@ tools:
 
   - slug: id-generator
     category: data
-    order: 13
+    order: 14
     name: ID 生成
     nameEn: ID Generator
     enabled: true
@@ -1454,11 +1470,11 @@ tools:
     wide: true
     i18nKey: tools.docker-run-convert
 
-  - slug: lookup-table
+  - slug: exit-code
     category: system
     order: 8
-    name: 速查表查询
-    nameEn: Lookup Table
+    name: 退出码查询
+    nameEn: Exit Code Lookup
     enabled: true
     transport: json
     rateClass: light
@@ -1468,7 +1484,7 @@ tools:
     requiresNetwork: false
     autoRun: true
     wide: false
-    i18nKey: tools.lookup-table
+    i18nKey: tools.exit-code
 
   - slug: cidr-calc
     category: network
@@ -1534,25 +1550,57 @@ tools:
     wide: false
     i18nKey: tools.dns-servers
 
-  - slug: dns-tester
+  - slug: dns-whois
     category: network
     order: 5
-    name: DNS 多记录测试
-    nameEn: DNS Record Tester
+    name: WHOIS 查询
+    nameEn: WHOIS Lookup
     enabled: true
     transport: json
     rateClass: network
     maxBodyBytes: 1048576
-    timeoutMs: 60000
+    timeoutMs: 30000
     sensitive: false
     requiresNetwork: true
     autoRun: false
     wide: true
-    i18nKey: tools.dns-tester
+    i18nKey: tools.dns-whois
+
+  - slug: dnssec-check
+    category: network
+    order: 6
+    name: DNSSEC 检测
+    nameEn: DNSSEC Checker
+    enabled: true
+    transport: json
+    rateClass: network
+    maxBodyBytes: 1048576
+    timeoutMs: 30000
+    sensitive: false
+    requiresNetwork: true
+    autoRun: false
+    wide: false
+    i18nKey: tools.dnssec-check
+
+  - slug: dns-ptr
+    category: network
+    order: 7
+    name: PTR 反向解析
+    nameEn: PTR Reverse Lookup
+    enabled: true
+    transport: json
+    rateClass: network
+    maxBodyBytes: 1048576
+    timeoutMs: 30000
+    sensitive: false
+    requiresNetwork: true
+    autoRun: false
+    wide: false
+    i18nKey: tools.dns-ptr
 
   - slug: websocket-test
     category: network
-    order: 6
+    order: 8
     name: WebSocket 测试
     nameEn: WebSocket Tester
     enabled: true
@@ -1568,7 +1616,7 @@ tools:
 
   - slug: mime-lookup
     category: network
-    order: 7
+    order: 9
     name: MIME 类型查询
     nameEn: MIME Type Lookup
     enabled: true
@@ -1584,7 +1632,7 @@ tools:
 
   - slug: http-status
     category: network
-    order: 8
+    order: 10
     name: HTTP 状态码查询
     nameEn: HTTP Status Code Lookup
     enabled: true
@@ -1598,9 +1646,25 @@ tools:
     wide: false
     i18nKey: tools.http-status
 
+  - slug: common-ports
+    category: network
+    order: 11
+    name: 常用端口查询
+    nameEn: Common Port Lookup
+    enabled: true
+    transport: json
+    rateClass: light
+    maxBodyBytes: 1048576
+    timeoutMs: 5000
+    sensitive: false
+    requiresNetwork: false
+    autoRun: true
+    wide: false
+    i18nKey: tools.common-ports
+
   - slug: ua-header-parse
     category: network
-    order: 9
+    order: 12
     name: UA 头解析
     nameEn: UA Header Parser
     enabled: true
@@ -1616,7 +1680,7 @@ tools:
 
   - slug: ua-header-gen
     category: network
-    order: 10
+    order: 13
     name: UA 头生成
     nameEn: UA Header Generator
     enabled: true

@@ -246,31 +246,66 @@ func TestBuildDNSQueryAdvertisesEDNS0(t *testing.T) {
 	}
 }
 
-func TestDNSTesterValidate(t *testing.T) {
+func TestDNSWhoisValidate(t *testing.T) {
 	t.Parallel()
 
-	if err := (&DNSTesterRequest{Action: "whois", Domain: "example.com"}).Validate(); err != nil {
+	if err := (&DNSWhoisRequest{Domain: "example.com"}).Validate(); err != nil {
 		t.Fatalf("合法请求不应报错：%v", err)
 	}
-	if err := (&DNSTesterRequest{Action: "bogus"}).Validate(); err == nil {
-		t.Fatal("不支持的 action 应当报错")
+	if err := (&DNSWhoisRequest{}).Validate(); err == nil {
+		t.Fatal("缺少 domain 与 ip 应当报错")
 	}
-	if err := (&DNSTesterRequest{Action: "dnssec"}).Validate(); err == nil {
-		t.Fatal("dnssec 缺少 domain 应当报错")
-	}
-	if err := (&DNSTesterRequest{Action: "ptr"}).Validate(); err == nil {
-		t.Fatal("ptr 缺少 ip 应当报错")
-	}
-	if err := (&DNSTesterRequest{Action: "ptr", IP: "not-an-ip"}).Validate(); err == nil {
+	if err := (&DNSWhoisRequest{IP: "not-an-ip"}).Validate(); err == nil {
 		t.Fatal("非法 IP 应当报错")
 	}
 }
 
-func TestDNSTesterRequiresNetwork(t *testing.T) {
+func TestDNSSECCheckValidate(t *testing.T) {
 	t.Parallel()
 
-	_, err := DNSTester(context.Background(), offlineGuard(), &DNSTesterRequest{
-		Action: "dnssec", Domain: "example.com",
+	if err := (&DNSSECCheckRequest{Domain: "example.com"}).Validate(); err != nil {
+		t.Fatalf("合法请求不应报错：%v", err)
+	}
+	if err := (&DNSSECCheckRequest{}).Validate(); err == nil {
+		t.Fatal("缺少 domain 应当报错")
+	}
+	if err := (&DNSSECCheckRequest{Domain: "bad domain"}).Validate(); err == nil {
+		t.Fatal("非法域名应当报错")
+	}
+}
+
+func TestDNSPTRValidate(t *testing.T) {
+	t.Parallel()
+
+	if err := (&DNSPTRRequest{IP: "1.1.1.1"}).Validate(); err != nil {
+		t.Fatalf("合法请求不应报错：%v", err)
+	}
+	if err := (&DNSPTRRequest{Domain: "example.com"}).Validate(); err != nil {
+		t.Fatalf("合法请求不应报错：%v", err)
+	}
+	if err := (&DNSPTRRequest{}).Validate(); err == nil {
+		t.Fatal("缺少 ip 与 domain 应当报错")
+	}
+	if err := (&DNSPTRRequest{IP: "not-an-ip"}).Validate(); err == nil {
+		t.Fatal("非法 IP 应当报错")
+	}
+}
+
+func TestDNSToolsRequireNetwork(t *testing.T) {
+	t.Parallel()
+
+	_, err := DNSSECCheck(context.Background(), offlineGuard(), &DNSSECCheckRequest{
+		Domain: "example.com",
+	})
+	assertCode(t, err, toolerr.CodeNetworkDisabled)
+
+	_, err = DNSWhois(context.Background(), offlineGuard(), &DNSWhoisRequest{
+		Domain: "example.com",
+	})
+	assertCode(t, err, toolerr.CodeNetworkDisabled)
+
+	_, err = DNSPTR(context.Background(), offlineGuard(), &DNSPTRRequest{
+		IP: "1.1.1.1",
 	})
 	assertCode(t, err, toolerr.CodeNetworkDisabled)
 }

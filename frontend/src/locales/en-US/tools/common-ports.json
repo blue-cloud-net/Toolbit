@@ -1,0 +1,66 @@
+{
+  "name": "Common Port Lookup",
+  "description": "Look up the protocol and purpose of common ports by number or service name.",
+  "category": "Network",
+  "actions": {
+    "lookup": "Look up port"
+  },
+  "fields": {
+    "query": "Search",
+    "category": "Service category"
+  },
+  "options": {
+    "category": {
+      "all": "All",
+      "web": "Web services",
+      "mail": "Mail services",
+      "file": "File transfer",
+      "remote": "Remote access",
+      "database": "Databases & caches",
+      "messaging": "Message queues",
+      "directory": "Directory & auth",
+      "network": "Network infrastructure",
+      "devops": "Containers & DevOps"
+    }
+  },
+  "results": {
+    "title": "Port list",
+    "port": "Port",
+    "label": "Service",
+    "protocols": "Protocol",
+    "category": "Category",
+    "description": "Purpose",
+    "total": "Matches",
+    "datasetTotal": "Dataset entries",
+    "dataVersion": "Dataset version",
+    "empty": "No matching port"
+  },
+  "examples": [
+    {
+      "label": "HTTPS 443",
+      "value": "443"
+    },
+    {
+      "label": "Look up SSH by name",
+      "value": "ssh"
+    }
+  ],
+  "hints": {
+    "query": "Accepts a port number (443), a service name (https) or a protocol (udp); typing filters locally, there is nothing to run.",
+    "output": "Every common port is listed by default; typing a search term or picking a category narrows the list instantly, row by row as \"port / service / protocol / purpose\"."
+  },
+  "faq": [
+    {
+      "q": "Is this the authoritative port list?",
+      "a": "It is a snapshot of the ports that matter most in daily operations and development; specific deployments may differ, so trust the running service."
+    },
+    {
+      "q": "Why does one port appear under several categories?",
+      "a": "It does not. Every row carries exactly one service category; only the protocol column may list both TCP and UDP."
+    },
+    {
+      "q": "How many entries are there?",
+      "a": "49 in total, focused on the ports you meet in operations and development rather than the full IANA registry."
+    }
+  ]
+}

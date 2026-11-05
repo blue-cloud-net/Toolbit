@@ -1,0 +1,49 @@
+{
+  "name": "DNSSEC Checker",
+  "description": "Check whether a domain has DNSSEC enabled and inspect its chain of trust.",
+  "category": "Network",
+  "actions": {
+    "check": "Check DNSSEC"
+  },
+  "fields": {
+    "domain": "Domain"
+  },
+  "options": {},
+  "results": {
+    "output": "Check result",
+    "supported": "Can enable DNSSEC",
+    "dnssecEnabled": "DNSSEC enabled",
+    "dsPresent": "DS record present",
+    "sigPresent": "Response carries RRSIG",
+    "chainLevels": "Chain levels",
+    "chainDetail": "Level detail"
+  },
+  "examples": [
+    {
+      "label": "Check example.com",
+      "value": "example.com"
+    }
+  ],
+  "hints": {
+    "domain": "Give the domain to inspect; the check needs network access to query DS and DNSKEY records.",
+    "output": "The chain of trust walks up from the domain, at most three levels, and reports whether each level publishes a DS record."
+  },
+  "views": {
+    "summary": "Summary",
+    "raw": "Raw JSON"
+  },
+  "faq": [
+    {
+      "q": "How do DS records and DNSKEY differ?",
+      "a": "A DS record points the parent zone's trust anchor at the child zone, while the DNSKEY is the child's own public key; both are needed for DNSSEC to count as enabled."
+    },
+    {
+      "q": "Does a missing DS record mean there is no DNSSEC?",
+      "a": "Not necessarily, the parent zone may not be signed at all; the domain's own signatures are still detected."
+    },
+    {
+      "q": "Why can the result differ from real resolution?",
+      "a": "The check goes through the system resolver, whose cache and path may differ; DNSSEC validation failures usually happen on the recursive server side."
+    }
+  ]
+}

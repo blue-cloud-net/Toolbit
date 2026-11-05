@@ -1,0 +1,46 @@
+{
+  "slug": "time-format",
+  "description": "时间格式速查的契约测试数据。",
+  "cases": [
+    {
+      "name": "按标识查 unix-ms",
+      "request": { "query": "unix-ms" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "keyword", "matched": true, "key": "unix-ms", "category": "epoch" }
+      }
+    },
+    {
+      "name": "按关键字查 RFC",
+      "request": { "query": "rfc" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "keyword" }
+      }
+    },
+    {
+      "name": "空请求返回全量列表",
+      "request": {},
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "all", "total": 13, "datasetTotal": 13 }
+      }
+    },
+    {
+      "name": "按分类过滤",
+      "request": { "category": "standard" },
+      "expect": {
+        "code": 0,
+        "dataContains": { "kind": "keyword", "total": 5 }
+      }
+    },
+    {
+      "name": "非法分类",
+      "request": { "category": "bogus" },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    }
+  ]
+}
