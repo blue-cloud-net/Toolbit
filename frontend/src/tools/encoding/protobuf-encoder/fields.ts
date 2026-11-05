@@ -113,7 +113,8 @@ export function fromJsonText(text: string): ProtoFieldNode[] {
   try {
     parsed = JSON.parse(trimmed)
   } catch (error) {
-    throw new Error(error instanceof Error ? error.message : 'invalid json')
+    // 保留原始异常为 `cause`，便于上层区分「JSON 语法错误」与其他失败。
+    throw new Error(error instanceof Error ? error.message : 'invalid json', { cause: error })
   }
   return fromUnknown(parsed)
 }

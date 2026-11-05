@@ -82,7 +82,7 @@ describe('useFileToolRun', () => {
 
   it('成功后进入 success 并保留文件名与大小', async () => {
     const xhr = new FakeXHR()
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => xhr))
+    vi.stubGlobal('XMLHttpRequest', vi.fn(function () { return xhr }))
 
     const scope = effectScope()
     const runner = scope.run(() => useFileToolRun({ slug: 'sm4-file-crypt' }))!
@@ -110,7 +110,7 @@ describe('useFileToolRun', () => {
 
   it('上传进度会更新百分比', async () => {
     const xhr = new FakeXHR()
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => xhr))
+    vi.stubGlobal('XMLHttpRequest', vi.fn(function () { return xhr }))
 
     const scope = effectScope()
     const runner = scope.run(() => useFileToolRun({ slug: 'sm4-file-crypt' }))!
@@ -133,7 +133,7 @@ describe('useFileToolRun', () => {
 
   it('JSON 错误信封被转成 ApiError', async () => {
     const xhr = new FakeXHR()
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => xhr))
+    vi.stubGlobal('XMLHttpRequest', vi.fn(function () { return xhr }))
 
     const scope = effectScope()
     const runner = scope.run(() => useFileToolRun({ slug: 'sm4-file-crypt' }))!
@@ -165,7 +165,7 @@ describe('useFileToolRun', () => {
 
   it('取消后不进入 error 态', async () => {
     const xhr = new FakeXHR()
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => xhr))
+    vi.stubGlobal('XMLHttpRequest', vi.fn(function () { return xhr }))
 
     const scope = effectScope()
     const runner = scope.run(() => useFileToolRun({ slug: 'sm4-file-crypt' }))!
@@ -181,7 +181,7 @@ describe('useFileToolRun', () => {
 
   it('下载会创建并回收 object URL', async () => {
     const xhr = new FakeXHR()
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => xhr))
+    vi.stubGlobal('XMLHttpRequest', vi.fn(function () { return xhr }))
 
     const created: string[] = []
     const revoked: string[] = []

@@ -14,14 +14,17 @@ const CHUNK_CHARS = 4 * 8192
  * 把 Base64 文本解成字节数组。
  *
  * 忽略空白字符（换行等）。内容非法时抛错，由调用方决定如何提示。
+ *
+ * 返回类型固定为 `Uint8Array<ArrayBuffer>`：`Blob` 等宿主 API 只接受
+ * 以 `ArrayBuffer` 为底的视图，不接受 `SharedArrayBuffer` 底。
  */
-export function base64ToBytes(base64: string): Uint8Array {
+export function base64ToBytes(base64: string): Uint8Array<ArrayBuffer> {
   const compact = base64.replace(/\s+/g, '')
   if (compact === '') {
     return new Uint8Array(0)
   }
 
-  const parts: Uint8Array[] = []
+  const parts: Uint8Array<ArrayBuffer>[] = []
   for (let offset = 0; offset < compact.length; offset += CHUNK_CHARS) {
     const binary = atob(compact.slice(offset, offset + CHUNK_CHARS))
     const bytes = new Uint8Array(binary.length)

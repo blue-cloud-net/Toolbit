@@ -65,21 +65,32 @@ export default defineConfig({
     chunkSizeWarningLimit: 512,
     rollupOptions: {
       output: {
-        manualChunks(id: string) {
-          const tool = TOOL_CHUNK_RE.exec(id)
-          if (tool) {
-            return `tool-${tool[1]}`
-          }
-          if (id.includes('node_modules/element-plus')) {
-            return 'element-plus'
-          }
-          if (id.includes('node_modules/vue-i18n')) {
-            return 'vue-i18n'
-          }
-          if (id.includes('node_modules')) {
-            return 'vendor'
-          }
-          return undefined
+        /*
+         * 分组规则（rolldown 的 `advancedChunks`）。
+         *
+         * Vite 8 起底层换成 rolldown：`manualChunks` 只对**源码侧**的分组生效，
+         * `node_modules` 里的模块仍会被并进「第一个引用它的工具 chunk」——
+         * vue-i18n 的运行时（含消息编译器，约 45 KB gzip）因此被塞进
+         * `tool-archive-inspect`，把该 chunk 顶到 56 KB（预算 40 KB）。
+         *
+         * 改用 `advancedChunks.groups` 显式声明分组：优先级高的先匹配，
+         * 第三方库各自成块，工具 chunk 只装工具自身与共享组件。
+         */
+        advancedChunks: {
+          groups: [
+            {
+              // 工具组件按 `tools/<category>/<slug>/` 拆成独立 chunk。
+              name: (id: string) => {
+                const tool = TOOL_CHUNK_RE.exec(id)
+                return tool ? `tool-${tool[1]}` : undefined
+              },
+              test: (id: string) => TOOL_CHUNK_RE.test(id),
+              priority: 10,
+            },
+            { name: 'vue-i18n', test: /node_modules\/(vue-i18n|@intlify)/, priority: 30 },
+            { name: 'element-plus', test: /node_modules\/element-plus/, priority: 30 },
+            { name: 'vendor', test: /node_modules/, priority: 20 },
+          ],
         },
       },
     },

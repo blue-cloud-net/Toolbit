@@ -18,8 +18,8 @@ import type { CertificateExtension } from '@/types/certificate'
 
 const props = withDefaults(
   defineProps<{
-    /** 证书的全部扩展。 */
-    extensions: CertificateExtension[]
+    /** 证书的全部扩展；缺省为空清单。 */
+    extensions?: CertificateExtension[]
   }>(),
   { extensions: () => [] },
 )

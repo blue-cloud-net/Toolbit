@@ -9,13 +9,25 @@
 ## 1. 技术栈与版本
 
 - Vue 3.5（`<script setup>` + Composition API，**禁止** Options API）
-- TypeScript 5.7，`strict: true`
-- Vite 6
+- TypeScript 6.0，`strict: true`
+- Vite 8
 - Element Plus 2.14（**按需引入**，不整体引入）
-- Pinia 3 / vue-router 4 / vue-i18n 11
+- Pinia 4 / vue-router 5 / vue-i18n 11
 - UnoCSS 66
-- Node 22 LTS，pnpm 10
+- Node 22 LTS，pnpm 12
 
+> **TypeScript 的版本上限**：当前锁在 **6.x**。
+>
+> 6.0 是 TS 7（Go 原生编译器）之前的**桥接版本**：它仍基于 JS 实现，
+> 但会把 TS 7 将**硬报错**的选项提前标成弃用（如 `baseUrl` 报
+> `TS5101: Option 'baseUrl' is deprecated and will stop functioning in TypeScript 7.0`）。
+> 因此升级到 6.x 能提前清理这些写法，为将来上 7 做准备。
+>
+> TS 7 本身**暂不可用**：它的包 `exports` 不再暴露 `./lib/tsc`，
+> `vue-tsc` 直接报 `ERR_PACKAGE_PATH_NOT_EXPORTED`；
+> `typescript-eslint` 也声明不支持（peer 为 `>=4.8.4 <6.1.0`）。
+> 等上游（`vue-tsc` / `typescript-eslint`）跟进后再上 7，**不得**绕过。
+>
 > Element Plus 的引入方式：
 >
 > - 允许按组件路径显式引入（`element-plus/es/components/button/index`）；

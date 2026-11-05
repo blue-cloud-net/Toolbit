@@ -22,7 +22,7 @@ function fallbackCopy(text: string): boolean {
   area.style.top = '-1000px'
   document.body.appendChild(area)
   area.select()
-  let ok = false
+  let ok: boolean
   try {
     ok = document.execCommand('copy')
   } catch {
@@ -46,7 +46,7 @@ export function useCopy(): CopyHandle {
     if (text === '') {
       return false
     }
-    let ok = false
+    let ok: boolean
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text)
