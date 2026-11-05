@@ -22,6 +22,10 @@ frontend/coverage/
 # air 热重载的编译产物与日志（见 backend/.air.toml）
 backend/tmp/
 
+# ---- 本地设计稿 ----
+# 视觉重设计预览原型（单文件 HTML），仅供本地评审，不入仓库
+/design-system/
+
 # ---- 数据与运行时 ----
 *.db
 *.db-shm
