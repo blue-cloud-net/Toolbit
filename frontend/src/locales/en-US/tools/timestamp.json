@@ -27,12 +27,27 @@
   },
   "results": {
     "output": "Conversion result",
-    "seconds": "Seconds",
-    "milliseconds": "Milliseconds",
-    "iso8601": "ISO 8601",
+    "empty": "No format to show."
+  },
+  "formats": {
+    "unix": "Unix timestamp (seconds)",
+    "unixMs": "Unix timestamp (milliseconds)",
+    "unixUs": "Unix timestamp (microseconds)",
+    "unixNs": "Unix timestamp (nanoseconds)",
+    "iso8601": "ISO 8601 (with offset)",
+    "iso8601Utc": "ISO 8601 (UTC)",
     "rfc3339": "RFC 3339",
-    "local": "Local time",
-    "utc": "UTC time"
+    "rfc7231": "RFC 7231 (HTTP date)",
+    "rfc2822": "RFC 2822 (mail header)",
+    "iso9075": "ISO 9075 (no zone)",
+    "jsDateString": "JS date string",
+    "jsDate": "JS Date literal",
+    "excelSerial": "Excel date serial",
+    "dotnetTicks": ".NET ticks (100 ns)",
+    "win32FileTime": "Win32 FileTime (100 ns)",
+    "ldapYmd": "LDAP YMD timestamp",
+    "julianDay": "Julian day",
+    "dayCount": "Days since epoch"
   },
   "examples": [
     {
@@ -52,7 +67,7 @@
     "value": "Accepts a timestamp or a date string; leave it empty to use the current time.",
     "unit": "Without an explicit unit the digit count decides: 13 digits are milliseconds, everything else is seconds.",
     "timezone": "Use an IANA zone name such as `Asia/Shanghai`; when empty the server assumes UTC and emits a warning.",
-    "output": "\"Local time\" follows the selected zone, while \"UTC time\" is always Coordinated Universal Time."
+    "output": "The result lists every common format row by row, each copyable on its own; formats with an offset follow the selected zone, while the UTC rows are always Coordinated Universal Time."
   },
   "faq": [
     {

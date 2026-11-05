@@ -13,10 +13,9 @@ import { useI18n } from 'vue-i18n'
 
 import ResultPanel from '@/components/tool/ResultPanel.vue'
 import RunBar from '@/components/tool/RunBar.vue'
-import StatGrid from '@/components/tool/StatGrid.vue'
+import KeyValueTable, { type KeyValueRow } from '@/components/tool/KeyValueTable.vue'
 import ToolPageLayout from '@/components/tool/ToolPageLayout.vue'
 import ToolPanel from '@/components/tool/ToolPanel.vue'
-import { buildSummary } from '@/components/tool/summary'
 import { useAutoRun } from '@/composables/useAutoRun'
 import { useToolRun } from '@/composables/useToolRun'
 import { EXAMPLES } from '@/tools/data/timestamp/example'
@@ -34,6 +33,8 @@ interface TimestampResult {
   local: string
   /** UTC 时间。 */
   utc: string
+  /** 各常见格式的时间文本。 */
+  formats: { key: string; value: string }[]
 }
 
 /** 常见问题条目。 */
@@ -55,8 +56,44 @@ const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<T
 
 const running = computed(() => state.value === 'loading')
 
-/** 结果文本：ISO 8601。 */
-const resultText = computed(() => data.value?.iso8601 ?? '')
+/**
+ * 格式标识 → 展示名称。
+ *
+ * 逐条用**字面量**引用词条，词条缺失能被 i18n 完整性测试捕获。
+ */
+const formatLabels = computed<Record<string, string>>(() => ({
+  unix: t('tools.timestamp.formats.unix'),
+  unixMs: t('tools.timestamp.formats.unixMs'),
+  unixUs: t('tools.timestamp.formats.unixUs'),
+  unixNs: t('tools.timestamp.formats.unixNs'),
+  iso8601: t('tools.timestamp.formats.iso8601'),
+  iso8601Utc: t('tools.timestamp.formats.iso8601Utc'),
+  rfc3339: t('tools.timestamp.formats.rfc3339'),
+  rfc7231: t('tools.timestamp.formats.rfc7231'),
+  rfc2822: t('tools.timestamp.formats.rfc2822'),
+  iso9075: t('tools.timestamp.formats.iso9075'),
+  jsDateString: t('tools.timestamp.formats.jsDateString'),
+  jsDate: t('tools.timestamp.formats.jsDate'),
+  excelSerial: t('tools.timestamp.formats.excelSerial'),
+  dotnetTicks: t('tools.timestamp.formats.dotnetTicks'),
+  win32FileTime: t('tools.timestamp.formats.win32FileTime'),
+  ldapYmd: t('tools.timestamp.formats.ldapYmd'),
+  julianDay: t('tools.timestamp.formats.julianDay'),
+  dayCount: t('tools.timestamp.formats.dayCount'),
+}))
+
+/** 格式列表：逐行展示各时间格式，每行可单独复制。 */
+const formatRows = computed<KeyValueRow[]>(() =>
+  (data.value?.formats ?? []).map((item) => ({
+    label: formatLabels.value[item.key] ?? item.key,
+    value: item.value,
+  })),
+)
+
+/** 结果文本：逐行给出「格式名 + 取值」，便于整体复制。 */
+const resultText = computed(() =>
+  formatRows.value.map((row) => `${row.label}\t${row.value}`).join('\n'),
+)
 
 const faq = computed<FaqItem[]>(() => tm('tools.timestamp.faq') as FaqItem[])
 
@@ -76,22 +113,6 @@ useAutoRun({
   run,
   watch: [operation, value, unit, timezone],
 })
-
-/** 摘要卡片：6 项关键字段。 */
-const stats = computed(() =>
-  buildSummary(
-    data.value as unknown as Record<string, unknown> | null,
-    [
-      { key: 'timestamp.s', label: t('tools.timestamp.results.seconds') },
-      { key: 'timestamp.ms', label: t('tools.timestamp.results.milliseconds') },
-      { key: 'iso8601', label: t('tools.timestamp.results.iso8601') },
-      { key: 'rfc3339', label: t('tools.timestamp.results.rfc3339') },
-      { key: 'local', label: t('tools.timestamp.results.local') },
-      { key: 'utc', label: t('tools.timestamp.results.utc') },
-    ],
-    { yes: t('common.states.yes'), no: t('common.states.no') },
-  ),
-)
 
 /** 重置表单与结果。 */
 function reset(): void {
@@ -242,7 +263,10 @@ function onKeydown(event: KeyboardEvent): void {
           v-if="data"
           #extra
         >
-          <StatGrid :items="stats" />
+          <KeyValueTable
+            :rows="formatRows"
+            :empty="t('tools.timestamp.results.empty')"
+          />
         </template>
       </ResultPanel>
     </template>

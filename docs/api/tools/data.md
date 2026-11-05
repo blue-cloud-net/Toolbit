@@ -45,6 +45,7 @@
 | `rfc3339` | string | RFC 3339 格式 |
 | `local` | string | 指定时区的本地时间 |
 | `utc` | string | UTC 时间 |
+| `formats` | array | 各常见格式的时间文本 `{ key, value }`；顺序固定，前端据此逐行展示 |
 
 ### 错误
 

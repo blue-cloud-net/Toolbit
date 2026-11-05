@@ -27,12 +27,27 @@
   },
   "results": {
     "output": "转换结果",
-    "seconds": "秒级时间戳",
-    "milliseconds": "毫秒级时间戳",
-    "iso8601": "ISO 8601",
+    "empty": "没有可展示的格式。"
+  },
+  "formats": {
+    "unix": "Unix 时间戳（秒）",
+    "unixMs": "Unix 时间戳（毫秒）",
+    "unixUs": "Unix 时间戳（微秒）",
+    "unixNs": "Unix 时间戳（纳秒）",
+    "iso8601": "ISO 8601（带时区偏移）",
+    "iso8601Utc": "ISO 8601（UTC）",
     "rfc3339": "RFC 3339",
-    "local": "本地时间",
-    "utc": "UTC 时间"
+    "rfc7231": "RFC 7231（HTTP 日期）",
+    "rfc2822": "RFC 2822（邮件头）",
+    "iso9075": "ISO 9075（无时区）",
+    "jsDateString": "JS 日期字符串",
+    "jsDate": "JS Date 构造式",
+    "excelSerial": "Excel 日期序列号",
+    "dotnetTicks": ".NET ticks（100 纳秒）",
+    "win32FileTime": "Win32 FileTime（100 纳秒）",
+    "ldapYmd": "LDAP YMD 时间戳",
+    "julianDay": "儒略日",
+    "dayCount": "纪元日起天数"
   },
   "examples": [
     {
@@ -52,7 +67,7 @@
     "value": "可填时间戳或日期文本；留空表示当前时间。",
     "unit": "不选单位时按位数自动识别：13 位按毫秒，其余按秒。",
     "timezone": "填 IANA 时区名（如 `Asia/Shanghai`）；留空时按 UTC 换算并给出警告。",
-    "output": "「本地时间」按所选时区显示，「UTC 时间」始终是协调世界时。"
+    "output": "结果按常见格式逐行列出，每行可单独复制；带时区偏移的格式按所选时区显示，标 UTC 的行始终是协调世界时。"
   },
   "faq": [
     {
