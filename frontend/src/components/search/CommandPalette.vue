@@ -22,7 +22,6 @@ const router = useRouter()
 const palette = useCommandPalette()
 
 const input = ref<HTMLInputElement | null>(null)
-const list = ref<HTMLElement | null>(null)
 /** 上一次打开面板时的触发元素，用于关闭后归还焦点。 */
 const restoreFocus = ref<HTMLElement | null>(null)
 
@@ -161,7 +160,6 @@ onBeforeUnmount(() => {
 
       <div
         id="command-palette-list"
-        ref="list"
         class="palette__list"
         role="listbox"
         :aria-label="t('common.search.placeholder')"

@@ -14,9 +14,6 @@ import { useCommandPalette } from '@/composables/useCommandPalette'
 const { t } = useI18n()
 const palette = useCommandPalette()
 
-/** 触发按钮；打开面板时用于归还焦点。 */
-const trigger = ref<HTMLButtonElement | null>(null)
-
 /** 是否显示快捷键提示（macOS 显示 ⌘，其余显示 Ctrl）。 */
 const hint = ref('Ctrl K')
 
@@ -43,7 +40,6 @@ function openPalette(): void {
 
 <template>
   <button
-    ref="trigger"
     type="button"
     class="search-trigger"
     :aria-label="t('common.search.placeholder')"
