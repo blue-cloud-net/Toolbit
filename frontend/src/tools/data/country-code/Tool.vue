@@ -38,6 +38,10 @@ interface Country {
   nameZh: string
   /** 英文名。 */
   nameEn: string
+  /** 所属大洲（中文）。 */
+  continentZh: string
+  /** 所属大洲（英文）。 */
+  continentEn: string
 }
 
 /** 后端 country-code 工具的响应。 */
@@ -72,7 +76,9 @@ function matchesQuery(country: Country, term: string): boolean {
     country.alpha3.toLowerCase().includes(lowered) ||
     country.numeric.includes(term) ||
     country.nameZh.includes(term) ||
-    country.nameEn.toLowerCase().includes(lowered)
+    country.nameEn.toLowerCase().includes(lowered) ||
+    country.continentZh.includes(term) ||
+    country.continentEn.toLowerCase().includes(lowered)
   )
 }
 
@@ -143,7 +149,7 @@ const resultText = computed(() =>
   filtered.value
     .map(
       (country) =>
-        `${country.alpha2}\t${country.alpha3}\t${country.numeric}\t${country.nameZh}\t${country.nameEn}`,
+        `${country.alpha2}\t${country.alpha3}\t${country.numeric}\t${country.nameZh}（${country.nameEn}）\t${country.continentZh}（${country.continentEn}）`,
     )
     .join('\n'),
 )
@@ -172,8 +178,8 @@ const columns = computed<DataTableColumn[]>(() => [
   { key: 'alpha2', label: t('tools.country-code.results.alpha2'), mono: true },
   { key: 'alpha3', label: t('tools.country-code.results.alpha3'), mono: true },
   { key: 'numeric', label: t('tools.country-code.results.numeric'), mono: true },
-  { key: 'nameZh', label: t('tools.country-code.results.nameZh') },
-  { key: 'nameEn', label: t('tools.country-code.results.nameEn') },
+  { key: 'country', label: t('tools.country-code.results.country') },
+  { key: 'continent', label: t('tools.country-code.results.continent') },
 ])
 
 /** 两位码的标签色：按首字母轮转，用语义令牌区分。 */
@@ -187,8 +193,8 @@ const rows = computed<DataTableRow[]>(() =>
       alpha2: country.alpha2,
       alpha3: country.alpha3,
       numeric: country.numeric,
-      nameZh: country.nameZh,
-      nameEn: country.nameEn,
+      country: `${country.nameZh}（${country.nameEn}）`,
+      continent: `${country.continentZh}（${country.continentEn}）`,
     },
     badges: {
       alpha2: INITIAL_LEVELS[country.alpha2.charCodeAt(0) % INITIAL_LEVELS.length] ?? 'muted',
@@ -254,7 +260,7 @@ const faq = computed<FaqItem[]>(() => tm('tools.country-code.faq') as FaqItem[])
             class="table"
             :columns="columns"
             :rows="rows"
-            :copy-columns="['alpha3', 'numeric']"
+            :copy-columns="['alpha3', 'numeric', 'country']"
             :badge-copy="['alpha2']"
             :empty="t('tools.country-code.results.empty')"
           />

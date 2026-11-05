@@ -24,8 +24,8 @@
     "alpha2": "Alpha-2",
     "alpha3": "Alpha-3",
     "numeric": "Numeric",
-    "nameZh": "Chinese name",
-    "nameEn": "English name",
+    "country": "Country / Territory",
+    "continent": "Continent",
     "empty": "No matching country or territory."
   },
   "examples": [
@@ -43,7 +43,7 @@
     }
   ],
   "hints": {
-    "query": "Matches the alpha-2, alpha-3, numeric code or the Chinese and English names; typing filters locally, there is nothing to run.",
+    "query": "Matches the alpha-2, alpha-3, numeric code, the Chinese and English names or the continent; typing filters locally, there is nothing to run.",
     "initial": "Pick an initial chip to keep only the countries and territories starting with that letter; the number on the chip is the entry count under the current conditions.",
     "output": "The dataset is a bundled offline snapshot of ISO 3166-1; the tool never goes online."
   },

@@ -19,6 +19,12 @@ func TestCountryCodeAll(t *testing.T) {
 	if result.DataVersion == "" {
 		t.Error("缺少数据版本")
 	}
+	// 每条记录都要带大洲，否则前端表格会出现空列。
+	for _, c := range result.Countries {
+		if c.ContinentZh == "" || c.ContinentEn == "" {
+			t.Fatalf("%s 缺少大洲信息", c.Alpha2)
+		}
+	}
 }
 
 // TestCountryCodeByName 断言按中文名查询。
@@ -41,6 +47,9 @@ func TestCountryCodeByName(t *testing.T) {
 			}
 			if c.Numeric != "156" {
 				t.Errorf("数字码 = %q，期望 156", c.Numeric)
+			}
+			if c.ContinentZh != "亚洲" || c.ContinentEn != "Asia" {
+				t.Errorf("大洲 = %q（%q），期望 亚洲（Asia）", c.ContinentZh, c.ContinentEn)
 			}
 		}
 	}

@@ -26,7 +26,7 @@ var datasetFS embed.FS
 // 否则响应里的版本号会误导用户。
 const (
 	// ISO3166Version 是 ISO 3166-1 快照版本。
-	ISO3166Version = "2026-10"
+	ISO3166Version = "2026-11"
 	// CNRegionsVersion 是中国行政区划快照版本。
 	CNRegionsVersion = "2026-10"
 )
@@ -43,6 +43,10 @@ type Country struct {
 	NameZh string `json:"nameZh"`
 	// NameEn 是英文名。
 	NameEn string `json:"nameEn"`
+	// ContinentZh 是所属大洲的中文名。
+	ContinentZh string `json:"continentZh"`
+	// ContinentEn 是所属大洲的英文名。
+	ContinentEn string `json:"continentEn"`
 }
 
 // 区划层级。
@@ -113,13 +117,19 @@ func parseCountries(r io.Reader) []Country {
 		if len(rec) < 5 {
 			continue
 		}
-		out = append(out, Country{
+		country := Country{
 			Alpha2:  rec[0],
 			Alpha3:  rec[1],
 			Numeric: rec[2],
 			NameZh:  rec[3],
 			NameEn:  rec[4],
-		})
+		}
+		// 大洲列是后加的：缺失时留空，兼容旧快照。
+		if len(rec) >= 7 {
+			country.ContinentZh = rec[5]
+			country.ContinentEn = rec[6]
+		}
+		out = append(out, country)
 	}
 	return out
 }

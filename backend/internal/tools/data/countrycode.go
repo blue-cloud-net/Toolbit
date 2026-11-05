@@ -57,7 +57,7 @@ func (r *CountryCodeRequest) Validate() error {
 
 // matchesCountry 报告国家是否匹配关键词。
 //
-// 匹配范围：两位码、三位码、数字码、中英文名。
+// 匹配范围：两位码、三位码、数字码、中英文名与所属大洲。
 func matchesCountry(country Country, query string) bool {
 	candidates := []string{
 		strings.ToLower(country.Alpha2),
@@ -65,6 +65,8 @@ func matchesCountry(country Country, query string) bool {
 		strings.ToLower(country.Numeric),
 		strings.ToLower(country.NameZh),
 		strings.ToLower(country.NameEn),
+		strings.ToLower(country.ContinentZh),
+		strings.ToLower(country.ContinentEn),
 	}
 	for _, c := range candidates {
 		if c != "" && strings.Contains(c, query) {
