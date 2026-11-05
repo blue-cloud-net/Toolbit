@@ -81,5 +81,6 @@
   "REGEX_DIALECT_DIFFERENCE": "正则方言与目标语言存在差异，结果可能不一致。",
   "TIMEZONE_ASSUMED": "时间转换假定了某个时区。",
   "COMMENTS_LOST": "注释在转换过程中被丢弃。",
-  "CRL_UNVERIFIED": "未提供签发者证书，CRL 签名未校验，吊销状态无法确认。"
+  "CRL_UNVERIFIED": "未提供签发者证书，CRL 签名未校验，吊销状态无法确认。",
+  "DIRECTION_ADJUSTED": "转换方向与输入内容不符，已按输入自动调整。"
 }

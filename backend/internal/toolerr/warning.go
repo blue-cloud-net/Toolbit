@@ -40,6 +40,8 @@ const (
 	//
 	// 此时「未被收录」**不**等于「确认有效」。
 	WarnCRLUnverified WarningCode = "CRL_UNVERIFIED"
+	// WarnDirectionAdjusted 转换方向与请求指定的不一致，已按输入内容自动纠正。
+	WarnDirectionAdjusted WarningCode = "DIRECTION_ADJUSTED"
 )
 
 // WarningSpec 描述一个警告码的语义与本地化 key。
@@ -69,6 +71,7 @@ var Warnings = map[WarningCode]WarningSpec{
 	"TIMEZONE_ASSUMED":         {Message: "a timezone was assumed", I18nKey: "errors.TIMEZONE_ASSUMED"},
 	"COMMENTS_LOST":            {Message: "comments were dropped", I18nKey: "errors.COMMENTS_LOST"},
 	"CRL_UNVERIFIED":           {Message: "CRL signature was not verified", I18nKey: "errors.CRL_UNVERIFIED"},
+	"DIRECTION_ADJUSTED":       {Message: "conversion direction was adjusted to match the input", I18nKey: "errors.DIRECTION_ADJUSTED"},
 }
 
 // Warning 是一个具体的警告实例。

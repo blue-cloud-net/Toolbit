@@ -300,6 +300,84 @@ func TestDockerRunConvertComposeUnsupportedKey(t *testing.T) {
 	}
 }
 
+// TestDockerRunConvertAutoDirectionFromCommand 断言方向与输入不符时按输入纠正：
+// 指定 composeToRun 却贴了 docker run 命令，应按命令转 Compose，而不是报 YAML 错。
+func TestDockerRunConvertAutoDirectionFromCommand(t *testing.T) {
+	result, err := DockerRunConvert(t.Context(), &DockerRunConvertRequest{
+		Direction: DockerConvertComposeToRun,
+		Input:     "docker run -d --name web -p 8080:80 nginx:alpine",
+	})
+	if err != nil {
+		t.Fatalf("转换失败：%v", err)
+	}
+	data := result.Data.(DockerRunConvertResult)
+	if data.Direction != DockerConvertRunToCompose {
+		t.Errorf("方向 = %s，期望 %s", data.Direction, DockerConvertRunToCompose)
+	}
+	if data.Image != "nginx:alpine" {
+		t.Errorf("镜像 = %s，期望 nginx:alpine", data.Image)
+	}
+	assertDirectionAdjusted(t, result.Warnings, DockerConvertRunToCompose)
+}
+
+// TestDockerRunConvertAutoDirectionFromCompose 断言贴了 Compose 配置时按配置纠正方向。
+func TestDockerRunConvertAutoDirectionFromCompose(t *testing.T) {
+	result, err := DockerRunConvert(t.Context(), &DockerRunConvertRequest{
+		Direction: DockerConvertRunToCompose,
+		Input:     "services:\n  web:\n    image: nginx:alpine\n",
+	})
+	if err != nil {
+		t.Fatalf("转换失败：%v", err)
+	}
+	data := result.Data.(DockerRunConvertResult)
+	if data.Direction != DockerConvertComposeToRun {
+		t.Errorf("方向 = %s，期望 %s", data.Direction, DockerConvertComposeToRun)
+	}
+	if len(data.Services) != 1 || data.Services[0].Name != "web" {
+		t.Errorf("服务列表 = %+v，期望单个 web 服务", data.Services)
+	}
+	assertDirectionAdjusted(t, result.Warnings, DockerConvertComposeToRun)
+}
+
+// TestDockerRunConvertDefaultDirectionDetectsCompose 断言未指定方向时按输入判断。
+func TestDockerRunConvertDefaultDirectionDetectsCompose(t *testing.T) {
+	result, err := DockerRunConvert(t.Context(), &DockerRunConvertRequest{
+		Input: "services:\n  web:\n    image: nginx:alpine\n",
+	})
+	if err != nil {
+		t.Fatalf("转换失败：%v", err)
+	}
+	data := result.Data.(DockerRunConvertResult)
+	if data.Direction != DockerConvertComposeToRun {
+		t.Errorf("方向 = %s，期望 %s", data.Direction, DockerConvertComposeToRun)
+	}
+}
+
+// TestDockerRunConvertAmbiguousInputKeepsDirection 断言形态不明确的输入保留指定方向。
+func TestDockerRunConvertAmbiguousInputKeepsDirection(t *testing.T) {
+	// 只有「是映射但没有 services」，形态不明确：保留用户指定的方向。
+	_, err := DockerRunConvert(t.Context(), &DockerRunConvertRequest{
+		Direction: DockerConvertComposeToRun,
+		Input:     "volumes:\n  data:\n",
+	})
+	assertCode(t, err, toolerr.CodeMissingField)
+}
+
+// assertDirectionAdjusted 断言警告里带有方向纠正提示。
+func assertDirectionAdjusted(t *testing.T, warnings []toolerr.Warning, want string) {
+	t.Helper()
+	for _, warning := range warnings {
+		if warning.Code != toolerr.WarnDirectionAdjusted {
+			continue
+		}
+		if got, _ := warning.Params["direction"].(string); got != want {
+			t.Errorf("警告方向 = %s，期望 %s", got, want)
+		}
+		return
+	}
+	t.Errorf("缺少 %s 警告，实际警告：%+v", toolerr.WarnDirectionAdjusted, warnings)
+}
+
 // TestDockerRunConvertInvalidDirection 断言非法方向返回 UNSUPPORTED_MODE。
 func TestDockerRunConvertInvalidDirection(t *testing.T) {
 	_, err := DockerRunConvert(t.Context(), &DockerRunConvertRequest{

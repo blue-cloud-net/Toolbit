@@ -35,7 +35,7 @@
     }
   ],
   "hints": {
-    "input": "Paste a docker run command or a Compose file; the conversion is pure text processing and never talks to a daemon.",
+    "input": "Paste a docker run command or a Compose file; the direction is detected from the input and corrected automatically when it does not match. The conversion is pure text processing and never talks to a daemon.",
     "serviceName": "Leave it empty to derive the name from the image.",
     "strict": "Fail on unsupported options or keys instead of ignoring them."
   },

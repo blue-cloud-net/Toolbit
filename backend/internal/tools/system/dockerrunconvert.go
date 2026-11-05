@@ -38,6 +38,11 @@ var dockerShellSafePattern = regexp.MustCompile(`^[A-Za-z0-9_@%+=:,./-]+$`)
 // dockerYAMLLinePattern 从 YAML 解析错误中提取行号。
 var dockerYAMLLinePattern = regexp.MustCompile(`line (\d+)`)
 
+// dockerRunCommandPattern 匹配以 `docker run` / `podman run` 开头的命令。
+//
+// 允许前置 `sudo`；`run` 后面必须跟空白或结束，避免把 `docker runc` 误判成命令。
+var dockerRunCommandPattern = regexp.MustCompile(`^(sudo\s+)?(docker|podman)\s+run(\s|$)`)
+
 // DockerConvertDirections 返回支持的转换方向（顺序稳定）。
 func DockerConvertDirections() []string {
 	return []string{DockerConvertRunToCompose, DockerConvertComposeToRun}
@@ -91,11 +96,26 @@ func DockerRunConvert(_ context.Context, req *DockerRunConvertRequest) (tools.Re
 		return tools.Result{}, err
 	}
 
+	// 方向**优先**由输入形态决定：用户选的方向与输入不符时自动纠正，
+	// 避免把 `docker run` 命令当 YAML 解析后报「expected a mapping」。
+	direction := req.Direction
+	if direction == "" {
+		direction = DockerConvertRunToCompose
+	}
+	warnings := []toolerr.Warning{}
+	if detected := detectConvertDirection(req.Input); detected != "" && detected != direction {
+		direction = detected
+		warnings = append(warnings, toolerr.Warning{
+			Code:   toolerr.WarnDirectionAdjusted,
+			Params: map[string]any{"direction": detected},
+		})
+	}
+
 	var (
 		result DockerRunConvertResult
 		err    error
 	)
-	if req.Direction == DockerConvertComposeToRun {
+	if direction == DockerConvertComposeToRun {
 		result, err = dockerComposeToRun(req.Input)
 	} else {
 		result, err = dockerRunToCompose(req)
@@ -111,7 +131,45 @@ func DockerRunConvert(_ context.Context, req *DockerRunConvertRequest) (tools.Re
 			"unsupported": result.Unsupported,
 		})
 	}
-	return tools.Result{Data: result}, nil
+	return tools.Result{Data: result, Warnings: warnings}, nil
+}
+
+// detectConvertDirection 按输入形态判断转换方向。
+//
+// 返回值：
+//   - DockerConvertRunToCompose：输入是 `docker run` / `podman run` 命令；
+//   - DockerConvertComposeToRun：输入是含 `services` 的 YAML 映射；
+//   - 空串：形态不明确，交回调用方选定的方向。
+//
+// 「含 services 的 YAML 映射」才算 Compose：只判断「是不是映射」会把
+// Kubernetes 清单等 YAML 也当成 Compose，掩盖「缺少 services」的真实原因。
+func detectConvertDirection(input string) string {
+	trimmed := strings.TrimSpace(input)
+	if trimmed == "" {
+		return ""
+	}
+
+	var document yaml.Node
+	if err := yaml.Unmarshal([]byte(trimmed), &document); err == nil {
+		root := &document
+		if root.Kind == yaml.DocumentNode {
+			if len(root.Content) == 0 {
+				return ""
+			}
+			root = root.Content[0]
+		}
+		if root.Kind == yaml.MappingNode {
+			if yamlMappingValue(root, "services") != nil {
+				return DockerConvertComposeToRun
+			}
+			return ""
+		}
+	}
+
+	if dockerRunCommandPattern.MatchString(trimmed) {
+		return DockerConvertRunToCompose
+	}
+	return ""
 }
 
 // Validate 做字段级校验。

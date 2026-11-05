@@ -135,6 +135,7 @@
 | `TIMEZONE_ASSUMED` | 时间转换假定了某个时区 |
 | `COMMENTS_LOST` | 注释被丢弃 |
 | `CRL_UNVERIFIED` | 未提供签发者证书，CRL 签名未校验（`revocation-check` 只报 `unverified`） |
+| `DIRECTION_ADJUSTED` | 转换方向与输入内容不符，已按输入自动纠正 |
 
 ---
 

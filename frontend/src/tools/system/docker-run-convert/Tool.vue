@@ -10,7 +10,7 @@ import { ElInput } from 'element-plus/es/components/input/index'
 import 'element-plus/es/components/input/style/css'
 import { ElOption, ElSelect } from 'element-plus/es/components/select/index'
 import 'element-plus/es/components/select/style/css'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import DataTable, { type DataTableColumn, type DataTableRow } from '@/components/tool/DataTable.vue'
@@ -74,8 +74,32 @@ const { state, data, meta, error, run: execute, reset: resetRun } = useToolRun<D
 
 const running = computed(() => state.value === 'loading')
 
+/**
+ * 实际生效的转换方向。
+ *
+ * 后端会按**输入形态**纠正方向（贴了 `docker run` 命令就按命令转，
+ * 贴了 Compose 配置就按配置转），因此这里以**结果里的方向**为准，
+ * 避免下拉框、结果表格与服务名输入框与实际结果不一致。
+ */
+const effectiveDirection = computed<ConvertDirection>(() => data.value?.direction ?? direction.value)
+
 /** 是否为 docker run → Compose 方向。 */
-const isRunToCompose = computed(() => direction.value === 'runToCompose')
+const isRunToCompose = computed(() => effectiveDirection.value === 'runToCompose')
+
+// 后端纠正方向后，把方向同步回下拉框：下拉框应显示**实际生效**的方向，
+// 而不是用户最初的选择。
+//
+// 方向**不在** `useAutoRun` 的监听列表里（见下方注释），因此这里的改写
+// 不会触发多余的第二次请求——否则同一份输入会被再算一遍，
+// 结果虽同，却把「方向已纠正」的警告冲掉。
+watch(
+  () => data.value?.direction,
+  (actual) => {
+    if (actual && actual !== direction.value) {
+      direction.value = actual
+    }
+  },
+)
 
 /** 结果文本：转换产物。 */
 const resultText = computed(() => data.value?.output ?? '')
@@ -147,11 +171,19 @@ function run(): void {
   })
 }
 
+/** 方向变更：立即重跑（方向不在自动运行的监听列表里）。 */
+function onDirectionChange(): void {
+  run()
+}
+
 // 输入变化后自动运行（catalog 的 autoRun 为 true 时生效）。
+//
+// 方向**不**在监听列表里：方向由下拉框的 `@change` 显式触发。
+// 这样后端纠正方向时对 `direction` 的改写就不会触发多余的第二次请求。
 useAutoRun({
   slug: 'docker-run-convert',
   run,
-  watch: [direction, serviceName, input, strict],
+  watch: [serviceName, input, strict],
   enabled: () => input.value.trim() !== '',
 })
 
@@ -212,6 +244,7 @@ function useResultAsInput(text: string): boolean {
               v-model="direction"
               class="field__select"
               :aria-label="t('tools.docker-run-convert.fields.direction')"
+              @change="onDirectionChange"
             >
               <ElOption
                 :label="t('tools.docker-run-convert.options.direction.runToCompose')"

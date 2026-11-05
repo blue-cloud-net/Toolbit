@@ -233,10 +233,15 @@ Unix 权限计算与解释。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `direction` | string | 否 | `runToCompose`（默认）\| `composeToRun` |
+| `direction` | string | 否 | `runToCompose`\| `composeToRun`；与输入形态不符时**按输入自动纠正** |
 | `input` | string | 是 | 源文本：`docker run` 命令或 Compose 配置（≤ 64 KiB） |
 | `serviceName` | string | 否 | `runToCompose` 方向的服务名；留空则由镜像名推导 |
 | `strict` | bool | 否 | 严格模式：遇到未支持项直接报错，默认 `false` |
+
+> **方向自动纠正**：方向**优先**由输入形态决定 —— 贴 `docker run` 命令就按命令转，
+> 贴含 `services` 的 YAML 就按配置转。选错方向时不会报错，而是自动纠正并在
+> `meta.warnings` 里给出 `DIRECTION_ADJUSTED`；响应的 `direction` 字段始终是
+> **实际生效**的方向。形态不明确时（如不带 `services` 的 YAML 映射）保留请求指定的方向。
 
 ### 响应
 

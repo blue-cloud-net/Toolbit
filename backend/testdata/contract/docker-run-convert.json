@@ -31,6 +31,20 @@
       }
     },
     {
+      "name": "方向与输入不符时按输入纠正",
+      "request": {
+        "direction": "composeToRun",
+        "input": "docker run -d --name web -p 8080:80 nginx:alpine"
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "direction": "runToCompose",
+          "image": "nginx:alpine"
+        }
+      }
+    },
+    {
       "name": "严格模式遇到未支持参数",
       "request": {
         "direction": "runToCompose",
