@@ -51,6 +51,8 @@ withDefaults(
   background: var(--tb-bg-elevated);
   border: 1px solid var(--tb-border);
   border-radius: var(--tb-radius-panel);
+  /* 顶部主色带：与结果区一致，明确「这里是输入」。 */
+  border-top: 3px solid var(--tb-primary);
   overflow: hidden;
 }
 

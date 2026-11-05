@@ -97,7 +97,7 @@ watch(
 </script>
 
 <template>
-  <div>
+  <div class="tool-view">
     <p
       v-if="!catalog.loaded && catalog.loading"
       class="tool-view__loading"
@@ -144,6 +144,13 @@ watch(
 </template>
 
 <style scoped>
+/* 工具页正文比站点容器窄一档：表单与结果不再被拉到全宽。
+   首页与分类页仍按 `--tb-container-w` 排布。 */
+.tool-view {
+  max-width: var(--tb-tool-w);
+  margin: 0 auto;
+}
+
 .tool-view__loading {
   padding: var(--tb-space-8) 0;
   font-size: var(--tb-font-sm);
