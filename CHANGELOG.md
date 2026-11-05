@@ -11,6 +11,24 @@
 
 ### Changed
 
+- **工具拆分：速查表与 DNS 综合检测各拆成独立工具**（**Breaking**：API 路径变更）
+  - `lookup-table` 拆成 **`common-ports`**（常用端口查询）、**`exit-code`**（退出码查询）、
+    **`time-format`**（时间格式速查）：三个工具各带自己的数据集与契约测试，
+    旧端点 `POST /api/v1/tools/lookup-table` **不再存在**
+  - `dns-tester` 拆成 **`dns-whois`**（WHOIS 查询）、**`dnssec-check`**（DNSSEC 检测）、
+    **`dns-ptr`**（PTR 反向解析）：旧端点 `POST /api/v1/tools/dns-tester` **不再存在**
+  - 工具总数由 101 变为 105
+- **查表类工具改为「键入即筛选」**：三个新工具与 `http-status` 保持一致 ——
+  首屏列出全量条目，搜索词与服务分类筛选在**前端本地**完成，页面不再有「运行」按钮
+- **输入面板与结果区视觉对齐**：`ToolPanel` 顶部加主色带，与 `ResultPanel` 一致，
+  明确「这里是输入 / 这里是输出」
+- **工具页正文收窄**：新增 `--tb-tool-w`（1120px），工具页正文比站点容器窄一档；
+  首页与分类页仍按 `--tb-container-w`（1280px）排布
+- **`timestamp` 改为多格式列表**：响应新增 `formats` 数组（Unix 四档、ISO 8601、
+  RFC 3339 / 7231 / 2822、Excel 序列号、.NET ticks、Win32 FileTime、LDAP YMD、
+  儒略日等 18 项），结果区逐行展示且每行可单独复制
+- **`country-code` 增加大洲**：ISO 3166-1 数据集补 `continentZh` / `continentEn` 两列，
+  国家名按「中文（英文）」显示，并新增「所属大洲」列；数据集版本升至 `2026-11`
 - **UA 工具改名并重新定位**（**Breaking**：API 路径变更）
   - `ua-parser` → **`ua-header-parse`**，显示名改为「**UA 头解析**」：
     解析的是 **User-Agent 请求头**，标题与描述同步点明这一点
@@ -199,6 +217,20 @@
 
 ### Removed
 
+- **移除 `lookup-table`（速查表查询）**：工具总数 -1（拆分后净 +2）
+  - 一个工具里混装「端口 / 退出码 / 时间戳格式」三类互不相关的速查数据，
+    只能靠下拉框切换类别，既不符合「一个工具做一件事」，也让列表展示无从谈起
+  - 拆成 `common-ports` / `exit-code` / `time-format` 三个工具：端口条目补上服务分类
+    （Web、邮件、文件传输、远程登录、数据库与缓存等 9 类），时间格式的示例值按
+    同一时刻 `2026-10-29T12:00:00Z` **重新校准**（原数据里 Unix 值与儒略日等
+    互相矛盾）
+  - 同步删除后端实现与单测、契约测试数据、catalog 条目、前端模块与双语词条
+- **移除 `dns-tester`（DNS 多记录测试）**：工具总数 -1（拆分后净 +2）
+  - whois、DNSSEC、PTR 是三件互不相干的事，却挤在一个「检测项」下拉框里，
+    每次只用到其中一件
+  - 拆成 `dns-whois` / `dnssec-check` / `dns-ptr` 三个工具：每个工具只保留自己需要的
+    输入字段（WHOIS 收域名或地址，DNSSEC 只收域名，PTR 收地址或域名）
+  - 同步删除后端实现与单测、契约测试数据、catalog 条目、前端模块与双语词条
 - **移除 `device-headers`（请求头生成与 UA 解析）**：能力拆分为 `ua-header-parse` 与
   `ua-header-gen` 两个工具，原 slug 与端点不再存在
 - **移除 `ip-range-expand`（IP 段展开）**：工具总数 -1

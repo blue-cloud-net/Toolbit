@@ -76,7 +76,7 @@
 | `ip-range-expand` | 网络 | IP 段与 CIDR 互转、批量展开 | **已并入 `cidr-calc`**（互转能力与 `cidr-calc` 重复，展开能力作为 `expand` 选项并入） | 零新依赖 | S–M | P2 |
 | `id-generator` | 数据 | UUID / ULID / 雪花 ID / NanoID 统一生成 | 扩充 `uuid-gen` 优于新增 slug | 零新依赖 | S | P2 |
 | `mock-data` | 数据 | 按字段类型生成假数据 | 无 | 零新依赖 | M | P2 |
-| `lookup-table` | 系统 | 速查表：端口号、Linux 退出码、时间戳格式 | [roadmap.md](roadmap.md) §16.1 已列 | 零新依赖 | S | P2 |
+| `lookup-table` | 系统 | 速查表：端口号、Linux 退出码、时间戳格式 | [roadmap.md](roadmap.md) §16.1 已列；**已落地并拆成** `common-ports` / `exit-code` / `time-format` | 零新依赖 | S | P2 |
 | `markdown-convert` | 文档 | Markdown 与 HTML 互转 | 复用既有 `goldmark` 依赖 | 零新依赖 | S | P2 |
 | `html-escape` | 编码 | HTML 实体编解码 | 补 `html-format` 的实体方向 | 零新依赖 | S | P2 |
 
@@ -107,6 +107,10 @@
 
 此后 `ip-range-expand` 也被移除（互转能力与 `cidr-calc` 重叠，展开能力并入 `cidr-calc`），
 工具总数为 **101**。
+
+再往后 `lookup-table` 拆成 `common-ports` / `exit-code` / `time-format`，
+`dns-tester` 拆成 `dns-whois` / `dnssec-check` / `dns-ptr`，
+工具总数为 **105**。
 
 ---
 

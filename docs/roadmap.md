@@ -127,7 +127,7 @@ flowchart LR
 
 - catalog、错误码、配置项、契约四者互相一致，并由 `scripts/check-docs.mjs` 校验；
 - `markdownlint-cli2` 零问题；内部链接零断链；
-- 101 个工具的请求 / 响应契约全部落档。
+- 105 个工具的请求 / 响应契约全部落档。
 
 > 本版本**不含任何可运行代码**，`backend/internal/*` 与 `frontend/` 尚未落地。
 
@@ -913,7 +913,9 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 | `cidr-calc` | 纯计算，不出网 |
 | `ssl-check` | WebSocket 流式握手检测 |
 | `dns-lookup` | UDP / TCP / DoT / DoH |
-| `dns-tester` | whois / DNSSEC / PTR |
+| `dns-whois` | 域名 / IP 注册信息 |
+| `dnssec-check` | DNSSEC 部署与信任链 |
+| `dns-ptr` | PTR 反向解析 |
 | `websocket-test` | 纯前端，**无后端端点** |
 | `cert-chain-fetch` | 从目标主机抓链 |
 | `ct-search` | 证书透明度查询 |
@@ -934,7 +936,9 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 | `cidr-calc` | ✅ | JSON | 纯计算，含范围反推、拆分与地址展开 |
 | `ssl-check` | ✅ | WebSocket | 流式进度 + 结果；链验证区分 `chainValid` / `verified` |
 | `dns-lookup` | ✅ | JSON | udp / tcp / dot / doh 四种协议 |
-| `dns-tester` | ✅ | JSON | RDAP 优先、whois 43 端口回退；dnssec / ptr |
+| `dns-whois` | ✅ | JSON | RDAP 优先、whois 43 端口回退 |
+| `dnssec-check` | ✅ | JSON | 逐级 DS 检查 + DNSKEY 判断 |
+| `dns-ptr` | ✅ | JSON | PTR 反解 + 正向复核 |
 | `websocket-test` | ✅ | client | 浏览器原生直连，**无**后端端点 |
 | `cert-chain-fetch` | ✅ | JSON | 只呈现服务端实发链，不补链 |
 | `domain-verify` | ✅ | JSON | dns-txt / dns-cname / http-file |
@@ -958,7 +962,7 @@ I-13（XML 仅 RSA）、I-14（缺 PKCS#1 公钥入口）。
 | --- | --- | --- | --- |
 | N6 | `cidr-calc`（含范围反推、拆分、地址展开、IPv6 大数） | `backend/internal/tools/network/cidr.go` | ✅ |
 | N7 | `dns-lookup`（四种协议） | `backend/internal/tools/network/dns.go` | ✅ |
-| N8 | `dns-tester`（RDAP / whois / dnssec / ptr） | `backend/internal/tools/network/{dnstester,whois}.go` | ✅ |
+| N8 | `dns-whois` / `dnssec-check` / `dns-ptr`（原 `dns-tester` 拆分） | `backend/internal/tools/network/{dnswhois,dnsseccheck,dnsptr,whois}.go` | ✅ |
 | N9 | `cert-chain-fetch` + `domain-verify` | `backend/internal/tools/network/{chainfetch,domainverify}.go` | ✅ |
 | N10 | 装配层注入守卫 | `backend/internal/toolset/toolset.go` | ✅ |
 
@@ -1248,7 +1252,7 @@ RC 期间若发现**设计层面**缺陷（不是实现 bug），**必须**退�
 | `totp` | TOTP / HOTP 生成与校验 | 需 RFC 6238 / 4226 ��准向量测试 |
 | `color-convert` | 颜色格式转换（HEX / RGB / HSL / OKLCH） | 纯计算，可做前端辅助但**必须**有服务端端点 |
 | `json-to-types` | JSON 转语言类型定义（TS / Go / Rust 等） | 纯代码生成，注意输出转义 |
-| `lookup-table` | 纯查询类速查表 | 需先确定收录范围与更新机制 |
+| `lookup-table` | 纯查询类速查表 | ✅ 已落地，并拆成 `common-ports` / `exit-code` / `time-format` 三个工具 |
 | `step-chain` | 步骤链：管道式多步加工 | 需设计中间态的表示与错误定位 |
 | `batch` | 批量处理：多输入并行 | 与 §16 的「批量处理」同源，需先定容量与限流口径 |
 
