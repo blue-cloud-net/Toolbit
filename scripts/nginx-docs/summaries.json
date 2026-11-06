@@ -1,0 +1,474 @@
+{
+  "worker_processes": {
+    "zh": "worker 进程数量；填 auto 时按 CPU 核数自动确定。",
+    "en": "Number of worker processes; use auto to pick it from the CPU core count."
+  },
+  "worker_connections": {
+    "zh": "单个 worker 允许的最大并发连接数，含代理连接。",
+    "en": "Maximum concurrent connections per worker, including proxied connections."
+  },
+  "worker_rlimit_nofile": {
+    "zh": "worker 进程打开文件句柄数的上限。",
+    "en": "Upper limit of file descriptors opened by a worker process."
+  },
+  "worker_cpu_affinity": {
+    "zh": "把 worker 进程绑定到指定 CPU 核集合。",
+    "en": "Binds worker processes to a set of CPU cores."
+  },
+  "user": {
+    "zh": "worker 进程运行使用的用户与用户组。",
+    "en": "User and group the worker processes run as."
+  },
+  "pid": {
+    "zh": "主进程 PID 文件的存放路径。",
+    "en": "Path of the file holding the master process ID."
+  },
+  "daemon": {
+    "zh": "是否以后台守护进程方式运行。",
+    "en": "Whether nginx runs as a background daemon."
+  },
+  "events": {
+    "zh": "定义连接处理方式的配置块。",
+    "en": "Block that configures how connections are processed."
+  },
+  "http": {
+    "zh": "定义 HTTP 服务器指令的配置块。",
+    "en": "Block that holds the HTTP server directives."
+  },
+  "include": {
+    "zh": "把指定文件或匹配到的文件引入当前配置。",
+    "en": "Includes another file, or files matching a mask, into the configuration."
+  },
+  "load_module": {
+    "zh": "加载动态模块；要求编译时启用对应模块。",
+    "en": "Loads a dynamic module; the build must enable the matching module."
+  },
+  "env": {
+    "zh": "保留或改写继承自父进程的环境变量。",
+    "en": "Keeps or overrides environment variables inherited from the parent process."
+  },
+  "error_log": {
+    "zh": "配置错误日志的文件路径与日志级别。",
+    "en": "Sets the error log destination and level."
+  },
+  "access_log": {
+    "zh": "配置访问日志的写入目标与格式。",
+    "en": "Sets the access log destination and format."
+  },
+  "log_format": {
+    "zh": "定义可供 access_log 使用的日志格式。",
+    "en": "Defines a log format usable by access_log."
+  },
+  "listen": {
+    "zh": "设置服务端监听的地址、端口及附加参数。",
+    "en": "Sets the address, port and extra parameters the server listens on."
+  },
+  "server_name": {
+    "zh": "设置虚拟主机匹配的域名，支持通配与正则。",
+    "en": "Sets the names a virtual host matches, including wildcards and regexes."
+  },
+  "server": {
+    "zh": "定义虚拟主机或上游服务器的配置块。",
+    "en": "Block that defines a virtual host or an upstream server."
+  },
+  "location": {
+    "zh": "按请求 URI 划分处理逻辑的配置块。",
+    "en": "Block that selects request handling by the request URI."
+  },
+  "root": {
+    "zh": "设置静态文件的根目录。",
+    "en": "Sets the root directory for static files."
+  },
+  "index": {
+    "zh": "设置目录请求默认返回的索引文件。",
+    "en": "Sets the index files used for directory requests."
+  },
+  "try_files": {
+    "zh": "按顺序检查文件是否存在，命中则用它处理请求。",
+    "en": "Checks files in order and uses the first existing one to serve the request."
+  },
+  "return": {
+    "zh": "返回指定状态码，可选返回体或重定向地址。",
+    "en": "Returns a status code, optionally with a body or a redirect target."
+  },
+  "rewrite": {
+    "zh": "按规则改写请求 URI。",
+    "en": "Rewrites the request URI according to a rule."
+  },
+  "error_page": {
+    "zh": "把指定错误状态码映射到内部地址或响应。",
+    "en": "Maps error status codes to an internal URI or a response."
+  },
+  "autoindex": {
+    "zh": "目录无索引文件时是否列出目录内容。",
+    "en": "Whether directory listings are shown when no index file exists."
+  },
+  "types": {
+    "zh": "建立文件扩展名到 MIME 类型的映射。",
+    "en": "Maps file name extensions to MIME types."
+  },
+  "default_type": {
+    "zh": "设置无法匹配扩展名时的默认 MIME 类型。",
+    "en": "Sets the default MIME type when the extension does not match."
+  },
+  "charset": {
+    "zh": "设置响应字符集，并可追加到 Content-Type。",
+    "en": "Sets the response charset and can add it to Content-Type."
+  },
+  "expires": {
+    "zh": "设置响应缓存有效期，可附带 Cache-Control 扩展指令。",
+    "en": "Sets the response cache lifetime, optionally adding Cache-Control directives."
+  },
+  "add_header": {
+    "zh": "向响应追加自定义头部字段。",
+    "en": "Adds a custom header field to the response."
+  },
+  "etag": {
+    "zh": "是否自动生成静态资源的 ETag 响应头。",
+    "en": "Whether ETag headers are generated automatically for static resources."
+  },
+  "if_modified_since": {
+    "zh": "比较请求的 If-Modified-Since 与资源的修改时间。",
+    "en": "Compares the request If-Modified-Since header with the file modification time."
+  },
+  "gzip": {
+    "zh": "是否开启响应压缩。",
+    "en": "Enables or disables response compression."
+  },
+  "gzip_types": {
+    "zh": "指定需要压缩的 MIME 类型；文本类型必须显式列出。",
+    "en": "MIME types to compress; text types must be listed explicitly."
+  },
+  "gzip_comp_level": {
+    "zh": "压缩级别，取值 1 到 9。",
+    "en": "Compression level, from 1 to 9."
+  },
+  "gzip_min_length": {
+    "zh": "小于该长度的响应不压缩。",
+    "en": "Responses smaller than this length are not compressed."
+  },
+  "gzip_vary": {
+    "zh": "是否在响应中附加 Vary: Accept-Encoding。",
+    "en": "Adds Vary: Accept-Encoding to the response."
+  },
+  "gzip_proxied": {
+    "zh": "决定对哪些类型的代理响应启用压缩。",
+    "en": "Controls which kinds of proxied responses are compressed."
+  },
+  "gzip_static": {
+    "zh": "优先返回预压缩的同名静态文件。",
+    "en": "Serves pre-compressed static files when they exist."
+  },
+  "sendfile": {
+    "zh": "是否使用 sendfile 发送文件内容。",
+    "en": "Whether sendfile is used to transfer file contents."
+  },
+  "tcp_nopush": {
+    "zh": "在 sendfile 生效时是否尽量合并数据包发送。",
+    "en": "Whether packets are coalesced when sendfile is in use."
+  },
+  "tcp_nodelay": {
+    "zh": "是否禁用 Nagle 算法以降低小包延迟。",
+    "en": "Disables the Nagle algorithm to lower small-packet latency."
+  },
+  "keepalive_timeout": {
+    "zh": "客户端连接保持打开的超时时间。",
+    "en": "How long an idle client connection stays open."
+  },
+  "keepalive_requests": {
+    "zh": "一个连接最多可处理的请求数量。",
+    "en": "Maximum number of requests served on one connection."
+  },
+  "client_max_body_size": {
+    "zh": "请求体大小上限，超出返回 413。",
+    "en": "Maximum client request body size; larger requests get 413."
+  },
+  "client_body_timeout": {
+    "zh": "读取请求体两次写入之间的超时时间。",
+    "en": "Timeout between successive reads of the request body."
+  },
+  "client_header_timeout": {
+    "zh": "读取请求头的超时时间。",
+    "en": "Timeout for reading the request headers."
+  },
+  "send_timeout": {
+    "zh": "向客户端发送响应的超时时间。",
+    "en": "Timeout for transmitting the response to a client."
+  },
+  "proxy_pass": {
+    "zh": "把请求转发到指定的后端地址或上游组。",
+    "en": "Passes requests to the given backend address or upstream group."
+  },
+  "proxy_set_header": {
+    "zh": "重定义或追加转发给后端的请求头。",
+    "en": "Redefines or appends request headers passed to the backend."
+  },
+  "proxy_http_version": {
+    "zh": "转发给后端时使用的 HTTP 协议版本。",
+    "en": "HTTP protocol version used when talking to the backend."
+  },
+  "proxy_connect_timeout": {
+    "zh": "与后端建立连接的超时时间。",
+    "en": "Timeout for establishing a connection to the backend."
+  },
+  "proxy_read_timeout": {
+    "zh": "从后端读取响应的超时时间。",
+    "en": "Timeout for reading a response from the backend."
+  },
+  "proxy_send_timeout": {
+    "zh": "向后端发送请求的超时时间。",
+    "en": "Timeout for sending a request to the backend."
+  },
+  "proxy_buffering": {
+    "zh": "是否缓冲后端响应；关闭则边收边发。",
+    "en": "Whether backend responses are buffered before being sent."
+  },
+  "proxy_buffer_size": {
+    "zh": "读取后端响应首部所用缓冲区的大小。",
+    "en": "Size of the buffer used to read the first part of a backend response."
+  },
+  "proxy_buffers": {
+    "zh": "读取后端响应所用缓冲区的数量与大小。",
+    "en": "Number and size of buffers used to read a backend response."
+  },
+  "proxy_busy_buffers_size": {
+    "zh": "后端响应繁忙时可用于发送的缓冲区总大小上限。",
+    "en": "Total size of buffers that may be busy sending a response."
+  },
+  "proxy_max_temp_file_size": {
+    "zh": "写入后端响应临时文件的单文件大小上限。",
+    "en": "Maximum size of the temporary file holding a buffered response."
+  },
+  "proxy_cache": {
+    "zh": "指定用于缓存后端响应的共享内存区名称。",
+    "en": "Names the shared memory zone used to cache backend responses."
+  },
+  "proxy_cache_path": {
+    "zh": "定义缓存目录、共享区名称与容量等参数。",
+    "en": "Defines the cache directory, shared zone name and size."
+  },
+  "proxy_cache_valid": {
+    "zh": "按响应状态码设置缓存有效期。",
+    "en": "Sets cache lifetimes per response status code."
+  },
+  "proxy_cache_methods": {
+    "zh": "指定允许被缓存的请求方法。",
+    "en": "Lists the request methods whose responses may be cached."
+  },
+  "proxy_cache_min_uses": {
+    "zh": "响应被缓存前至少需要被请求的次数。",
+    "en": "Number of requests a response needs before it is cached."
+  },
+  "proxy_next_upstream": {
+    "zh": "指定哪些情况下把请求转交给下一个后端。",
+    "en": "Cases in which a request is passed to the next upstream server."
+  },
+  "proxy_redirect": {
+    "zh": "改写后端返回的 Location 与 Refresh 响应头。",
+    "en": "Rewrites Location and Refresh headers returned by the backend."
+  },
+  "proxy_ssl_server_name": {
+    "zh": "是否向后端发送 SNI 主机名。",
+    "en": "Whether the SNI server name is sent to the backend."
+  },
+  "proxy_ssl_verify": {
+    "zh": "是否校验后端 HTTPS 证书。",
+    "en": "Whether the backend HTTPS certificate is verified."
+  },
+  "proxy_ssl_trusted_certificate": {
+    "zh": "用于校验后端证书的受信任 CA 文件路径。",
+    "en": "Path to the trusted CA file used to verify backend certificates."
+  },
+  "proxy_intercept_errors": {
+    "zh": "是否拦截后端返回的错误响应并交给 error_page 处理。",
+    "en": "Whether backend error responses are passed to error_page handling."
+  },
+  "upstream": {
+    "zh": "定义一组后端服务器供负载均衡使用。",
+    "en": "Defines a group of backend servers used for load balancing."
+  },
+  "keepalive": {
+    "zh": "上游连接中允许保持打开的空闲连接数。",
+    "en": "Number of idle keepalive connections kept to the upstream."
+  },
+  "ip_hash": {
+    "zh": "按客户端地址做哈希以获得会话粘性。",
+    "en": "Hashes the client address for session stickiness."
+  },
+  "least_conn": {
+    "zh": "把请求分配给当前连接数最少的后端。",
+    "en": "Sends requests to the server with the fewest active connections."
+  },
+  "hash": {
+    "zh": "按指定键值做哈希分配请求。",
+    "en": "Distributes requests by hashing a specified key."
+  },
+  "ssl_certificate": {
+    "zh": "HTTPS 证书文件路径，可多次指定以配置多套证书。",
+    "en": "Path to the HTTPS certificate file; may be given more than once."
+  },
+  "ssl_certificate_key": {
+    "zh": "与证书对应的私钥文件路径。",
+    "en": "Path to the private key file matching the certificate."
+  },
+  "ssl_protocols": {
+    "zh": "允许使用的 TLS 与 SSL 协议版本。",
+    "en": "TLS and SSL protocol versions that are allowed."
+  },
+  "ssl_ciphers": {
+    "zh": "允许的加密套件列表，使用 OpenSSL 语法。",
+    "en": "Allowed cipher list, written in OpenSSL syntax."
+  },
+  "ssl_prefer_server_ciphers": {
+    "zh": "是否优先使用服务端加密套件。",
+    "en": "Whether server cipher preferences are used first."
+  },
+  "ssl_session_cache": {
+    "zh": "TLS 会话缓存类型与大小，可使用共享内存区。",
+    "en": "Type and size of the TLS session cache, optionally shared."
+  },
+  "ssl_session_timeout": {
+    "zh": "TLS 会话可复用的时间。",
+    "en": "How long a TLS session may be reused."
+  },
+  "ssl_session_tickets": {
+    "zh": "是否使用会话票据实现会话恢复。",
+    "en": "Whether session tickets are used for session resumption."
+  },
+  "ssl_trusted_certificate": {
+    "zh": "用于校验客户端证书的受信任 CA 文件路径。",
+    "en": "Path to the trusted CA file used to verify client certificates."
+  },
+  "ssl_dhparam": {
+    "zh": "DH 参数文件路径，用于 DHE 加密套件。",
+    "en": "Path to the DH parameter file used by DHE ciphers."
+  },
+  "ssl_ecdh_curve": {
+    "zh": "ECDHE 加密套件可用的椭圆曲线列表。",
+    "en": "Elliptic curves available for ECDHE ciphers."
+  },
+  "ssl_stapling": {
+    "zh": "是否开启 OCSP 装订以携带证书吊销状态。",
+    "en": "Enables OCSP stapling to carry certificate revocation status."
+  },
+  "ssl_stapling_verify": {
+    "zh": "是否校验 OCSP 响应。",
+    "en": "Whether OCSP responses are verified."
+  },
+  "ssl_verify_client": {
+    "zh": "是否要求客户端提供并校验证书。",
+    "en": "Whether client certificates are requested and verified."
+  },
+  "ssl_verify_depth": {
+    "zh": "客户端证书链允许的最大校验深度。",
+    "en": "Maximum verification depth of the client certificate chain."
+  },
+  "fastcgi_pass": {
+    "zh": "把请求转交给 FastCGI 进程。",
+    "en": "Passes requests to a FastCGI process."
+  },
+  "fastcgi_param": {
+    "zh": "设置传递给 FastCGI 的参数。",
+    "en": "Sets a parameter passed to the FastCGI process."
+  },
+  "fastcgi_index": {
+    "zh": "设置 FastCGI 请求的默认索引文件名。",
+    "en": "Sets the default index file name for FastCGI requests."
+  },
+  "fastcgi_split_path_info": {
+    "zh": "把脚本路径拆分为真实路径与 PATH_INFO。",
+    "en": "Splits the script path into the real path and PATH_INFO."
+  },
+  "resolver": {
+    "zh": "指定解析后端域名所用的 DNS 服务器。",
+    "en": "DNS servers used to resolve backend domain names."
+  },
+  "resolver_timeout": {
+    "zh": "域名解析的超时时间。",
+    "en": "Timeout for name resolution."
+  },
+  "real_ip_header": {
+    "zh": "指定从哪个请求头读取真实客户端地址。",
+    "en": "Request header used to read the real client address."
+  },
+  "set_real_ip_from": {
+    "zh": "列出可信代理的地址范围。",
+    "en": "Trusted proxy address ranges."
+  },
+  "limit_req_zone": {
+    "zh": "定义请求限流使用的共享内存区与状态键。",
+    "en": "Defines the shared zone and key used for request rate limiting."
+  },
+  "limit_req": {
+    "zh": "在给定位置启用请求限流。",
+    "en": "Enables request rate limiting in the given context."
+  },
+  "limit_conn_zone": {
+    "zh": "定义连接数限制使用的共享内存区与状态键。",
+    "en": "Defines the shared zone and key used for connection limiting."
+  },
+  "limit_conn": {
+    "zh": "在给定位置启用并发连接数限制。",
+    "en": "Enables a limit on concurrent connections in the given context."
+  },
+  "limit_rate": {
+    "zh": "限制单个响应的发送速率。",
+    "en": "Limits the transmission rate of a single response."
+  },
+  "map": {
+    "zh": "根据源变量取值生成新的变量值。",
+    "en": "Creates a new variable value based on a source variable."
+  },
+  "geo": {
+    "zh": "按来源地址生成变量值。",
+    "en": "Creates a variable value based on the client address."
+  },
+  "split_clients": {
+    "zh": "按指定比例把请求拆分到不同值。",
+    "en": "Splits clients into groups by the given percentages."
+  },
+  "auth_basic": {
+    "zh": "启用 HTTP Basic 认证并设置realm 提示。",
+    "en": "Enables HTTP Basic authentication with the given realm."
+  },
+  "auth_basic_user_file": {
+    "zh": "存放 Basic 认证用户与口令的文件路径。",
+    "en": "Path to the file holding Basic authentication users."
+  },
+  "server_tokens": {
+    "zh": "是否在错误页与响应头中暴露版本号。",
+    "en": "Whether the version is exposed in error pages and headers."
+  },
+  "merge_slashes": {
+    "zh": "是否把 URI 中相邻的斜杠合并为一个。",
+    "en": "Whether adjacent slashes in a URI are merged into one."
+  },
+  "absolute_redirect": {
+    "zh": "重定向时是否输出绝对地址。",
+    "en": "Whether redirects use absolute URLs."
+  },
+  "ignore_invalid_headers": {
+    "zh": "是否忽略字段名非法的请求头。",
+    "en": "Whether request headers with invalid names are ignored."
+  },
+  "underscores_in_headers": {
+    "zh": "是否允许请求头字段名含下划线。",
+    "en": "Whether header field names may contain underscores."
+  },
+  "disable_symlinks": {
+    "zh": "是否禁止访问符号链接指向的文件。",
+    "en": "Whether access through symbolic links is denied."
+  },
+  "open_file_cache": {
+    "zh": "启用文件描述符与目录信息缓存。",
+    "en": "Enables caching of file descriptors and directory lookups."
+  },
+  "open_file_cache_valid": {
+    "zh": "文件缓存条目的有效期。",
+    "en": "How long cached file entries stay valid."
+  },
+  "http2": {
+    "zh": "是否在该监听端口上启用 HTTP/2。",
+    "en": "Enables HTTP/2 on the listening socket."
+  }
+}

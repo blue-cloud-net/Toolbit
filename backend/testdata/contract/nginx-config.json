@@ -3,30 +3,151 @@
   "description": "Nginx 配置生成的契约测试数据。",
   "cases": [
     {
-      "name": "生成站点配置",
+      "name": "简单模式生成多文件配置",
       "request": {
-        "mode": "site",
-        "serverName": "example.com",
-        "listenPort": 80,
-        "root": "/var/www/html"
+        "mode": "simple",
+        "preset": "static",
+        "sites": [
+          {
+            "id": "s1",
+            "serverName": "example.com",
+            "listenPort": 80,
+            "root": "/var/www/html"
+          }
+        ]
       },
       "expect": {
         "code": 0,
         "dataContains": {
-          "mode": "site"
+          "mode": "simple",
+          "output": "bundle",
+          "summary": {
+            "fileCount": 3,
+            "siteCount": 1
+          }
         }
       }
     },
     {
-      "name": "生成全局配置",
+      "name": "简单模式生成单文件配置",
       "request": {
-        "mode": "global",
-        "workerProcesses": 4
+        "mode": "simple",
+        "output": "single",
+        "preset": "static",
+        "sites": [
+          {
+            "id": "s1",
+            "serverName": "example.com",
+            "root": "/var/www/html"
+          }
+        ]
       },
       "expect": {
         "code": 0,
         "dataContains": {
-          "mode": "global"
+          "mode": "simple",
+          "output": "single",
+          "summary": {
+            "fileCount": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "简单模式支持多站点",
+      "request": {
+        "mode": "simple",
+        "output": "single",
+        "preset": "static",
+        "sites": [
+          {
+            "id": "a",
+            "serverName": "a.example.com",
+            "root": "/var/www/a"
+          },
+          {
+            "id": "b",
+            "serverName": "b.example.com",
+            "root": "/var/www/b"
+          }
+        ]
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "mode": "simple",
+          "output": "single",
+          "summary": {
+            "fileCount": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "高级模式按配置树生成",
+      "request": {
+        "mode": "advanced",
+        "output": "single",
+        "nodes": [
+          {
+            "type": "directive",
+            "context": "main",
+            "name": "worker_processes",
+            "args": "4"
+          }
+        ]
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "mode": "advanced",
+          "output": "single"
+        }
+      }
+    },
+    {
+      "name": "打包响应形态附带压缩包",
+      "request": {
+        "mode": "simple",
+        "responseShape": "bundle",
+        "preset": "static",
+        "sites": [
+          {
+            "id": "s1",
+            "serverName": "example.com",
+            "root": "/var/www/html"
+          }
+        ]
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "mode": "simple",
+          "archive": {
+            "entries": 3,
+            "contentType": "application/zip"
+          }
+        }
+      }
+    },
+    {
+      "name": "指定目标版本",
+      "request": {
+        "mode": "simple",
+        "targetVersion": "1.30.6",
+        "preset": "static",
+        "sites": [
+          {
+            "id": "s1",
+            "serverName": "example.com",
+            "root": "/var/www/html"
+          }
+        ]
+      },
+      "expect": {
+        "code": 0,
+        "dataContains": {
+          "targetVersion": "1.30.6"
         }
       }
     },
@@ -38,6 +159,34 @@
       "expect": {
         "code": 400,
         "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "不支持的目标版本",
+      "request": {
+        "mode": "simple",
+        "targetVersion": "0.0.1"
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "INVALID_FIELD"
+      }
+    },
+    {
+      "name": "缺少站点域名",
+      "request": {
+        "mode": "simple",
+        "preset": "static",
+        "sites": [
+          {
+            "id": "s1",
+            "root": "/var/www/html"
+          }
+        ]
+      },
+      "expect": {
+        "code": 400,
+        "errorCode": "MISSING_FIELD"
       }
     }
   ]

@@ -120,46 +120,91 @@ Unix 权限计算与解释。
 
 ## nginx-config
 
-生成 Nginx 全局与站点配置（Nginx Config Generator）。
+生成 Nginx 配置（支持简单模式与高级模式、多站点、多文件输出）。
 
 ### 请求
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `mode` | string | 否 | `global` 全局段 / `site` 站点段，默认 `site` |
-| `serverName` | string | 否 | 站点域名 |
+| `mode` | string | 否 | `simple` 简单模式（默认）/ `advanced` 高级模式 |
+| `output` | string | 否 | `bundle` 多文件（默认）/ `single` 单个完整 `nginx.conf` |
+| `responseShape` | string | 否 | `files` 只返回文件内容（默认）/ `bundle` 额外返回 ZIP 打包内容 |
+| `targetVersion` | string | 否 | 目标 Nginx 版本；留空表示跟随文档版本 |
+| `preset` | string | 否 | 简单模式的场景预设，见下表 |
+| `sites` | array | 否 | 简单模式的站点列表，见下表 |
+| `nodes` | array | 否 | 高级模式的配置树，见下表 |
+
+`preset` 取值：`static` `spa` `tls` `proxy` `loadbalance` `compress` `security` `errorpage` `php`。
+
+### 站点字段
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `id` | string | 否 | 站点标识；用于前端定位 |
+| `fileName` | string | 否 | 站点配置文件名；留空表示按域名自动生成 |
+| `preset` | string | 否 | 站点级预设；留空表示沿用请求级预设 |
+| `serverName` | string | 是 | 站点域名 |
 | `listenPort` | int | 否 | 监听端口，默认 80 |
+| `listenIPv6` | bool | 否 | 是否同时监听 IPv6 |
 | `root` | string | 否 | 站点根目录 |
 | `indexFiles` | array | 否 | 索引文件列表 |
-| `enableSsl` | bool | 否 | 是否启用 HTTPS，默认 `false` |
+| `enableSsl` | bool | 否 | 是否启用 HTTPS |
 | `sslCertificate` | string | 否 | 证书路径 |
 | `sslPrivateKey` | string | 否 | 私钥路径 |
-| `enableProxy` | bool | 否 | 是否启用反向代理，默认 `false` |
+| `tlsProfile` | string | 否 | `modern` / `intermediate` |
+| `enableProxy` | bool | 否 | 是否启用反向代理 |
 | `proxyPass` | string | 否 | 代理目标 |
 | `proxyPath` | string | 否 | 代理路径前缀 |
-| `enableGzip` | bool | 否 | 是否启用 Gzip，默认 `false` |
-| `enableCORS` | bool | 否 | 是否输出 CORS 段，默认 `false` |
-| `allowOrigin` | string | 否 | 允许的来源，默认 `*` |
-| `enableWebSocket` | bool | 否 | 是否启用 WebSocket 升级，默认 `false` |
-| `enableLoadBalance` | bool | 否 | 是否输出 upstream 段，默认 `false` |
-| `upstreams` | array | 否 | 上游地址列表 |
-| `clientMaxBodySize` | string | 否 | 请求体上限，如 `10m` |
-| `workerProcesses` | int | 否 | `global` 模式下的 worker 进程数 |
+| `enableWebSocket` | bool | 否 | 是否启用 WebSocket 升级 |
+| `enableLoadBalance` | bool | 否 | 是否启用负载均衡 |
+| `upstreams` | array | 否 | 后端地址列表 |
+| `enableGzip` | bool | 否 | 是否启用压缩 |
+| `enableCache` | bool | 否 | 是否启用静态缓存 |
+| `enableSecurityHeaders` | bool | 否 | 是否输出安全响应头 |
+| `enableErrorPages` | bool | 否 | 是否输出错误页 |
+| `errorPageDir` | string | 否 | 错误页目录 |
+| `enablePhp` | bool | 否 | 是否输出 FastCGI 配置 |
+| `phpSocket` | string | 否 | FastCGI 地址 |
+
+### 配置树节点
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `id` | string | 否 | 节点标识；用于诊断定位 |
+| `type` | string | 是 | `directive` / `block` / `raw` |
+| `context` | string | 否 | 所属上下文，如 `main` `http` `server` `location` |
+| `name` | string | 是 | 指令名或块名 |
+| `args` | string | 否 | 原样参数；保留变量、引号与转义 |
+| `body` | string | 否 | 原样片段内容，仅 `raw` 节点使用 |
+| `file` | string | 否 | 目标文件；留空表示跟随所在层级 |
+| `comment` | string | 否 | 节点前的注释 |
+| `children` | array | 否 | 子节点，仅块节点使用 |
 
 ### 响应
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `mode` | string | 配置模式 |
-| `config` | string | 配置文本 |
-| `sections` | array | 配置段标题 |
-| `warnings` | array | 配置提示 |
+| `mode` | string | 实际使用的配置模式 |
+| `targetVersion` | string | 实际使用的目标版本 |
+| `output` | string | 实际使用的输出形态 |
+| `files` | array | 生成的文件列表 `[{ path, content, size, description }]` |
+| `archive` | object | 打包产物 `{ filename, contentType, base64, entries, uncompressedBytes }`；仅 `responseShape=bundle` 时存在 |
+| `diagnostics` | array | 生成诊断 `[{ level, code, context, nodeId, message }]` |
+| `summary` | object | 摘要 `{ siteCount, fileCount, nodeCount, directiveCount, warningCount, errorCount }` |
 
 ### 错误
 
-`INVALID_FIELD`。
+`INVALID_FIELD`、`MISSING_FIELD`。
 
-> 生成的是**配置片段**，需自行合并到 `nginx.conf`；证书与私钥只输出路径，不输出内容。
+> 两种模式最终都得到**同一棵配置树**，因此渲染结果一致：
+> `output=bundle` 拆成 `nginx.conf`、`conf.d/<站点>.conf`、`snippets/*.conf` 与 `mime.types`；
+> `output=single` 把这些内容原地内联，产物**不依赖任何外部文件**。
+>
+> `diagnostics` 只做事实性检查（指令是否存在、是否在目标版本可用、是否适用于所在上下文），
+> **不**替代目标环境的 `nginx -t`。
+>
+> 规模上限：站点 32 个、配置树 2000 个节点、嵌套 16 层、输出文件 32 个、
+> 单文件 128 KB、合计 1 MB；超出时返回 `INVALID_FIELD`，不静默截断。
 
 ---
 

@@ -323,7 +323,32 @@ GET /api/v1/tools
 
 ---
 
-## 11. WebSocket 协议
+## 11. 指令目录端点
+
+```http
+GET /api/v1/tools/nginx-config/directives?version=1.30.6
+```
+
+返回 Nginx 官方指令目录（只读静态快照）。仅 `nginx-config` 提供该端点，
+其它 slug 返回 `TOOL_NOT_FOUND`。
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `version` | string | 本次响应对应的目标版本 |
+| `versions` | array | 可选的目标版本列表 |
+| `docsVersion` | string | 快照对应的官方文档版本 |
+| `source` | string | 官方文档地址 |
+| `modules` | array | 模块列表 `{ name, title, buildOption, defaultBuild, commercial, docUrl }` |
+| `directives` | array | 指令列表 `{ id, name, module, syntax, default, contexts, block, since, deprecated, removed, commercialParams, available, deprecatedNow, docUrl, summaryZh, summaryEn }` |
+
+- `version` 缺省时返回快照记录的稳定版；传入不存在的版本返回 `INVALID_FIELD`；
+- `commercialParams` 表示该指令**含有**仅商业订阅可用的参数，
+  **不**表示指令本身不可用于开源版；
+- 同样带 `ETag` 与 `Cache-Control: public, max-age=60`。
+
+---
+
+## 12. WebSocket 协议
 
 仅 `ssl-check` 使用流式端点。
 
@@ -332,7 +357,7 @@ GET /api/v1/tools/ssl-check/stream
 Upgrade: websocket
 ```
 
-### 11.1 客户端首帧
+### 12.1 客户端首帧
 
 连接建立后**必须**在 5 秒内发送一帧 JSON，否则服务端以 `1008` 关闭：
 
@@ -376,9 +401,9 @@ Upgrade: websocket
 
 ---
 
-## 12. 调用示例
+## 13. 调用示例
 
-### 12.1 Base64 编码
+### 13.1 Base64 编码
 
 ```bash
 curl -sS -X POST http://localhost:30234/api/v1/tools/base64 \
@@ -397,7 +422,7 @@ curl -sS -X POST http://localhost:30234/api/v1/tools/base64 \
 }
 ```
 
-### 12.2 SM4-GCM 加密
+### 13.2 SM4-GCM 加密
 
 ```bash
 curl -sS -X POST http://localhost:30234/api/v1/tools/symmetric-crypt \
@@ -413,7 +438,7 @@ curl -sS -X POST http://localhost:30234/api/v1/tools/symmetric-crypt \
   }'
 ```
 
-### 12.3 证书解析
+### 13.3 证书解析
 
 ```bash
 curl -sS -X POST http://localhost:30234/api/v1/tools/cert-parse \
@@ -421,7 +446,7 @@ curl -sS -X POST http://localhost:30234/api/v1/tools/cert-parse \
   -d '{"input":{"data":"-----BEGIN CERTIFICATE-----\n…\n-----END CERTIFICATE-----"}}'
 ```
 
-### 12.4 文件加密（multipart）
+### 13.4 文件加密（multipart）
 
 ⚠️ **文件部分必须是最后一个 part**：普通字段先发，文件最后发。
 
@@ -445,7 +470,7 @@ curl -sS -X POST http://localhost:30234/api/v1/tools/sm4-file-crypt \
   -o report.pdf
 ```
 
-### 12.5 触发错误
+### 13.5 触发错误
 
 ```bash
 curl -sS -X POST http://localhost:30234/api/v1/tools/symmetric-crypt \
@@ -469,7 +494,7 @@ curl -sS -X POST http://localhost:30234/api/v1/tools/symmetric-crypt \
 
 ---
 
-## 13. 版本与兼容
+## 14. 版本与兼容
 
 - URL 路径前缀 `/api/v1`。
 - v1 内**只允许**新增**可选**字段；新增字段对旧客户端**必须**可忽略。
@@ -478,7 +503,7 @@ curl -sS -X POST http://localhost:30234/api/v1/tools/symmetric-crypt \
 
 ---
 
-## 14. 相关文档
+## 15. 相关文档
 
 - [errors.md](errors.md) —— 错误码与警告全集
 - [admin.md](admin.md) —— 管理与运维接口

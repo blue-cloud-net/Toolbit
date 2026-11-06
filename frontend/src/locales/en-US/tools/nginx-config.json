@@ -1,68 +1,158 @@
 {
   "name": "Nginx Config Generator",
-  "description": "Generate Nginx configuration snippets for sites or globals, covering proxying, load balancing, SSL, gzip and CORS.",
+  "description": "Generate Nginx configuration from scenarios: simple mode covers common site presets, advanced mode edits official directives by context; multi-file bundle output by default.",
   "category": "System",
   "actions": {
-    "run": "Generate"
+    "run": "Generate",
+    "downloadArchive": "Download bundle",
+    "copyFile": "Copy file",
+    "downloadFile": "Download file"
   },
   "fields": {
     "mode": "Mode",
+    "output": "Output",
+    "targetVersion": "Target version",
+    "preset": "Scenario preset",
+    "sitePreset": "Site preset",
     "serverName": "Server name",
     "listenPort": "Listen port",
-    "root": "Document root",
+    "listenIPv6": "Also listen on IPv6",
+    "root": "Site root",
+    "indexFiles": "Index files",
     "enableSsl": "Enable HTTPS",
     "sslCertificate": "Certificate path",
     "sslPrivateKey": "Private key path",
+    "tlsProfile": "TLS profile",
     "enableProxy": "Enable reverse proxy",
     "proxyPass": "Proxy target",
     "proxyPath": "Proxy path",
-    "enableGzip": "Enable gzip",
-    "enableCors": "Enable CORS",
-    "allowOrigin": "Allowed origin",
     "enableWebSocket": "Enable WebSocket",
     "enableLoadBalance": "Enable load balancing",
-    "upstreams": "Upstream servers"
+    "upstreams": "Backend addresses",
+    "enableGzip": "Enable gzip",
+    "enableCache": "Enable static caching",
+    "enableSecurityHeaders": "Emit security headers",
+    "enableErrorPages": "Emit error pages",
+    "errorPageDir": "Error page directory",
+    "enablePhp": "Emit FastCGI config",
+    "phpSocket": "FastCGI address",
+    "fileName": "Config file name"
   },
   "options": {
     "mode": {
-      "global": "Global",
-      "site": "Site"
-    }
+      "simple": "Simple",
+      "advanced": "Advanced"
+    },
+    "output": {
+      "bundle": "Multi-file bundle",
+      "single": "Single nginx.conf"
+    },
+    "version": {
+      "default": "Follow documented version"
+    },
+    "preset": {
+      "static": "Static site",
+      "spa": "Single page app",
+      "tls": "HTTPS termination",
+      "proxy": "Reverse proxy",
+      "loadbalance": "Load balancing",
+      "compress": "Compression and cache",
+      "security": "Security headers",
+      "errorpage": "Error pages",
+      "php": "PHP / FastCGI"
+    },
+    "sitePreset": {
+      "inherit": "Follow default preset"
+    },
+    "tlsProfile": {
+      "modern": "Modern",
+      "intermediate": "Compatible"
+    },
+    "upstreamsPlaceholder": "127.0.0.1:8081,127.0.0.1:8082",
+    "fileNamePlaceholder": "Leave empty to derive from the domain"
   },
   "results": {
     "config": "Configuration",
-    "sections": "Sections",
-    "warnings": "Warnings",
     "mode": "Mode",
-    "warningCount": "Warnings",
-    "warning": "Warning"
+    "output": "Output",
+    "targetVersion": "Target version",
+    "fileCount": "Files",
+    "diagnostics": "Generation notes",
+    "warning": "Note"
   },
   "examples": [
     {
-      "label": "Generate a site config",
-      "value": "{\"mode\":\"site\",\"serverName\":\"example.com\",\"listenPort\":80,\"root\":\"/var/www/html\"}"
+      "label": "Static site",
+      "value": "{\"mode\":\"simple\",\"preset\":\"static\",\"sites\":[{\"serverName\":\"example.com\",\"root\":\"/var/www/html\"}]}"
     },
     {
-      "label": "Generate a global config",
-      "value": "{\"mode\":\"global\",\"workerProcesses\":4}"
+      "label": "HTTPS site",
+      "value": "{\"mode\":\"simple\",\"preset\":\"tls\",\"sites\":[{\"serverName\":\"secure.example.com\",\"root\":\"/var/www/secure\"}]}"
+    },
+    {
+      "label": "Reverse proxy",
+      "value": "{\"mode\":\"simple\",\"preset\":\"proxy\",\"sites\":[{\"serverName\":\"api.example.com\",\"proxyPass\":\"http://127.0.0.1:8080\"}]}"
     }
   ],
   "hints": {
-    "config": "The output is a configuration snippet; adjust the paths and domain names before using it.",
-    "output": "Enabling load balancing adds a hint to point proxy_pass at the upstream name."
+    "config": "The output is a **complete configuration** (multi-file or single-file): adjust paths and domains before use. The tool only checks structure and context; run `nginx -t` before going live.",
+    "output": "Multi-file output produces `nginx.conf`, site files and snippet files; single-file output inlines everything into one self-contained `nginx.conf`.",
+    "advanced": "Advanced mode draws directives from an official documentation snapshot: filter by context, or type any directive that is missing (third-party modules or newer releases)."
   },
   "faq": [
     {
-      "q": "Does it validate the configuration?",
-      "a": "No, it only assembles the template. Run nginx -t before deploying."
+      "q": "Does it validate the configuration syntax?",
+      "a": "No. The tool checks structure, context and version availability; validate with `nginx -t` on the target version."
     },
     {
-      "q": "Does it obtain certificates?",
-      "a": "No. You supply the certificate and key paths; the tool neither accesses the network nor touches a certificate service."
+      "q": "Which versions does the directive catalogue cover?",
+      "a": "The current snapshot of the official open-source documentation. Pick a target version to see whether a directive is available, deprecated, and which build options its module needs."
+    },
+    {
+      "q": "How do the files fit together in multi-file mode?",
+      "a": "The main configuration includes the site files and snippet files. Unpack the bundle under `/etc/nginx` to use it. Single-file mode contains no `include` and works on its own."
+    },
+    {
+      "q": "Does it request certificates automatically?",
+      "a": "No. You provide the certificate and private key paths; the tool neither goes online nor touches any certificate service."
     }
   ],
   "views": {
-    "summary": "Summary",
-    "config": "Configuration"
+    "summary": "Summary"
+  },
+  "sites": {
+    "add": "Add site",
+    "remove": "Remove",
+    "unnamed": "Unnamed site"
+  },
+  "advanced": {
+    "loading": "Loading the directive catalogue…",
+    "loadFailed": "Failed to load the directive catalogue; check the network and retry.",
+    "catalogSummary": "Loaded {count} official directives from documentation version {version}.",
+    "emptyContext": "No nodes in this context yet.",
+    "nodeType": "Node type",
+    "types": {
+      "directive": "Directive",
+      "block": "Block",
+      "raw": "Raw fragment"
+    },
+    "pickDirective": "Pick or type a directive",
+    "directiveName": "Directive name",
+    "args": "Arguments",
+    "argsPlaceholder": "Arguments are kept verbatim, variables and quotes included",
+    "rawPlaceholder": "Raw fragment content",
+    "rawBody": "Raw fragment",
+    "file": "Target file",
+    "filePlaceholder": "Leave empty to follow the current level",
+    "addNode": "Add node",
+    "addChild": "Add child",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "remove": "Remove",
+    "levels": {
+      "error": "Errors",
+      "warning": "Warnings",
+      "info": "Notes"
+    }
   }
 }

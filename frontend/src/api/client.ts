@@ -5,6 +5,7 @@
  * 统一拆信封，并把 `error.code` 映射为本地化文案。
  */
 import type { Envelope, Meta, Warning } from '@/types/api'
+import type { NginxDirectivesData } from '@/types/nginx'
 import type { CatalogResponse } from '@/types/tools'
 
 /** API 基地址；默认与前端同源。 */
@@ -200,6 +201,25 @@ export function streamURL(slug: string): string {
 
 export function fetchCatalog(options: RequestOptions = {}): Promise<ToolCallResult<CatalogResponse>> {
   return request<CatalogResponse>('/api/v1/tools', { method: 'GET' }, options)
+}
+
+/**
+ * 拉取 Nginx 指令目录。
+ *
+ * 目录是**只读**的静态快照，响应带 ETag 与 Cache-Control，
+ * 浏览器与中间代理都能缓存；因此这里不做本地缓存，
+ * 交给 HTTP 层处理。
+ */
+export function fetchNginxDirectives(
+  version: string,
+  options: RequestOptions = {},
+): Promise<ToolCallResult<NginxDirectivesData>> {
+  const query = version === '' ? '' : `?version=${encodeURIComponent(version)}`
+  return request<NginxDirectivesData>(
+    `/api/v1/tools/nginx-config/directives${query}`,
+    { method: 'GET' },
+    options,
+  )
 }
 
 /**

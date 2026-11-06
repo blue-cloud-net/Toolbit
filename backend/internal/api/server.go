@@ -107,6 +107,7 @@ func (s *Server) Handler() http.Handler {
 	api.GET("/v1/tools", s.handleCatalog)
 	api.Any("/v1/tools/:slug", s.handleTool)
 	api.GET("/v1/tools/:slug/stream", s.handleToolStream)
+	api.GET("/v1/tools/:slug/directives", s.handleNginxDirectives)
 
 	// 探针端点不启用限流，也不参与统计。
 	r.GET("/healthz", s.handleHealthz)

@@ -1,60 +1,116 @@
 {
   "name": "Nginx 配置生成",
-  "description": "按站点或全局模式生成 Nginx 配置片段，覆盖反向代理、负载均衡、SSL、Gzip 与 CORS。",
+  "description": "按场景生成 Nginx 配置：简单模式覆盖常用站点预设，高级模式按上下文编辑官方指令；默认输出多文件配置包。",
   "category": "系统",
   "actions": {
-    "run": "生成"
+    "run": "生成",
+    "downloadArchive": "打包下载",
+    "copyFile": "复制文件",
+    "downloadFile": "下载文件"
   },
   "fields": {
     "mode": "配置模式",
+    "output": "输出方式",
+    "targetVersion": "目标版本",
+    "preset": "场景预设",
+    "sitePreset": "站点预设",
     "serverName": "站点域名",
     "listenPort": "监听端口",
+    "listenIPv6": "同时监听 IPv6",
     "root": "站点根目录",
+    "indexFiles": "索引文件",
     "enableSsl": "启用 HTTPS",
     "sslCertificate": "证书路径",
     "sslPrivateKey": "私钥路径",
+    "tlsProfile": "TLS 档位",
     "enableProxy": "启用反向代理",
     "proxyPass": "代理目标",
     "proxyPath": "代理路径",
-    "enableGzip": "启用 Gzip",
-    "enableCors": "启用跨域",
-    "allowOrigin": "允许来源",
     "enableWebSocket": "启用 WebSocket",
     "enableLoadBalance": "启用负载均衡",
-    "upstreams": "后端服务器"
+    "upstreams": "后端地址",
+    "enableGzip": "启用 Gzip",
+    "enableCache": "启用静态缓存",
+    "enableSecurityHeaders": "输出安全响应头",
+    "enableErrorPages": "输出错误页",
+    "errorPageDir": "错误页目录",
+    "enablePhp": "输出 FastCGI 配置",
+    "phpSocket": "FastCGI 地址",
+    "fileName": "配置文件名"
   },
   "options": {
     "mode": {
-      "global": "全局配置",
-      "site": "站点配置"
-    }
+      "simple": "简单模式",
+      "advanced": "高级模式"
+    },
+    "output": {
+      "bundle": "多文件配置包",
+      "single": "单个 nginx.conf"
+    },
+    "version": {
+      "default": "跟随文档版本"
+    },
+    "preset": {
+      "static": "静态站点",
+      "spa": "单页应用",
+      "tls": "HTTPS 终止",
+      "proxy": "反向代理",
+      "loadbalance": "负载均衡",
+      "compress": "压缩与缓存",
+      "security": "安全响应头",
+      "errorpage": "错误页",
+      "php": "PHP / FastCGI"
+    },
+    "sitePreset": {
+      "inherit": "跟随默认预设"
+    },
+    "tlsProfile": {
+      "modern": "现代",
+      "intermediate": "兼容"
+    },
+    "upstreamsPlaceholder": "127.0.0.1:8081,127.0.0.1:8082",
+    "fileNamePlaceholder": "留空则按域名自动生成"
   },
   "results": {
-    "config": "配置文本",
-    "sections": "配置段",
-    "warnings": "提示",
+    "config": "配置内容",
     "mode": "配置模式",
-    "warningCount": "提示数",
+    "output": "输出方式",
+    "targetVersion": "目标版本",
+    "fileCount": "文件数",
+    "diagnostics": "生成提示",
     "warning": "提示"
   },
   "examples": [
     {
-      "label": "生成站点配置",
-      "value": "{\"mode\":\"site\",\"serverName\":\"example.com\",\"listenPort\":80,\"root\":\"/var/www/html\"}"
+      "label": "生成静态站点配置",
+      "value": "{\"mode\":\"simple\",\"preset\":\"static\",\"sites\":[{\"serverName\":\"example.com\",\"root\":\"/var/www/html\"}]}"
     },
     {
-      "label": "生成全局配置",
-      "value": "{\"mode\":\"global\",\"workerProcesses\":4}"
+      "label": "生成 HTTPS 配置",
+      "value": "{\"mode\":\"simple\",\"preset\":\"tls\",\"sites\":[{\"serverName\":\"secure.example.com\",\"root\":\"/var/www/secure\"}]}"
+    },
+    {
+      "label": "生成反向代理配置",
+      "value": "{\"mode\":\"simple\",\"preset\":\"proxy\",\"sites\":[{\"serverName\":\"api.example.com\",\"proxyPass\":\"http://127.0.0.1:8080\"}]}"
     }
   ],
   "hints": {
-    "config": "生成的是**配置片段**，请按实际路径与域名调整后再使用。",
-    "output": "启用负载均衡时会额外提示把 proxy_pass 指向 upstream 名称。"
+    "config": "生成的是**完整配置**（多文件或单文件），请按实际路径与域名调整后再使用；工具只做结构与上下文检查，上线前请用 `nginx -t` 检查。",
+    "output": "多文件模式会生成 `nginx.conf`、站点文件与片段文件；单文件模式把全部内容内联成一个可直接使用的 `nginx.conf`。",
+    "advanced": "高级模式的指令来自官方文档快照：可按上下文筛选，也可直接输入目录里没有的指令（第三方模块或更新版本）。"
   },
   "faq": [
     {
       "q": "会校验配置语法吗？",
-      "a": "不校验，只做模板拼装。落地前请用 nginx -t 检查。"
+      "a": "不校验。工具只做结构、上下文与版本可用性检查，最终请用目标版本的 `nginx -t` 验证。"
+    },
+    {
+      "q": "指令目录覆盖哪些版本？",
+      "a": "覆盖官方开源版文档的当前快照。目标版本可选，按版本提示指令是否可用、是否已废弃，以及模块需要哪些编译选项。"
+    },
+    {
+      "q": "多文件模式里各文件怎么协作？",
+      "a": "主配置通过 `include` 引入站点文件与片段文件；把整包放到 `/etc/nginx` 下即可生效。单文件模式不含任何 `include`，可单独使用。"
     },
     {
       "q": "会自动申请证书吗？",
@@ -62,7 +118,41 @@
     }
   ],
   "views": {
-    "summary": "摘要",
-    "config": "配置内容"
+    "summary": "摘要"
+  },
+  "sites": {
+    "add": "添加站点",
+    "remove": "删除",
+    "unnamed": "未命名站点"
+  },
+  "advanced": {
+    "loading": "正在加载指令目录……",
+    "loadFailed": "指令目录加载失败，请检查网络后重试。",
+    "catalogSummary": "已加载 {count} 条官方指令，文档版本 {version}。",
+    "emptyContext": "该上下文下还没有节点。",
+    "nodeType": "节点类型",
+    "types": {
+      "directive": "指令",
+      "block": "配置块",
+      "raw": "原样片段"
+    },
+    "pickDirective": "选择或输入指令名",
+    "directiveName": "指令名",
+    "args": "参数",
+    "argsPlaceholder": "参数原样填写，保留变量与引号",
+    "rawPlaceholder": "原样片段内容",
+    "rawBody": "原样片段",
+    "file": "目标文件",
+    "filePlaceholder": "留空则跟随所在层级",
+    "addNode": "添加节点",
+    "addChild": "添加子节点",
+    "moveUp": "上移",
+    "moveDown": "下移",
+    "remove": "删除",
+    "levels": {
+      "error": "错误",
+      "warning": "警告",
+      "info": "提示"
+    }
   }
 }
