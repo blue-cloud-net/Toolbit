@@ -1,15 +1,10 @@
 /**
  * v0.6.0 证书写侧工具的**测试夹具**。
  *
- * 由 `scripts/gen-v060-web-fixtures.py` 生成，请勿手工编辑。
- *
  * ⚠️ 这里的私钥是 `openssl` **一次性生成**的测试密钥，只用于填充示例，
  * **不是**任何真实系统的密钥或证书（见 AGENTS.md §5）。
  *
- * 重新生成：
- *   bash scripts/gen-v060-fixtures.sh <dir>
- *   TOOLBIT_V060_FIXTURES=<dir> go test ./internal/pkisvc -run TestGenerateToolbitP12
- *   python3 scripts/gen-v060-web-fixtures.py <dir>
+ * 材料固定不变，不再重新生成；如需替换，请同步更新对应的契约与单测期望值。
  */
 
 /** 测试用 CA 证书。 */

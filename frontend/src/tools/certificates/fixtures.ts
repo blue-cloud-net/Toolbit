@@ -6,7 +6,7 @@
  *
  * 私钥**不在**此处：本目录只有公开材料。
  *
- * 重新生成：bash scripts/gen-pki-fixtures.sh && python3 scripts/gen-v050-web-fixtures.py
+ * 重新生成：bash scripts/gen-pki-fixtures.sh，随后按需把 PEM 粘贴回本文件。
  */
 
 /** 叶证书（由中间 CA 签发，SAN 含 DNS 与 IP）。 */
