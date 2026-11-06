@@ -44,9 +44,11 @@ func readFrame(t *testing.T, conn *websocket.Conn) streamFrame {
 }
 
 // readUntilTerminal 跳过进度帧，返回首个 result 或 error 帧。
+//
+// 完整扫描的进度帧数量不固定（套件与客户端画像逐项上报），因此上限放宽。
 func readUntilTerminal(t *testing.T, conn *websocket.Conn) streamFrame {
 	t.Helper()
-	for i := 0; i < 8; i++ {
+	for i := 0; i < 512; i++ {
 		frame := readFrame(t, conn)
 		if frame.Type == "progress" {
 			continue
@@ -136,14 +138,14 @@ func TestSSLStreamProbesLocalTLS(t *testing.T) {
 	conn := dialStream(t, srv.URL)
 	defer func() { _ = conn.CloseNow() }()
 
-	payload := []byte(`{"host":"127.0.0.1","port":` + portText + `,"sni":"127.0.0.1"}`)
+	payload := []byte(`{"host":"127.0.0.1","port":` + portText + `,"sni":"127.0.0.1","mode":"quick"}`)
 	if writeErr := conn.Write(context.Background(), websocket.MessageText, payload); writeErr != nil {
 		t.Fatalf("写首帧失败：%v", writeErr)
 	}
 
 	sawProgress := false
 	var result *streamFrame
-	for i := 0; i < 8; i++ {
+	for i := 0; i < 512; i++ {
 		frame := readFrame(t, conn)
 		switch frame.Type {
 		case "progress":
@@ -168,11 +170,16 @@ func TestSSLStreamProbesLocalTLS(t *testing.T) {
 	if !ok {
 		t.Fatalf("结果帧 data 类型不符：%T", result.Data)
 	}
-	if data["host"] != "127.0.0.1" {
-		t.Errorf("host = %v", data["host"])
+	endpoint, okEndpoint := data["endpoint"].(map[string]any)
+	if !okEndpoint || endpoint["host"] != "127.0.0.1" {
+		t.Errorf("endpoint = %v", data["endpoint"])
 	}
-	if certs, okCerts := data["certificates"].([]any); !okCerts || len(certs) == 0 {
-		t.Errorf("未返回证书链：%v", data["certificates"])
+	chain, okChain := data["chain"].(map[string]any)
+	if !okChain {
+		t.Fatalf("未返回证书链：%v", data["chain"])
+	}
+	if certs, okCerts := chain["chain"].([]any); !okCerts || len(certs) == 0 {
+		t.Errorf("链上证书为空：%v", chain["chain"])
 	}
 
 	_, _, readErr := conn.Read(context.Background())

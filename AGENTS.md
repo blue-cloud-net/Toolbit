@@ -29,6 +29,7 @@
 | `backend/internal/toolset/` | 工具装配层：汇总各分类的 `Definitions()` | `tools` `tools/<分类>` |
 | `backend/internal/cryptosvc/` | 密码学**原语**层；所有摘要 / MAC / 对称 / 非对称运算在此**转调 Tongsuo** | `tongsuo-go` |
 | `backend/internal/pkisvc/` | 密钥与 **PKI** 层（密钥生成与格式、X.509、JWK、PKCS 容器） | `tongsuo-go` `cryptosvc` |
+| `backend/internal/tlssvc/` | **传输层**：TLS / NTLS 握手与状态快照（**不拨号**） | `tongsuo-go` |
 | `backend/internal/codecsvc/` | 编码归一化（utf8/hex/base64/base64url）与 PEM/DER 识别 | 标准库 |
 | `backend/internal/toolerr/` | 错误码注册表（唯一来源） | 标准库 |
 | `backend/internal/httpx/` | 响应信封、中间件、requestId | 标准库 |
@@ -44,7 +45,7 @@
 | `scripts/` | 文档与一致性校验脚本（`check-docs.mjs`） | 标准库 |
 | `docs/` | 文档（`standards/` `api/` `_templates/`） | — |
 
-**依赖方向是单向的**：`api → tools → {cryptosvc, pkisvc} → tongsuo-go`。任何反向依赖都是缺陷。
+**依赖方向是单向的**：`api → tools → {cryptosvc, pkisvc, tlssvc} → tongsuo-go`。任何反向依赖都是缺陷。
 
 > 工具目录 YAML 位于 `backend/catalog/` 而非仓库根：`//go:embed` 不能引用上级目录，
 > 单一事实来源必须与 `embed.go` 同目录。
@@ -84,9 +85,11 @@ make docker-down     # 停止并删除容器（保留数据卷）
 
 ## 4. 架构不变量（违反即回归）
 
-1. **只有 `backend/internal/cryptosvc` 与 `backend/internal/pkisvc` 可以 `import tongsuo-go`。** 其他包一律通过这两个包的服务接口调用。
+1. **只有 `backend/internal/cryptosvc`、`backend/internal/pkisvc` 与 `backend/internal/tlssvc` 可以 `import tongsuo-go`。** 其他包一律通过这三个包的服务接口调用。
    - `cryptosvc` —— 密码学**原语**（摘要 / MAC / 对称加解密 / 非对称运算 / 签名）；
-   - `pkisvc` —— 密钥与 **PKI 领域**（密钥生成与格式、X.509、JWK、PKCS 容器）。
+   - `pkisvc` —— 密钥与 **PKI 领域**（密钥生成与格式、X.509、JWK、PKCS 容器）；
+   - `tlssvc` —— **传输层**（TLS / NTLS 握手与状态快照）。它**不拨号**：
+     只接受已建立的 `net.Conn`，出网与私网校验仍归 `netguard`。
 2. **`backend/catalog/tools.yaml` 是工具元数据的唯一来源。** 分类、顺序、传输方式、限流档位、限额只在这里定义；代码与文档都不得另立一份。
 3. **所有工具走后端 API。** 唯一例外是 `websocket-test`（浏览器原生 `WebSocket`），它**没有**后端端点。
 4. **工具响应必须 `Cache-Control: no-store`。** 错误响应同样。
@@ -101,13 +104,15 @@ make docker-down     # 停止并删除容器（保留数据卷）
 12. **不新增依赖而不说明理由。** 变更 `backend/go.mod` / `frontend/package.json` 必须在提交信息中写明 `adds: <pkg> <version>`。
 13. **`backend/` 与 `frontend/` 互不依赖。** 后端不 import 前端产物，前端不 import 后端源码；二者只通过 HTTP 契约耦合。
 14. **`backend/internal/` 只允许被 `backend/` 内的包导入。** 这是 Go 的可见性边界，不得跨越。
-15. **密码学运算一律经 `cryptosvc` / `pkisvc` 转调 `tongsuo-go`。** Toolbit 内**不得**用 Go 标准库 `crypto/*`
-    实现或拼装密码学运算（分组模式链接、填充、KDF、签名与密文格式转换）。标准库仅可用于
+15. **密码学运算一律经 `cryptosvc` / `pkisvc` / `tlssvc` 转调 `tongsuo-go`。** Toolbit 内**不得**用 Go 标准库 `crypto/*`
+    实现或拼装密码学运算（分组模式链接、填充、KDF、签名与密文格式转换），**也不得**用
+    Go 标准库 `crypto/tls` 完成 TLS 握手。标准库仅可用于
     **编码**（hex / base64 / PEM）与**结构解析**（不涉及密钥运算的只读查看）。
     库缺能力时**先向上游提 issue**（登记于 [docs/upstream/tongsuo-go-issues.md](docs/upstream/tongsuo-go-issues.md)），
     **禁止**自行实现兜底。
 16. **两个密码学层的句柄类型互不通用。** `cryptosvc.PrivateKey` 与 `pkisvc.PrivateKey` 各自持有原生句柄，
     都必须显式释放；跨层不得直接传递句柄，只能传 PEM / DER 等**表示层**数据。
+    `tlssvc.State` 同样是**值快照**（不含句柄），可安全长期持有。
 17. **工具实现必须登记在 `backend/internal/toolset`。** 进程入口与 API 测试共用该装配层，
     不允许各自维护一份清单（漏改会导致测试与实际装配不一致）。
 
@@ -119,6 +124,7 @@ make docker-down     # 停止并删除容器（保留数据卷）
 - ❌ 在本仓库任何文件（README、docs、注释、提交信息、配置、测试）中提及任何**参考项目**的名称或路径。
 - ❌ 在日志或响应中输出私钥、口令、请求体、证书正文。
 - ❌ 用 Go 标准库 `crypto/*` 在 Toolbit 内实现或拼装密码学运算（编码与结构解析除外）。
+- ❌ 用 Go 标准库 `crypto/tls` 完成 TLS 握手（走 `tlssvc`）。
 - ❌ 为 `tongsuo-go` 的能力缺口自研兜底实现；缺口必须走上游 issue。
 - ❌ 把 `x509.Name.Add` 用于用户可控输入。
 - ❌ 跳过 `backend/internal/api` 分发器自行注册 `/api` 路由。

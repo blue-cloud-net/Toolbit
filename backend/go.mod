@@ -3,7 +3,7 @@ module github.com/blue-cloud-net/Toolbit/backend
 go 1.25.0
 
 require (
-	github.com/blue-cloud-net/tongsuo-go v0.5.0
+	github.com/blue-cloud-net/tongsuo-go v0.9.0
 	github.com/bufbuild/protocompile v0.14.1
 	github.com/coder/websocket v1.8.15
 	github.com/gin-gonic/gin v1.12.0

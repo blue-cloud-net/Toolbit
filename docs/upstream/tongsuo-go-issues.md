@@ -1,6 +1,6 @@
 # 上游依赖缺口台账（tongsuo-go）
 
-> 状态：Draft ｜ 适用版本：v0.6.0 ｜ 最后更新：2026-10-29
+> 状态：Draft ｜ 适用版本：v0.11.0 ｜ 最后更新：2026-11-06
 
 本文登记 Toolbit 在使用 [`tongsuo-go`](https://github.com/blue-cloud-net/tongsuo-go) 时遇到的**能力缺口**。
 
@@ -13,10 +13,33 @@
 
 | 项 | 值 |
 | --- | --- |
-| tongsuo-go | v0.5.0 |
+| tongsuo-go | v0.9.0（自 v0.5.0 升级；I-03 / I-04 已关闭并删除，其余复核结果见下方清单） |
 | Tongsuo | 8.5.0-pre1（OpenSSL 兼容层 3.5.4） |
 | 平台 | Linux / x86_64 / Go 1.27 |
 | 核实方式 | 直接阅读模块源码 + 运行最小复现程序 |
+
+上游**已补齐、但 Toolbit 尚未接入**的条目（能力仍未进契约，条目继续保留，接入后删除）：
+
+| 条目 | 上游版本 | 上游已提供 |
+| --- | --- | --- |
+| I-01 / I-02 | 0.6.0 | AES-OFB / AES-CFB、`DES-*` / `DES-EDE*` |
+| I-06 | 0.6.0（OAEP）/ 0.8.0（签名可运行） | RSA 的 `sm3` 摘要、`SupportsRSASignatureDigest` |
+| I-07 | 0.6.0 | `FormatSignature` / `SignatureParts` / `SignatureDER` |
+| I-09 | 0.7.0 | `ecdh.PrivateKey.Close` / `PublicKey.Close`（**BREAKING**：`Public()` 改为返回 error） |
+| I-10 | 0.7.0 | SM2 压缩点 C1 的转换与解密 |
+| I-11 | 0.7.0 | PKCS#7 `Sign` / `Verify` / `Encrypt` / `Decrypt` |
+| I-12 | 0.6.0 | JWK 的 OKP 与 `kty: oct` |
+| I-14 | 0.6.0 | `MarshalRSAPublicKeyPKCS1PEM` / `LoadRSAPublicKeyPKCS1PEM` |
+| I-15 | 0.7.0 | `x509.CertificateRequest.Close()` |
+| I-16 | 0.7.0 | `asn1.ParseWithLimits`（`Parse` 默认 128 层） |
+| I-17 | 0.7.0 | `Store.SetDefaultPaths` / `LoadLocations`（铜锁默认路径，非平台信任库） |
+| I-18 | 0.7.0 | `RevokedEntry.SerialHex` / `SerialBigInt`（`Serial` 仅作兼容视图） |
+| I-19 | 0.7.0 | `Certificate.AddExtensionDER` |
+| I-20 | 0.7.0 | `CRLBuilder.RevokeSerial` / `RevokeSerialHex` |
+| I-22 | 0.7.0 | `ChangePassword` / `ChangePasswordWithOptions` 支持外部容器 |
+| I-28 | 0.9.0 | 原生错误队列在**原生操作线程**上采集 |
+
+仍为**真缺口**（上游未有实现）：I-05、I-08、I-13、I-21、I-23 ~ I-27。
 
 ## 1. 缺口总览
 
@@ -24,8 +47,6 @@
 | --- | --- | --- | --- |
 | I-01 | `sym` 缺 AES 的 OFB / CFB | `symmetric-crypt` | 0.3.x |
 | I-02 | `sym` 缺 DES / 3DES | `symmetric-crypt` | 0.4.0 |
-| I-03 | `sym` 未公布 `Names()` × `Options.Padding` 支持矩阵 | `symmetric-crypt` | 0.3.x |
-| I-04 | `sym.Encrypt` 对 AES **静默忽略** `Options.Padding` | `symmetric-crypt` | 0.3.x |
 | I-05 | `asym` 缺 ECIES | `asymmetric-crypt` | 待定 |
 | I-06 | RSA 的签名 / OAEP 不支持 `sm3` 摘要 | `signature` | 0.3.x |
 | I-07 | `asym` 缺签名 DER ↔ 裸值互转 | `signature` | 0.3.x |
@@ -44,6 +65,12 @@
 | I-20 | `x509.CRLBuilder.Revoke` 只接受证书对象 | `crl-gen` | 0.6.0 |
 | I-21 | `x509.CreateCertificate` / `CreateSelfSigned` **立即签名**，之后无法再加扩展 | `cert-gen` | 0.6.0 |
 | I-22 | `pkcs12.ChangePassword` 无法对外部实现产出的容器改密 | `pfx-change-password` | 0.6.0 |
+| I-23 | `ConnectionState` 不含 OCSP 装订响应 | `ssl-check` | 待定 |
+| I-24 | `ConnectionState` 不含 SCT 列表 | `ssl-check` | 待定 |
+| I-25 | 无「会话已复用」标志与 ticket / session 控制 | `ssl-check` | 待定 |
+| I-26 | 不暴露 secure renegotiation / 压缩 / heartbeat 状态 | `ssl-check` | 待定 |
+| I-27 | 无裸握手 / 心跳探测入口 | `ssl-check` | 待定 |
+| I-28 | 握手错误分类在**错误线程**上取原生错误队列 | `ssl-check` | 待定 |
 
 ---
 
@@ -81,44 +108,6 @@
 - 文档注明仅用于兼容既有数据。
 
 **下游影响**　Toolbit 的 `symmetric-crypt` 当前只提供 SM4 与 AES。
-
----
-
-## I-03 `sym` 未公布 `Names()` × `Options.Padding` 支持矩阵
-
-**现象**　`sym.Encrypt(name, key, iv, data, opts)` 接受 `Options.Padding`
-（`pkcs7` / `zero` / `none`），但包文档未说明**哪些名字 × 哪些填充**是合法组合。
-调用方只能在运行期靠错误反推，无法在请求校验阶段判定。
-
-**期望**　二选一：
-
-- (a) 在 `sym` 包文档中给出完整矩阵表；或
-- (b) 提供静态查询入口，如 `sym.Supports(name string, padding string) (bool, error)`。
-
-**验收**　任意非法组合可在**不提交数据**的前提下被判定。
-
-**下游影响**　Toolbit 目前在 `cryptosvc` 自行维护该矩阵。
-
----
-
-## I-04 `sym.Encrypt` 对 AES **静默忽略** `Options.Padding`
-
-**现象**　`sym.Encrypt` 的按名路径中，AES 分支直接调用
-`EncryptAESCBC` / `EncryptAESCTR` / `EncryptAESECB`，**完全忽略** `opts.Padding`；
-而 SM4 的 ECB / CBC 走 `encryptSM4WithPad(..., pad)`，真正应用了填充。
-因此 `padding: "none"` 或 `"zero"` 传给 AES 时会被静默当成 pkcs7 处理。
-
-**影响**　调用方以为拿到的是无填充密文，实际却是 pkcs7 密文；若另一端按
-`none` 解密，必然失败，且失败原因被掩盖。
-
-**期望**　AES 分支要么应用 `opts.Padding`，要么对不受支持的填充值**显式报错**
-（返回包装 `sym.ErrUnsupported` 的错误），不得静默忽略。
-
-**验收**　`sym.Encrypt("AES-128-CBC", key, iv, data, &sym.Options{Padding: "none"})`
-要么产出与 `none` 一致的密文，要么返回明确错误。
-
-**下游影响**　Toolbit 已在 `cryptosvc` 层显式拦截：只有 SM4 的 ECB / CBC 接受
-`zero` / `none`，其余组合返回 `UNSUPPORTED_PADDING`。
 
 ---
 
@@ -474,9 +463,138 @@ PEM 块标签为 `RSA PUBLIC KEY` 的输入同样被显式拒绝。
 
 ---
 
+## I-23 `ConnectionState` 不含 OCSP 装订响应
+
+**现象**　`tls.Conn.ConnectionState()` 提供了版本、套件、ALPN、密钥交换组、
+对端签名算法与对端证书 DER，但没有 **OCSP 装订响应**（TLS 扩展
+`status_request` 的响应内容）与「服务端是否携带装订」这一标志。
+
+**期望**　在 `ConnectionState` 中补两个字段：
+
+- `OCSPStapled bool` —— 是否携带了装订响应；
+- `OCSPResponse []byte` —— 装订响应原文（DER）。
+
+**验收**　对一个带装订的本地服务端握手，`ConnectionState().OCSPStapled` 为 `true`，
+且 `OCSPResponse` 可直接交给 `x509.ParseOCSPResponseDER` 解析。
+
+**下游影响**　Toolbit 的 `ssl-check` 目前把 `features.ocspStapling` 标为
+`unavailable`，吊销结论改用**主动 OCSP 查询**（读证书 AIA 地址）。
+该特征不参与计分，也不触发档位上限。
+
+---
+
+## I-24 `ConnectionState` 不含 SCT 列表
+
+**现象**　TLS 扩展 `signed_certificate_timestamp`（RFC 6962）里的 SCT 列表
+不在 `ConnectionState` 中；证书**内嵌**的 SCT 扩展可由 `x509` 读到，
+但 TLS 握手中的那份拿不到。
+
+**期望**　在 `ConnectionState` 中补 `SignedCertificateTimestamps [][]byte`。
+
+**验收**　对一个带 SCT 的服务端握手，列表非空且每项可按 RFC 6962 解析。
+
+**下游影响**　Toolbit 的 `ssl-check` 目前只统计证书内嵌的 SCT 数量，
+TLS 扩展形式的 SCT 标为 `unavailable`。
+
+---
+
+## I-25 无「会话已复用」标志与 ticket / session 控制
+
+**现象**　`tls.Config` 没有会话缓存（`ClientSessionCache`）与 ticket 控制入口；
+`ConnectionState` 也不报告「本次握手是否复用了会话」。
+因此无法回答「服务端支持会话恢复吗」这个问题。
+
+**期望**
+
+- `Config.ClientSessionCache`（或等价的 `SetSessionCache`）；
+- `ConnectionState.SessionReused bool`。
+
+上游路线图已把「session / ticket 控制」排到 0.10.0–0.12.0，本条只是补充
+「复用标志」这一项。
+
+**验收**　同一 `ClientSessionCache` 连续两次握手，第二次的
+`SessionReused` 为 `true`。
+
+**下游影响**　Toolbit 的 `ssl-check` 把 `features.sessionResumption` 标为
+`unavailable`。
+
+---
+
+## I-26 不暴露 secure renegotiation / 压缩 / heartbeat 状态
+
+**现象**　`ConnectionState` 不报告：是否支持安全重协商（RFC 5746）、
+是否协商了 TLS 层压缩（CRIME 面）、是否启用了 heartbeat 扩展。
+
+**期望**　在 `ConnectionState` 中补对应布尔字段，或提供只读查询入口。
+
+**验收**　对开启压缩的服务端握手，`ConnectionState` 能报告压缩已启用。
+
+**下游影响**　Toolbit 的 `ssl-check` 把 `features.secureRenegotiation` 与
+`features.compression` 标为 `unavailable`。
+
+---
+
+## I-27 无裸握手 / 心跳探测入口（主动漏洞探测）
+
+**现象**　本库只提供「按标准流程完成握手」的客户端，没有暴露
+**裸握手 / 报文级**接口：发送畸形 ClientHello、构造空 CCS 记录、
+发起 TLS 1.3 key update、发送超长心跳负载等。
+
+因此无法实现主动漏洞探测：Heartbleed、ROBOT、CCS-Injection、POODLE、
+Ticketbleed。
+
+**期望**　提供一个**受控的**报文级接口（例如 `RawHandshake` /
+`SendRecord`），允许调用方发送自定义记录并读取对端响应；
+至少覆盖心跳负载与空 CCS 两种。
+
+**说明**　Toolbit 侧**不会**自行拼装 TLS 报文（见 AGENTS.md §4.15 / §5），
+因此该能力只能来自上游；在此之前这些检测项一律标为「不可测」。
+
+**下游影响**　Toolbit 的 `ssl-check` 不覆盖上述 5 项主动探测，
+并在 API 文档与工具页 FAQ 中显式写明原因。
+
+---
+
+## I-28 握手错误分类在**错误线程**上取原生错误队列
+
+**现象**　`Conn.HandshakeContext` 把握手放在**后台 goroutine** 里执行，
+而 `classifyHandshakeErr` 在**调用方 goroutine** 上调用
+`core.DrainErrors()` 读取原生错误队列。
+
+OpenSSL 的错误队列是**线程局部**的：后台 goroutine 里的错误留在它自己的
+线程上，调用方线程的队列是空的。于是分类结果恒为 `HandshakeErrorOther`。
+
+实测（v0.9.0，本地回环）：
+
+| 场景 | 期望分类 | 实际分类 |
+| --- | --- | --- |
+| 客户端只支持 TLS 1.3、服务端只支持 TLS 1.2 | `HandshakeErrorVersion` | `HandshakeErrorOther` |
+| 客户端与服务端无共同套件 | `HandshakeErrorCipher` | `HandshakeErrorOther` |
+
+原生错误文本本身是对的（`tlsv1 alert protocol version` /
+`ssl/tls alert handshake failure`），只是**归类**丢了。
+
+**期望**　在**握手发生的那个 goroutine**（或它绑定的 OS 线程）上完成分类；
+例如让 `HandshakeContext` 在后台 goroutine 内自行分类，再把结果传回。
+
+**验收**　上述两个场景分别得到 `HandshakeErrorVersion` 与 `HandshakeErrorCipher`。
+
+**下游影响**　Toolbit 的 `ssl-check` **不依赖**该分类做结论：
+
+- 协议版本与套件的结论靠**对照握手**（同一目标、逐项放宽参数）得出；
+- 客户端模拟的失败归因同样靠**逐步放宽**得出（版本 → 套件 → 组）；
+- 只有「本机发不出去的套件名」这类**配置期**失败才依赖分类，
+  它走的是 `ErrNoSharedCipher` 哨兵，不经过原生错误队列。
+
+---
+
 ## 2. 维护约定
 
-- 上游发布新版本后，**逐条**复核本台账：已修复的条目直接删除，并在
-  对应的 Toolbit 版本把该能力加回 API 契约；
+- 上游发布新版本后，**逐条**复核本台账，分两种情况处置：
+  - **上游已补齐且 Toolbit 已接入**：删除该条目，并在 §0 的核实环境里注明关闭；
+  - **上游已补齐但 Toolbit 尚未接入**：条目**保留**（它仍解释着当前的工具行为），
+    并登记到 §0 的「上游已补齐、但尚未接入」清单，接入后连同条目一起删除。
+- 「接入」的判据是**代码真的用了新能力**，而不是上游发了版本：能力没进契约，
+  条目不删。
 - 新发现的缺口追加到本文件，并在同一次提交里向 upstream 提交 issue；
 - 本文件只登记**能力缺口**，不登记实现偏好或风格建议。

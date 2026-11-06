@@ -22,7 +22,10 @@ const (
 	// firstFrameTimeout 是等待客户端首帧的上限。
 	firstFrameTimeout = 5 * time.Second
 	// streamBudget 是单次任务的总预算。
-	streamBudget = 30 * time.Second
+	//
+	// 完整扫描包含协议矩阵、套件矩阵、客户端模拟与出网附加检查，
+	// 总握手数可达 50 次以上，因此预算放宽到 180 秒。
+	streamBudget = 180 * time.Second
 	// streamIdleTimeout 是空闲多久后关闭。
 	streamIdleTimeout = 60 * time.Second
 	// streamPingInterval 是心跳间隔。
@@ -43,8 +46,12 @@ type streamFrame struct {
 	Done int `json:"done,omitempty"`
 	// Total 是阶段总数（仅 progress）。
 	Total int `json:"total,omitempty"`
+	// Item 是当前正在处理的项（仅 progress，如套件名或客户端画像 id）。
+	Item string `json:"item,omitempty"`
 	// Data 是结果（仅 result）。
 	Data any `json:"data,omitempty"`
+	// Warnings 是警告列表（仅 result）。
+	Warnings []toolerr.Warning `json:"warnings,omitempty"`
 	// Error 是错误（仅 error）。
 	Error *streamError `json:"error,omitempty"`
 }
@@ -165,31 +172,32 @@ func (s *Server) handleToolStream(c *gin.Context) {
 	}
 
 	opts := input.toOptions()
-	if validErr := network.ValidateTLSProbe(&opts); validErr != nil {
+	if validErr := network.ValidateScanOptions(&opts); validErr != nil {
 		s.writeErrorFrame(ctx, conn, tools.Normalize(validErr))
 		_ = conn.Close(websocket.StatusPolicyViolation, "invalid input")
 		return
 	}
 
-	result, probeErr := network.TLSProbe(ctx, s.network, opts, func(progress network.TLSProgress) {
+	result, warnings, scanErr := network.ScanTLS(ctx, s.network, opts, func(event network.ScanEvent) {
 		s.writeFrame(ctx, conn, streamFrame{
 			Type:  "progress",
-			Phase: progress.Phase,
-			Done:  progress.Done,
-			Total: progress.Total,
+			Phase: event.Phase,
+			Done:  event.Done,
+			Total: event.Total,
+			Item:  event.Item,
 		})
 	})
-	if probeErr != nil {
-		s.writeErrorFrame(ctx, conn, tools.Normalize(probeErr))
-		if errors.Is(probeErr, context.DeadlineExceeded) {
-			_ = conn.Close(websocket.StatusInternalError, "timeout")
+	if scanErr != nil {
+		s.writeErrorFrame(ctx, conn, tools.Normalize(scanErr))
+		if errors.Is(scanErr, context.DeadlineExceeded) {
+			_ = conn.Close(websocket.StatusTryAgainLater, "budget exhausted")
 			return
 		}
 		_ = conn.Close(websocket.StatusPolicyViolation, "probe rejected")
 		return
 	}
 
-	s.writeFrame(ctx, conn, streamFrame{Type: "result", Data: result})
+	s.writeFrame(ctx, conn, streamFrame{Type: "result", Data: result, Warnings: warnings})
 	_ = conn.Close(websocket.StatusNormalClosure, "")
 }
 
@@ -203,24 +211,27 @@ type streamInput struct {
 	Sni string `json:"sni"`
 	// Depth 是链深度上限。
 	Depth int `json:"depth"`
-	// Versions 是协议版本白名单。
-	Versions []string `json:"versions"`
-	// Ciphers 是密码套件白名单。
-	Ciphers []string `json:"ciphers"`
-	// TimeoutMs 是超时。
-	TimeoutMs int `json:"timeoutMs"`
+	// Mode 是扫描模式：quick / full。
+	Mode string `json:"mode"`
+	// Checks 是要执行的检查项。
+	Checks []string `json:"checks"`
+	// Clients 是要模拟的客户端画像。
+	Clients []string `json:"clients"`
+	// BudgetMs 是总预算。
+	BudgetMs int `json:"budgetMs"`
 }
 
-// toOptions 转成探测参数。
-func (in *streamInput) toOptions() network.TLSProbeOptions {
-	return network.TLSProbeOptions{
-		Host:      in.Host,
-		Port:      in.Port,
-		SNI:       in.Sni,
-		Depth:     in.Depth,
-		Versions:  in.Versions,
-		Ciphers:   in.Ciphers,
-		TimeoutMs: in.TimeoutMs,
+// toOptions 转成扫描参数。
+func (in *streamInput) toOptions() network.ScanOptions {
+	return network.ScanOptions{
+		Host:     in.Host,
+		Port:     in.Port,
+		SNI:      in.Sni,
+		Depth:    in.Depth,
+		Mode:     in.Mode,
+		Checks:   in.Checks,
+		Clients:  in.Clients,
+		BudgetMs: in.BudgetMs,
 	}
 }
 

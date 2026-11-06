@@ -366,34 +366,58 @@ Upgrade: websocket
   "host": "example.com",
   "port": 443,
   "sni": "example.com",
-  "depth": 2,
-  "versions": ["TLS1.3", "TLS1.2"],
-  "timeoutMs": 30000
+  "depth": 5,
+  "mode": "full",
+  "checks": ["protocols", "ciphers", "features", "clients", "cert", "revocation", "caa", "hsts"],
+  "clients": ["chrome", "firefox"],
+  "budgetMs": 60000
 }
 ```
 
-### 11.2 服务端帧
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `host` | string | 是 | 目标主机 |
+| `port` | int | 否 | 默认 `443` |
+| `sni` | string | 否 | SNI 主机名（缺省用 `host`） |
+| `depth` | int | 否 | 证书链深度上限，默认 `5`，最大 `10` |
+| `mode` | string | 否 | `quick` \| `full`，默认 `full` |
+| `checks` | array | 否 | 要执行的检查项；缺省按 `mode` 推导 |
+| `clients` | array | 否 | 要模拟的客户端画像 id；缺省跑全部 |
+| `budgetMs` | int | 否 | 总预算，默认 `60000`，上限 `180000` |
+
+`checks` 的合法取值：`protocols` `ciphers` `features` `clients` `cert` `revocation` `caa` `hsts`；
+出现未知标识返回 `INVALID_FIELD`，**不**静默忽略。
+
+### 12.2 服务端帧
 
 | `type` | 载荷 |
 | --- | --- |
-| `progress` | `{ "phase": "handshake", "done": 1, "total": 2 }` |
-| `result` | `{ "type": "result", "data": { … } }` |
+| `progress` | `{ "phase": "handshake", "done": 1, "total": 9, "item": "TLS_AES_128_GCM_SHA256" }` |
+| `result` | `{ "type": "result", "data": { … }, "warnings": [ … ] }` |
 | `error` | `{ "type": "error", "error": { "code": "TLS_ERROR", "message": "…", "params": {} } }` |
 
-### 11.3 关闭码
+`progress.phase` 取值（顺序即执行顺序）：
+`resolve` → `connect` → `handshake` → `certificate` → `protocols` → `ciphers` →
+`features` → `clients` → `revocation` → `grade`。
+
+`progress.total` 按本次实际启用的检查项**动态计算**，不是固定值；
+`progress.item` 只在 `ciphers` / `clients` 阶段出现，表示当前正在处理的套件名或画像 id。
+
+### 12.3 关闭码
 
 | 码 | 含义 |
 | --- | --- |
 | `1000` | 正常结束 |
 | `1008` | 输入非法或被策略拒绝 |
 | `1011` | 服务端内部错误 |
+| `1013` | 预算耗尽（超时） |
 
-### 11.4 生命周期
+### 12.4 生命周期
 
 - 首帧必须在上线后 5 秒内到达，否则以 `1008` 关闭；
 - 心跳 ping 间隔 30 秒；
 - 空闲 60 秒关闭（兜底）；
-- 单次任务总预算 30 秒；
+- 单次任务总预算 180 秒（完整扫描含约 50 次握手）；
 - 同一 IP **同时最多 1 条**连接，超出返回 `429` + `RATE_LIMITED`（发生在升级之前）。
 
 > 服务端只在任务结束后写 `result` 或 `error` 帧，随后立即以对应关闭码断开。

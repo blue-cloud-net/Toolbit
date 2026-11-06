@@ -1,153 +1,306 @@
 package network
 
-// TLS 探测结果的评级与逐项清单。
-//
-// 评级规则（见 docs/api/tools/ssl-check.md §评级）：
-//
-//	每项检查按「通过 / 不通过」计分，不通过的项按严重度扣分：
-//	  - 证书链无效、主机名不匹配：致命，直接判 T；
-//	  - 未协商出 TLS 1.2 及以上：致命，判 T；
-//	  - 未通过系统信任根验证：重扣，判 C；
-//	  - 未启用 OCSP 装订：轻扣；
-//	  - 未协商出 TLS 1.3：轻扣。
-//
-//	按剩余分映射到等级：
-//	  A+（满分）、A、B、C、T（有致命项）。
-//
-//	评级只描述**本次握手与证书链**的观测结果，不代表站点整体安全评分。
+import "strings"
 
-// TLS 检查项。
-type TLSCheck struct {
-	// ID 是检查项的稳定标识。
-	ID string `json:"id"`
-	// Label 是检查项的中文标签。
-	Label string `json:"label"`
-	// Passed 报告该项是否通过。
-	Passed bool `json:"passed"`
-	// Detail 是补充说明；为空时省略。
-	Detail string `json:"detail,omitempty"`
+// 四象限评级模型。
+//
+// 规则见 docs/tools/ssl-check-refactor.md §10：
+//
+//   - Certificate / Protocols / KeyExchange / CipherStrength 各 100 分，互不抵扣；
+//   - 命中档位上限时取「分数映射等级」与「上限等级」中更严的一个；
+//   - `unavailable` 的检查项不参与计分，也不触发上限，但必须记入 issues。
+
+// gradeOrder 是等级顺序（越大越好）。
+var gradeOrder = []string{"A+", "A", "A-", "B", "C", "D", "E", "F", "M", "T"}
+
+// gradeRank 返回等级的下标；未知等级返回末尾。
+func gradeRank(letter string) int {
+	for i, item := range gradeOrder {
+		if item == letter {
+			return i
+		}
+	}
+	return len(gradeOrder) - 1
 }
 
-// 评级扣分权重。
-const (
-	// scoreFatal 是致命项扣分；扣满即判 T。
-	scoreFatal = 100
-	// scoreTrust 是未通过信任根验证的扣分。
-	scoreTrust = 40
-	// scoreImplicitTrust 是「隐式信任」（无法访问系统信任根）的扣分。
-	scoreImplicitTrust = 20
-	// scoreOCSP 是未启用 OCSP 装订的扣分。
-	scoreOCSP = 5
-	// scoreTLS13 是未协商出 TLS 1.3 的扣分。
-	scoreTLS13 = 5
-	// scoreMax 是满分。
-	scoreMax = 100
-)
+// lowerGrade 返回两个等级中更严的一个。
+func lowerGrade(a, b string) string {
+	if gradeRank(a) >= gradeRank(b) {
+		return a
+	}
+	return b
+}
 
-// gradeOf 按剩余分映射等级。
-func gradeOf(score int) string {
+// gradeOfScore 把平均分映射成等级。
+func gradeOfScore(score int) string {
 	switch {
-	case score >= scoreMax:
+	case score >= 100:
 		return "A+"
-	case score >= 90:
+	case score >= 95:
 		return "A"
-	case score >= 75:
+	case score >= 90:
+		return "A-"
+	case score >= 80:
 		return "B"
-	case score > 0:
+	case score >= 70:
 		return "C"
+	case score >= 60:
+		return "D"
+	case score >= 50:
+		return "E"
 	default:
-		return "T"
+		return "F"
 	}
 }
 
-// evaluateTLSProbe 对探测结果评级并生成逐项清单。
-func evaluateTLSProbe(result *TLSProbeResult) (string, []TLSCheck) {
-	checks := make([]TLSCheck, 0, 6)
-	score := scoreMax
+// certificateScore 计算证书象限得分。
+func certificateScore(cert ScanCertificate, issues *[]GradeIssue) int {
+	score := 100
+	if !cert.ChainValid || !cert.Verified {
+		*issues = append(*issues, GradeIssue{Id: "certUntrusted", Impact: "critical"})
+		return 0
+	}
+	if !cert.SanMatchesHost {
+		*issues = append(*issues, GradeIssue{Id: "certHostnameMismatch", Impact: "critical"})
+		return 0
+	}
+	if cert.DaysRemaining < 0 {
+		*issues = append(*issues, GradeIssue{Id: "certExpired", Impact: "critical"})
+		return 0
+	}
+	if cert.DaysRemaining < 30 {
+		score -= 15
+		*issues = append(*issues, GradeIssue{Id: "certExpiringSoon", Impact: "medium"})
+	}
+	if weakKey(cert) {
+		score -= 15
+		*issues = append(*issues, GradeIssue{Id: "certWeakKey", Impact: "high"})
+	}
+	upper := strings.ToUpper(cert.SignatureAlgorithm)
+	if strings.Contains(upper, "SHA1") || strings.Contains(upper, "MD5") {
+		score -= 10
+		*issues = append(*issues, GradeIssue{Id: "certWeakSignature", Impact: "high"})
+	}
+	if cert.SelfSigned {
+		*issues = append(*issues, GradeIssue{Id: "certSelfSigned", Impact: "unknown"})
+	}
+	return clampScore(score)
+}
 
-	// 1) 证书链完整性。
-	chainDetail := ""
-	if len(result.ChainErrors) > 0 {
-		chainDetail = result.ChainErrors[0]
+// weakKey 判断证书公钥强度是否不足。
+func weakKey(cert ScanCertificate) bool {
+	switch strings.ToUpper(cert.KeyAlgorithm) {
+	case "RSA":
+		return cert.KeyBits > 0 && cert.KeyBits < 2048
+	default:
+		return false
 	}
-	checks = append(checks, TLSCheck{
-		ID:     "chain",
-		Label:  "证书链完整",
-		Passed: result.ChainValid,
-		Detail: chainDetail,
-	})
-	if !result.ChainValid {
-		score -= scoreFatal
+}
+
+// protocolsScore 计算协议象限得分。
+func protocolsScore(protocols []ProtocolResult, issues *[]GradeIssue) int {
+	best := ""
+	for _, item := range protocols {
+		if !item.Supported {
+			continue
+		}
+		switch item.Version {
+		case "TLS1.3":
+			best = "TLS1.3"
+		case "TLS1.2":
+			if best != "TLS1.3" {
+				best = "TLS1.2"
+			}
+		case "TLS1.1", "TLS1.0":
+			if best == "" {
+				best = item.Version
+			}
+		}
+	}
+	switch best {
+	case "TLS1.3":
+		return 100
+	case "TLS1.2":
+		*issues = append(*issues, GradeIssue{Id: "noTLS13", Impact: "low"})
+		return 90
+	case "TLS1.1", "TLS1.0":
+		*issues = append(*issues, GradeIssue{Id: "onlyLegacyTLS", Impact: "high", Detail: best})
+		return 20
+	default:
+		*issues = append(*issues, GradeIssue{Id: "noTLS", Impact: "critical"})
+		return 0
+	}
+}
+
+// keyExchangeScore 计算密钥交换象限得分。
+func keyExchangeScore(negotiated ScanNegotiated, hsts HSTSResult, issues *[]GradeIssue) int {
+	score := 100
+	upper := strings.ToUpper(negotiated.Cipher)
+	switch {
+	case strings.HasPrefix(upper, "RSA_"), strings.HasPrefix(upper, "RSA-"):
+		score = 20
+		*issues = append(*issues, GradeIssue{Id: "rsaKeyExchange", Impact: "high"})
+	case negotiated.KeyExchangeGroup == "":
+		*issues = append(*issues, GradeIssue{Id: "kexGroupUnknown", Impact: "unknown"})
+	}
+	if hsts.Present && hsts.MaxAge > 0 {
+		score += 5
+	}
+	return clampScore(score)
+}
+
+// cipherStrengthScore 计算加密强度象限得分。
+func cipherStrengthScore(negotiated ScanNegotiated, ciphers []CipherResult, issues *[]GradeIssue) int {
+	family, _, _ := describeSuite(negotiated.Cipher)
+	switch family {
+	case "AEAD":
+		return 100
+	case "CBC":
+		*issues = append(*issues, GradeIssue{Id: "cbcCipher", Impact: "medium"})
+		return 80
+	case "RC4", "3DES":
+		*issues = append(*issues, GradeIssue{Id: "legacyCipher", Impact: "high", Detail: family})
+		return 20
 	}
 
-	// 2) 系统信任根验证。
-	trustDetail := ""
-	if result.ImplicitTrust {
-		trustDetail = "未暴露系统信任根，退化为链内自洽判定"
+	// 协商套件不在已知族里时，回落到「是否存在弱套件被接受」的判断。
+	for _, item := range ciphers {
+		if item.Verdict != SuiteSupported {
+			continue
+		}
+		if item.Family == "RC4" || item.Family == "3DES" {
+			*issues = append(*issues, GradeIssue{Id: "legacyCipher", Impact: "high", Detail: item.Name})
+			return 20
+		}
 	}
-	checks = append(checks, TLSCheck{
-		ID:     "trust",
-		Label:  "受信任颁发机构签发",
-		Passed: result.Verified,
-		Detail: trustDetail,
-	})
-	if !result.Verified {
-		if result.ImplicitTrust {
-			score -= scoreImplicitTrust
-		} else {
-			score -= scoreTrust
+	return 90
+}
+
+// gradeCaps 计算档位上限。
+func gradeCaps(result *ScanResult, issues *[]GradeIssue) []string {
+	caps := make([]string, 0, 4)
+	if !result.Certificate.ChainValid || !result.Certificate.Verified {
+		caps = append(caps, "untrusted")
+		*issues = append(*issues, GradeIssue{Id: "capUntrusted", Impact: "critical"})
+	}
+	if !result.Certificate.SanMatchesHost {
+		caps = append(caps, "hostnameMismatch")
+		*issues = append(*issues, GradeIssue{Id: "capHostname", Impact: "critical"})
+	}
+	if result.Certificate.DaysRemaining < 0 {
+		caps = append(caps, "expired")
+		*issues = append(*issues, GradeIssue{Id: "capExpired", Impact: "critical"})
+	}
+	if revoked(result) {
+		caps = append(caps, "revoked")
+		*issues = append(*issues, GradeIssue{Id: "capRevoked", Impact: "critical"})
+	}
+
+	hasModern := false
+	hasTLS13 := false
+	for _, item := range result.Protocols {
+		if !item.Supported {
+			continue
+		}
+		switch item.Version {
+		case "TLS1.3":
+			hasTLS13 = true
+			hasModern = true
+		case "TLS1.2":
+			hasModern = true
+		}
+	}
+	if len(result.Protocols) > 0 && !hasModern {
+		caps = append(caps, "onlyLegacyTLS")
+	}
+	if len(result.Protocols) > 0 && !hasTLS13 {
+		caps = append(caps, "noTLS13")
+	}
+	return caps
+}
+
+// revoked 报告吊销检查是否给出「已吊销」。
+func revoked(result *ScanResult) bool {
+	for _, entry := range result.Revocation.Ocsp {
+		if entry.Status == "revoked" {
+			return true
+		}
+	}
+	for _, entry := range result.Revocation.Crl {
+		if entry.Status == "revoked" {
+			return true
+		}
+	}
+	return false
+}
+
+// capGrade 把档位上限翻译成等级上限。
+func capGrade(capability string) string {
+	switch capability {
+	case "untrusted", "expired":
+		return "T"
+	case "hostnameMismatch":
+		return "M"
+	case "revoked":
+		return "F"
+	case "onlyLegacyTLS":
+		return "B"
+	case "noTLS13":
+		return "A"
+	default:
+		return "A+"
+	}
+}
+
+// gradeScan 计算综合评级。
+//
+// checks 里未启用的检查项不参与计分，但要作为 `unavailable` 记入 issues，
+// 否则用户会把「没测」误读成「没问题」。
+func gradeScan(result *ScanResult, checks map[string]bool) GradeResult {
+	issues := make([]GradeIssue, 0, 8)
+
+	categories := GradeCategories{
+		Certificate:    certificateScore(result.Certificate, &issues),
+		Protocols:      protocolsScore(result.Protocols, &issues),
+		KeyExchange:    keyExchangeScore(result.Negotiated, result.Hsts, &issues),
+		CipherStrength: cipherStrengthScore(result.Negotiated, result.Ciphers, &issues),
+	}
+
+	for _, id := range AllChecks() {
+		if !checks[id] {
+			issues = append(issues, GradeIssue{Id: "skipped:" + id, Impact: "unknown"})
 		}
 	}
 
-	// 3) 协议版本下限。
-	versionOK := result.NegotiatedVersion == "TLS 1.3" ||
-		result.NegotiatedVersion == "TLS 1.2"
-	checks = append(checks, TLSCheck{
-		ID:     "tlsVersion",
-		Label:  "支持 TLS 1.2 及以上",
-		Passed: versionOK,
-		Detail: result.NegotiatedVersion,
-	})
-	if !versionOK {
-		score -= scoreFatal
+	score := (categories.Certificate + categories.Protocols +
+		categories.KeyExchange + categories.CipherStrength) / 4
+	letter := gradeOfScore(score)
+
+	caps := gradeCaps(result, &issues)
+	for _, capability := range caps {
+		letter = lowerGrade(letter, capGrade(capability))
 	}
 
-	// 4) TLS 1.3 支持。
-	tls13 := result.NegotiatedVersion == "TLS 1.3"
-	checks = append(checks, TLSCheck{
-		ID:     "tls13",
-		Label:  "协商出 TLS 1.3",
-		Passed: tls13,
-		Detail: result.NegotiatedVersion,
-	})
-	if !tls13 {
-		score -= scoreTLS13
+	if len(caps) == 0 && score >= 100 && result.Hsts.Present {
+		letter = "A+"
 	}
 
-	// 5) OCSP 装订。
-	checks = append(checks, TLSCheck{
-		ID:     "ocsp",
-		Label:  "携带 OCSP 装订响应",
-		Passed: result.OcspStapled,
-	})
-	if !result.OcspStapled {
-		score -= scoreOCSP
+	return GradeResult{
+		Letter:     letter,
+		Score:      score,
+		Categories: categories,
+		Caps:       caps,
+		Issues:     issues,
 	}
+}
 
-	// 6) 密码套件已协商。
-	cipherOK := result.CipherSuite != ""
-	checks = append(checks, TLSCheck{
-		ID:     "cipher",
-		Label:  "协商出密码套件",
-		Passed: cipherOK,
-		Detail: result.CipherSuite,
-	})
-	if !cipherOK {
-		score -= scoreFatal
-	}
-
+// clampScore 把分数限制在 0..100。
+func clampScore(score int) int {
 	if score < 0 {
-		score = 0
+		return 0
 	}
-	return gradeOf(score), checks
+	if score > 100 {
+		return 100
+	}
+	return score
 }

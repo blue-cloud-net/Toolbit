@@ -10,7 +10,8 @@
 
 - Go 1.25，`CGO_ENABLED=1`（`tongsuo-go` 依赖 cgo）
 - Gin（HTTP 路由与中间件）
-- `github.com/blue-cloud-net/tongsuo-go` v0.5.0（**仅** `backend/internal/cryptosvc` 可导入）
+- `github.com/blue-cloud-net/tongsuo-go` v0.9.0（**仅** `backend/internal/cryptosvc`、
+  `backend/internal/pkisvc` 与 `backend/internal/tlssvc` 可导入）
 - `modernc.org/sqlite`（纯 Go 驱动）
 
 ---
@@ -20,6 +21,8 @@
 ```text
 backend/cmd/toolbit  →  backend/internal/api  →  backend/internal/tools
                      →  backend/internal/cryptosvc  →  tongsuo-go
+                     →  backend/internal/pkisvc     →  tongsuo-go
+                     →  backend/internal/tlssvc     →  tongsuo-go
 ```
 
 后端是**独立 Go 模块**，模块根为 `backend/`，import 路径形如
@@ -28,7 +31,9 @@ backend/cmd/toolbit  →  backend/internal/api  →  backend/internal/tools
 **必须**
 
 - 依赖**单向向下**，禁止反向 import 与循环依赖；
-- `backend/internal/cryptosvc` 是**唯一**允许 `import tongsuo-go` 的包；
+- `backend/internal/cryptosvc`、`backend/internal/pkisvc` 与 `backend/internal/tlssvc`
+  是**仅有的三个**允许 `import tongsuo-go` 的包；
+- `backend/internal/tlssvc` **不得**拨号：它只接受已建立的 `net.Conn`；
 - `backend/internal/httpx` **不得**依赖任何领域包；
 - `backend/internal/catalog` **不得**认识工具实现；
 - 工具之间**禁止**互相 import；需要共用能力时下沉到 `cryptosvc` / `codecsvc` / `netguard`。
@@ -42,6 +47,8 @@ backend/cmd/toolbit  →  backend/internal/api  →  backend/internal/tools
 | `backend/internal/api` | 查目录、协商 Content-Type、限流、超时、Body 限制、Origin 校验、注册路由 | 实现业务算法 |
 | `backend/internal/tools/*` | 解码输入、字段校验、调用服务、编码 DTO | 直接调 `tongsuo-go`、自造错误码、写 SQL |
 | `backend/internal/cryptosvc` | 调 Tongsuo、管理句柄生命周期、算法分发、限额校验 | 感知 HTTP / JSON / Gin |
+| `backend/internal/pkisvc` | 调 Tongsuo 的 X.509 / 容器能力、密钥与证书生命周期 | 感知 HTTP / JSON / Gin |
+| `backend/internal/tlssvc` | 调 Tongsuo 的 TLS 握手、套件枚举、状态快照 | **拨号**、解析域名、私网校验 |
 | `backend/internal/codecsvc` | 编码归一化、PEM/DER 识别 | 感知具体工具 |
 | `backend/internal/netguard` | SSRF 防护、出网策略 | 感知具体工具 |
 | `backend/internal/stats` | 事件写入与聚合 | 感知具体工具的业务语义 |

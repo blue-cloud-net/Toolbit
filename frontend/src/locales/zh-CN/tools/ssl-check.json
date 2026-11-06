@@ -1,6 +1,6 @@
 {
   "name": "SSL 证书检测",
-  "description": "对目标主机做 TLS 握手，流式展示各阶段进度与协商结果、证书链与验证结论。",
+  "description": "对目标主机做多轮 TLS 握手：枚举协议版本与密码套件、模拟各主流客户端握手、解析完整证书链并检查吊销状态，最后给出四象限评级。",
   "category": "网络",
   "actions": {
     "probe": "开始检测"
@@ -9,39 +9,175 @@
     "host": "主机",
     "port": "端口",
     "sni": "SNI",
-    "depth": "链深度上限",
-    "versions": "协议版本",
-    "ciphers": "密码套件",
-    "timeoutMs": "超时（毫秒）"
+    "mode": "检测模式",
+    "checks": "检查项",
+    "clients": "握手模拟"
   },
-  "options": {},
+  "options": {
+    "modeQuick": "快速（协议 + 证书）",
+    "modeFull": "完整（全部检查）",
+    "clientsAll": "留空表示全部客户端"
+  },
+  "checks": {
+    "protocols": "协议版本",
+    "ciphers": "密码套件",
+    "features": "协议特性",
+    "clients": "客户端模拟",
+    "cert": "证书与链",
+    "revocation": "吊销检查",
+    "caa": "CAA 记录",
+    "hsts": "HSTS"
+  },
+  "clients": {
+    "chrome": "Chrome",
+    "firefox": "Firefox",
+    "safari": "Safari",
+    "edge": "Edge",
+    "android": "Android",
+    "ios": "iOS",
+    "java11": "Java 11",
+    "java8": "Java 8",
+    "openssl111": "OpenSSL 1.1.1",
+    "openssl3": "OpenSSL 3.x",
+    "schannel": "Windows Schannel",
+    "go": "Go crypto/tls"
+  },
   "views": {
     "summary": "摘要",
+    "cert": "证书",
     "chain": "证书链",
-    "pem": "证书 PEM"
+    "protocols": "协议",
+    "ciphers": "套件",
+    "features": "特性",
+    "clients": "握手模拟",
+    "pem": "证书 PEM",
+    "json": "JSON"
+  },
+  "phases": {
+    "resolve": "解析域名",
+    "connect": "建立连接",
+    "handshake": "TLS 握手",
+    "certificate": "分析证书",
+    "protocols": "探测协议版本",
+    "ciphers": "探测密码套件",
+    "features": "探测协议特性",
+    "clients": "模拟客户端握手",
+    "revocation": "吊销 / CAA / HSTS",
+    "grade": "计算评级"
+  },
+  "features": {
+    "alpnH2": "HTTP/2（ALPN）",
+    "sessionResumption": "会话恢复",
+    "ocspStapling": "OCSP 装订",
+    "secureRenegotiation": "安全重协商",
+    "compression": "TLS 层压缩",
+    "mustStaple": "证书声明 must-staple"
   },
   "results": {
     "output": "检测结果",
     "progress": "探测进度",
-    "chain": "证书链",
     "grade": "安全评级 {grade}",
-    "checkPass": "通过",
-    "checkFail": "未通过",
+    "gradeScore": "综合得分",
+    "catCertificate": "证书",
+    "catProtocols": "协议",
+    "catKeyExchange": "密钥交换",
+    "catCipherStrength": "加密强度",
     "endpoint": "端点",
-    "address": "解析地址",
+    "address": "连接地址",
     "version": "协议版本",
     "cipher": "密码套件",
-    "chainValid": "证书链有效",
-    "verified": "已通过验证",
-    "implicitTrust": "系统信任",
-    "ocspStapled": "OCSP 装订",
-    "certCount": "证书张数",
-    "chainErrors": "链错误",
-    "certIndex": "#",
+    "keyExchangeGroup": "密钥交换组",
+    "peerSignatureAlgorithm": "对端签名算法",
+    "alpn": "ALPN",
+    "elapsed": "耗时",
     "certSubject": "主题",
     "certIssuer": "签发者",
-    "certValidity": "有效期",
-    "noCerts": "没有取到证书"
+    "certSerial": "序列号",
+    "certValidFrom": "生效时间",
+    "certValidTo": "失效时间",
+    "certDaysRemaining": "剩余天数",
+    "certKey": "公钥",
+    "certSignature": "签名算法",
+    "certSanCount": "SAN 条目数",
+    "certSanMatches": "SAN 覆盖目标",
+    "chainValid": "证书链有效",
+    "verified": "已用信任根验证",
+    "mustStaple": "must-staple",
+    "sctCount": "内嵌 SCT",
+    "chainError": "链错误",
+    "protocolVersion": "版本",
+    "protocolStatus": "结论",
+    "protocolCipher": "协商套件",
+    "supported": "支持",
+    "notSupported": "不支持",
+    "cipherName": "套件",
+    "cipherFamily": "算法族",
+    "cipherBits": "强度位",
+    "cipherKex": "密钥交换",
+    "cipherVerdict": "结论",
+    "clientName": "客户端",
+    "clientEngine": "引擎",
+    "clientStatus": "结论",
+    "clientNegotiated": "协商结果",
+    "caaRecords": "CAA 记录",
+    "caaNone": "无 CAA 记录",
+    "hsts": "HSTS",
+    "hstsAbsent": "未返回 HSTS 头",
+    "empty": "没有可显示的条目",
+    "verdict": {
+      "supported": "支持",
+      "rejected": "拒绝",
+      "unavailable": "不可测"
+    },
+    "status": {
+      "supported": "支持",
+      "not_supported": "不支持",
+      "unavailable": "当前引擎不可测"
+    },
+    "reason": {
+      "noCommonVersion": "无共同协议版本",
+      "noCommonCipher": "无共同密码套件",
+      "handshakeFailure": "握手被拒绝",
+      "network": "网络失败",
+      "timeout": "超时"
+    }
+  },
+  "grade": {
+    "impacts": {
+      "critical": "致命",
+      "high": "高",
+      "medium": "中",
+      "low": "低",
+      "unknown": "未知"
+    },
+    "issues": {
+      "certUntrusted": "证书链无法追溯到受信任根",
+      "certHostnameMismatch": "证书未覆盖目标主机名",
+      "certExpired": "证书已过期",
+      "certExpiringSoon": "证书即将过期（不足 30 天）",
+      "certWeakKey": "公钥强度不足",
+      "certWeakSignature": "证书使用了弱签名算法",
+      "certSelfSigned": "证书为自签名",
+      "noTLS13": "未支持 TLS 1.3",
+      "onlyLegacyTLS": "只支持已淘汰的 TLS 版本",
+      "noTLS": "无法完成任何 TLS 握手",
+      "rsaKeyExchange": "使用 RSA 密钥交换（无前向保密）",
+      "kexGroupUnknown": "未能取到密钥交换组",
+      "cbcCipher": "协商出 CBC 模式套件",
+      "legacyCipher": "服务端仍接受遗留弱套件",
+      "capUntrusted": "证书不可信，评级封顶",
+      "capHostname": "主机名不匹配，评级封顶",
+      "capExpired": "证书已过期，评级封顶",
+      "capRevoked": "证书已吊销，评级封顶",
+      "skipped:protocols": "本次未检测协议版本",
+      "skipped:ciphers": "本次未检测密码套件",
+      "skipped:features": "本次未检测协议特性",
+      "skipped:clients": "本次未做客户端模拟",
+      "skipped:cert": "本次未做证书分析",
+      "skipped:revocation": "本次未做吊销检查",
+      "skipped:caa": "本次未查询 CAA",
+      "skipped:hsts": "本次未检查 HSTS"
+    }
   },
   "examples": [
     {
@@ -51,21 +187,30 @@
   ],
   "hints": {
     "sni": "留空时用主机名做 SNI。",
-    "versions": "留空表示使用默认版本范围（TLS 1.2 起）。",
-    "ciphers": "TLS 1.3 的密码套件无法通过配置裁剪。"
+    "mode": "快速模式只做协议矩阵与证书分析，通常 3–5 秒。",
+    "checks": "取消勾选可以缩短耗时；未执行的项会在评级里标注为「未检测」。",
+    "clients": "留空表示跑全部 12 档客户端画像。"
   },
   "faq": [
     {
-      "q": "为什么显示「验证未完成」？",
-      "a": "本地信任库不可用时只能判断链内是否自洽，此时 `verified` 为 false 并给出警告。"
+      "q": "评级为什么和 SSL Labs 不同？",
+      "a": "本工具只做观测，不与 SSL Labs 的分数对齐。SSLv2/SSLv3、EXPORT 套件与主动漏洞探测都不覆盖，这些项在页面里会明确标出而不是静默省略。"
+    },
+    {
+      "q": "握手模拟等同于真实浏览器吗？",
+      "a": "不等同。它是以各客户端的参数画像（协议范围、套件、ALPN）发起握手，结论是「以这些参数能否握手成功」，不是字节级的 ClientHello 回放。"
+    },
+    {
+      "q": "为什么有「当前引擎不可测」？",
+      "a": "OCSP 装订、会话恢复等状态目前的上游 TLS 库还没有暴露。它们既不参与计分，也不会被当成「不支持」。"
     },
     {
       "q": "目标是内网地址会怎样？",
       "a": "出网防护会拦截私有、环回、链路本地地址，返回 `SSRF_BLOCKED`。"
     },
     {
-      "q": "同一时间能开多条连接吗？",
-      "a": "不能。同一来源 IP 同时只允许 1 条流式连接。"
+      "q": "一次完整检测要多久？",
+      "a": "大约 50 次握手加 5 次出网请求，通常 15–40 秒；慢站点可能接近 2 分钟上限。可以只勾选需要的检查项。"
     }
   ]
 }

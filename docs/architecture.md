@@ -73,6 +73,7 @@ Toolbit/
 │       ├── codecsvc/           编码归一化
 │       ├── cryptosvc/          密码学原语层（可 import tongsuo-go）
 │       ├── pkisvc/             密钥与 PKI 层（可 import tongsuo-go）
+│       ├── tlssvc/             TLS 传输层（可 import tongsuo-go）
 │       ├── httpx/              响应信封、中间件、requestId
 │       ├── netguard/           出网防护
 │       ├── stats/              匿名统计
@@ -132,11 +133,13 @@ flowchart TD
   TOOLSET --> TOOLS
   TOOLS --> CRYPTO[backend/internal/cryptosvc]
   TOOLS --> PKI[backend/internal/pkisvc]
+  TOOLS --> TLSSVC[backend/internal/tlssvc]
   TOOLS --> CODEC[backend/internal/codecsvc]
   TOOLS --> NG[backend/internal/netguard]
   TOOLS --> ERR[backend/internal/toolerr]
   CRYPTO --> TONG[github.com/blue-cloud-net/tongsuo-go]
   PKI --> TONG
+  TLSSVC --> TONG
   CRYPTO --> TONG[NATIVE Tongsuo libcrypto]
   API --> HTTPX[backend/internal/httpx]
   CAT --> YAML[backend/catalog/tools.yaml]
@@ -145,10 +148,12 @@ flowchart TD
 
 **规则**
 
-- 依赖单向向下，`api → tools → {cryptosvc, pkisvc} → tongsuo-go`。
-- `backend/internal/cryptosvc` 与 `backend/internal/pkisvc` 是**仅有的两个**
-  允许 `import tongsuo-go` 的包；前者负责密码学**原语**，
-  后者负责密钥与 **PKI 领域**（生成与格式、X.509、JWK、PKCS 容器）。
+- 依赖单向向下，`api → tools → {cryptosvc, pkisvc, tlssvc} → tongsuo-go`。
+- `backend/internal/cryptosvc`、`backend/internal/pkisvc` 与
+  `backend/internal/tlssvc` 是**仅有的三个**允许 `import tongsuo-go` 的包；
+  依次负责密码学**原语**、密钥与 **PKI 领域**（生成与格式、X.509、JWK、PKCS 容器）、
+  **传输层**（TLS / NTLS 握手与状态快照）。
+- `tlssvc` **不拨号**：只接受已建立的 `net.Conn`，出网与私网校验仍由 `netguard` 负责。
 - 两个密码学层的**句柄类型互不通用**：各自持有原生句柄、都必须显式释放；
   跨层只传 PEM / DER 等表示层数据。
 - `backend/internal/toolset` 是**装配层**：汇总各分类的 `Definitions()`，
@@ -313,6 +318,34 @@ flowchart LR
   以免 tools 层被迫 import `tongsuo-go` 而破坏边界。
 - X.509 / CSR / CRL / ASN.1 能力已在 v0.5.0 落到本层；
   证书签发、CRL 签发、吊销判定、OCSP 与 PKCS 容器在 v0.6.0 补齐。
+
+---
+
+## 4.5 传输层（`backend/internal/tlssvc`）
+
+TLS / NTLS **传输层**封装：`tongsuo-go/tls` 的唯一入口。
+
+| 能力 | 函数 | 说明 |
+| --- | --- | --- |
+| 握手 | `Handshake` | 在**已建立**的 `net.Conn` 上完成握手，返回值快照 |
+| 套件枚举 | `EnumerateSuites` | 指定协议版本下本机可用的全部密码套件 |
+| 套件识别 | `HasSuite` | 套件名是否被本机识别 |
+| 版本枚举 | `Versions` | 可探测的协议版本（TLS 1.0 – 1.3） |
+
+**边界**
+
+- 本包**不拨号**：只接受调用方已建立并校验过的 `net.Conn`；
+  解析、私网校验与钉 IP 全部由 `netguard` 负责，SSRF 防护只有一处实现。
+- 对端证书**不在握手期校验**（`VerifyNone`）：探测工具必须能读到无效证书的细节，
+  链验证由 `pkisvc` 在拿到证书后另行完成。
+- 公开结构体只含 DER / 字符串 / 枚举，**不出现** `tongsuo-go` 的类型。
+- 握手失败按上游的错误种类分类为
+  `noCommonVersion` / `noCommonCipher` / `handshakeFailure` / `network` / `timeout`，
+  **不**做错误文本匹配。
+
+**当前缺口**：OCSP 装订、SCT、会话恢复标志、重协商 / 压缩状态与裸握手探测
+在上游尚不可用，已登记在
+[upstream/tongsuo-go-issues.md](upstream/tongsuo-go-issues.md) I-23 ~ I-27。
 
 ---
 

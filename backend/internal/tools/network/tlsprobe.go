@@ -2,8 +2,8 @@ package network
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/pem"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/blue-cloud-net/Toolbit/backend/internal/netguard"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/pkisvc"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tlssvc"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/toolerr"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/tools"
 )
@@ -27,7 +28,9 @@ const (
 	PhaseChain = "chain"
 )
 
-// TLSTotalPhases 是探测的阶段总数。
+// TLSTotalPhases 是**底层探测**的阶段总数。
+//
+// 完整扫描（`sslscan.go`）另有一套按检查项动态计算的进度，两者不要混用。
 const TLSTotalPhases = 4
 
 // 证书链深度默认值与上限。
@@ -38,20 +41,7 @@ const (
 	maxChainDepth = 10
 )
 
-// tlsVersionNames 是版本名到协议版本号的映射。
-var tlsVersionNames = map[string]uint16{
-	"TLS1.0": tls.VersionTLS10,
-	"TLS1.1": tls.VersionTLS11,
-	"TLS1.2": tls.VersionTLS12,
-	"TLS1.3": tls.VersionTLS13,
-}
-
-// TLSVersions 返回受支持的协议版本名（顺序稳定）。
-func TLSVersions() []string {
-	return []string{"TLS1.3", "TLS1.2", "TLS1.1", "TLS1.0"}
-}
-
-// TLSProbeOptions 是 TLS 探测参数。
+// TLSProbeOptions 是底层 TLS 探测参数。
 type TLSProbeOptions struct {
 	// Host 是目标主机。
 	Host string
@@ -89,7 +79,7 @@ type TLSChainCert struct {
 	Trusted bool `json:"trusted"`
 }
 
-// TLSProbeResult 是一次 TLS 探测的结果。
+// TLSProbeResult 是一次底层 TLS 探测的结果。
 type TLSProbeResult struct {
 	// Host 是目标主机。
 	Host string `json:"host"`
@@ -99,12 +89,22 @@ type TLSProbeResult struct {
 	Addr string `json:"addr"`
 	// Protocol 是协议族名。
 	Protocol string `json:"protocol"`
-	// NegotiatedVersion 是协商出的协议版本。
+	// NegotiatedVersion 是协商出的协议版本短名。
 	NegotiatedVersion string `json:"negotiatedVersion"`
-	// CipherSuite 是协商出的密码套件。
+	// NegotiatedVersionWire 是协商出的协议版本 wire 值。
+	NegotiatedVersionWire uint16 `json:"negotiatedVersionWire"`
+	// CipherSuite 是协商出的密码套件名。
 	CipherSuite string `json:"cipherSuite"`
-	// Certificates 是服务端发送的证书链。
+	// CipherSuiteID 是协商出的密码套件 wire 值。
+	CipherSuiteID uint16 `json:"cipherSuiteId"`
+	// KeyExchangeGroup 是协商出的密钥交换组名；上游未报告时为空。
+	KeyExchangeGroup string `json:"keyExchangeGroup"`
+	// PeerSignatureAlgorithm 是对端握手签名算法；上游未报告时为空。
+	PeerSignatureAlgorithm string `json:"peerSignatureAlgorithm"`
+	// Certificates 是服务端发送的证书链（已解析的展示形态）。
 	Certificates []TLSChainCert `json:"certificates"`
+	// ChainDER 是服务端发送的证书链原始 DER（叶 → 根）。
+	ChainDER [][]byte `json:"-"`
 	// ChainValid 报告链是否通过验证（含主机名匹配）。
 	ChainValid bool `json:"chainValid"`
 	// ChainErrors 是链验证的错误列表。
@@ -113,12 +113,6 @@ type TLSProbeResult struct {
 	Verified bool `json:"verified"`
 	// ImplicitTrust 报告是否退化为「链内自洽」判定。
 	ImplicitTrust bool `json:"implicitTrust"`
-	// OcspStapled 报告服务端是否携带 OCSP 装订响应。
-	OcspStapled bool `json:"ocspStapled"`
-	// Grade 是本次探测的综合评级（A+ / A / B / C / T）。
-	Grade string `json:"grade"`
-	// Checks 是逐项检查结论。
-	Checks []TLSCheck `json:"checks"`
 }
 
 // ValidateTLSProbe 校验探测参数。
@@ -133,22 +127,54 @@ func ValidateTLSProbe(opts *TLSProbeOptions) error {
 		return tools.InvalidField("depth", []string{"0..10"}, opts.Depth)
 	}
 	for _, v := range opts.Versions {
-		if _, ok := tlsVersionNames[strings.ToUpper(strings.TrimSpace(v))]; !ok {
+		if tlssvc.VersionName(wireOfVersionName(v)) == "" {
 			return tools.InvalidField("versions", TLSVersions(), v)
 		}
 	}
 	if len(opts.Ciphers) > 0 {
-		known := cipherSuiteIDs()
-		for _, c := range opts.Ciphers {
-			if _, ok := known[strings.ToUpper(strings.TrimSpace(c))]; !ok {
-				return tools.InvalidField("ciphers", "受支持的密码套件名", c)
-			}
+		_, unknown := splitSuites(opts.Ciphers)
+		if len(unknown) > 0 {
+			return tools.InvalidField("ciphers", "受支持的密码套件名", unknown[0])
 		}
 	}
 	return nil
 }
 
-// TLSProbe 完成一次 TLS 探测。
+// TLSVersions 返回受支持的协议版本名（顺序稳定）。
+func TLSVersions() []string {
+	names := make([]string, 0, len(tlssvc.Versions()))
+	for _, v := range tlssvc.Versions() {
+		names = append(names, v.Name)
+	}
+	return names
+}
+
+// wireOfVersionName 把版本短名转成 wire 值；未知返回 0。
+func wireOfVersionName(name string) uint16 {
+	target := strings.ToUpper(strings.TrimSpace(name))
+	for _, v := range tlssvc.Versions() {
+		if v.Name == target {
+			return v.Wire
+		}
+	}
+	return 0
+}
+
+// splitSuites 把套件名分成「本机认识」与「本机不认识」两组。
+func splitSuites(names []string) (known, unknown []string) {
+	known = make([]string, 0, len(names))
+	for _, name := range names {
+		trimmed := strings.TrimSpace(name)
+		if tlssvc.HasSuite(trimmed) {
+			known = append(known, trimmed)
+			continue
+		}
+		unknown = append(unknown, name)
+	}
+	return known, unknown
+}
+
+// TLSProbe 完成一次底层 TLS 探测。
 //
 // onProgress 可为 nil；非 nil 时按阶段回调，用于 WebSocket 流式反馈。
 func TLSProbe(
@@ -166,7 +192,7 @@ func TLSProbe(
 	if err != nil {
 		return nil, err
 	}
-	timeout, err := resolveTimeout(opts.TimeoutMs, 30000)
+	timeout, err := resolveProbeTimeout(opts.TimeoutMs, 30000)
 	if err != nil {
 		return nil, err
 	}
@@ -183,40 +209,46 @@ func TLSProbe(
 	report(PhaseResolve, 0)
 
 	minVersion, maxVersion := versionRange(opts.Versions)
-	suites, err := cipherSuiteIDsOf(opts.Ciphers)
-	if err != nil {
-		return nil, err
+	suites, unknownSuites := splitSuites(opts.Ciphers)
+	if len(unknownSuites) > 0 {
+		return nil, tools.InvalidField("ciphers", "受支持的密码套件名", unknownSuites[0])
 	}
 
-	report(PhaseConnect, 1)
-	conn, err := g.DialTLS(ctx, netguard.TLSOptions{
-		Host:               host,
-		Port:               port,
-		ServerName:         strings.TrimSpace(opts.SNI),
-		MinVersion:         minVersion,
-		MaxVersion:         maxVersion,
-		CipherSuites:       suites,
-		InsecureSkipVerify: true,
-		HandshakeTimeout:   timeout,
-	})
+	raw, addr, err := g.DialTCP(ctx, host, port)
 	if err != nil {
 		return nil, mapNetError(err)
 	}
-	defer func() { _ = conn.Conn.Close() }()
+	report(PhaseConnect, 1)
 
 	report(PhaseHandshake, 2)
+	session, hsErr := tlssvc.Handshake(ctx, raw, tlssvc.Options{
+		// SNI 缺省时用主机名：直接按 IP 建连时对端拿不到域名，
+		// 多数站点会因此选错证书或直接拒绝握手。
+		ServerName:       trimOr(opts.SNI, host),
+		MinVersion:       minVersion,
+		MaxVersion:       maxVersion,
+		CipherSuites:     suites,
+		HandshakeTimeout: timeout,
+	})
+	if hsErr != nil {
+		return nil, mapHandshakeError(hsErr)
+	}
+	defer func() { _ = session.Close() }()
 
-	state := conn.Conn.ConnectionState()
+	state := session.State()
 	result := &TLSProbeResult{
-		Host:              host,
-		Port:              port,
-		Addr:              conn.Addr.String(),
-		Protocol:          "TLS",
-		NegotiatedVersion: tls.VersionName(state.Version),
-		CipherSuite:       tls.CipherSuiteName(state.CipherSuite),
-		Certificates:      []TLSChainCert{},
-		ChainErrors:       []string{},
-		OcspStapled:       len(state.OCSPResponse) > 0,
+		Host:                   host,
+		Port:                   port,
+		Addr:                   addr.String(),
+		Protocol:               "TLS",
+		NegotiatedVersion:      state.VersionName,
+		NegotiatedVersionWire:  state.Version,
+		CipherSuite:            state.CipherName,
+		CipherSuiteID:          state.CipherSuite,
+		KeyExchangeGroup:       state.KeyExchangeGroup,
+		PeerSignatureAlgorithm: state.PeerSignatureAlgorithm,
+		Certificates:           []TLSChainCert{},
+		ChainErrors:            []string{},
 	}
 
 	depth := opts.Depth
@@ -227,20 +259,34 @@ func TLSProbe(
 	if len(peers) > depth {
 		peers = peers[:depth]
 	}
-	for _, peer := range peers {
-		result.Certificates = append(result.Certificates, chainCertOf(peer.Raw))
+	result.ChainDER = peers
+	for _, der := range peers {
+		result.Certificates = append(result.Certificates, chainCertOf(der))
 	}
 
 	report(PhaseChain, 3)
-	rawChain := make([][]byte, 0, len(peers))
-	for _, peer := range peers {
-		rawChain = append(rawChain, peer.Raw)
-	}
 	result.ChainValid, result.Verified, result.ImplicitTrust, result.ChainErrors =
-		verifyPeerChain(rawChain, host)
-	result.Grade, result.Checks = evaluateTLSProbe(result)
+		verifyPeerChain(peers, host)
 	report(PhaseChain, TLSTotalPhases)
 	return result, nil
+}
+
+// resolveProbeTimeout 把毫秒超时转成 time.Duration。
+//
+// 上限比普通工具的 `resolveTimeout` 宽：完整扫描的总预算可达 180 秒，
+// 而底层探测要把这笔预算传给单次握手。
+func resolveProbeTimeout(ms, def int) (time.Duration, error) {
+	if ms == 0 {
+		ms = def
+	}
+	if ms < 1 || ms > maxScanBudgetMs {
+		return 0, toolerr.Newf(toolerr.CodeInvalidField, map[string]any{
+			"field":    "timeoutMs",
+			"expected": fmt.Sprintf("1..%d", maxScanBudgetMs),
+			"actual":   ms,
+		})
+	}
+	return time.Duration(ms) * time.Millisecond, nil
 }
 
 // chainCertOf 把 DER 证书转成对外结构。
@@ -398,7 +444,7 @@ func splitPEMBlocks(data []byte) [][]byte {
 
 // versionRange 把版本名集合折叠成闭区间。
 //
-// 未指定时返回零值，交给 Go 的默认值（TLS1.2 起）。
+// 未指定时返回零值，交给上游默认值。
 func versionRange(names []string) (uint16, uint16) {
 	if len(names) == 0 {
 		return 0, 0
@@ -406,8 +452,8 @@ func versionRange(names []string) (uint16, uint16) {
 	minVersion := uint16(0xffff)
 	maxVersion := uint16(0)
 	for _, name := range names {
-		v, ok := tlsVersionNames[strings.ToUpper(strings.TrimSpace(name))]
-		if !ok {
+		v := wireOfVersionName(name)
+		if v == 0 {
 			continue
 		}
 		if v < minVersion {
@@ -423,34 +469,13 @@ func versionRange(names []string) (uint16, uint16) {
 	return minVersion, maxVersion
 }
 
-// cipherSuiteIDs 返回全部可配置密码套件的名字到 ID 映射。
-func cipherSuiteIDs() map[string]uint16 {
-	out := make(map[string]uint16)
-	for _, suite := range tls.CipherSuites() {
-		out[strings.ToUpper(suite.Name)] = suite.ID
-	}
-	for _, suite := range tls.InsecureCipherSuites() {
-		out[strings.ToUpper(suite.Name)] = suite.ID
-	}
-	return out
-}
-
-// cipherSuiteIDsOf 把套件名解析为 ID 列表。
+// mapHandshakeError 把传输层握手失败映射成错误码。
 //
-// 为空表示使用默认套件。注意 TLS 1.3 的套件无法通过配置裁剪，
-// 这一点会在 API 文档中说明。
-func cipherSuiteIDsOf(names []string) ([]uint16, error) {
-	if len(names) == 0 {
-		return nil, nil
+// 版本 / 套件无交集说明「目标不支持这套参数」，这是探测的**结论**而不是故障，
+// 因此统一返回 `TLS_ERROR`，由调用方按需降级为「不支持」。
+func mapHandshakeError(err error) error {
+	if err == nil {
+		return nil
 	}
-	known := cipherSuiteIDs()
-	out := make([]uint16, 0, len(names))
-	for _, name := range names {
-		id, ok := known[strings.ToUpper(strings.TrimSpace(name))]
-		if !ok {
-			return nil, toolerr.New(toolerr.CodeUnsupportedAlgorithm)
-		}
-		out = append(out, id)
-	}
-	return out, nil
+	return toolerr.Wrap(toolerr.CodeTLSError, err)
 }

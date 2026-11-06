@@ -11,6 +11,29 @@
 
 ### Changed
 
+- **`ssl-check` 重构为多轮 TLS 扫描**（**Breaking**：WebSocket 帧与结果结构变更）
+  - 从「单次握手 + 6 项检查」扩为**协议矩阵**（TLS 1.0–1.3 逐档探测）、
+    **套件矩阵**（逐套件握手判定）、**协议特性**、**客户端握手模拟**（12 档画像）、
+    **证书链全量分析**（与 `cert-chain-parse` 输出同构）与**四象限评级**
+    （证书 / 协议 / 密钥交换 / 加密强度）
+  - 首帧新增 `mode` `checks` `clients` `budgetMs`；`progress.total` 不再恒为 4，
+    改为按启用的检查项动态计算，并新增 `progress.item`
+  - 评级字母扩展为 `A+` `A` `A-` `B` `C` `D` `E` `F` `M` `T`，
+    并引入**档位上限**（不可信 → `T`、主机名不匹配 → `M`、已吊销 → `F`、
+    仅 TLS 1.0/1.1 → `B`、无 TLS 1.3 → `A`）
+  - 不可测的项（OCSP 装订、会话恢复、安全重协商、TLS 压缩）一律标为 `unavailable`，
+    **不**参与计分也**不**触发上限，与「不支持」严格区分
+  - 流式会话总预算由 30 秒放宽到 180 秒；catalog 的 `timeoutMs` 由 30000 提到 120000
+  - 设计记录见 [docs/tools/ssl-check-refactor.md](docs/tools/ssl-check-refactor.md)
+- **TLS 握手改由铜锁承担**：新增 `backend/internal/tlssvc` 作为**传输层**，
+  与 `cryptosvc` / `pkisvc` 并列为仅有的三个可 `import tongsuo-go` 的包；
+  `ssl-check` 与 `cert-chain-fetch` 不再用 Go 标准库 `crypto/tls` 握手
+  - 换来的是 TLS 1.3 套件的**逐项裁剪**、ALPN / 密钥交换组 / 对端签名算法的可见性
+  - `tlssvc` **不拨号**：只接受已建立的连接，出网与私网校验仍归 `netguard`
+  - `netguard` 新增 `DialTCP`：一次解析、钉住 IP，后续多次握手复用同一地址
+- **`tongsuo-go` 升级 v0.5.0 → v0.9.0**
+  - `sym` 的 `Options.Padding` 自 v0.6.0 起对所有模式生效：流式模式只接受 `none`，
+    本层在调用上游前折算，**对外契约不变**
 - **工具拆分：速查表与 DNS 综合检测各拆成独立工具**（**Breaking**：API 路径变更）
   - `lookup-table` 拆成 **`common-ports`**（常用端口查询）、**`exit-code`**（退出码查询）、
     **`time-format`**（时间格式速查）：三个工具各带自己的数据集与契约测试，

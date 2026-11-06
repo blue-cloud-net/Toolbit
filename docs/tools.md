@@ -1061,7 +1061,7 @@
 | 工具 | slug | 一句话用途 |
 | --- | --- | --- |
 | CIDR 计算 | `cidr-calc` | 子网地址换算与可视化 |
-| SSL 证书检测 | `ssl-check` | 现场握手并检查证书链 |
+| SSL 证书检测 | `ssl-check` | 多轮握手扫描：协议 / 套件矩阵、客户端握手模拟、证书链全量分析与四象限评级 |
 | DNS 查询 | `dns-lookup` | 多服务器（主用 / 备用 / TCP / DoT / DoH）对比查询各类 DNS 记录 |
 | DNS 服务器大全 | `dns-servers` | 常用公共 DNS 的 UDP / TCP / DoT / DoH 端点清单（键入即时筛选） |
 | WHOIS 查询 | `dns-whois` | 域名 / IP 的注册信息（RDAP 优先，whois 回退） |

@@ -1511,11 +1511,11 @@ tools:
     transport: websocket
     rateClass: network
     maxBodyBytes: 1048576
-    timeoutMs: 30000
+    timeoutMs: 120000
     sensitive: false
     requiresNetwork: true
     autoRun: false
-    wide: false
+    wide: true
     i18nKey: tools.ssl-check
 
   - slug: dns-lookup

@@ -66,14 +66,17 @@ func SymModes(algorithm string) []string {
 
 // SymPaddings 返回某算法与模式组合支持的填充方式。
 //
-// ⚠️ 这是本层**自行维护**的支持矩阵：tongsuo-go 的 by-name 入口
-// 会对 AES **静默忽略** padding 参数（恒用 pkcs7），
-// 若不显式拦截，`padding: none` 的 AES 密文将无法按预期解密。
+// 上游自 v0.6.0 起对所有模式统一处理 `Options.Padding`，并提供了
+// `sym.Supports` / `sym.Paddings` 查询入口（原 I-03 / I-04 已关闭）。
+// 本层仍保留自己的对外矩阵，原因是对外契约与上游矩阵**不完全一致**：
+// 契约把「填充」列为通用字段，流式模式与 AEAD 也要求给出一个值。
 //
 // 规则：
-//   - GCM 是 AEAD，没有填充概念，只接受 pkcs7；
+//   - GCM 是 AEAD，没有填充概念，只接受 pkcs7（该值不传给上游）；
 //   - SM4 的 ECB / CBC 支持 pkcs7 / zero / none；
 //   - 其余组合（SM4 流式模式、AES 全部模式）只支持 pkcs7。
+//
+// 流式模式传入上游前会折算成 none，见 symPaddingArg。
 func SymPaddings(algorithm, mode string) []string {
 	switch {
 	case mode == ModeGCM:
@@ -116,11 +119,26 @@ func SymEncrypt(algorithm, mode, padding string, key, iv, plaintext, aad []byte)
 		return ct, tag, nil
 	}
 
-	ct, err := sym.Encrypt(name, key, iv, plaintext, &sym.Options{Padding: padding})
+	ct, err := sym.Encrypt(name, key, iv, plaintext, &sym.Options{Padding: symPaddingArg(mode, padding)})
 	if err != nil {
 		return nil, nil, MapError(err)
 	}
 	return ct, nil, nil
+}
+
+// symPaddingArg 把本层的填充方式折算成上游可接受的值。
+//
+// tongsuo-go v0.6.0 起，`Options.Padding` 对**所有**模式生效：分组模式
+// 接受 pkcs7 / zero / none，流式模式（CTR / OFB / CFB）只接受 none，
+// 传 pkcs7 会返回 ErrUnsupportedPadding。本层对外仍按 pkcs7 报告流式模式的
+// 填充（该参数对流式模式本无意义），因此在调用上游前折叠成 none。
+func symPaddingArg(mode, padding string) string {
+	switch mode {
+	case ModeCTR, ModeOFB, ModeCFB:
+		return sym.PaddingNone
+	default:
+		return padding
+	}
 }
 
 // SymDecrypt 解密。
@@ -163,7 +181,7 @@ func SymDecrypt(algorithm, mode, padding string, key, iv, ciphertext, tag, aad [
 		return pt, nil
 	}
 
-	pt, err := sym.Decrypt(name, key, iv, ciphertext, &sym.Options{Padding: padding})
+	pt, err := sym.Decrypt(name, key, iv, ciphertext, &sym.Options{Padding: symPaddingArg(mode, padding)})
 	if err != nil {
 		return nil, toolerr.Wrap(toolerr.CodeDecryptFailed, err)
 	}

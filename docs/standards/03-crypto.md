@@ -194,14 +194,20 @@ SM2 密文的 `C1C3C2` / `C1C2C3` 顺序与 `04` 前缀在各实现间不统一�
 ### 8.0 服务层归属
 
 - **必须**：密码学**原语**（摘要 / MAC / 对称 / 非对称运算 / 签名）经 `cryptosvc`；
-  密钥与 **PKI 领域**（生成与格式、X.509、JWK、PKCS 容器）经 `pkisvc`。
+  密钥与 **PKI 领域**（生成与格式、X.509、JWK、PKCS 容器）经 `pkisvc`；
+  **传输层**（TLS / NTLS 握手与状态快照）经 `tlssvc`。
 - **必须**：两个密码学层的句柄类型**互不通用**；跨层只传 PEM / DER 等**表示层**数据。
+- **必须**：`tlssvc` **不拨号**；它只接受已建立的 `net.Conn`，
+  解析、私网校验与钉 IP 仍由 `netguard` 负责。
 - **禁止**：在 tools 层直接 import `tongsuo-go`（由 `.golangci.yml` 的 `depguard` 拦截）。
 - **禁止**：用 Go 标准库 `crypto/*` 在 Toolbit 内实现或拼装密码学运算。
-- **例外（v0.7.0 起）**：`crypto/tls` **可以作为 TLS 客户端**使用 —— 它是协议栈调用，
-  不是自行拼装原语。允许的用途仅限**出网探测**（`ssl-check`、`cert-chain-fetch`、
-  DoT / DoH）与 `netguard` 建连；Toolbit **不**把它的输出当作自己的密码学结果，
-  也**不**用它替代 `cryptosvc`。证书链的验证仍走 `pkisvc.VerifyChain`。
+- **例外（v0.7.0 起，v0.11.0 收窄）**：`crypto/tls` **可以作为 TLS 客户端**使用 —— 它是协议栈调用，
+  不是自行拼装原语。允许的用途仅限 **DoT / DoH** 与 `netguard` 的建连；
+  Toolbit **不**把它的输出当作自己的密码学结果，也**不**用它替代 `cryptosvc`。
+  证书链的验证仍走 `pkisvc.VerifyChain`。
+  **自 v0.11.0 起，`ssl-check` 与 `cert-chain-fetch` 的 TLS 握手一律走 `tlssvc`** ——
+  探测工具需要逐版本 / 逐套件裁剪，而标准库无法裁剪 TLS 1.3 套件，
+  且 `crypto/tls` 不暴露 ALPN、密钥交换组与对端握手签名算法。
 
 ### 8.1 DN 构造
 
@@ -455,7 +461,7 @@ multipart 表单是**顺序**的：服务端读到文件部分后就无法回头
 
 ## 14. 禁止清单
 
-- ❌ 在 `cryptosvc` 之外 import `tongsuo-go`。
+- ❌ 在 `cryptosvc` / `pkisvc` / `tlssvc` 之外 import `tongsuo-go`。
 - ❌ 用标准库 `crypto/*` 拼装密码学运算（编码与结构解析除外）。
 - ❌ 为 `tongsuo-go` 的能力缺口自研兜底实现。
 - ❌ 依赖 finalizer 释放句柄。

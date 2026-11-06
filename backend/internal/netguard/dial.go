@@ -41,6 +41,36 @@ func (g *Guard) DialIP(ctx context.Context, network string, addr netip.Addr, por
 	return g.dialer.DialContext(ctx, network, net.JoinHostPort(addr.Unmap().String(), strconv.Itoa(port)))
 }
 
+// DialTCP 与目标主机建立**未加密**的 TCP 连接，并返回实际使用的 IP。
+//
+// 它把「解析 → 全部校验 → 钉 IP」封装成一次调用，供需要自行完成 TLS 握手的
+// 调用方（传输层探测）复用：一次解析可以连续建立多条连接，避免对目标 DNS
+// 造成放大，也避免二次解析被用于 DNS rebinding。
+func (g *Guard) DialTCP(ctx context.Context, host string, port int) (net.Conn, netip.Addr, error) {
+	if err := g.requireEnabled(); err != nil {
+		return nil, netip.Addr{}, err
+	}
+	if !g.allowPort(port) {
+		return nil, netip.Addr{}, &Error{Reason: ReasonPort, Host: host, Port: port}
+	}
+	addrs, err := g.Resolve(ctx, host)
+	if err != nil {
+		return nil, netip.Addr{}, err
+	}
+
+	var lastErr error = &Error{Reason: ReasonHost, Host: host}
+	for _, addr := range addrs {
+		dialCtx, cancel := context.WithTimeout(ctx, dialTimeout)
+		conn, dialErr := g.DialIP(dialCtx, "tcp", addr, port)
+		cancel()
+		if dialErr == nil {
+			return conn, addr, nil
+		}
+		lastErr = dialErr
+	}
+	return nil, netip.Addr{}, lastErr
+}
+
 // DialContext 实现 net.Dialer 的签名，供 http.Transport 使用。
 //
 // 内部完成「解析 → 全部校验 → 按顺序尝试已校验的 IP」。

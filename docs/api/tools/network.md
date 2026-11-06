@@ -1,6 +1,6 @@
 # 网络 API
 
-> 状态：Stable ｜ 适用版本：v0.8.0 ｜ 最后更新：2026-11-05
+> 状态：Stable ｜ 适用版本：v0.11.0 ｜ 最后更新：2026-11-06
 
 覆盖 **13** 个网络类工具。其中 6 个**需要出网**，`websocket-test` 为**纯前端**工具（无后端端点），
 `mime-lookup`、`http-status`、`dns-servers` 与 `common-ports` 为**纯查表**工具（不出网）。
@@ -111,7 +111,10 @@ CIDR 子网计算（**不出网**）。
 
 ## ssl-check
 
-TLS 握手与证书链检测（**流式**，需出网）。
+多轮 TLS 握手扫描：协议 / 套件矩阵、协议特性、客户端握手模拟、证书链全量分析与
+四象限评级（**流式**，需出网）。
+
+> 设计细节见 [../../tools/ssl-check-refactor.md](../../tools/ssl-check-refactor.md)。
 
 ### 传输
 
@@ -128,55 +131,128 @@ WebSocket：`GET /api/v1/tools/ssl-check/stream`。协议细节见 [../README.md
 | `port` | int | 否 | 默认 `443` |
 | `sni` | string | 否 | SNI 主机名（缺省用 `host`） |
 | `depth` | int | 否 | 证书链深度上限，默认 `5`，最大 `10` |
-| `versions` | array | 否 | 如 `["TLS1.3","TLS1.2"]`，缺省用 Go 默认范围 |
-| `ciphers` | array | 否 | 密码套件名列表；TLS 1.3 套件**无法**裁剪 |
-| `timeoutMs` | int | 否 | 超时，默认 `30000` |
+| `mode` | string | 否 | `quick` \| `full`，默认 `full` |
+| `checks` | array | 否 | 要执行的检查项，缺省按 `mode` 推导 |
+| `clients` | array | 否 | 要模拟的客户端画像 id，缺省跑全部 |
+| `budgetMs` | int | 否 | 总预算，默认 `60000`，上限 `180000` |
+
+`checks` 合法取值：`protocols` `ciphers` `features` `clients` `cert` `revocation` `caa` `hsts`。
+
+`mode: quick` 等价于 `checks: ["protocols", "cert"]`。
 
 ### 服务端帧
 
 | `type` | 载荷 |
 | --- | --- |
-| `progress` | `{ phase, done, total }`；`phase` ∈ `resolve` \| `connect` \| `handshake` \| `chain`，`total` 恒为 `4` |
-| `result` | `{ data }`，`data` 见下表 |
+| `progress` | `{ phase, done, total, item? }`；`phase` 见下表；`total` 按启用的检查项动态计算 |
+| `result` | `{ data, warnings? }`，`data` 见下表 |
 | `error` | `{ error: { code, message, params } }` |
+
+`phase` 取值与顺序：
+
+```text
+resolve → connect → handshake → certificate → protocols → ciphers
+        → features → clients → revocation → grade
+```
+
+`item` 只在 `ciphers` / `clients` 阶段出现，表示当前正在处理的套件名或画像 id。
 
 `result.data` 字段：
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `host` / `port` | string / number | 目标 |
-| `addr` | string | 实际连接的 IP |
-| `protocol` | string | 协议族名，固定 `TLS` |
-| `negotiatedVersion` | string | 协商出的版本，如 `TLS1.3` |
-| `cipherSuite` | string | 协商出的套件名 |
-| `certificates` | array | `[{ pem, info }]`，`info` 为证书结构（同 `cert-parse`） |
-| `chainValid` | bool | 链是否通过验证（含主机名匹配） |
-| `chainErrors` | array | 验证错误码列表 |
-| `verified` | bool | 是否用**系统信任根**完成验证 |
-| `implicitTrust` | bool | 是否退化为「链内自洽」判定 |
-| `ocspStapled` | bool | 服务端是否携带 OCSP 装订响应 |
-| `grade` | string | 综合评级：`A+` / `A` / `B` / `C` / `T` |
-| `checks` | array | 逐项检查结论，`[{ id, label, passed, detail? }]` |
+| `endpoint` | object | `{ host, port, sni, addr, elapsedMs }` |
+| `negotiated` | object | `{ version, versionWire, cipher, cipherId, keyExchangeGroup, peerSignatureAlgorithm, alpn }` |
+| `certificate` | object | 叶证书摘要，见下 |
+| `chain` | object | 证书链，**与 `cert-chain-parse` 的响应同构**（`count` / `chain[]` / `ordered` / `missingRoot` / `selfSigned`） |
+| `protocols` | array | `[{ version, versionWire, supported, negotiatedCipher?, reason? }]` |
+| `ciphers` | array | `[{ version, name, id, family, bits, kex, verdict }]` |
+| `features` | array | `[{ id, label, status, detail? }]` |
+| `clients` | array | `[{ id, vendor, os, engine, profileVersion, supported, reason?, negotiatedVersion?, cipher?, alpn? }]` |
+| `caa` | object | `{ queried, records[], permitted, violations[], error? }` |
+| `revocation` | object | `{ ocsp[], crl[] }`，每项 `{ url, status, thisUpdate?, nextUpdate?, error? }` |
+| `hsts` | object | `{ present, maxAge, includeSubDomains, preload, error? }` |
+| `grade` | object | `{ letter, score, categories, caps[], issues[] }` |
+
+`certificate` 字段：
+
+| 字段 | 说明 |
+| --- | --- |
+| `subject` / `issuer` | 单行 DN 文本 |
+| `serial` | 大写十六进制 |
+| `notBefore` / `notAfter` | RFC 3339 |
+| `daysRemaining` | 剩余天数（小数） |
+| `keyAlgorithm` / `keyBits` / `curve` | 公钥画像 |
+| `signatureAlgorithm` | 证书签名算法 |
+| `sanCount` / `sanMatchesHost` | SAN 覆盖情况 |
+| `isCa` / `selfSigned` | 布尔 |
+| `sctCount` / `mustStaple` | 透明度与装订声明 |
+| `chainValid` / `verified` / `implicitTrust` | 链验证结论 |
+| `chainErrors[]` | 链验证错误码 |
+
+#### 稳定标识
+
+`features[].id`、`clients[].id`、`grade.issues[].id` 与 `grade.caps[]` 是**稳定标识**，
+服务端**不**下发本地化文案，前端按 key 本地化。
+
+`features[].id`：`alpnH2` `sessionResumption` `ocspStapling` `secureRenegotiation`
+`compression` `mustStaple`。
+
+`features[].status` ∈ `supported` | `not_supported` | `unavailable`。
+**`unavailable` 与 `not_supported` 是不同结论**：前者表示当前 TLS 引擎拿不到该信息，
+不参与计分，也**不**触发档位上限。
+
+`ciphers[].verdict` ∈ `supported` | `rejected` | `unavailable`。
+
+`clients[].reason` ∈ `noCommonVersion` `noCommonCipher` `noCommonGroup`
+`handshakeFailure` `network` `timeout`。
+
+> 归因靠**逐步放宽**的对照握手（版本 → 套件 → 组）得出，**不**匹配错误文本，
+> 也不依赖上游的握手错误分类（上游在错误线程上取原生错误队列，见
+> [../../upstream/tongsuo-go-issues.md](../../upstream/tongsuo-go-issues.md) I-28）。
 
 #### 评级规则
 
-评级只描述**本次握手与证书链**的观测结果，不代表站点整体安全评分。
+四象限各 100 分，**互不抵扣**：
 
-每项检查按「通过 / 不通过」计分，不通过项按严重度扣分（满分 100）：
+| 象限 | 计分要点 |
+| --- | --- |
+| `certificate` | 链可信 / 主机名匹配为前提；剩余有效期 ≥30 天、密钥强度、签名算法强度各扣分 |
+| `protocols` | 最高支持档：TLS 1.3 = 100、TLS 1.2 = 90、TLS 1.1 / 1.0 = 20 |
+| `keyExchange` | ECDHE/X25519 = 100；RSA 密钥交换 = 20；HSTS 命中 +5（封顶 100） |
+| `cipherStrength` | AEAD = 100；CBC = 80；RC4 / 3DES = 20 |
 
-| 检查项 `id` | 含义 | 不通过扣分 |
-| --- | --- | --- |
-| `chain` | 证书链完整（含主机名匹配） | 100（致命） |
-| `trust` | 受信任颁发机构签发 | 40（未受信任）/ 20（隐式信任） |
-| `tlsVersion` | 支持 TLS 1.2 及以上 | 100（致命） |
-| `tls13` | 协商出 TLS 1.3 | 5 |
-| `ocsp` | 携带 OCSP 装订响应 | 5 |
-| `cipher` | 协商出密码套件 | 100（致命） |
+综合分 = 四象限平均分。档位上限（取最严的一个）：
 
-剩余分映射到等级：`100 → A+`、`≥90 → A`、`≥75 → B`、`>0 → C`、`0 → T`。
+| 条件 | 上限 |
+| --- | --- |
+| 证书不可信 / 已过期 | `T` |
+| 主机名不匹配 | `M` |
+| 证书已吊销 | `F` |
+| 只支持 TLS 1.0 / 1.1 | `B` |
+| 不支持 TLS 1.3 | `A` |
 
-> 隐式信任（无法访问系统信任根）按 20 分计，而非 40 分 —— 它反映的是**探测端**
-> 的信任库缺失，不是服务端的缺陷。
+最终等级 = min(分数映射等级, 上限等级)。等级序列：
+`A+` > `A` > `A-` > `B` > `C` > `D` > `E` > `F` > `M` > `T`。
+
+> 评级只描述**本次扫描的观测结果**，不代表站点整体安全评分，也**不**与 SSL Labs 的分数对齐。
+
+#### 不覆盖的能力
+
+以下项在本工具中**不可测**，相关检查项一律返回 `unavailable`：
+
+| 能力 | 原因 |
+| --- | --- |
+| SSLv2 / SSLv3 | Tongsuo 基于 OpenSSL 3.x 兼容层，协议已被移除 |
+| OCSP 装订响应 | 上游未暴露装订原文（`tongsuo-go` I-23）；吊销结论改用**主动 OCSP 查询** |
+| 会话恢复 | 上游未暴露会话复用标志（I-25） |
+| 安全重协商 / TLS 压缩 | 上游未暴露对应状态（I-26） |
+| SCT（TLS 扩展形式） | 上游未暴露扩展原文（I-24）；证书内嵌 SCT 仍可读 |
+| 握手失败的具体 alert 码 | 上游在错误线程上取原生错误队列（I-28），归因改用对照握手 |
+| Heartbleed / ROBOT / CCS / POODLE / Ticketbleed | 需要构造畸形握手报文；见 [../../upstream/tongsuo-go-issues.md](../../upstream/tongsuo-go-issues.md) I-27 |
+
+> 握手模拟是**参数级近似**，不是 ClientHello 字节回放：扩展顺序、GREASE 与 TLS 指纹
+> 均不一致。结论的准确含义是「以该客户端画像的参数发起握手，服务端是否接受」。
 
 ### 错误
 
@@ -185,17 +261,18 @@ WebSocket：`GET /api/v1/tools/ssl-check/stream`。协议细节见 [../README.md
 
 ### 关闭码
 
-`1000` 正常、`1008` 输入非法或被策略拒绝、`1011` 服务端内部错误。
+`1000` 正常、`1008` 输入非法或被策略拒绝、`1011` 服务端内部错误、`1013` 预算耗尽。
 
 ### 警告
 
 链不通过或缺少系统信任根时给 `UNTRUSTED_CHAIN`；叶证书自签名给 `SELF_SIGNED_CERT`；
-过期 / 未生效分别给 `EXPIRED_CERT` / `NOT_YET_VALID`。
+过期给 `EXPIRED_CERT`。
 
 > 探测**不**在握手期校验链（否则拿不到无效证书的细节），而是拿到链之后另行验证。
 > 验证时优先加载本地信任库（`/etc/ssl/certs/ca-certificates.crt` 等）；信任库不可用时
 > `verified` 为 `false`、`implicitTrust` 为 `true`。
-> 空闲 60 秒关闭；单次任务总预算 30 秒；同一 IP **同时最多 1 条**连接。
+> 所有建连统一走出网防护并**钉住**已校验的 IP；证书里的 AIA / CDP 地址同样要过防护。
+> 空闲 60 秒关闭；单次任务总预算 180 秒；同一 IP **同时最多 1 条**连接。
 
 ---
 

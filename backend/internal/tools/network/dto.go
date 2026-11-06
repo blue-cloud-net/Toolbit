@@ -2,7 +2,6 @@ package network
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
@@ -10,6 +9,7 @@ import (
 	"time"
 
 	"github.com/blue-cloud-net/Toolbit/backend/internal/netguard"
+	"github.com/blue-cloud-net/Toolbit/backend/internal/tlssvc"
 	"github.com/blue-cloud-net/Toolbit/backend/internal/toolerr"
 )
 
@@ -125,14 +125,11 @@ func mapNetError(err error) *toolerr.Error {
 	if errors.As(err, &dnsErr) {
 		return toolerr.New(toolerr.CodeDNSError)
 	}
-	var recordErr *tls.CertificateVerificationError
-	if errors.As(err, &recordErr) {
+	var hsErr *tlssvc.HandshakeError
+	if errors.As(err, &hsErr) {
 		return toolerr.New(toolerr.CodeTLSError)
 	}
-	var alertErr tls.AlertError
-	if errors.As(err, &alertErr) {
-		return toolerr.New(toolerr.CodeTLSError)
-	}
+
 
 	msg := err.Error()
 	switch {
